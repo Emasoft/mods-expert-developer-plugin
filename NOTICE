@@ -1,0 +1,13 @@
+NOTICE
+
+The MIT license in LICENSE applies only to the original files of this plugin authored by Emasoft:
+  - .claude-plugin/plugin.json
+  - agents/mods-expert-developer-agent.md
+  - each skills/*/SKILL.md wrapper
+  - skills/*/agents/openai.yaml
+  - README.md
+  - NOTICE
+
+Every skills/*/references/chapter.md file is a verbatim copy of Anthropic's Claude Code
+documentation (https://code.claude.com/docs), copyright Anthropic, included for reference
+only. These files are NOT licensed under MIT and remain subject to Anthropic's own terms.

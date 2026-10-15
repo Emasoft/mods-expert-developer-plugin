@@ -89,4 +89,4 @@ claude plugin validate .
 
 ## License
 
-MIT
+The plugin's own files are licensed under MIT (see LICENSE). The reference chapters are Anthropic documentation and are not covered by MIT; see NOTICE.
