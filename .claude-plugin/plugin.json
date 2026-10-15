@@ -1,0 +1,11 @@
+{
+  "name": "emasoft-mods-development-plugin",
+  "version": "0.1.0",
+  "description": "Expert agent plus 60 preserved Claude Code documentation chapters (mods, plugins, hooks, skills, subagents, marketplaces, settings) for creating, fixing, improving and evaluating Claude Code mods and plugins.",
+  "author": {
+    "name": "Emasoft",
+    "email": "713559+Emasoft@users.noreply.github.com"
+  },
+  "license": "MIT",
+  "keywords": ["claude-code", "plugins", "mods", "plugin-development", "documentation", "hooks", "skills", "subagents"]
+}

@@ -1,0 +1,10 @@
+.claude/agents/
+.claude/skills/
+.claude/*.local.md
+.claude/settings.local.json
+.janitor/
+reports/
+reports_dev/
+*_dev/
+.trashcan/
+.DS_Store
