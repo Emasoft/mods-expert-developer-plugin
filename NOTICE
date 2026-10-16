@@ -9,6 +9,7 @@ every file except skills/*/references/chapter.md. This includes:
   - README.md, CHANGELOG.md and NOTICE
   - the pipeline files: scripts/, git-hooks/, .github/, pyproject.toml, cliff.toml and the lint configuration files
 
-Every skills/*/references/chapter.md file is a verbatim copy of Anthropic's Claude Code
-documentation (https://code.claude.com/docs), copyright Anthropic, included for reference
+Every skills/*/references/chapter.md file is adapted from Anthropic's Claude Code
+documentation (https://code.claude.com/docs), copyright Anthropic (section-level tables of
+contents added, and a few passages reworded for the agent), included for reference
 only. These files are NOT licensed under MIT and remain subject to Anthropic's own terms.

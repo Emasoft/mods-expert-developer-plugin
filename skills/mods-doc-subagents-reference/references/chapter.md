@@ -6,53 +6,9 @@
   - [Built-in subagents](#built-in-subagents)
   - [Quickstart: create your first subagent](#quickstart-create-your-first-subagent)
   - [Configure subagents](#configure-subagents)
-    - [Choose the subagent scope](#choose-the-subagent-scope)
-    - [Write subagent files](#write-subagent-files)
-      - [Subagent files Claude Code skips](#subagent-files-claude-code-skips)
-      - [Check an `agents` directory before a session](#check-an-agents-directory-before-a-session)
-    - [Choose a model](#choose-a-model)
-      - [Run every subagent on one model](#run-every-subagent-on-one-model)
-    - [Choose an effort level](#choose-an-effort-level)
-    - [Control subagent capabilities](#control-subagent-capabilities)
-      - [Available tools](#available-tools)
-      - [Restrict which subagents can be spawned](#restrict-which-subagents-can-be-spawned)
-      - [Scope MCP servers to a subagent](#scope-mcp-servers-to-a-subagent)
-      - [Permission modes](#permission-modes)
-      - [Preload skills into subagents](#preload-skills-into-subagents)
-      - [Enable persistent memory](#enable-persistent-memory)
-      - [Persistent memory tips](#persistent-memory-tips)
-      - [Conditional rules with hooks](#conditional-rules-with-hooks)
-      - [Disable specific subagents](#disable-specific-subagents)
-    - [Define hooks for subagents](#define-hooks-for-subagents)
-      - [Hooks in subagent frontmatter](#hooks-in-subagent-frontmatter)
-      - [Project-level hooks for subagent events](#project-level-hooks-for-subagent-events)
   - [Work with subagents](#work-with-subagents)
-    - [Understand automatic delegation](#understand-automatic-delegation)
-    - [Invoke subagents explicitly](#invoke-subagents-explicitly)
-    - [Run subagents in foreground or background](#run-subagents-in-foreground-or-background)
-    - [Subagent names](#subagent-names)
-    - [API errors in subagents](#api-errors-in-subagents)
-    - [Subagent output scanning](#subagent-output-scanning)
-    - [Common patterns](#common-patterns)
-      - [Isolate high-volume operations](#isolate-high-volume-operations)
-      - [Run parallel research](#run-parallel-research)
-      - [Chain subagents](#chain-subagents)
-    - [Choose between subagents and main conversation](#choose-between-subagents-and-main-conversation)
-    - [Let subagents spawn their own subagents](#let-subagents-spawn-their-own-subagents)
-    - [Concurrent subagent limit](#concurrent-subagent-limit)
-    - [Manage subagent context](#manage-subagent-context)
-      - [What loads at startup](#what-loads-at-startup)
-      - [Resume subagents](#resume-subagents)
-      - [Auto-compaction](#auto-compaction)
   - [Fork the current conversation](#fork-the-current-conversation)
-    - [Observe and steer running forks](#observe-and-steer-running-forks)
-    - [How forks differ from other subagents](#how-forks-differ-from-other-subagents)
-    - [Turn fork mode on or off](#turn-fork-mode-on-or-off)
   - [Example subagents](#example-subagents)
-    - [Code reviewer](#code-reviewer)
-    - [Debugger](#debugger)
-    - [Data scientist](#data-scientist)
-    - [Database query validator](#database-query-validator)
   - [Related Docs:](#related-docs)
 
 
@@ -759,11 +715,7 @@ fi
 exit 0
 ```
 
-On macOS and Linux, make the script executable, or the hook fails instead of blocking anything:
-
-```bash theme={null}
-chmod +x ./scripts/validate-readonly-query.sh
-```
+On macOS and Linux, when you create `./scripts/validate-readonly-query.sh`, give it the executable permission bit for its owner, or the hook fails instead of blocking anything.
 
 To test the rule, ask the subagent to run an `UPDATE` statement: the script exits with code 2, Claude Code blocks the command, and the subagent sees the `Blocked: Only SELECT queries are allowed` message.
 
@@ -1457,11 +1409,7 @@ fi
 exit 0
 ```
 
-On macOS and Linux, make the script executable:
-
-```bash theme={null}
-chmod +x ./scripts/validate-readonly-query.sh
-```
+On macOS and Linux, when you create `./scripts/validate-readonly-query.sh`, give it the executable permission bit for its owner.
 
 On Windows, write the validation script in PowerShell and add `shell: powershell` to the hook entry. See [running hooks in PowerShell](https://code.claude.com/docs/en/hooks#windows-powershell-tool).
 

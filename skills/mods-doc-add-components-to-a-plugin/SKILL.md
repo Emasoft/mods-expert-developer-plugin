@@ -10,7 +10,7 @@ metadata:
 
 ## Overview
 
-Routes reads about add components to a plugin to its verbatim Claude Code chapter. Consult the preserved reference for this topic.
+Routes reads about add components to a plugin to its Claude Code chapter. Consult the preserved reference for this topic.
 
 This skill is coordination-exempt: skip the ai-coord gate for its declared work.
 
@@ -39,30 +39,9 @@ Input: a task about "Explore the plugin directory". Output: open [Explore the pl
 
 ## Resources
 
-Full chapter: [the chapter](references/chapter.md), with the complete ADD COMPONENTS TO A PLUGIN table of contents:
+Full chapter: [the chapter](references/chapter.md), with the section-level ADD COMPONENTS TO A PLUGIN table of contents:
 
 - [Add components to a plugin](references/chapter.md#add-components-to-a-plugin-1)
   - [Explore the plugin directory](references/chapter.md#explore-the-plugin-directory)
   - [Add each kind of component](references/chapter.md#add-each-kind-of-component)
-    - [Skills](references/chapter.md#skills)
-    - [Commands](references/chapter.md#commands)
-      - [Define commands in the manifest](references/chapter.md#define-commands-in-the-manifest)
-    - [Agents](references/chapter.md#agents)
-      - [Organize agents in subfolders](references/chapter.md#organize-agents-in-subfolders)
-      - [Frontmatter fields in plugin agents](references/chapter.md#frontmatter-fields-in-plugin-agents)
-    - [Hooks](references/chapter.md#hooks)
-      - [When plugin hooks fire](references/chapter.md#when-plugin-hooks-fire)
-      - [Environment, quoting, and matching MCP tools](references/chapter.md#environment-quoting-and-matching-mcp-tools)
-    - [MCP servers](references/chapter.md#mcp-servers)
-      - [Reach users on claude.ai and Cowork](references/chapter.md#reach-users-on-claudeai-and-cowork)
-      - [Server names, tool names, and reloads](references/chapter.md#server-names-tool-names-and-reloads)
-      - [Include a packaged MCPB server](references/chapter.md#include-a-packaged-mcpb-server)
-    - [LSP servers](references/chapter.md#lsp-servers)
-    - [Executables](references/chapter.md#executables)
-    - [Default settings](references/chapter.md#default-settings)
-    - [Themes and output styles](references/chapter.md#themes-and-output-styles)
-    - [Channels](references/chapter.md#channels)
-    - [Monitors](references/chapter.md#monitors)
-    - [When the configuration dialog appears](references/chapter.md#when-the-configuration-dialog-appears)
-    - [Install dependencies into the data directory](references/chapter.md#install-dependencies-into-the-data-directory)
   - [Related Docs](references/chapter.md#related-docs)

@@ -4,20 +4,8 @@
 
 - [React to events with a mod](#react-to-events-with-a-mod)
   - [How a hook handles an event](#how-a-hook-handles-an-event)
-    - [Observe an event](#observe-an-event)
-    - [Rewrite an event](#rewrite-an-event)
-    - [Answer an event](#answer-an-event)
-    - [Filter which events a hook handles](#filter-which-events-a-hook-handles)
   - [Hook what Claude is doing](#hook-what-claude-is-doing)
-    - [Guard or change a tool call](#guard-or-change-a-tool-call)
-      - [Hold a tool call until the user decides](#hold-a-tool-call-until-the-user-decides)
-      - [Approve or refuse a tool call before the user is asked](#approve-or-refuse-a-tool-call-before-the-user-is-asked)
-    - [Rewrite or add to a prompt](#rewrite-or-add-to-a-prompt)
-    - [Follow a turn](#follow-a-turn)
   - [Run alongside other mods](#run-alongside-other-mods)
-    - [The order mods run in](#the-order-mods-run-in)
-      - [Where settings hooks run in the order](#where-settings-hooks-run-in-the-order)
-    - [Handle a hook that fails](#handle-a-hook-that-fails)
   - [Related Topics](#related-topics)
 
 ### React to events with a mod

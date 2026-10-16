@@ -4,16 +4,7 @@
 
 - [Plugin dependencies](#plugin-dependencies)
   - [Declare dependencies](#declare-dependencies)
-    - [Declare a dependency with a version constraint](#declare-a-dependency-with-a-version-constraint)
-    - [Bundle plugins for a team](#bundle-plugins-for-a-team)
-    - [Depend on a plugin from another marketplace](#depend-on-a-plugin-from-another-marketplace)
-    - [Test a plugin and its dependency locally](#test-a-plugin-and-its-dependency-locally)
-    - [Create a release tag](#create-a-release-tag)
-    - [Constrain a dependency that has a non-git source](#constrain-a-dependency-that-has-a-non-git-source)
   - [How dependencies behave for your users](#how-dependencies-behave-for-your-users)
-    - [How a constraint resolves against tags](#how-a-constraint-resolves-against-tags)
-    - [Confirm the resolved version](#confirm-the-resolved-version)
-    - [Combine constraints from several plugins](#combine-constraints-from-several-plugins)
   - [See also](#see-also)
 
 > ## Documentation Index

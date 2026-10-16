@@ -10,7 +10,7 @@ metadata:
 
 ## Overview
 
-Routes reads about platforms overview to its verbatim Claude Code chapter. Consult the preserved reference for this topic.
+Routes reads about platforms overview to its Claude Code chapter. Consult the preserved reference for this topic.
 
 This skill is coordination-exempt: skip the ai-coord gate for its declared work.
 
@@ -39,13 +39,10 @@ Input: a task about "Where to run Claude Code". Output: open [Where to run Claud
 
 ## Resources
 
-Full chapter: [the chapter](references/chapter.md), with the complete PLATFORMS OVERVIEW table of contents:
+Full chapter: [the chapter](references/chapter.md), with the section-level PLATFORMS OVERVIEW table of contents:
 
 - [Platforms and integrations](references/chapter.md#platforms-and-integrations)
   - [Where to run Claude Code](references/chapter.md#where-to-run-claude-code)
   - [Connect your tools](references/chapter.md#connect-your-tools)
   - [Work when you are away from your terminal](references/chapter.md#work-when-you-are-away-from-your-terminal)
   - [Related resources](references/chapter.md#related-resources)
-    - [Platforms](references/chapter.md#platforms)
-    - [Integrations](references/chapter.md#integrations)
-    - [Remote access](references/chapter.md#remote-access)

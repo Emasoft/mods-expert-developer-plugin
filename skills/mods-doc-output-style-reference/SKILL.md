@@ -10,7 +10,7 @@ metadata:
 
 ## Overview
 
-Routes reads about output style reference to its verbatim Claude Code chapter. Consult the preserved reference for this topic.
+Routes reads about output style reference to its Claude Code chapter. Consult the preserved reference for this topic.
 
 This skill is coordination-exempt: skip the ai-coord gate for its declared work.
 
@@ -39,15 +39,10 @@ Input: a task about "Built-in output styles". Output: open [Built-in output styl
 
 ## Resources
 
-Full chapter: [the chapter](references/chapter.md), with the complete OUTPUT STYLE REFERENCE table of contents:
+Full chapter: [the chapter](references/chapter.md), with the section-level OUTPUT STYLE REFERENCE table of contents:
 
 - [Output styles](references/chapter.md#output-styles)
   - [Built-in output styles](references/chapter.md#built-in-output-styles)
-    - [Default](references/chapter.md#default)
-    - [Proactive](references/chapter.md#proactive)
-    - [Concise](references/chapter.md#concise)
-    - [Explanatory](references/chapter.md#explanatory)
-    - [Learning](references/chapter.md#learning)
   - [Change your output style](references/chapter.md#change-your-output-style)
   - [Create a custom output style](references/chapter.md#create-a-custom-output-style)
   - [Choose between an output style and other features](references/chapter.md#choose-between-an-output-style-and-other-features)

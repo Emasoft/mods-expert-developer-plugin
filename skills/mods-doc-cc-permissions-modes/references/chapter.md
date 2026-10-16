@@ -8,26 +8,10 @@
   - [Switch permission modes](#switch-permission-modes)
   - [Auto-approve file edits with acceptEdits mode](#auto-approve-file-edits-with-acceptedits-mode)
   - [Analyze before you edit with plan mode](#analyze-before-you-edit-with-plan-mode)
-    - [Review and approve a plan](#review-and-approve-a-plan)
-    - [Set plan mode as the default](#set-plan-mode-as-the-default)
-    - [Server-side classifier review](#server-side-classifier-review)
-    - [What the classifier blocks by default](#what-the-classifier-blocks-by-default)
-    - [Boundaries you state in conversation](#boundaries-you-state-in-conversation)
-    - [Approvals you state in conversation](#approvals-you-state-in-conversation)
-    - [When auto mode falls back](#when-auto-mode-falls-back)
-      - [Repeated-block thresholds](#repeated-block-thresholds)
-    - [How auto mode evaluates actions](#how-auto-mode-evaluates-actions)
   - [Allow only pre-approved tools with dontAsk mode](#allow-only-pre-approved-tools-with-dontask-mode)
   - [Skip all checks with bypassPermissions mode](#skip-all-checks-with-bypasspermissions-mode)
   - [Protected paths](#protected-paths)
   - [Critical paths](#critical-paths)
-    - [Which paths are critical](#which-paths-are-critical)
-    - [Other targets that count as critical paths](#other-targets-that-count-as-critical-paths)
-    - [Removals inside nested commands and inline scripts](#removals-inside-nested-commands-and-inline-scripts)
-    - [Rewrite a flagged command](#rewrite-a-flagged-command)
-    - [Critical-path removals in each permission mode](#critical-path-removals-in-each-permission-mode)
-    - [Time limits and denials in auto and bypassPermissions modes](#time-limits-and-denials-in-auto-and-bypasspermissions-modes)
-    - [Remove-Item in PowerShell](#remove-item-in-powershell)
   - [See also](#see-also)
 
 
@@ -447,7 +431,7 @@ Claude Code v2.1.205 and later also block these by default:
 
 Claude Code v2.1.257 and later also block these by default:
 
-* Requesting credentials from the cloud instance-metadata endpoint, such as `169.254.169.254`, or explicitly authenticating a cloud, cluster, or registry call with the machine's own service-account or node identity
+* Requesting credentials from the cloud instance-metadata endpoint (the cloud provider's link-local metadata service address), or explicitly authenticating a cloud, cluster, or registry call with the machine's own service-account or node identity
 * Reaching a public host by a route other than a direct request, such as a tunnel, a reverse shell, or a resolver or proxy configuration rewritten to point outside
 * Reading credentials that belong to the host rather than to your task, such as node certificates or the node's container-registry auth
 * Connecting to or scanning sibling containers, pods, or VMs that Claude didn't start, or the node beneath the container

@@ -10,7 +10,7 @@ metadata:
 
 ## Overview
 
-Routes reads about plugin recomendations to its verbatim Claude Code chapter. Consult the preserved reference for this topic.
+Routes reads about plugin recomendations to its Claude Code chapter. Consult the preserved reference for this topic.
 
 This skill is coordination-exempt: skip the ai-coord gate for its declared work.
 
@@ -39,17 +39,12 @@ Input: a task about "Understand how plugin relevance works". Output: open [Under
 
 ## Resources
 
-Full chapter: [the chapter](references/chapter.md), with the complete PLUGIN RECOMENDATIONS table of contents:
+Full chapter: [the chapter](references/chapter.md), with the section-level PLUGIN RECOMENDATIONS table of contents:
 
 - [Recommend plugins for your org](references/chapter.md#recommend-plugins-for-your-org)
   - [Understand how plugin relevance works](references/chapter.md#understand-how-plugin-relevance-works)
   - [Add relevance to a plugin entry](references/chapter.md#add-relevance-to-a-plugin-entry)
   - [Field reference](references/chapter.md#field-reference)
-    - [`relevance`](references/chapter.md#relevance)
-    - [`relevance.signals`](references/chapter.md#relevancesignals)
-      - [Working directory matching](references/chapter.md#working-directory-matching)
-      - [Command name matching](references/chapter.md#command-name-matching)
-      - [Manifest dependency matching](references/chapter.md#manifest-dependency-matching)
   - [Validate your marketplace](references/chapter.md#validate-your-marketplace)
   - [Enable suggestions in managed settings](references/chapter.md#enable-suggestions-in-managed-settings)
   - [Preview what the user sees](references/chapter.md#preview-what-the-user-sees)

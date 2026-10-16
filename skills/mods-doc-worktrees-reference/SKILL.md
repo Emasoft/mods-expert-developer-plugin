@@ -10,7 +10,7 @@ metadata:
 
 ## Overview
 
-Routes reads about worktrees reference to its verbatim Claude Code chapter. Consult the preserved reference for this topic.
+Routes reads about worktrees reference to its Claude Code chapter. Consult the preserved reference for this topic.
 
 This skill is coordination-exempt: skip the ai-coord gate for its declared work.
 
@@ -39,29 +39,17 @@ Input: a task about "Start Claude in a worktree". Output: open [Start Claude in 
 
 ## Resources
 
-Full chapter: [the chapter](references/chapter.md), with the complete WORKTREES REFERENCE table of contents:
+Full chapter: [the chapter](references/chapter.md), with the section-level WORKTREES REFERENCE table of contents:
 
 - [Run parallel sessions with worktrees](references/chapter.md#run-parallel-sessions-with-worktrees)
   - [Start Claude in a worktree](references/chapter.md#start-claude-in-a-worktree)
-    - [Set up the worktree environment](references/chapter.md#set-up-the-worktree-environment)
-    - [Ask Claude to create a worktree](references/chapter.md#ask-claude-to-create-a-worktree)
   - [Clean up worktrees](references/chapter.md#clean-up-worktrees)
   - [Resume a worktree session](references/chapter.md#resume-a-worktree-session)
   - [How Claude Code enforces isolation](references/chapter.md#how-claude-code-enforces-isolation)
   - [Isolate subagents with worktrees](references/chapter.md#isolate-subagents-with-worktrees)
-    - [Clean up subagent and background-session worktrees](references/chapter.md#clean-up-subagent-and-background-session-worktrees)
   - [Customize worktree creation](references/chapter.md#customize-worktree-creation)
-    - [Choose the base branch](references/chapter.md#choose-the-base-branch)
-    - [Branch from a pull request](references/chapter.md#branch-from-a-pull-request)
-    - [Copy gitignored files into worktrees](references/chapter.md#copy-gitignored-files-into-worktrees)
-    - [Reuse a worktree name](references/chapter.md#reuse-a-worktree-name)
-    - [Replace worktree creation with a hook](references/chapter.md#replace-worktree-creation-with-a-hook)
   - [What worktrees share with the main checkout](references/chapter.md#what-worktrees-share-with-the-main-checkout)
   - [Manage worktrees manually](references/chapter.md#manage-worktrees-manually)
   - [Non-git version control](references/chapter.md#non-git-version-control)
   - [Troubleshooting](references/chapter.md#troubleshooting)
-    - [Claude Code can't enter the worktree at startup](references/chapter.md#claude-code-cant-enter-the-worktree-at-startup)
-    - [Worktree creation fails on a symlinked path](references/chapter.md#worktree-creation-fails-on-a-symlinked-path)
-    - [Claude Code refuses to use a worktree](references/chapter.md#claude-code-refuses-to-use-a-worktree)
-    - [The session resumes outside its worktree](references/chapter.md#the-session-resumes-outside-its-worktree)
   - [See also](references/chapter.md#see-also)

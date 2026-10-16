@@ -10,7 +10,7 @@ metadata:
 
 ## Overview
 
-Routes reads about recomended plugins to create plugins to its verbatim Claude Code chapter. Consult the preserved reference for this topic.
+Routes reads about recomended plugins to create plugins to its Claude Code chapter. Consult the preserved reference for this topic.
 
 This skill is coordination-exempt: skip the ai-coord gate for its declared work.
 
@@ -39,7 +39,7 @@ Input: a task about "Plugin Development Toolkit". Output: open [Plugin Developme
 
 ## Resources
 
-Full chapter: [the chapter](references/chapter.md), with the complete RECOMENDED PLUGINS TO CREATE PLUGINS table of contents:
+Full chapter: [the chapter](references/chapter.md), with the section-level RECOMENDED PLUGINS TO CREATE PLUGINS table of contents:
 
 - [skill-creator](references/chapter.md#skill-creator)
 - [Plugin Development Toolkit](references/chapter.md#plugin-development-toolkit)

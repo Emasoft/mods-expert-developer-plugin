@@ -10,7 +10,7 @@ metadata:
 
 ## Overview
 
-Routes reads about code intelligence components in plugins to its verbatim Claude Code chapter. Consult the preserved reference for this topic.
+Routes reads about code intelligence components in plugins to its Claude Code chapter. Consult the preserved reference for this topic.
 
 This skill is coordination-exempt: skip the ai-coord gate for its declared work.
 
@@ -39,16 +39,12 @@ Input: a task about "Install a code intelligence plugin". Output: open [Install 
 
 ## Resources
 
-Full chapter: [the chapter](references/chapter.md), with the complete CODE INTELLIGENCE COMPONENTS IN PLUGINS table of contents:
+Full chapter: [the chapter](references/chapter.md), with the section-level CODE INTELLIGENCE COMPONENTS IN PLUGINS table of contents:
 
 - [Code intelligence plugins](references/chapter.md#code-intelligence-plugins)
   - [Install a code intelligence plugin](references/chapter.md#install-a-code-intelligence-plugin)
   - [See what Claude gains](references/chapter.md#see-what-claude-gains)
-    - [Read the diagnostics yourself](references/chapter.md#read-the-diagnostics-yourself)
   - [Accept or dismiss the recommendation dialog](references/chapter.md#accept-or-dismiss-the-recommendation-dialog)
-    - [When the recommendation dialog appears](references/chapter.md#when-the-recommendation-dialog-appears)
-    - [Respond to the recommendation dialog](references/chapter.md#respond-to-the-recommendation-dialog)
-    - [Turn recommendations back on](references/chapter.md#turn-recommendations-back-on)
   - [Troubleshoot code intelligence](references/chapter.md#troubleshoot-code-intelligence)
   - [Add a language without an official plugin](references/chapter.md#add-a-language-without-an-official-plugin)
   - [Related Docs](references/chapter.md#related-docs)

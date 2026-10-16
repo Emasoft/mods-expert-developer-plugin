@@ -6,7 +6,6 @@
 - [The hook function](#the-hook-function)
 - [Events](#events)
   - [Tools](#tools)
-    - [Agent and organization fields on `tool.check`](#agent-and-organization-fields-on-toolcheck)
   - [Prompts and what Claude reads](#prompts-and-what-claude-reads)
   - [Commands and configuration](#commands-and-configuration)
   - [Turns](#turns)

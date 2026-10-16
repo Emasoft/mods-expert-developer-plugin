@@ -4,12 +4,8 @@
 
 - [Plugin security and trust](#plugin-security-and-trust)
   - [Understand what a plugin can do](#understand-what-a-plugin-can-do)
-    - [Official marketplace names](#official-marketplace-names)
   - [Review a plugin before you install](#review-a-plugin-before-you-install)
-    - [Remove a plugin you no longer trust](#remove-a-plugin-you-no-longer-trust)
   - [Recognize when Claude Code refuses or warns](#recognize-when-claude-code-refuses-or-warns)
-    - [Trust warning before you install](#trust-warning-before-you-install)
-    - [Untrusted marketplace sources and failed integrity checks](#untrusted-marketplace-sources-and-failed-integrity-checks)
   - [Enforce plugin controls for your organization](#enforce-plugin-controls-for-your-organization)
   - [Find plugins in telemetry](#find-plugins-in-telemetry)
   - [Related Docs](#related-docs)

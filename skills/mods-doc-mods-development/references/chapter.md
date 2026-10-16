@@ -4,13 +4,8 @@
 
 - [Create a mod](#create-a-mod)
   - [Ask Claude for a mod](#ask-claude-for-a-mod)
-    - [Use the mod in other sessions](#use-the-mod-in-other-sessions)
   - [Write a mod yourself](#write-a-mod-yourself)
-    - [How the example mod works](#how-the-example-mod-works)
   - [Keep working on a mod](#keep-working-on-a-mod)
-    - [Change a mod with Claude](#change-a-mod-with-claude)
-    - [Check what Claude Code reads from your mod](#check-what-claude-code-reads-from-your-mod)
-    - [Test the mod](#test-the-mod)
   - [Share your mod](#share-your-mod)
   - [Related Topics](#related-topics)
 

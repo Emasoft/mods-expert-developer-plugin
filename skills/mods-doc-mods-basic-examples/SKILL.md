@@ -10,7 +10,7 @@ metadata:
 
 ## Overview
 
-Routes reads about mods basic examples to its verbatim Claude Code chapter. Consult the preserved reference for this topic.
+Routes reads about mods basic examples to its Claude Code chapter. Consult the preserved reference for this topic.
 
 This skill is coordination-exempt: skip the ai-coord gate for its declared work.
 
@@ -39,27 +39,15 @@ Input: a task about "Try a sample". Output: open [Try a sample](references/chapt
 
 ## Resources
 
-Full chapter: [the chapter](references/chapter.md), with the complete MODS BASIC EXAMPLES table of contents:
+Full chapter: [the chapter](references/chapter.md), with the section-level MODS BASIC EXAMPLES table of contents:
 
 - [Interface examples for mods](references/chapter.md#interface-examples-for-mods)
   - [Try a sample](references/chapter.md#try-a-sample)
   - [Pick an element](references/chapter.md#pick-an-element)
   - [Show text](references/chapter.md#show-text)
-    - [`Text`](references/chapter.md#text)
-    - [`Markdown`](references/chapter.md#markdown)
-    - [`Link`](references/chapter.md#link)
   - [Show code and changes](references/chapter.md#show-code-and-changes)
-    - [`Code`](references/chapter.md#code)
-    - [`Code` as a diff](references/chapter.md#code-as-a-diff)
   - [Arrange elements](references/chapter.md#arrange-elements)
-    - [`Box`](references/chapter.md#box)
   - [Take input](references/chapter.md#take-input)
-    - [`Button`](references/chapter.md#button)
-    - [`Input`](references/chapter.md#input)
-    - [`Select`](references/chapter.md#select)
   - [Draw pictures](references/chapter.md#draw-pictures)
-    - [`Raster`](references/chapter.md#raster)
-    - [`Svg`](references/chapter.md#svg)
-    - [`Image` and `Client`](references/chapter.md#image-and-client)
   - [See where a mod can draw](references/chapter.md#see-where-a-mod-can-draw)
   - [Related Topics](references/chapter.md#related-topics)

@@ -7,8 +7,6 @@
   - [Quickstart](#quickstart)
   - [Security](#security)
   - [Enterprise controls](#enterprise-controls)
-    - [Enable channels for your organization](#enable-channels-for-your-organization)
-    - [Restrict which channel plugins can run](#restrict-which-channel-plugins-can-run)
   - [Research preview](#research-preview)
   - [How channels compare](#how-channels-compare)
   - [Next steps](#next-steps)

@@ -10,7 +10,7 @@ metadata:
 
 ## Overview
 
-Routes reads about anthropic marketplaces to its verbatim Claude Code chapter. Consult the preserved reference for this topic.
+Routes reads about anthropic marketplaces to its Claude Code chapter. Consult the preserved reference for this topic.
 
 This skill is coordination-exempt: skip the ai-coord gate for its declared work.
 
@@ -39,13 +39,11 @@ Input: a task about "Anthropic's marketplaces". Output: open [Anthropic's market
 
 ## Resources
 
-Full chapter: [the chapter](references/chapter.md), with the complete ANTHROPIC MARKETPLACES table of contents:
+Full chapter: [the chapter](references/chapter.md), with the section-level ANTHROPIC MARKETPLACES table of contents:
 
 - [Anthropic's marketplaces](references/chapter.md#anthropics-marketplaces)
   - [Anthropic's marketplaces](references/chapter.md#anthropics-marketplaces-1)
-    - [The demo marketplace in `anthropics/claude-code`](references/chapter.md#the-demo-marketplace-in-anthropicsclaude-code)
   - [Find plugins in the official marketplace](references/chapter.md#find-plugins-in-the-official-marketplace)
   - [Browse and install from Anthropic's marketplaces](references/chapter.md#browse-and-install-from-anthropics-marketplaces)
-    - [Add the community or demo marketplace](references/chapter.md#add-the-community-or-demo-marketplace)
   - [Third-party marketplaces](references/chapter.md#third-party-marketplaces)
   - [Related Docs](references/chapter.md#related-docs)

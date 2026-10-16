@@ -10,7 +10,7 @@ metadata:
 
 ## Overview
 
-Routes reads about mods testing to its verbatim Claude Code chapter. Consult the preserved reference for this topic.
+Routes reads about mods testing to its Claude Code chapter. Consult the preserved reference for this topic.
 
 This skill is coordination-exempt: skip the ai-coord gate for its declared work.
 
@@ -39,13 +39,10 @@ Input: a task about "Write a test". Output: open [Write a test](references/chapt
 
 ## Resources
 
-Full chapter: [the chapter](references/chapter.md), with the complete MODS TESTING table of contents:
+Full chapter: [the chapter](references/chapter.md), with the section-level MODS TESTING table of contents:
 
 - [Test a mod](references/chapter.md#test-a-mod)
   - [Write a test](references/chapter.md#write-a-test)
-    - [Stub what Claude Code would answer](references/chapter.md#stub-what-claude-code-would-answer)
-    - [Follow the test kit's rules](references/chapter.md#follow-the-test-kits-rules)
-    - [Look up what a stub returns](references/chapter.md#look-up-what-a-stub-returns)
   - [Test a timer](references/chapter.md#test-a-timer)
   - [Test a drawing](references/chapter.md#test-a-drawing)
   - [Related Topics](references/chapter.md#related-topics)

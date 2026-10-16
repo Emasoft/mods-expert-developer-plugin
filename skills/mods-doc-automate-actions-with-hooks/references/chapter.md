@@ -5,36 +5,11 @@
 - [Automate actions with hooks](#automate-actions-with-hooks-1)
   - [Set up your first hook](#set-up-your-first-hook)
   - [What you can automate](#what-you-can-automate)
-    - [Get notified when Claude needs input](#get-notified-when-claude-needs-input)
-    - [Auto-format code after edits](#auto-format-code-after-edits)
-    - [Block edits to protected files](#block-edits-to-protected-files)
-    - [Re-inject context after compaction](#re-inject-context-after-compaction)
-    - [Audit configuration changes](#audit-configuration-changes)
-    - [Reload environment when directory or files change](#reload-environment-when-directory-or-files-change)
-    - [Auto-approve specific permission prompts](#auto-approve-specific-permission-prompts)
   - [How hooks work](#how-hooks-work)
-    - [Combine results from multiple hooks](#combine-results-from-multiple-hooks)
-    - [Read input and return output](#read-input-and-return-output)
-      - [Hook input](#hook-input)
-      - [Hook output](#hook-output)
-      - [Structured JSON output](#structured-json-output)
-    - [Filter hooks with matchers](#filter-hooks-with-matchers)
-      - [Filter by tool name and arguments with the `if` field](#filter-by-tool-name-and-arguments-with-the-if-field)
-    - [Configure hook location](#configure-hook-location)
   - [Prompt-based hooks](#prompt-based-hooks)
   - [Agent-based hooks](#agent-based-hooks)
   - [HTTP hooks](#http-hooks)
   - [Limitations and troubleshooting](#limitations-and-troubleshooting)
-    - [Limitations](#limitations)
-    - [Hooks and permission modes](#hooks-and-permission-modes)
-    - [Hook not firing](#hook-not-firing)
-    - [Hook error in output](#hook-error-in-output)
-    - [`/hooks` shows no hooks configured](#hooks-shows-no-hooks-configured)
-    - [Stop hook hits the block cap](#stop-hook-hits-the-block-cap)
-    - [Hook JSON has no effect](#hook-json-has-no-effect)
-      - [Shell profile output before the JSON](#shell-profile-output-before-the-json)
-      - [Fields at the wrong level](#fields-at-the-wrong-level)
-    - [Check what a hook did](#check-what-a-hook-did)
   - [Learn more](#learn-more)
 
 > ## Documentation Index
@@ -315,11 +290,7 @@ This example uses a separate script file that the hook calls. The script checks 
   </Step>
 
   <Step title="Make the script executable on macOS and Linux">
-    Hook scripts must be executable for Claude Code to run them:
-
-    ```bash theme={null}
-    chmod +x .claude/hooks/protect-files.sh
-    ```
+    Hook scripts must be executable for Claude Code to run them. When you create `.claude/hooks/protect-files.sh`, give it the executable permission bit for its owner (the owner-execute mode bit) so Claude Code can launch it.
   </Step>
 
   <Step title="Register the hook">

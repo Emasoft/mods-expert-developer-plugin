@@ -10,7 +10,7 @@ metadata:
 
 ## Overview
 
-Routes reads about create a marketplace to its verbatim Claude Code chapter. Consult the preserved reference for this topic.
+Routes reads about create a marketplace to its Claude Code chapter. Consult the preserved reference for this topic.
 
 This skill is coordination-exempt: skip the ai-coord gate for its declared work.
 
@@ -39,7 +39,7 @@ Input: a task about "Add plugin entries". Output: open [Add plugin entries](refe
 
 ## Resources
 
-Full chapter: [the chapter](references/chapter.md), with the complete Create a marketplace table of contents:
+Full chapter: [the chapter](references/chapter.md), with the section-level Create a marketplace table of contents:
 
 - [Create a marketplace](references/chapter.md#create-a-marketplace-1)
 - [Add plugin entries](references/chapter.md#add-plugin-entries)

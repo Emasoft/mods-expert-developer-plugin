@@ -4,21 +4,12 @@
 
 - [Launch sessions from links](#launch-sessions-from-links)
   - [How deep links work](#how-deep-links-work)
-    - [What a launched session shows](#what-a-launched-session-shows)
   - [Build a link](#build-a-link)
-    - [Choose between `cwd` and `repo`](#choose-between-cwd-and-repo)
   - [Examples](#examples)
-    - [Embed a link in a runbook](#embed-a-link-in-a-runbook)
-    - [Open a link from the shell](#open-a-link-from-the-shell)
   - [Registration and supported platforms](#registration-and-supported-platforms)
   - [Open a VS Code tab instead of a terminal](#open-a-vs-code-tab-instead-of-a-terminal)
   - [Open a Claude Desktop session on an SSH connection](#open-a-claude-desktop-session-on-an-ssh-connection)
   - [Troubleshooting](#troubleshooting)
-    - [Clicking the link does nothing](#clicking-the-link-does-nothing)
-    - [xdg-open is not found on Linux](#xdg-open-is-not-found-on-linux)
-    - [The link renders as plain text instead of being clickable](#the-link-renders-as-plain-text-instead-of-being-clickable)
-    - [The session opens in my home directory instead of the repo](#the-session-opens-in-my-home-directory-instead-of-the-repo)
-    - [The link opens the wrong terminal](#the-link-opens-the-wrong-terminal)
   - [Learn more](#learn-more)
 
 > ## Documentation Index
@@ -205,7 +196,7 @@ The `xdg-open` command is part of the `xdg-utils` package, which minimal server 
 
 ##### The link renders as plain text instead of being clickable
 
-Some Markdown renderers only allow `http` and `https` links and strip other URL schemes. GitHub does this in READMEs, issues, pull requests, and wikis: `[label](claude-cli://...)` renders as `label`, with no link and the URL removed. On these platforms, put the deep link in a code block so readers can see the URL and paste it into their browser's address bar.
+Some Markdown renderers only allow `http` and `https` links and strip other URL schemes. GitHub does this in READMEs, issues, pull requests, and wikis: a Markdown link whose target is a `claude-cli://` URL renders as its label alone, with no link and the URL removed. On these platforms, put the deep link in a code block so readers can see the URL and paste it into their browser's address bar.
 
 ##### The session opens in my home directory instead of the repo
 

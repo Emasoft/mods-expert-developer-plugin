@@ -10,7 +10,7 @@ metadata:
 
 ## Overview
 
-Routes reads about claude security plugin to its verbatim Claude Code chapter. Consult the preserved reference for this topic.
+Routes reads about claude security plugin to its Claude Code chapter. Consult the preserved reference for this topic.
 
 This skill is coordination-exempt: skip the ai-coord gate for its declared work.
 
@@ -39,19 +39,14 @@ Input: a task about "Prerequisites". Output: open [Prerequisites](references/cha
 
 ## Resources
 
-Full chapter: [the chapter](references/chapter.md), with the complete CLAUDE SECURITY PLUGIN table of contents:
+Full chapter: [the chapter](references/chapter.md), with the section-level CLAUDE SECURITY PLUGIN table of contents:
 
 - [Scan your codebase for vulnerabilities](references/chapter.md#scan-your-codebase-for-vulnerabilities)
   - [Prerequisites](references/chapter.md#prerequisites)
   - [Models and providers](references/chapter.md#models-and-providers)
   - [Install the plugin](references/chapter.md#install-the-plugin)
-    - [Uninstall the plugin](references/chapter.md#uninstall-the-plugin)
   - [Scan and fix your codebase](references/chapter.md#scan-and-fix-your-codebase)
-    - [Scan only your changes](references/chapter.md#scan-only-your-changes)
-    - [Scope large repositories](references/chapter.md#scope-large-repositories)
-    - [Read the scan results](references/chapter.md#read-the-scan-results)
   - [Fix findings](references/chapter.md#fix-findings)
-    - [Patches are never applied automatically](references/chapter.md#patches-are-never-applied-automatically)
   - [How the plugin fits with other security tools](references/chapter.md#how-the-plugin-fits-with-other-security-tools)
   - [Troubleshooting](references/chapter.md#troubleshooting)
   - [Related resources](references/chapter.md#related-resources)

@@ -10,7 +10,7 @@ metadata:
 
 ## Overview
 
-Routes reads about claude github actions to its verbatim Claude Code chapter. Consult the preserved reference for this topic.
+Routes reads about claude github actions to its Claude Code chapter. Consult the preserved reference for this topic.
 
 This skill is coordination-exempt: skip the ai-coord gate for its declared work.
 
@@ -39,32 +39,15 @@ Input: a task about "Setup". Output: open [Setup](references/chapter.md#setup) a
 
 ## Resources
 
-Full chapter: [the chapter](references/chapter.md), with the complete CLAUDE GITHUB ACTIONS table of contents:
+Full chapter: [the chapter](references/chapter.md), with the section-level CLAUDE GITHUB ACTIONS table of contents:
 
 - [Claude Code GitHub Actions](references/chapter.md#claude-code-github-actions)
   - [Setup](references/chapter.md#setup)
-    - [Quick setup](references/chapter.md#quick-setup)
-    - [Manual setup](references/chapter.md#manual-setup)
-    - [Set up for an organization](references/chapter.md#set-up-for-an-organization)
-    - [Uninstall](references/chapter.md#uninstall)
-    - [GitHub App permissions](references/chapter.md#github-app-permissions)
   - [Interactive and automation modes](references/chapter.md#interactive-and-automation-modes)
-    - [Who can trigger runs](references/chapter.md#who-can-trigger-runs)
   - [Example use cases](references/chapter.md#example-use-cases)
-    - [Respond to @claude mentions](references/chapter.md#respond-to-claude-mentions)
-    - [Run a skill](references/chapter.md#run-a-skill)
-    - [Run on a schedule](references/chapter.md#run-on-a-schedule)
   - [Best practices](references/chapter.md#best-practices)
-    - [Define project standards in CLAUDE.md](references/chapter.md#define-project-standards-in-claudemd)
-    - [Protect your credentials](references/chapter.md#protect-your-credentials)
-    - [Manage costs](references/chapter.md#manage-costs)
   - [Use a cloud provider](references/chapter.md#use-a-cloud-provider)
   - [Troubleshooting](references/chapter.md#troubleshooting)
-    - [Claude not responding to @claude commands](references/chapter.md#claude-not-responding-to-claude-commands)
-    - [CI not running on Claude's commits](references/chapter.md#ci-not-running-on-claudes-commits)
-    - [Authentication errors](references/chapter.md#authentication-errors)
   - [Advanced configuration](references/chapter.md#advanced-configuration)
-    - [Action parameters](references/chapter.md#action-parameters)
-    - [Pass CLI arguments](references/chapter.md#pass-cli-arguments)
   - [Upgrade from beta](references/chapter.md#upgrade-from-beta)
   - [Also See:](references/chapter.md#also-see)

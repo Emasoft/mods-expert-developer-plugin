@@ -4,23 +4,11 @@
 
 - [Manage sessions](#manage-sessions)
   - [Resume a session](#resume-a-session)
-    - [What a resumed session restores](#what-a-resumed-session-restores)
-      - [Permission mode on resume](#permission-mode-on-resume)
-      - [Resume in plan mode with `-p`](#resume-in-plan-mode-with--p)
-    - [Resume from a summary](#resume-from-a-summary)
-    - [Where the session picker looks](#where-the-session-picker-looks)
-      - [`/loop`, `-p`, Agent SDK, and background sessions](#loop--p-agent-sdk-and-background-sessions)
-      - [Sessions in other worktrees and projects](#sessions-in-other-worktrees-and-projects)
-      - [Resume by session ID or name](#resume-by-session-id-or-name)
   - [Name your sessions](#name-your-sessions)
   - [Use the session picker](#use-the-session-picker)
   - [Branch a session](#branch-a-session)
   - [Manage context within a session](#manage-context-within-a-session)
   - [Export and locate session data](#export-and-locate-session-data)
-    - [Access conversations from scripts](#access-conversations-from-scripts)
-    - [Where transcripts are stored](#where-transcripts-are-stored)
-    - [Delete session data](#delete-session-data)
-    - [Name the project directory yourself](#name-the-project-directory-yourself)
   - [See also](#see-also)
 
 

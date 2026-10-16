@@ -4,9 +4,6 @@
 
 - [Test a mod](#test-a-mod)
   - [Write a test](#write-a-test)
-    - [Stub what Claude Code would answer](#stub-what-claude-code-would-answer)
-    - [Follow the test kit's rules](#follow-the-test-kits-rules)
-    - [Look up what a stub returns](#look-up-what-a-stub-returns)
   - [Test a timer](#test-a-timer)
   - [Test a drawing](#test-a-drawing)
   - [Related Topics](#related-topics)

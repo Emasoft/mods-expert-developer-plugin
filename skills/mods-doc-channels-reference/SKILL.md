@@ -10,7 +10,7 @@ metadata:
 
 ## Overview
 
-Routes reads about channels reference to its verbatim Claude Code chapter. Consult the preserved reference for this topic.
+Routes reads about channels reference to its Claude Code chapter. Consult the preserved reference for this topic.
 
 This skill is coordination-exempt: skip the ai-coord gate for its declared work.
 
@@ -39,15 +39,13 @@ Input: a task about "Supported channels". Output: open [Supported channels](refe
 
 ## Resources
 
-Full chapter: [the chapter](references/chapter.md), with the complete CHANNELS REFERENCE table of contents:
+Full chapter: [the chapter](references/chapter.md), with the section-level CHANNELS REFERENCE table of contents:
 
 - [Push events into a running session with channels](references/chapter.md#push-events-into-a-running-session-with-channels)
   - [Supported channels](references/chapter.md#supported-channels)
   - [Quickstart](references/chapter.md#quickstart)
   - [Security](references/chapter.md#security)
   - [Enterprise controls](references/chapter.md#enterprise-controls)
-    - [Enable channels for your organization](references/chapter.md#enable-channels-for-your-organization)
-    - [Restrict which channel plugins can run](references/chapter.md#restrict-which-channel-plugins-can-run)
   - [Research preview](references/chapter.md#research-preview)
   - [How channels compare](references/chapter.md#how-channels-compare)
   - [Next steps](references/chapter.md#next-steps)

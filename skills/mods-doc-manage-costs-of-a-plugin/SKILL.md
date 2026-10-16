@@ -10,7 +10,7 @@ metadata:
 
 ## Overview
 
-Routes reads about manage costs of a plugin to its verbatim Claude Code chapter. Consult the preserved reference for this topic.
+Routes reads about manage costs of a plugin to its Claude Code chapter. Consult the preserved reference for this topic.
 
 This skill is coordination-exempt: skip the ai-coord gate for its declared work.
 
@@ -39,18 +39,10 @@ Input: a task about "Measure what a plugin costs". Output: open [Measure what a 
 
 ## Resources
 
-Full chapter: [the chapter](references/chapter.md), with the complete MANAGE COSTS OF A PLUGIN table of contents:
+Full chapter: [the chapter](references/chapter.md), with the section-level MANAGE COSTS OF A PLUGIN table of contents:
 
 - [Measure plugin cost and usage](references/chapter.md#measure-plugin-cost-and-usage)
   - [Measure what a plugin costs](references/chapter.md#measure-what-a-plugin-costs)
-    - [Lower the always-on figure](references/chapter.md#lower-the-always-on-figure)
-    - [Cost shown to users before install](references/chapter.md#cost-shown-to-users-before-install)
   - [Check whether a plugin is used](references/chapter.md#check-whether-a-plugin-is-used)
-    - [Not used recently in `/plugin`](references/chapter.md#not-used-recently-in-plugin)
-    - [Find skills that never run](references/chapter.md#find-skills-that-never-run)
-    - [Unused plugins in `/doctor`](references/chapter.md#unused-plugins-in-doctor)
-    - [Usage share in `/usage`](references/chapter.md#usage-share-in-usage)
   - [Measure across a fleet](references/chapter.md#measure-across-a-fleet)
-    - [Redacted plugin names in your backend](references/chapter.md#redacted-plugin-names-in-your-backend)
-    - [Query the Analytics API](references/chapter.md#query-the-analytics-api)
   - [Related Docs](references/chapter.md#related-docs)

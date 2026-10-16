@@ -10,7 +10,7 @@ metadata:
 
 ## Overview
 
-Routes reads about manage plugins from cli to its verbatim Claude Code chapter. Consult the preserved reference for this topic.
+Routes reads about manage plugins from cli to its Claude Code chapter. Consult the preserved reference for this topic.
 
 This skill is coordination-exempt: skip the ai-coord gate for its declared work.
 
@@ -39,7 +39,7 @@ Input: a task about "Emit the hint". Output: open [Emit the hint](references/cha
 
 ## Resources
 
-Full chapter: [the chapter](references/chapter.md), with the complete MANAGE PLUGINS FROM CLI table of contents:
+Full chapter: [the chapter](references/chapter.md), with the section-level MANAGE PLUGINS FROM CLI table of contents:
 
 - [Recommend your plugin from your CLI](references/chapter.md#recommend-your-plugin-from-your-cli)
   - [Emit the hint](references/chapter.md#emit-the-hint)

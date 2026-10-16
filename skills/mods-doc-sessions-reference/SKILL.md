@@ -10,7 +10,7 @@ metadata:
 
 ## Overview
 
-Routes reads about sessions reference to its verbatim Claude Code chapter. Consult the preserved reference for this topic.
+Routes reads about sessions reference to its Claude Code chapter. Consult the preserved reference for this topic.
 
 This skill is coordination-exempt: skip the ai-coord gate for its declared work.
 
@@ -39,25 +39,13 @@ Input: a task about "Resume a session". Output: open [Resume a session](referenc
 
 ## Resources
 
-Full chapter: [the chapter](references/chapter.md), with the complete SESSIONS REFERENCE table of contents:
+Full chapter: [the chapter](references/chapter.md), with the section-level SESSIONS REFERENCE table of contents:
 
 - [Manage sessions](references/chapter.md#manage-sessions)
   - [Resume a session](references/chapter.md#resume-a-session)
-    - [What a resumed session restores](references/chapter.md#what-a-resumed-session-restores)
-      - [Permission mode on resume](references/chapter.md#permission-mode-on-resume)
-      - [Resume in plan mode with `-p`](references/chapter.md#resume-in-plan-mode-with--p)
-    - [Resume from a summary](references/chapter.md#resume-from-a-summary)
-    - [Where the session picker looks](references/chapter.md#where-the-session-picker-looks)
-      - [`/loop`, `-p`, Agent SDK, and background sessions](references/chapter.md#loop--p-agent-sdk-and-background-sessions)
-      - [Sessions in other worktrees and projects](references/chapter.md#sessions-in-other-worktrees-and-projects)
-      - [Resume by session ID or name](references/chapter.md#resume-by-session-id-or-name)
   - [Name your sessions](references/chapter.md#name-your-sessions)
   - [Use the session picker](references/chapter.md#use-the-session-picker)
   - [Branch a session](references/chapter.md#branch-a-session)
   - [Manage context within a session](references/chapter.md#manage-context-within-a-session)
   - [Export and locate session data](references/chapter.md#export-and-locate-session-data)
-    - [Access conversations from scripts](references/chapter.md#access-conversations-from-scripts)
-    - [Where transcripts are stored](references/chapter.md#where-transcripts-are-stored)
-    - [Delete session data](references/chapter.md#delete-session-data)
-    - [Name the project directory yourself](references/chapter.md#name-the-project-directory-yourself)
   - [See also](references/chapter.md#see-also)

@@ -10,7 +10,7 @@ metadata:
 
 ## Overview
 
-Routes reads about mods api to its verbatim Claude Code chapter. Consult the preserved reference for this topic.
+Routes reads about mods api to its Claude Code chapter. Consult the preserved reference for this topic.
 
 This skill is coordination-exempt: skip the ai-coord gate for its declared work.
 
@@ -39,22 +39,12 @@ Input: a task about "Add a command or a tool". Output: open [Add a command or a 
 
 ## Resources
 
-Full chapter: [the chapter](references/chapter.md), with the complete MODS API table of contents:
+Full chapter: [the chapter](references/chapter.md), with the section-level MODS API table of contents:
 
 - [Use the mods API](references/chapter.md#use-the-mods-api)
   - [Add a command or a tool](references/chapter.md#add-a-command-or-a-tool)
-    - [Add a command](references/chapter.md#add-a-command)
-    - [Add a tool](references/chapter.md#add-a-tool)
   - [Call a model](references/chapter.md#call-a-model)
-    - [Send one prompt](references/chapter.md#send-one-prompt)
-    - [Use prompt caching](references/chapter.md#use-prompt-caching)
-      - [Choose between `prompt` and `system`](references/chapter.md#choose-between-prompt-and-system)
-      - [Check for cache hits](references/chapter.md#check-for-cache-hits)
-    - [What a `model.complete` hook receives](references/chapter.md#what-a-modelcomplete-hook-receives)
   - [Run work in the background](references/chapter.md#run-work-in-the-background)
-    - [Show something without starting a turn](references/chapter.md#show-something-without-starting-a-turn)
-    - [Start a turn from a background job](references/chapter.md#start-a-turn-from-a-background-job)
-    - [Stop background work](references/chapter.md#stop-background-work)
   - [Send and receive messages between sessions](references/chapter.md#send-and-receive-messages-between-sessions)
   - [Reach files, processes, and the network](references/chapter.md#reach-files-processes-and-the-network)
   - [Related Topics](references/chapter.md#related-topics)

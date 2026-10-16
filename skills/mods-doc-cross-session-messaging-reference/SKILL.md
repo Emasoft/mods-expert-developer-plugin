@@ -10,7 +10,7 @@ metadata:
 
 ## Overview
 
-Routes reads about cross session messaging reference to its verbatim Claude Code chapter. Consult the preserved reference for this topic.
+Routes reads about cross session messaging reference to its Claude Code chapter. Consult the preserved reference for this topic.
 
 This skill is coordination-exempt: skip the ai-coord gate for its declared work.
 
@@ -39,24 +39,13 @@ Input: a task about "When to use cross-session messaging". Output: open [When to
 
 ## Resources
 
-Full chapter: [the chapter](references/chapter.md), with the complete CROSS SESSION MESSAGING REFERENCE table of contents:
+Full chapter: [the chapter](references/chapter.md), with the section-level CROSS SESSION MESSAGING REFERENCE table of contents:
 
 - [Message your other Claude Code sessions](references/chapter.md#message-your-other-claude-code-sessions)
   - [When to use cross-session messaging](references/chapter.md#when-to-use-cross-session-messaging)
   - [Message another session](references/chapter.md#message-another-session)
-    - [Message delivery](references/chapter.md#message-delivery)
-    - [Get a notice when another session goes idle](references/chapter.md#get-a-notice-when-another-session-goes-idle)
-      - [Ask for a notice](references/chapter.md#ask-for-a-notice)
-      - [What each session shows](references/chapter.md#what-each-session-shows)
-      - [Limits](references/chapter.md#limits)
-    - [See which sessions Claude can reach](references/chapter.md#see-which-sessions-claude-can-reach)
-    - [Message sessions on other machines](references/chapter.md#message-sessions-on-other-machines)
   - [How a session treats an incoming message](references/chapter.md#how-a-session-treats-an-incoming-message)
-    - [Control inbound messages](references/chapter.md#control-inbound-messages)
-    - [Non-interactive sessions](references/chapter.md#non-interactive-sessions)
   - [Restrict cross-session messaging](references/chapter.md#restrict-cross-session-messaging)
-    - [Require approval for cross-machine messages](references/chapter.md#require-approval-for-cross-machine-messages)
-    - [Turn off cross-session messaging](references/chapter.md#turn-off-cross-session-messaging)
   - [Availability](references/chapter.md#availability)
   - [Limitations](references/chapter.md#limitations)
   - [Related resources](references/chapter.md#related-resources)

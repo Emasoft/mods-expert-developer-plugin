@@ -10,7 +10,7 @@ metadata:
 
 ## Overview
 
-Routes reads about mods development to its verbatim Claude Code chapter. Consult the preserved reference for this topic.
+Routes reads about mods development to its Claude Code chapter. Consult the preserved reference for this topic.
 
 This skill is coordination-exempt: skip the ai-coord gate for its declared work.
 
@@ -39,16 +39,11 @@ Input: a task about "Ask Claude for a mod". Output: open [Ask Claude for a mod](
 
 ## Resources
 
-Full chapter: [the chapter](references/chapter.md), with the complete Mods Development table of contents:
+Full chapter: [the chapter](references/chapter.md), with the section-level Mods Development table of contents:
 
 - [Create a mod](references/chapter.md#create-a-mod)
   - [Ask Claude for a mod](references/chapter.md#ask-claude-for-a-mod)
-    - [Use the mod in other sessions](references/chapter.md#use-the-mod-in-other-sessions)
   - [Write a mod yourself](references/chapter.md#write-a-mod-yourself)
-    - [How the example mod works](references/chapter.md#how-the-example-mod-works)
   - [Keep working on a mod](references/chapter.md#keep-working-on-a-mod)
-    - [Change a mod with Claude](references/chapter.md#change-a-mod-with-claude)
-    - [Check what Claude Code reads from your mod](references/chapter.md#check-what-claude-code-reads-from-your-mod)
-    - [Test the mod](references/chapter.md#test-the-mod)
   - [Share your mod](references/chapter.md#share-your-mod)
   - [Related Topics](references/chapter.md#related-topics)

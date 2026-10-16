@@ -10,7 +10,7 @@ metadata:
 
 ## Overview
 
-Routes reads about plugins depending on other plugins to its verbatim Claude Code chapter. Consult the preserved reference for this topic.
+Routes reads about plugins depending on other plugins to its Claude Code chapter. Consult the preserved reference for this topic.
 
 This skill is coordination-exempt: skip the ai-coord gate for its declared work.
 
@@ -39,18 +39,9 @@ Input: a task about "Declare dependencies". Output: open [Declare dependencies](
 
 ## Resources
 
-Full chapter: [the chapter](references/chapter.md), with the complete PLUGINS DEPENDING ON OTHER PLUGINS table of contents:
+Full chapter: [the chapter](references/chapter.md), with the section-level PLUGINS DEPENDING ON OTHER PLUGINS table of contents:
 
 - [Plugin dependencies](references/chapter.md#plugin-dependencies)
   - [Declare dependencies](references/chapter.md#declare-dependencies)
-    - [Declare a dependency with a version constraint](references/chapter.md#declare-a-dependency-with-a-version-constraint)
-    - [Bundle plugins for a team](references/chapter.md#bundle-plugins-for-a-team)
-    - [Depend on a plugin from another marketplace](references/chapter.md#depend-on-a-plugin-from-another-marketplace)
-    - [Test a plugin and its dependency locally](references/chapter.md#test-a-plugin-and-its-dependency-locally)
-    - [Create a release tag](references/chapter.md#create-a-release-tag)
-    - [Constrain a dependency that has a non-git source](references/chapter.md#constrain-a-dependency-that-has-a-non-git-source)
   - [How dependencies behave for your users](references/chapter.md#how-dependencies-behave-for-your-users)
-    - [How a constraint resolves against tags](references/chapter.md#how-a-constraint-resolves-against-tags)
-    - [Confirm the resolved version](references/chapter.md#confirm-the-resolved-version)
-    - [Combine constraints from several plugins](references/chapter.md#combine-constraints-from-several-plugins)
   - [See also](references/chapter.md#see-also)

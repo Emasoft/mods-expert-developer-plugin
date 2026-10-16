@@ -10,7 +10,7 @@ metadata:
 
 ## Overview
 
-Routes reads about plugins security and trust to its verbatim Claude Code chapter. Consult the preserved reference for this topic.
+Routes reads about plugins security and trust to its Claude Code chapter. Consult the preserved reference for this topic.
 
 This skill is coordination-exempt: skip the ai-coord gate for its declared work.
 
@@ -39,16 +39,12 @@ Input: a task about "Understand what a plugin can do". Output: open [Understand 
 
 ## Resources
 
-Full chapter: [the chapter](references/chapter.md), with the complete PLUGINS SECURITY AND TRUST table of contents:
+Full chapter: [the chapter](references/chapter.md), with the section-level PLUGINS SECURITY AND TRUST table of contents:
 
 - [Plugin security and trust](references/chapter.md#plugin-security-and-trust)
   - [Understand what a plugin can do](references/chapter.md#understand-what-a-plugin-can-do)
-    - [Official marketplace names](references/chapter.md#official-marketplace-names)
   - [Review a plugin before you install](references/chapter.md#review-a-plugin-before-you-install)
-    - [Remove a plugin you no longer trust](references/chapter.md#remove-a-plugin-you-no-longer-trust)
   - [Recognize when Claude Code refuses or warns](references/chapter.md#recognize-when-claude-code-refuses-or-warns)
-    - [Trust warning before you install](references/chapter.md#trust-warning-before-you-install)
-    - [Untrusted marketplace sources and failed integrity checks](references/chapter.md#untrusted-marketplace-sources-and-failed-integrity-checks)
   - [Enforce plugin controls for your organization](references/chapter.md#enforce-plugin-controls-for-your-organization)
   - [Find plugins in telemetry](references/chapter.md#find-plugins-in-telemetry)
   - [Related Docs](references/chapter.md#related-docs)

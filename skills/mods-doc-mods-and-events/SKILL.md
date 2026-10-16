@@ -10,7 +10,7 @@ metadata:
 
 ## Overview
 
-Routes reads about mods and events to its verbatim Claude Code chapter. Consult the preserved reference for this topic.
+Routes reads about mods and events to its Claude Code chapter. Consult the preserved reference for this topic.
 
 This skill is coordination-exempt: skip the ai-coord gate for its declared work.
 
@@ -39,22 +39,10 @@ Input: a task about "How a hook handles an event". Output: open [How a hook hand
 
 ## Resources
 
-Full chapter: [the chapter](references/chapter.md), with the complete MODS AND EVENTS table of contents:
+Full chapter: [the chapter](references/chapter.md), with the section-level MODS AND EVENTS table of contents:
 
 - [React to events with a mod](references/chapter.md#react-to-events-with-a-mod)
   - [How a hook handles an event](references/chapter.md#how-a-hook-handles-an-event)
-    - [Observe an event](references/chapter.md#observe-an-event)
-    - [Rewrite an event](references/chapter.md#rewrite-an-event)
-    - [Answer an event](references/chapter.md#answer-an-event)
-    - [Filter which events a hook handles](references/chapter.md#filter-which-events-a-hook-handles)
   - [Hook what Claude is doing](references/chapter.md#hook-what-claude-is-doing)
-    - [Guard or change a tool call](references/chapter.md#guard-or-change-a-tool-call)
-      - [Hold a tool call until the user decides](references/chapter.md#hold-a-tool-call-until-the-user-decides)
-      - [Approve or refuse a tool call before the user is asked](references/chapter.md#approve-or-refuse-a-tool-call-before-the-user-is-asked)
-    - [Rewrite or add to a prompt](references/chapter.md#rewrite-or-add-to-a-prompt)
-    - [Follow a turn](references/chapter.md#follow-a-turn)
   - [Run alongside other mods](references/chapter.md#run-alongside-other-mods)
-    - [The order mods run in](references/chapter.md#the-order-mods-run-in)
-      - [Where settings hooks run in the order](references/chapter.md#where-settings-hooks-run-in-the-order)
-    - [Handle a hook that fails](references/chapter.md#handle-a-hook-that-fails)
   - [Related Topics](references/chapter.md#related-topics)

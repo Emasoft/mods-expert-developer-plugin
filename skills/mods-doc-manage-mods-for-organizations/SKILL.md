@@ -10,7 +10,7 @@ metadata:
 
 ## Overview
 
-Routes reads about manage mods for organizations to its verbatim Claude Code chapter. Consult the preserved reference for this topic.
+Routes reads about manage mods for organizations to its Claude Code chapter. Consult the preserved reference for this topic.
 
 This skill is coordination-exempt: skip the ai-coord gate for its declared work.
 
@@ -39,19 +39,12 @@ Input: a task about "Stop user-installed mods from loading". Output: open [Stop 
 
 ## Resources
 
-Full chapter: [the chapter](references/chapter.md), with the complete MANAGE MODS FOR ORGANIZATIONS table of contents:
+Full chapter: [the chapter](references/chapter.md), with the section-level MANAGE MODS FOR ORGANIZATIONS table of contents:
 
 - [Manage mods for your organization](references/chapter.md#manage-mods-for-your-organization)
   - [Stop user-installed mods from loading](references/chapter.md#stop-user-installed-mods-from-loading)
   - [Know what happens by default](references/chapter.md#know-what-happens-by-default)
-    - [Know which controls still apply](references/chapter.md#know-which-controls-still-apply)
   - [Decide whether to leave mods on](references/chapter.md#decide-whether-to-leave-mods-on)
-    - [Review what a mod can do](references/chapter.md#review-what-a-mod-can-do)
   - [Choose how much to allow](references/chapter.md#choose-how-much-to-allow)
-    - [Allow only your organization's mods](references/chapter.md#allow-only-your-organizations-mods)
-    - [Apply your plugin controls to mods](references/chapter.md#apply-your-plugin-controls-to-mods)
-    - [Set options on the built-in guard](references/chapter.md#set-options-on-the-built-in-guard)
   - [Run your organization's own mods](references/chapter.md#run-your-organizations-own-mods)
-    - [Enforce a policy with a mod of your own](references/chapter.md#enforce-a-policy-with-a-mod-of-your-own)
-      - [Refuse mods when your check fails](references/chapter.md#refuse-mods-when-your-check-fails)
   - [Related Docs](references/chapter.md#related-docs)

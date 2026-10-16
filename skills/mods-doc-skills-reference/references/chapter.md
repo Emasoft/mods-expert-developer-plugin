@@ -4,51 +4,12 @@
 
 - [Extend Claude with skills](#extend-claude-with-skills)
   - [Bundled skills](#bundled-skills)
-    - [Check your setup with `/doctor`](#check-your-setup-with-doctor)
-    - [Run and verify your app](#run-and-verify-your-app)
-    - [Run your checks before each commit](#run-your-checks-before-each-commit)
-    - [Work on Claude API projects](#work-on-claude-api-projects)
   - [Getting started](#getting-started)
-    - [Create your first skill](#create-your-first-skill)
-    - [Resolve skills that share a name](#resolve-skills-that-share-a-name)
-      - [Where synced skills load](#where-synced-skills-load)
-      - [When a synced skill name matches another command](#when-a-synced-skill-name-matches-another-command)
-      - [How Claude Code handles the frontmatter of a synced skill](#how-claude-code-handles-the-frontmatter-of-a-synced-skill)
-      - [How Claude Code handles the body of a synced skill](#how-claude-code-handles-the-body-of-a-synced-skill)
-    - [Remove a skill](#remove-a-skill)
   - [Configure skills](#configure-skills)
-    - [Types of skill content](#types-of-skill-content)
-    - [Frontmatter reference](#frontmatter-reference)
-      - [Using skill frontmatter outside Claude Code](#using-skill-frontmatter-outside-claude-code)
-      - [How a skill gets its command name](#how-a-skill-gets-its-command-name)
-      - [Available string substitutions](#available-string-substitutions)
-    - [Add supporting files](#add-supporting-files)
-    - [Control who invokes a skill](#control-who-invokes-a-skill)
-      - [Where you write the skill's name](#where-you-write-the-skills-name)
-    - [Skill content lifecycle](#skill-content-lifecycle)
-    - [Pre-approve tools for a skill](#pre-approve-tools-for-a-skill)
-      - [When only managed permission rules apply](#when-only-managed-permission-rules-apply)
-    - [Pass arguments to skills](#pass-arguments-to-skills)
   - [Advanced patterns](#advanced-patterns)
-    - [Inject dynamic context](#inject-dynamic-context)
-      - [How injected commands run](#how-injected-commands-run)
-      - [When an injected command fails](#when-an-injected-command-fails)
-      - [Permission checks on injected commands](#permission-checks-on-injected-commands)
-    - [Run skills in a subagent](#run-skills-in-a-subagent)
-      - [Example: Research skill using Explore agent](#example-research-skill-using-explore-agent)
-    - [Restrict Claude's skill access](#restrict-claudes-skill-access)
-    - [Override skill visibility from settings](#override-skill-visibility-from-settings)
-    - [Find unused skills](#find-unused-skills)
   - [Evaluate and iterate on a skill](#evaluate-and-iterate-on-a-skill)
-    - [Run evals with skill-creator](#run-evals-with-skill-creator)
   - [Share skills](#share-skills)
-    - [Generate visual output](#generate-visual-output)
   - [Troubleshooting](#troubleshooting)
-    - [Skill not triggering](#skill-not-triggering)
-    - [Skill triggers too often](#skill-triggers-too-often)
-    - [Claude stops following a skill](#claude-stops-following-a-skill)
-    - [Skill descriptions are cut short](#skill-descriptions-are-cut-short)
-    - [Personal skills disappeared](#personal-skills-disappeared)
   - [Related resources](#related-resources)
 
 > ## Documentation Index
@@ -577,7 +538,7 @@ my-skill/
     └── helper.py (utility script - executed, not loaded)
 ```
 
-Reference supporting files from `SKILL.md` so Claude knows what each file contains and when to load it:
+When you write a `SKILL.md`, link its supporting files from the body so Claude knows what each file contains and when to load it:
 
 ```markdown theme={null}
 ## Additional resources

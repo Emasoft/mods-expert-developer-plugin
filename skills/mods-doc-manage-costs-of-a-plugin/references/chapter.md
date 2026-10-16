@@ -4,16 +4,8 @@
 
 - [Measure plugin cost and usage](#measure-plugin-cost-and-usage)
   - [Measure what a plugin costs](#measure-what-a-plugin-costs)
-    - [Lower the always-on figure](#lower-the-always-on-figure)
-    - [Cost shown to users before install](#cost-shown-to-users-before-install)
   - [Check whether a plugin is used](#check-whether-a-plugin-is-used)
-    - [Not used recently in `/plugin`](#not-used-recently-in-plugin)
-    - [Find skills that never run](#find-skills-that-never-run)
-    - [Unused plugins in `/doctor`](#unused-plugins-in-doctor)
-    - [Usage share in `/usage`](#usage-share-in-usage)
   - [Measure across a fleet](#measure-across-a-fleet)
-    - [Redacted plugin names in your backend](#redacted-plugin-names-in-your-backend)
-    - [Query the Analytics API](#query-the-analytics-api)
   - [Related Docs](#related-docs)
 
 > ## Documentation Index

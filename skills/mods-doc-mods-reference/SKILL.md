@@ -10,7 +10,7 @@ metadata:
 
 ## Overview
 
-Routes reads about mods reference to its verbatim Claude Code chapter. Consult the preserved reference for this topic.
+Routes reads about mods reference to its Claude Code chapter. Consult the preserved reference for this topic.
 
 This skill is coordination-exempt: skip the ai-coord gate for its declared work.
 
@@ -39,13 +39,12 @@ Input: a task about "The hook function". Output: open [The hook function](refere
 
 ## Resources
 
-Full chapter: [the chapter](references/chapter.md), with the complete MODS REFERENCE table of contents:
+Full chapter: [the chapter](references/chapter.md), with the section-level MODS REFERENCE table of contents:
 
 - [Files](references/chapter.md#files)
 - [The hook function](references/chapter.md#the-hook-function)
 - [Events](references/chapter.md#events)
   - [Tools](references/chapter.md#tools)
-    - [Agent and organization fields on `tool.check`](references/chapter.md#agent-and-organization-fields-on-toolcheck)
   - [Prompts and what Claude reads](references/chapter.md#prompts-and-what-claude-reads)
   - [Commands and configuration](references/chapter.md#commands-and-configuration)
   - [Turns](references/chapter.md#turns)

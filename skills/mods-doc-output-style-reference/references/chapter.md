@@ -4,11 +4,6 @@
 
 - [Output styles](#output-styles)
   - [Built-in output styles](#built-in-output-styles)
-    - [Default](#default)
-    - [Proactive](#proactive)
-    - [Concise](#concise)
-    - [Explanatory](#explanatory)
-    - [Learning](#learning)
   - [Change your output style](#change-your-output-style)
   - [Create a custom output style](#create-a-custom-output-style)
   - [Choose between an output style and other features](#choose-between-an-output-style-and-other-features)

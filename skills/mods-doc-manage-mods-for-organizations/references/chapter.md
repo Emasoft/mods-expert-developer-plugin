@@ -5,16 +5,9 @@
 - [Manage mods for your organization](#manage-mods-for-your-organization)
   - [Stop user-installed mods from loading](#stop-user-installed-mods-from-loading)
   - [Know what happens by default](#know-what-happens-by-default)
-    - [Know which controls still apply](#know-which-controls-still-apply)
   - [Decide whether to leave mods on](#decide-whether-to-leave-mods-on)
-    - [Review what a mod can do](#review-what-a-mod-can-do)
   - [Choose how much to allow](#choose-how-much-to-allow)
-    - [Allow only your organization's mods](#allow-only-your-organizations-mods)
-    - [Apply your plugin controls to mods](#apply-your-plugin-controls-to-mods)
-    - [Set options on the built-in guard](#set-options-on-the-built-in-guard)
   - [Run your organization's own mods](#run-your-organizations-own-mods)
-    - [Enforce a policy with a mod of your own](#enforce-a-policy-with-a-mod-of-your-own)
-      - [Refuse mods when your check fails](#refuse-mods-when-your-check-fails)
   - [Related Docs](#related-docs)
 
 > ## Documentation Index

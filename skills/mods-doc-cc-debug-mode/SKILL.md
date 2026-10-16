@@ -10,7 +10,7 @@ metadata:
 
 ## Overview
 
-Routes reads about claude code debug mode to its verbatim Claude Code chapter. Consult the preserved reference for this topic.
+Routes reads about claude code debug mode to its Claude Code chapter. Consult the preserved reference for this topic.
 
 This skill is coordination-exempt: skip the ai-coord gate for its declared work.
 
@@ -39,7 +39,7 @@ Input: a task about "See what loaded into context". Output: open [See what loade
 
 ## Resources
 
-Full chapter: [the chapter](references/chapter.md), with the complete CLAUDE CODE DEBUG MODE table of contents:
+Full chapter: [the chapter](references/chapter.md), with the section-level CLAUDE CODE DEBUG MODE table of contents:
 
 - [Debug your configuration](references/chapter.md#debug-your-configuration)
   - [See what loaded into context](references/chapter.md#see-what-loaded-into-context)

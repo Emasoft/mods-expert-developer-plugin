@@ -7,9 +7,6 @@
   - [Connect your tools](#connect-your-tools)
   - [Work when you are away from your terminal](#work-when-you-are-away-from-your-terminal)
   - [Related resources](#related-resources)
-    - [Platforms](#platforms)
-    - [Integrations](#integrations)
-    - [Remote access](#remote-access)
 
 > ## Documentation Index
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt

@@ -10,7 +10,7 @@ metadata:
 
 ## Overview
 
-Routes reads about mods overview to its verbatim Claude Code chapter. Consult the preserved reference for this topic.
+Routes reads about mods overview to its Claude Code chapter. Consult the preserved reference for this topic.
 
 This skill is coordination-exempt: skip the ai-coord gate for its declared work.
 
@@ -39,7 +39,7 @@ Input: a task about "Get a mod". Output: open [Get a mod](references/chapter.md#
 
 ## Resources
 
-Full chapter: [the chapter](references/chapter.md), with the complete MODS OVERVIEW table of contents:
+Full chapter: [the chapter](references/chapter.md), with the section-level MODS OVERVIEW table of contents:
 
 - [What a mod can do](references/chapter.md#what-a-mod-can-do)
 - [Get a mod](references/chapter.md#get-a-mod)

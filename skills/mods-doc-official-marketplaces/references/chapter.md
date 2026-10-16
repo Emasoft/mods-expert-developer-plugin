@@ -4,10 +4,8 @@
 
 - [Anthropic's marketplaces](#anthropics-marketplaces)
   - [Anthropic's marketplaces](#anthropics-marketplaces-1)
-    - [The demo marketplace in `anthropics/claude-code`](#the-demo-marketplace-in-anthropicsclaude-code)
   - [Find plugins in the official marketplace](#find-plugins-in-the-official-marketplace)
   - [Browse and install from Anthropic's marketplaces](#browse-and-install-from-anthropics-marketplaces)
-    - [Add the community or demo marketplace](#add-the-community-or-demo-marketplace)
   - [Third-party marketplaces](#third-party-marketplaces)
   - [Related Docs](#related-docs)
 

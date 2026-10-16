@@ -10,7 +10,7 @@ metadata:
 
 ## Overview
 
-Routes reads about headless mode reference to its verbatim Claude Code chapter. Consult the preserved reference for this topic.
+Routes reads about headless mode reference to its Claude Code chapter. Consult the preserved reference for this topic.
 
 This skill is coordination-exempt: skip the ai-coord gate for its declared work.
 
@@ -39,27 +39,9 @@ Input: a task about "Basic usage". Output: open [Basic usage](references/chapter
 
 ## Resources
 
-Full chapter: [the chapter](references/chapter.md), with the complete HEADLESS MODE REFERENCE table of contents:
+Full chapter: [the chapter](references/chapter.md), with the section-level HEADLESS MODE REFERENCE table of contents:
 
 - [Run Claude Code programmatically](references/chapter.md#run-claude-code-programmatically)
   - [Basic usage](references/chapter.md#basic-usage)
-    - [Start faster with bare mode](references/chapter.md#start-faster-with-bare-mode)
-    - [Background tasks at exit](references/chapter.md#background-tasks-at-exit)
-    - [Stop a run with SIGTERM](references/chapter.md#stop-a-run-with-sigterm)
-    - [If the working directory is deleted](references/chapter.md#if-the-working-directory-is-deleted)
   - [Examples](references/chapter.md#examples)
-    - [Pipe data through Claude](references/chapter.md#pipe-data-through-claude)
-    - [Add Claude to a build script](references/chapter.md#add-claude-to-a-build-script)
-    - [Get structured output](references/chapter.md#get-structured-output)
-    - [Stream responses](references/chapter.md#stream-responses)
-      - [Follow subagent messages](references/chapter.md#follow-subagent-messages)
-      - [Handle API retries](references/chapter.md#handle-api-retries)
-      - [Read session metadata](references/chapter.md#read-session-metadata)
-      - [Fail CI when a plugin or MCP server doesn't load](references/chapter.md#fail-ci-when-a-plugin-or-mcp-server-doesnt-load)
-      - [Track plugin installs](references/chapter.md#track-plugin-installs)
-    - [Auto-approve tools](references/chapter.md#auto-approve-tools)
-    - [Turn off permission prompts in unattended runs](references/chapter.md#turn-off-permission-prompts-in-unattended-runs)
-    - [Create a commit](references/chapter.md#create-a-commit)
-    - [Customize the system prompt](references/chapter.md#customize-the-system-prompt)
-    - [Continue conversations](references/chapter.md#continue-conversations)
   - [Next steps](references/chapter.md#next-steps)
