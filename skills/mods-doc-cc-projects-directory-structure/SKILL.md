@@ -48,5 +48,5 @@ Full chapter: [the chapter](references/chapter.md), with the section-level CLAUD
   - [File reference](references/chapter.md#file-reference)
   - [Frontmatter fields by file](references/chapter.md#frontmatter-fields-by-file)
   - [Troubleshoot configuration](references/chapter.md#troubleshoot-configuration)
-  - [Application data](references/chapter.md#application-data)
+  - [Application data storage retention and cleanup](references/chapter.md#application-data-storage-retention-and-cleanup)
   - [Related resources](references/chapter.md#related-resources)

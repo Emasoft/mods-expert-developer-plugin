@@ -9,7 +9,7 @@
   - [File reference](#file-reference)
   - [Frontmatter fields by file](#frontmatter-fields-by-file)
   - [Troubleshoot configuration](#troubleshoot-configuration)
-  - [Application data](#application-data)
+  - [Application data storage retention and cleanup](#application-data-storage-retention-and-cleanup)
   - [Related resources](#related-resources)
 
 > ## Documentation Index
@@ -28,7 +28,7 @@ Most users only edit `CLAUDE.md` and `settings.json`. If your repository already
 
 #### Explore the directory
 
-When you need to know where a Claude Code file belongs, what it does, and when Claude Code loads it, use the directory map below. Each entry gives its badge (`committed` = share through git, `gitignored` = personal to the project, `local` = lives in your home directory and is never committed), when it loads, and what to put in it.
+When you need to know where a Claude Code file belongs, what it does, and when Claude Code loads it, use the directory map below. Each entry gives its badge (`committed` = share through git, `gitignored` = personal to the project, `local` = lives in your home directory and is never committed; `Claude writes` = Claude creates and maintains the file, you do not write it), when it loads, and what to put in it.
 
 ```text
 your-project/
@@ -65,30 +65,370 @@ your-project/
 
 Project files:
 
-* `CLAUDE.md`: project-specific instructions Claude reads every session (conventions, common commands, architectural context). Target under 200 lines; longer files still load in full but may reduce adherence. If something matters only for specific tasks, put it in a skill or a path-scoped rule so it loads only when needed. List the commands run most (build, test, format). It also works at `.claude/CLAUDE.md` to keep the project root clean. If the repository already has an `AGENTS.md` for other coding agents, Claude Code can read that in place of a `CLAUDE.md`. Example content: a `# Project conventions` heading with `## Commands` (`npm run build`, `npm test`, `npm run lint`), `## Stack` (TypeScript strict mode, React 19 functional components) and `## Rules` (named exports only, tests next to source as `foo.ts` -> `foo.test.ts`, API routes return `{ data, error }`).
-* `.mcp.json`: project-scoped Model Context Protocol servers shared with the team. It lives at the project root, not inside `.claude/`. Servers connect when the session begins; tool schemas are deferred by default and load on demand through tool search. Reference secrets as environment variables such as `${NOTION_TOKEN}` so the token never lands in the file. Servers only one user needs go in `~/.claude.json` (run `claude mcp add --scope user`). Example: a `mcpServers.notion` entry with `command: "npx"`, `args: ["-y", "@notionhq/notion-mcp-server"]` and `env.NOTION_TOKEN` set to `${NOTION_TOKEN}`.
-* `.worktreeinclude`: lists gitignored files (`.gitignore` syntax) to copy from the main repository into each new worktree, because worktrees are fresh checkouts and untracked files such as `.env` are missing by default. Only files that match a pattern and are also gitignored get copied. Read when Claude creates a worktree through `--worktree`, the `EnterWorktree` tool, or subagent `isolation: worktree`. It lives at the project root and is Git-only: with a WorktreeCreate hook for a different VCS it is not read, so copy files inside the hook script instead. It also applies to parallel sessions in the desktop app. Example: `.env`, `.env.local`, `config/secrets.json` with `#` comments.
-* `.claude/settings.json`: settings Claude Code enforces directly, whether or not Claude follows them (unlike CLAUDE.md, which is guidance). Keys include `permissions` (allow, deny or prompt before specific tools or commands), `hooks` (run scripts on events such as before a tool call or after a file edit), `statusLine`, `model`, `env` and `outputStyle`. It overrides global `~/.claude/settings.json`; local settings, CLI flags and managed settings override it. Bash permission patterns support wildcards: `Bash(npm test *)` matches any command starting with `npm test`. Array settings such as `permissions.allow` combine across all scopes; scalar settings such as `model` use the most specific value. Example: allow `Bash(npm test *)` and `Bash(npm run *)`, deny `Bash(rm -rf *)`, and a `PostToolUse` hook with matcher `Edit|Write` running `jq -r '.tool_input.file_path' | xargs npx prettier --write`.
-* `.claude/settings.local.json`: personal overrides with the same schema, the highest of the user-editable settings files (CLI flags and managed settings still win). When Claude Code saves a setting to it in a repository that does not already ignore it, it adds `**/.claude/settings.local.json` to your global git excludes file: `core.excludesFile` from your global git config when set to an absolute or `~`-prefixed path, otherwise `$XDG_CONFIG_HOME/git/ignore`, or `~/.config/git/ignore`. To share the ignore rule with the team, also add it to the project `.gitignore`. Example: `permissions.allow` of `Bash(docker *)`.
-* `.claude/rules/`: project instructions split into topic files. A rule without `paths:` frontmatter loads at session start like CLAUDE.md; a rule with `paths:` globs loads only when Claude reads, writes or edits a matching file. Rules are guidance, not enforced configuration; for guaranteed behavior use hooks or permissions. Subdirectories work (`.claude/rules/frontend/react.md` is discovered automatically). When CLAUDE.md approaches 200 lines, start splitting into rules. Examples: `testing.md` with `paths:` of `**/*.test.ts` and `**/*.test.tsx` (descriptive test names, mock external dependencies, clean up side effects in afterEach); `api-design.md` with `paths:` of `src/api/**/*.ts` (validate input with Zod schemas, return `{ data: T } | { error: string }`, rate limit public endpoints).
-* `.claude/skills/`: each skill is a folder with a `SKILL.md` plus any supporting files, invoked with `/skill-name` or when Claude matches the task to the skill. Use `disable-model-invocation: true` for user-only workflows such as `/deploy`, or `user-invocable: false` to hide a skill from the `/` menu while Claude can still invoke it. Skills accept arguments: `/deploy staging` passes "staging" as `$ARGUMENTS`; use `$0`, `$1` for positional access. The `description` frontmatter determines when Claude auto-invokes the skill. Bundle reference docs next to `SKILL.md`; Claude knows the skill directory path and can read supporting files when they are mentioned, and scripts in injection commands can use the `${CLAUDE_SKILL_DIR}` placeholder. Example `security-review/SKILL.md`: frontmatter with `description`, `disable-model-invocation: true` and `argument-hint: <branch-or-path>`, a `## Diff to review` heading, the line `` !`git diff $ARGUMENTS` `` (a `` !`...` `` line runs a shell command and injects its output into the prompt), an audit list, and a pointer to `checklist.md` in the same directory, which Claude reads on demand.
-* `.claude/commands/`: a file at `commands/deploy.md` creates `/deploy` the same way a skill at `skills/deploy/SKILL.md` does, and both can be auto-invoked by Claude. Commands and skills are now the same mechanism; for new workflows use skills (a skill can bundle supporting files). If a skill and a command share a name, the skill takes precedence. Use `$ARGUMENTS` for parameters (`/fix-issue 123`). Example `fix-issue.md`: frontmatter `argument-hint: <issue-number>`, then the line `` !`gh issue view $ARGUMENTS` `` and a numbered fix procedure.
-* `.claude/output-styles/`: project-scoped output styles, only if the team shares one (most live in `~/.claude/output-styles/`). Files are read at startup; the style selected with `outputStyle` applies to every response.
-* `.claude/agents/`: each markdown file defines a subagent with its own system prompt, tool access and optionally its own model, running in a fresh context window separate from the main session. Restrict tool access with the `tools:` frontmatter field. Typing `@` and picking an agent from the autocomplete delegates directly. Example `code-reviewer.md`: frontmatter `name: code-reviewer`, a `description`, and `tools: Read, Grep, Glob` (read-only); the body is the subagent's system prompt.
-* `.claude/workflows/`: each `.js` file is a dynamic workflow, a script the runtime executes to spawn and coordinate many subagents. Workflows are written by Claude and saved here from `/workflows` (press `s` on a run) rather than authored from scratch. Loaded at startup; each file becomes a `/<name>` command. A project workflow takes precedence over a personal one in `~/.claude/workflows/` with the same name.
-* `.claude/agent-memory/`: subagents with `memory: project` in their frontmatter get a dedicated directory here; the first 200 lines (capped at 25KB) of `MEMORY.md` are loaded into the subagent system prompt when it runs. It is created only for subagents that set `memory:`, and the subagent writes `<agent-name>/MEMORY.md` itself (for example `# code-reviewer memory` with `## Patterns seen` and `## Recurring issues`). It is distinct from the main session auto memory at `~/.claude/projects/`. To keep memory out of version control use `memory: local`, which writes to `.claude/agent-memory-local/`; for cross-project memory use `memory: user`, which writes to `~/.claude/agent-memory/`.
+* `CLAUDE.md` (committed): project-specific instructions Claude reads every session, loaded into context at the start of every session. Put conventions, common commands and architectural context here so Claude operates with the same assumptions your team does. Target under 200 lines; longer files still load in full but may reduce adherence. CLAUDE.md loads into every session, so if something matters only for specific tasks, move it to a skill or a path-scoped rule so it loads only when needed. List the commands run most (build, test, format) so Claude knows them without being told each time. Run `/memory` to open and edit CLAUDE.md from within a session. It also works at `.claude/CLAUDE.md` to keep the project root clean. If the repository already has an `AGENTS.md` for other coding agents, Claude Code can read that in place of a `CLAUDE.md`.
+
+  Example for a TypeScript and React project: it lists the build and test commands, the framework conventions Claude should follow, and project-specific rules such as export style and file layout.
+
+  ```markdown
+  # Project conventions
+
+  ## Commands
+  - Build: `npm run build`
+  - Test: `npm test`
+  - Lint: `npm run lint`
+
+  ## Stack
+  - TypeScript with strict mode
+  - React 19, functional components only
+
+  ## Rules
+  - Named exports, never default exports
+  - Tests live next to source: `foo.ts` -> `foo.test.ts`
+  - All API routes return `{ data, error }` shape
+  ```
+
+* `.mcp.json` (committed): project-scoped Model Context Protocol (MCP) servers that give Claude access to external tools (databases, APIs, browsers and more), shared with the whole team. It lives at the project root, not inside `.claude/`. Servers connect when the session begins; tool schemas are deferred by default and load on demand through tool search. Reference secrets as environment variables such as `${NOTION_TOKEN}` so the token never lands in the file. Personal servers you want to keep to yourself go in `~/.claude.json` instead: run `claude mcp add --scope user`, which writes to `~/.claude.json` instead of `.mcp.json`.
+
+  Example: it configures the Notion MCP server so Claude can read and update pages in the workspace. The `${NOTION_TOKEN}` reference is read from your shell environment when Claude Code starts the server.
+
+  ```json
+  {
+    "mcpServers": {
+      "notion": {
+        "command": "npx",
+        "args": ["-y", "@notionhq/notion-mcp-server"],
+        "env": {
+          "NOTION_TOKEN": "${NOTION_TOKEN}"
+        }
+      }
+    }
+  }
+  ```
+
+* `.worktreeinclude` (committed): lists gitignored files (`.gitignore` syntax) to copy from the main repository into each new worktree, because worktrees are fresh checkouts and untracked files such as `.env` are missing by default. Only files that match a pattern and are also gitignored get copied, so tracked files are never duplicated. Read when Claude creates a git worktree through `--worktree`, the `EnterWorktree` tool, or subagent `isolation: worktree`. It lives at the project root, not inside `.claude/`, and is Git-only: with a WorktreeCreate hook for a different VCS it is not read, so copy files inside the hook script instead. It also applies to parallel sessions in the desktop app.
+
+  Example: it copies local environment files and a secrets config into every worktree Claude creates. Comments start with `#` and blank lines are ignored, same as `.gitignore`.
+
+  ```text
+  # Local environment
+  .env
+  .env.local
+
+  # API credentials
+  config/secrets.json
+  ```
+
+* `.claude/` (folder): everything Claude Code reads that is specific to this project. If you use git, commit most files here so the team shares them; a few, like `settings.local.json`, are gitignored when Claude Code saves settings to them. Each entry's badge shows which.
+* `.claude/settings.json` (committed): settings Claude Code applies directly, whether or not Claude follows them (unlike CLAUDE.md, which is guidance). Permissions control which commands and tools Claude can use; hooks run your scripts at specific points in a session. It overrides global `~/.claude/settings.json`; local settings, CLI flags and managed settings override it. Keys include:
+  * `permissions`: allow, deny or prompt before Claude uses specific tools or commands
+  * `hooks`: run your own scripts on events such as before a tool call or after a file edit
+  * `statusLine`: customize the line shown at the bottom while Claude works
+  * `model`: pick a default model for this project
+  * `env`: environment variables set in every session
+  * `outputStyle`: select a custom output style from `output-styles/`
+
+  Bash permission patterns support wildcards: `Bash(npm test *)` matches any command starting with `npm test`. Array settings such as `permissions.allow` combine across all scopes; scalar settings such as `model` use the most specific value.
+
+  Example: it allows `npm test` and `npm run` commands without prompting, blocks `rm -rf`, and runs Prettier on files after Claude edits or writes them.
+
+  ```json
+  {
+    "permissions": {
+      "allow": [
+        "Bash(npm test *)",
+        "Bash(npm run *)"
+      ],
+      "deny": [
+        "Bash(rm -rf *)"
+      ]
+    },
+    "hooks": {
+      "PostToolUse": [{
+        "matcher": "Edit|Write",
+        "hooks": [{
+          "type": "command",
+          "command": "jq -r '.tool_input.file_path' | xargs npx prettier --write"
+        }]
+      }]
+    }
+  }
+  ```
+
+* `.claude/settings.local.json` (gitignored): your personal settings overrides for this project, taking precedence over the project defaults; the highest of the user-editable settings files (CLI flags and managed settings still win). Same JSON format and schema as `settings.json`: array settings such as `permissions.allow` combine across scopes; scalar settings such as `model` use the local value. Use it when you need different permissions or defaults than the team config. When Claude Code saves a setting to it in a repository that does not already ignore it, it adds `**/.claude/settings.local.json` to your global git excludes file: `core.excludesFile` from your global git config when set to an absolute or `~`-prefixed path, otherwise `$XDG_CONFIG_HOME/git/ignore`, or `~/.config/git/ignore`. To share the ignore rule with the team, also add it to the project `.gitignore`.
+
+  Example: it adds Docker permissions on top of whatever the team `settings.json` allows.
+
+  ```json
+  {
+    "permissions": {
+      "allow": [
+        "Bash(docker *)"
+      ]
+    }
+  }
+  ```
+
+* `.claude/rules/`: topic-scoped project instructions split into files, optionally gated by file paths. A rule without `paths:` frontmatter loads at session start like CLAUDE.md; a rule with `paths:` globs loads only when Claude reads, writes or edits a matching file (for other files it is not loaded into context). Like CLAUDE.md, rules are guidance Claude reads, not configuration Claude Code enforces; for guaranteed behavior use hooks or permissions. Use `paths:` frontmatter with globs to scope rules to directories or file types. Subdirectories work (`.claude/rules/frontend/react.md` is discovered automatically). When CLAUDE.md approaches 200 lines, start splitting into rules. Files inside are committed.
+
+  Example `rules/testing.md` (test conventions scoped to test files): the `paths:` globs match anything ending in `.test.ts` or `.test.tsx`.
+
+  ```markdown
+  ---
+  paths:
+    - "**/*.test.ts"
+    - "**/*.test.tsx"
+  ---
+
+  # Testing Rules
+
+  - Use descriptive test names: "should [expected] when [condition]"
+  - Mock external dependencies, not internal modules
+  - Clean up side effects in afterEach
+  ```
+
+  Example `rules/api-design.md` (API conventions scoped to backend code): the `paths:` glob matches files under `src/api/`, so these conventions load only when Claude works on API routes.
+
+  ```markdown
+  ---
+  paths:
+    - "src/api/**/*.ts"
+  ---
+
+  # API Design Rules
+
+  - All endpoints must validate input with Zod schemas
+  - Return shape: { data: T } | { error: string }
+  - Rate limit all public endpoints
+  ```
+
+* `.claude/skills/`: reusable prompts you or Claude invoke by name. Each skill is a folder with a `SKILL.md` plus any supporting files, invoked with `/skill-name` or when Claude matches the task to the skill. By default both you and Claude can invoke a skill. Use `disable-model-invocation: true` for user-only workflows such as `/deploy`, or `user-invocable: false` to hide a skill from the `/` menu while Claude can still invoke it. Skills accept arguments: `/deploy staging` passes "staging" as `$ARGUMENTS`; use `$0`, `$1` for positional access. The `description` frontmatter determines when Claude auto-invokes the skill. Bundle reference docs next to `SKILL.md`; Claude knows the skill directory path and can read supporting files when they are mentioned. Files inside are committed.
+  * `security-review/` (a skill bundling `SKILL.md` with supporting files)
+    * `SKILL.md` (committed; entrypoint with trigger, invocability and instructions): loaded when the user types `/security-review <target>`; Claude cannot auto-invoke this skill because it uses `disable-model-invocation: true`, so only you can trigger it. The `` !`...` `` line runs a shell command and injects its output into the prompt; `$ARGUMENTS` substitutes whatever you typed after the skill name. Claude sees the skill directory path, so mentioning a bundled file such as `checklist.md` lets Claude read it.
+
+      ```markdown
+      ---
+      description: Reviews code changes for security vulnerabilities, authentication gaps, and injection risks
+      disable-model-invocation: true
+      argument-hint: <branch-or-path>
+      ---
+
+      ## Diff to review
+
+      !`git diff $ARGUMENTS`
+
+      Audit the changes above for:
+
+      1. Injection vulnerabilities (SQL, XSS, command)
+      2. Authentication and authorization gaps
+      3. Hardcoded secrets or credentials
+
+      Use checklist.md in this skill directory for the full review checklist.
+
+      Report findings with severity ratings and remediation steps.
+      ```
+
+    * `checklist.md` (committed; supporting file bundled with the skill): Claude reads it on demand while running the skill. Skills can bundle any supporting files (reference docs, templates, scripts); the skill directory path is prepended to `SKILL.md`, so Claude can read bundled files by name. For scripts in bash injection commands, use the `${CLAUDE_SKILL_DIR}` placeholder.
+
+      ```markdown
+      # Security Review Checklist
+
+      ## Input Validation
+      - [ ] All user input sanitized before DB queries
+      - [ ] File upload MIME types validated
+      - [ ] Path traversal prevented on file operations
+
+      ## Authentication
+      - [ ] JWT tokens expire after 24 hours
+      - [ ] API keys stored in environment variables
+      - [ ] Passwords hashed with bcrypt or argon2
+      ```
+
+* `.claude/commands/`: single-file prompts invoked with `/name`; the user types `/command-name`. A file at `commands/deploy.md` creates `/deploy` the same way a skill at `skills/deploy/SKILL.md` does, and both can be auto-invoked by Claude. Commands and skills are now the same mechanism; for new workflows use skills (same `/name` invocation, plus you can bundle supporting files such as reference docs, templates or scripts alongside the prompt). Commands remain supported. If a skill and a command share a name, the skill takes precedence. Use `$ARGUMENTS` in the file to accept parameters (`/fix-issue 123`). Files inside are committed.
+  * `fix-issue.md` (committed; invoked as `/fix-issue <number>`): an example command for fixing a GitHub issue. Typing `/fix-issue 123` makes the `` !`...` `` line run `gh issue view 123` in your shell and inject the output into the prompt before Claude sees it. `$ARGUMENTS` substitutes whatever you typed after the command name; for positional access use `$0`, `$1` and so on.
+
+    ```markdown
+    ---
+    argument-hint: <issue-number>
+    ---
+
+    !`gh issue view $ARGUMENTS`
+
+    Investigate and fix the issue above.
+
+    1. Trace the bug to its root cause
+    2. Implement the fix
+    3. Write or update tests
+    4. Summarize what you changed and why
+    ```
+
+* `.claude/output-styles/`: project-scoped output styles, only if the team shares one, such as a review mode everyone uses (most live in `~/.claude/output-styles/`; see its entry below for the full explanation and example). Files are read at startup; the style selected with `outputStyle` applies to every response.
+* `.claude/agents/`: specialized subagents with their own context window. Each markdown file defines a subagent with its own system prompt, tool access and optionally its own model. A subagent runs in a fresh context window separate from the main session when you or Claude invoke it, keeping the main conversation clean; useful for parallel work or isolated tasks. Restrict tool access with the `tools:` frontmatter field. Typing `@` and picking an agent from the autocomplete delegates directly. Files inside are committed.
+  * `code-reviewer.md` (committed; subagent for isolated code review): Claude spawns it for review tasks, or you @-mention it from the autocomplete. The example is restricted to read-only tools: the `description` frontmatter tells Claude when to delegate to it automatically; `tools:` limits it to Read, Grep and Glob so it can inspect code but never edit. The body becomes the subagent's system prompt.
+
+    ```markdown
+    ---
+    name: code-reviewer
+    description: Reviews code for correctness, security, and maintainability
+    tools: Read, Grep, Glob
+    ---
+
+    You are a senior code reviewer. Review for:
+
+    1. Correctness: logic errors, edge cases, null handling
+    2. Security: injection, auth bypass, data exposure
+    3. Maintainability: naming, complexity, duplication
+
+    Every finding must include a concrete fix.
+    ```
+
+* `.claude/workflows/`: dynamic workflow scripts that orchestrate many subagents. Each `.js` file is a dynamic workflow, a script the runtime executes to spawn and coordinate many subagents. Workflows are written by Claude and saved here from `/workflows` (press `s` on a run) rather than authored from scratch. Loaded at startup; each file becomes a `/<name>` command. A project workflow takes precedence over a personal one in `~/.claude/workflows/` with the same name.
+* `.claude/agent-memory/` (committed; written by Claude): subagent persistent memory, separate from your main session auto memory. Subagents with `memory: project` in their frontmatter get a dedicated directory here; the first 200 lines (capped at 25KB) of `MEMORY.md` are loaded into the subagent system prompt when it runs. It is created only for subagents that set the `memory:` frontmatter field. This directory holds project-scoped subagent memory, meant to be shared with the team. It is distinct from the main session auto memory at `~/.claude/projects/` (see below): each subagent reads and writes its own `MEMORY.md`, not yours. To keep memory out of version control use `memory: local`, which writes to `.claude/agent-memory-local/`; for cross-project memory use `memory: user`, which writes to `~/.claude/agent-memory/`.
+  * `<agent-name>/` (written by Claude), containing `MEMORY.md` (committed; written by Claude): loaded into the subagent system prompt when the subagent starts. It works the same as your main auto memory: the subagent creates and updates this file itself, you do not write it. The subagent reads it at the start of each task and writes back what it learns.
+
+    ```markdown
+    # code-reviewer memory
+
+    ## Patterns seen
+    - Project uses custom Result<T, E> type, not exceptions
+    - Auth middleware expects Bearer token in Authorization header
+    - Tests use factory functions in test/factories/
+
+    ## Recurring issues
+    - Missing null checks on API responses (src/api/*)
+    - Unhandled promise rejections in background jobs
+    ```
 
 Global files (in your home directory, never committed):
 
-* `~/.claude.json`: state that does not belong in settings.json: OAuth session, per-project trust decisions (the `projects` key tracks trust-dialog acceptance and last-session metrics), personal MCP servers (user scope applies across all projects, local scope is per project but not committed), and UI toggles such as `autoConnectIde` and `externalEditorContext`. Read at session start; Claude Code writes back when settings change in `/config` or trust prompts are approved. Permission rules approved in-session go to `.claude/settings.local.json` instead. Team-shared servers go in `.mcp.json` at the project root.
-* `~/.claude/CLAUDE.md`: personal preferences for every project, loaded alongside the project CLAUDE.md at session start; when instructions conflict, project-level instructions take priority. Keep it short (response style, commit format, personal conventions).
-* `~/.claude/settings.json`: default settings for all projects, with the same keys as project `settings.json` (permissions, hooks, model, environment variables). Project `settings.json` overrides matching keys set here, unlike CLAUDE.md, where global and project files are both loaded into context rather than merged key by key.
-* `~/.claude/keybindings.json`: custom keyboard shortcuts for the interactive CLI, read at session start and hot-reloaded on edit. `/keybindings` creates or opens it with a schema reference. Ctrl+C, Ctrl+D, Ctrl+M and Caps Lock are reserved and cannot be rebound. Example: under `bindings`, a `context` of `Chat` binding `ctrl+e` to `chat:externalEditor` and `ctrl+s` to `null` (unbound).
-* `~/.claude/themes/`: each `.json` file defines a custom color theme: a built-in `base` preset plus an `overrides` map of color tokens (for example name `Dracula`, base `dark`, overrides for `claude`, `error`, `success`). Create one with `/theme` or by hand; selecting it stores `custom:<slug>` as the theme preference. Read at session start and hot-reloaded.
-* `~/.claude/projects/<project>/memory/`: auto memory, Claude's own notes per project, keyed by the repository path. On by default; toggle with `/memory` or `autoMemoryEnabled` in settings. `MEMORY.md` is the index loaded each session (first 200 lines or 25KB, whichever comes first) and points to topic files; Claude creates and updates it itself and you do not write it. Topic files such as `debugging.md`, `architecture.md` or `build-commands.md` are created when `MEMORY.md` grows long and are read on demand, not at startup. They are plain markdown that you can edit or delete. Example index: `# Memory Index` with a `## Project` list (`build-and-test.md`: npm run build (~45s), Vitest, dev server on 3001; `architecture.md`: API client singleton, refresh-token auth) and a `## Reference` list (`debugging.md`: auth token rotation and DB connection troubleshooting). Example topic file: frontmatter `name: Debugging patterns`, `type: reference`, with `## Auth Token Issues` and `## Database Connection Drops` sections.
-* `~/.claude/rules/`, `~/.claude/skills/`, `~/.claude/commands/`, `~/.claude/agents/`, `~/.claude/workflows/`: the user-level counterparts of the project folders, with the same format, available in every project. A project-level item with the same name takes precedence for workflows and output styles.
-* `~/.claude/output-styles/`: each markdown file defines an output style, a set of instructions that by default also replaces the built-in software-engineering task instructions. Select a built-in or custom style with `/output-style`, `/config`, or the `outputStyle` key in settings. Built-in styles Default, Proactive, Concise, Explanatory and Learning ship with Claude Code. Set `keep-coding-instructions: true` in frontmatter to keep the default task instructions alongside your additions. Switching styles mid-session applies from the next message; in the terminal, a style file created or edited mid-session is picked up after a restart. Example `teaching.md`: adds a "Why this approach" note after each task and leaves `TODO(human)` markers for changes under 10 lines; select it by setting `outputStyle` to the filename without `.md`, or to the `name` frontmatter field.
-* `~/.claude/agent-memory/`: persistent memory for subagents with `memory: user`, stored across all projects and loaded into the subagent system prompt when it starts. For project-scoped subagent memory see `.claude/agent-memory/`.
+* `~/.claude.json` (local only): app state and UI preferences. Holds state that does not belong in `settings.json`: OAuth session, per-project trust decisions (the `projects` key tracks trust-dialog acceptance and last-session metrics), your personal MCP servers (user scope applies across all projects, local scope is per project but not committed), and UI toggles such as `autoConnectIde` and `externalEditorContext` (these live here, not in `settings.json`). Read at session start for your preferences and MCP servers; Claude Code writes back to it when you change settings in `/config` or approve trust prompts. Mostly managed through `/config` rather than editing directly. Permission rules approved in-session go to `.claude/settings.local.json` instead. Team-shared servers go in `.mcp.json` at the project root instead.
+
+  ```json
+  {
+    "autoConnectIde": true,
+    "externalEditorContext": true,
+    "mcpServers": {
+      "my-tools": {
+        "command": "npx",
+        "args": ["-y", "@example/mcp-server"]
+      }
+    }
+  }
+  ```
+
+* `~/.claude/` (folder): your personal configuration across all projects; the global counterpart to the project `.claude/` directory. Files here apply to every project you work in and are never committed to any repository.
+* `~/.claude/CLAUDE.md` (local only): personal preferences across every project. Your global instruction file, loaded at the start of every session in every project, alongside the project CLAUDE.md, so both are in context together. When instructions conflict, project-level instructions take priority. Keep it short since it loads into context for every project; use it for preferences that apply everywhere (response style, commit format, personal conventions).
+
+  ```markdown
+  # Global preferences
+
+  - Keep explanations concise
+  - Use conventional commit format
+  - Show the terminal command to verify changes
+  - Prefer composition over inheritance
+  ```
+
+* `~/.claude/settings.json` (local only): default settings for all projects. Same keys as project `settings.json`: permissions, hooks, model, environment variables and the rest. Put settings here that you want in every project, such as permissions you always allow, a preferred model, or a notification hook that runs regardless of which project you are in. Project and local `settings.json` override any keys you also set there. This differs from CLAUDE.md, where global and project files are both loaded into context rather than merged key by key.
+
+  ```json
+  {
+    "permissions": {
+      "allow": [
+        "Bash(git log *)",
+        "Bash(git diff *)"
+      ]
+    }
+  }
+  ```
+
+* `~/.claude/keybindings.json` (local only): custom keyboard shortcuts. Rebinds keyboard shortcuts in the interactive CLI; read at session start and hot-reloaded when you edit the file. Run `/keybindings` to create or open it with a schema reference. Ctrl+C, Ctrl+D, Ctrl+M and Caps Lock are reserved and cannot be rebound.
+
+  Example: it binds `Ctrl+E` to open your external editor and unbinds `Ctrl+S` by setting it to `null`. The `context` field scopes bindings to a specific part of the CLI, here the main chat input.
+
+  ```json
+  {
+    "$schema": "https://www.schemastore.org/claude-code-keybindings.json",
+    "$docs": "https://code.claude.com/docs/en/keybindings",
+    "bindings": [
+      {
+        "context": "Chat",
+        "bindings": {
+          "ctrl+e": "chat:externalEditor",
+          "ctrl+s": null
+        }
+      }
+    ]
+  }
+  ```
+
+* `~/.claude/themes/`: custom color themes. Each `.json` file defines a custom color theme: a built-in `base` preset plus an `overrides` map of color tokens. Create one interactively with `/theme` or write the JSON by hand. Selecting a custom theme stores `custom:<slug>` as your theme preference. Read at session start and hot-reloaded when files change; listed in `/theme`.
+
+  ```json
+  {
+    "name": "Dracula",
+    "base": "dark",
+    "overrides": {
+      "claude": "#bd93f9",
+      "error": "#ff5555",
+      "success": "#50fa7b"
+    }
+  }
+  ```
+
+* `~/.claude/projects/` (written by Claude): auto memory, Claude's notes to itself, per project. Auto memory lets Claude accumulate knowledge across sessions without you writing anything: Claude saves notes as it works (build commands, debugging insights, architecture notes). Each project gets its own memory directory keyed by the repository path. On by default; toggle with `/memory` or `autoMemoryEnabled` in settings. `MEMORY.md` is loaded at session start; topic files are read on demand, not at startup. These are plain markdown: edit or delete them anytime.
+  * `<project>/memory/` (written by Claude): Claude's accumulated knowledge for one project, containing:
+    * `MEMORY.md` (local only; written by Claude): the index, first 200 lines (capped at 25KB, whichever comes first) loaded at session start. Claude creates and updates it as it works; you do not write it yourself. It is the index Claude reads at the start of every session, pointing to topic files for detail. You can edit or delete it, but Claude will keep updating it.
+
+      ```markdown
+      # Memory Index
+
+      ## Project
+      - [build-and-test.md](build-and-test.md): npm run build (~45s), Vitest, dev server on 3001
+      - [architecture.md](architecture.md): API client singleton, refresh-token auth
+
+      ## Reference
+      - [debugging.md](debugging.md): auth token rotation and DB connection troubleshooting
+      ```
+
+    * `debugging.md` (local only; written by Claude): topic notes Claude writes when `MEMORY.md` gets long. An example of a topic file; Claude picks the filename based on what it splits out (`debugging.md`, `architecture.md`, `build-commands.md` or similar). You never create these yourself. Claude reads a topic file back only when the current task relates to it.
+
+      ```markdown
+      ---
+      name: Debugging patterns
+      description: Auth token rotation and database connection troubleshooting for this project
+      type: reference
+      ---
+
+      ## Auth Token Issues
+      - Refresh token rotation: old token invalidated immediately
+      - If 401 after refresh: check clock skew between client and server
+
+      ## Database Connection Drops
+      - Connection pool: max 10 in dev, 50 in prod
+      - Always check `docker compose ps` first
+      ```
+
+* `~/.claude/rules/`: user-level rules that apply to every project. Same as project `.claude/rules/` but applies everywhere; use it for conventions you want across all your work, such as personal code style or commit message format. Rules without `paths:` load at session start; rules with `paths:` load when Claude reads, writes or edits a matching file.
+* `~/.claude/skills/`: personal skills available in every project, invoked with `/skill-name` in any project. Skills you built for yourself that work everywhere; same structure as project skills (each is a folder with `SKILL.md`), scoped to your user account instead of a single project.
+* `~/.claude/commands/`: personal single-file commands available in every project; the user types `/command-name` in any project. Same as project `commands/` but scoped to your user account: each markdown file becomes a command available everywhere. Commands and skills are now the same mechanism; for new workflows use skills (same `/name` invocation, plus you can bundle supporting files).
+* `~/.claude/output-styles/` (local only): custom instruction sets that adjust how Claude works. Each markdown file defines an output style: a set of instructions for Claude that, by default, also replaces the built-in software-engineering task instructions. Use this to adapt Claude Code for uses beyond coding, or to add teaching or review modes. Files are read at startup; the style selected with `outputStyle` applies to every response. Select a built-in or custom style with `/output-style`, `/config`, or the `outputStyle` key in settings. Styles here are available in every project; project-level styles with the same name take precedence. Built-in styles Default, Proactive, Concise, Explanatory and Learning ship with Claude Code; custom styles go here. Set `keep-coding-instructions: true` in frontmatter to keep the default task instructions alongside your additions. Switching styles mid-session applies from your next message; in the terminal, a style file you create or edit mid-session is picked up after a restart.
+  * `teaching.md` (local only): an example style that adds explanations and leaves small changes for you; active when `outputStyle` in settings is set to `teaching`. With this style, Claude adds a "Why this approach" note after each task and leaves `TODO(human)` markers for changes under 10 lines instead of writing them itself. Select it by setting `outputStyle` to the filename without `.md`, or to the `name` field if you set one in frontmatter.
+
+    ```markdown
+    ---
+    description: Explains reasoning and asks you to implement small pieces
+    keep-coding-instructions: true
+    ---
+
+    After completing each task, add a brief "Why this approach" note
+    explaining the key design decision.
+
+    When a change is under 10 lines, ask the user to implement it
+    themselves by leaving a TODO(human) marker instead of writing it.
+    ```
+
+* `~/.claude/agents/`: personal subagents available in every project; Claude delegates or you @-mention them in any project. Same format as project agents.
+* `~/.claude/workflows/`: personal dynamic workflows available in every project. Loaded at startup; each file becomes a `/<name>` command. A project workflow with the same name in `.claude/workflows/` takes precedence.
+* `~/.claude/agent-memory/` (written by Claude): persistent memory for subagents with `memory: user`. Subagents with `memory: user` in their frontmatter store knowledge here that persists across all projects; loaded into the subagent system prompt when the subagent starts. For project-scoped subagent memory see `.claude/agent-memory/` instead.
 
 #### What's not shown
 
@@ -173,7 +513,7 @@ Agents shipped in a [plugin](https://code.claude.com/docs/en/plugins/components#
 
 If a setting, hook, or file isn't taking effect, see [Debug your configuration](https://code.claude.com/docs/en/debug-your-config) for the inspection commands and a symptom-first lookup table.
 
-#### Application data
+#### Application data storage retention and cleanup
 
 Beyond the config you author, `~/.claude` holds data Claude Code writes during sessions. These files are plaintext. Anything that passes through a tool is written to a transcript on disk: file contents, command output, pasted text.
 
