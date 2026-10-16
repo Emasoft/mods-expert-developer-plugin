@@ -22,3 +22,11 @@ build/
 .pytest_cache/
 .ruff_cache/
 node_modules/
+
+# Private key and secret material (never commit)
+.env.*
+!.env.example
+id_*
+*.pem
+*.key
+*.p12

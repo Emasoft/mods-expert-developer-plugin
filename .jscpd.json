@@ -24,6 +24,7 @@
     "**/testdata/**",
     "**/fixtures/**",
     "**/node_modules/**",
-    "**/.git/**"
+    "**/.git/**",
+    "**/skills/*/references/chapter.md"
   ]
 }
