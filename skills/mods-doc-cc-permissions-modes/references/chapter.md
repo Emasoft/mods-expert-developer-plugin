@@ -11,7 +11,7 @@
   - [Allow only pre-approved tools with dontAsk mode](#allow-only-pre-approved-tools-with-dontask-mode)
   - [Skip all checks with bypassPermissions mode](#skip-all-checks-with-bypasspermissions-mode)
   - [Protected paths](#protected-paths)
-  - [Critical paths and removal checks](#critical-paths-and-removal-checks)
+  - [Critical paths and how removals are guarded](#critical-paths-and-how-removals-are-guarded)
   - [See also](#see-also)
 
 
@@ -698,7 +698,7 @@ Protected files:
 * `.mcp.json`, `.claude.json`
 * The file that your user, project, or local [settings file](https://code.claude.com/docs/en/settings#settings-files-and-who-they-affect) points to when the settings file is itself a symbolic link, for example into a dotfiles repository. In the modes that route protected-path writes to the classifier, a write to this file prompts you instead, even when an allow rule matches. If the file's own path is also that of a settings file, such as `.claude/settings.json` in another folder, the write goes to the classifier as other protected-path writes do
 
-#### Critical paths and removal checks
+#### Critical paths and how removals are guarded
 
 Critical paths are the directories Claude Code protects from `rm` and `rmdir` commands, such as the filesystem root, your home directory, and your working directory.
 

@@ -51,7 +51,7 @@ Full chapter: [the chapter](references/chapter.md), with the section-level NATIV
   - [Glob tool behavior](references/chapter.md#glob-tool-behavior)
   - [Grep tool behavior](references/chapter.md#grep-tool-behavior)
   - [LSP tool behavior](references/chapter.md#lsp-tool-behavior)
-  - [Monitor tool](references/chapter.md#monitor-tool)
+  - [Monitor tool and WebSocket sources](references/chapter.md#monitor-tool-and-websocket-sources)
   - [NotebookEdit tool behavior](references/chapter.md#notebookedit-tool-behavior)
   - [PowerShell tool setup and limits](references/chapter.md#powershell-tool-setup-and-limits)
   - [Read tool behavior](references/chapter.md#read-tool-behavior)

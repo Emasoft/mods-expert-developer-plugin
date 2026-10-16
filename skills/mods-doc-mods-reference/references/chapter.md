@@ -5,7 +5,7 @@
 - [Files](#files)
 - [The hook function](#the-hook-function)
 - [Events a mod can hook](#events-a-mod-can-hook)
-  - [Tool events](#tool-events)
+  - [Tool events and tool.check fields](#tool-events-and-toolcheck-fields)
   - [Prompts and what Claude reads](#prompts-and-what-claude-reads)
   - [Commands and configuration](#commands-and-configuration)
   - [Turns](#turns)
@@ -67,7 +67,7 @@ Events are grouped by what they concern, each with when it fires and what a hook
 
 The last column of each table uses shorthand. `next(e)` passes the event on unchanged. `next({ ...e, text })` passes on a copy with the named field changed, as in `next({ ...e, text: e.text.trim() })`. An object answers the event without calling `next`, and a word such as `reason` stands for a string you write, as in `{ deny: 'Use the file tools.' }`.
 
-#### Tool events
+#### Tool events and tool.check fields
 
 Tool events fire around each tool call Claude makes, from the description Claude reads to the decision on whether the call runs:
 

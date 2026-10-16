@@ -48,7 +48,7 @@ Full chapter: [the chapter](references/chapter.md), with the section-level PLUGI
   - [Path rules](references/chapter.md#path-rules)
   - [User configuration options](references/chapter.md#user-configuration-options)
   - [Channels](references/chapter.md#channels)
-  - [Environment variables in plugin files](references/chapter.md#environment-variables-in-plugin-files)
+  - [Environment variable resolution and quoting](references/chapter.md#environment-variable-resolution-and-quoting)
   - [Standard layout](references/chapter.md#standard-layout)
   - [Marketplace entries and the manifest](references/chapter.md#marketplace-entries-and-the-manifest)
   - [Related Docs](references/chapter.md#related-docs)

@@ -50,5 +50,5 @@ Full chapter: [the chapter](references/chapter.md), with the section-level CLAUD
   - [Allow only pre-approved tools with dontAsk mode](references/chapter.md#allow-only-pre-approved-tools-with-dontask-mode)
   - [Skip all checks with bypassPermissions mode](references/chapter.md#skip-all-checks-with-bypasspermissions-mode)
   - [Protected paths](references/chapter.md#protected-paths)
-  - [Critical paths and removal checks](references/chapter.md#critical-paths-and-removal-checks)
+  - [Critical paths and how removals are guarded](references/chapter.md#critical-paths-and-how-removals-are-guarded)
   - [See also](references/chapter.md#see-also)

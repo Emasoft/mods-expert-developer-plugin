@@ -43,6 +43,6 @@ Full chapter: [the chapter](references/chapter.md), with the section-level MODS 
 
 - [React to events with a mod](references/chapter.md#react-to-events-with-a-mod)
   - [How a hook handles an event](references/chapter.md#how-a-hook-handles-an-event)
-  - [Hook what Claude is doing](references/chapter.md#hook-what-claude-is-doing)
-  - [Run alongside other mods](references/chapter.md#run-alongside-other-mods)
+  - [Hook tool calls, prompts, and turns](references/chapter.md#hook-tool-calls-prompts-and-turns)
+  - [Mod ordering and failed hooks](references/chapter.md#mod-ordering-and-failed-hooks)
   - [Related Topics](references/chapter.md#related-topics)

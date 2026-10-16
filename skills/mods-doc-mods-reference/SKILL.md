@@ -44,7 +44,7 @@ Full chapter: [the chapter](references/chapter.md), with the section-level MODS 
 - [Files](references/chapter.md#files)
 - [The hook function](references/chapter.md#the-hook-function)
 - [Events a mod can hook](references/chapter.md#events-a-mod-can-hook)
-  - [Tool events](references/chapter.md#tool-events)
+  - [Tool events and tool.check fields](references/chapter.md#tool-events-and-toolcheck-fields)
   - [Prompts and what Claude reads](references/chapter.md#prompts-and-what-claude-reads)
   - [Commands and configuration](references/chapter.md#commands-and-configuration)
   - [Turns](references/chapter.md#turns)

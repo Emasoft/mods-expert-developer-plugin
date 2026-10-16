@@ -45,6 +45,6 @@ Full chapter: [the chapter](references/chapter.md), with the section-level MANAG
   - [Stop user-installed mods from loading](references/chapter.md#stop-user-installed-mods-from-loading)
   - [Know what happens by default](references/chapter.md#know-what-happens-by-default)
   - [Decide whether to leave mods on](references/chapter.md#decide-whether-to-leave-mods-on)
-  - [Choose how much mods may do](references/chapter.md#choose-how-much-mods-may-do)
-  - [Run your organization's own mods](references/chapter.md#run-your-organizations-own-mods)
+  - [Control which mods run and configure the built-in guard](references/chapter.md#control-which-mods-run-and-configure-the-built-in-guard)
+  - [Enforce policy with your own mods](references/chapter.md#enforce-policy-with-your-own-mods)
   - [Related Docs](references/chapter.md#related-docs)

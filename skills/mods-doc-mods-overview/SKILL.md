@@ -35,14 +35,14 @@ If an anchor misses, search the MODS OVERVIEW headings for the entry title; if t
 
 ## Examples
 
-Input: a task about "Install and update mods". Output: open [Install and update mods](references/chapter.md#install-and-update-mods) and read that section only.
+Input: a task about "Install, update, or try a mod". Output: open [Install, update, or try a mod](references/chapter.md#install-update-or-try-a-mod) and read that section only.
 
 ## Resources
 
 Full chapter: [the chapter](references/chapter.md), with the section-level MODS OVERVIEW table of contents:
 
 - [What a mod can do](references/chapter.md#what-a-mod-can-do)
-- [Install and update mods](references/chapter.md#install-and-update-mods)
+- [Install, update, or try a mod](references/chapter.md#install-update-or-try-a-mod)
   - [Install or update a mod](references/chapter.md#install-or-update-a-mod)
   - [Try a sample mod](references/chapter.md#try-a-sample-mod)
 - [Decide whether to trust a mod](references/chapter.md#decide-whether-to-trust-a-mod)

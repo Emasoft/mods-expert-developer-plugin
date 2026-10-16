@@ -3,7 +3,7 @@
 ## Table of Contents
 
 - [Set up Claude Code in a monorepo or large codebase](#set-up-claude-code-in-a-monorepo-or-large-codebase)
-  - [Guide scope and example monorepo](#guide-scope-and-example-monorepo)
+  - [What this guide covers and its example monorepo](#what-this-guide-covers-and-its-example-monorepo)
   - [Choose where to start Claude](#choose-where-to-start-claude)
   - [Layer CLAUDE.md files by directory](#layer-claudemd-files-by-directory)
   - [Reduce what Claude reads](#reduce-what-claude-reads)
@@ -26,7 +26,7 @@ A large codebase can be one repository with millions of lines or a monorepo with
 
 This guide shows individual developers and engineering teams how to scope Claude to the part of the codebase a task touches. Each section notes whether a setting is personal to your machine or committed to the repository.
 
-#### Guide scope and example monorepo
+#### What this guide covers and its example monorepo
 
 The [table below](https://code.claude.com/docs/en/large-codebases#settings-on-this-page) lists each setting and what it accomplishes. The [file tree after it](https://code.claude.com/docs/en/large-codebases#the-example-monorepo) is the example monorepo every code sample on this page refers to.
 

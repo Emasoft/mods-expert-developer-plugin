@@ -12,7 +12,7 @@
   - [Glob tool behavior](#glob-tool-behavior)
   - [Grep tool behavior](#grep-tool-behavior)
   - [LSP tool behavior](#lsp-tool-behavior)
-  - [Monitor tool](#monitor-tool)
+  - [Monitor tool and WebSocket sources](#monitor-tool-and-websocket-sources)
   - [NotebookEdit tool behavior](#notebookedit-tool-behavior)
   - [PowerShell tool setup and limits](#powershell-tool-setup-and-limits)
   - [Read tool behavior](#read-tool-behavior)
@@ -62,7 +62,7 @@ To add custom tools, connect an [MCP server](https://code.claude.com/docs/en/mcp
 | `ListAgents` | Lists the agents Claude can message with `SendMessage`: subagents in the session, [agent team](https://code.claude.com/docs/en/agent-teams) teammates, your other local Claude Code sessions, and, while this session is connected to [Remote Control](https://code.claude.com/docs/en/remote-control), your [cloud sessions](https://code.claude.com/docs/en/claude-code-on-the-web) and your Remote Control sessions on other machines. Backs the `/list-agents` command. See [cross-session messaging](https://code.claude.com/docs/en/cross-session-messaging). Requires Claude Code v2.1.224 or later, and appears only in sessions where [cross-session messaging is enabled](https://code.claude.com/docs/en/cross-session-messaging#availability). Teammate rows and the first line showing this session's own name require v2.1.239 or later | No |
 | `ListMcpResourcesTool` | Lists resources exposed by connected [MCP servers](https://code.claude.com/docs/en/mcp), leaving out [MCP Apps UI resources](https://code.claude.com/docs/en/mcp#reference-mcp-resources), which are pages for a host application to render | No |
 | `LSP` | Code intelligence via language servers: jump to definitions, find references, report type errors and warnings. See [LSP tool behavior](https://code.claude.com/docs/en/tools-reference#lsp-tool-behavior) | No |
-| `Monitor` | Runs a command in the background and feeds each output line back to Claude, so it can react to log entries, file changes, or polled status mid-conversation. Can also open a WebSocket and treat each incoming message as an event. See [Monitor tool](https://code.claude.com/docs/en/tools-reference#monitor-tool) | Yes |
+| `Monitor` | Runs a command in the background and feeds each output line back to Claude, so it can react to log entries, file changes, or polled status mid-conversation. Can also open a WebSocket and treat each incoming message as an event. See [Monitor tool and WebSocket sources](https://code.claude.com/docs/en/tools-reference#monitor-tool) | Yes |
 | `NotebookEdit` | Modifies Jupyter notebook cells. See [NotebookEdit tool behavior](https://code.claude.com/docs/en/tools-reference#notebookedit-tool-behavior) | Yes |
 | `PowerShell` | Executes PowerShell commands natively. See [PowerShell tool](https://code.claude.com/docs/en/tools-reference#powershell-tool) for availability | Yes |
 | `PushNotification` | Sends a desktop notification, and a phone push when [Remote Control](https://code.claude.com/docs/en/remote-control) is connected, so a long-running task or [scheduled task](https://code.claude.com/docs/en/scheduled-tasks) can reach you when you step away. Push delivery runs through Anthropic-hosted infrastructure, which is not accessible from Amazon Bedrock, Claude Platform on AWS, Google Cloud's Agent Platform, or Microsoft Foundry | No |
@@ -385,7 +385,7 @@ Claude Code keeps the tool inactive until you install a [code intelligence plugi
 
 Claude Code returns an error result for each LSP call on a file whose language server it can't start.
 
-#### Monitor tool
+#### Monitor tool and WebSocket sources
 
 The Monitor tool lets Claude watch something in the background and react when it changes, without pausing the conversation. Ask Claude to:
 

@@ -9,7 +9,7 @@
   - [Path rules](#path-rules)
   - [User configuration options](#user-configuration-options)
   - [Channels](#channels)
-  - [Environment variables in plugin files](#environment-variables-in-plugin-files)
+  - [Environment variable resolution and quoting](#environment-variable-resolution-and-quoting)
   - [Standard layout](#standard-layout)
   - [Marketplace entries and the manifest](#marketplace-entries-and-the-manifest)
   - [Related Docs](#related-docs)
@@ -563,7 +563,7 @@ This manifest binds a channel to the plugin's `telegram` MCP server and prompts 
 }
 ```
 
-#### Environment variables in plugin files
+#### Environment variable resolution and quoting
 
 Claude Code provides three path variables to plugin components. Reference them as `${NAME}` in the fields listed under [Where each variable resolves](https://code.claude.com/docs/en/plugins/manifest-reference#where-each-variable-resolves), and read them as environment variables in the processes that receive them.
 

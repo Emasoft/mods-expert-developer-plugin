@@ -35,14 +35,14 @@ If an anchor misses, search the HOW TO USE A LARGE MONOREPO WITH CLAUDE (Usually
 
 ## Examples
 
-Input: a task about "Guide scope and example monorepo". Output: open [Guide scope and example monorepo](references/chapter.md#guide-scope-and-example-monorepo) and read that section only.
+Input: a task about "What this guide covers and its example monorepo". Output: open [What this guide covers and its example monorepo](references/chapter.md#what-this-guide-covers-and-its-example-monorepo) and read that section only.
 
 ## Resources
 
 Full chapter: [the chapter](references/chapter.md), with the section-level HOW TO USE A LARGE MONOREPO WITH CLAUDE (Usually the case when developing Plugins) table of contents:
 
 - [Set up Claude Code in a monorepo or large codebase](references/chapter.md#set-up-claude-code-in-a-monorepo-or-large-codebase)
-  - [Guide scope and example monorepo](references/chapter.md#guide-scope-and-example-monorepo)
+  - [What this guide covers and its example monorepo](references/chapter.md#what-this-guide-covers-and-its-example-monorepo)
   - [Choose where to start Claude](references/chapter.md#choose-where-to-start-claude)
   - [Layer CLAUDE.md files by directory](references/chapter.md#layer-claudemd-files-by-directory)
   - [Reduce what Claude reads](references/chapter.md#reduce-what-claude-reads)

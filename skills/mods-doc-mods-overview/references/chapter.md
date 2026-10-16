@@ -3,7 +3,7 @@
 ## Table of Contents
 
 - [What a mod can do](#what-a-mod-can-do)
-- [Install and update mods](#install-and-update-mods)
+- [Install, update, or try a mod](#install-update-or-try-a-mod)
   - [Install or update a mod](#install-or-update-a-mod)
   - [Try a sample mod](#try-a-sample-mod)
 - [Decide whether to trust a mod](#decide-whether-to-trust-a-mod)
@@ -40,7 +40,7 @@ Settings hooks, skills, status lines, and MCP servers run outside Claude Code (s
 
 Mods work in the CLI and Desktop app's Code tab; [Where mods run](https://code.claude.com/docs/en/plugins/mods/overview#where-mods-run) covers VS Code, `claude -p`, and cloud sessions. Before writing one, [compare](https://code.claude.com/docs/en/plugins/mods/overview#compare-mods-settings-hooks-skills-and-mcp-servers) whether a settings hook, skill, or MCP server suffices. Organization administration: [Manage mods for your organization](https://code.claude.com/docs/en/plugins/mods/admin).
 
-### Install and update mods
+### Install, update, or try a mod
 
 Choose:
 

@@ -35,15 +35,15 @@ If an anchor misses, search the CLAUDE GITHUB ACTIONS headings for the entry tit
 
 ## Examples
 
-Input: a task about "Set up the Claude GitHub app". Output: open [Set up the Claude GitHub app](references/chapter.md#set-up-the-claude-github-app) and read that section only.
+Input: a task about "Set up and manage the Claude GitHub app". Output: open [Set up and manage the Claude GitHub app](references/chapter.md#set-up-and-manage-the-claude-github-app) and read that section only.
 
 ## Resources
 
 Full chapter: [the chapter](references/chapter.md), with the section-level CLAUDE GITHUB ACTIONS table of contents:
 
 - [Claude Code GitHub Actions](references/chapter.md#claude-code-github-actions)
-  - [Set up the Claude GitHub app](references/chapter.md#set-up-the-claude-github-app)
-  - [Interactive and automation modes](references/chapter.md#interactive-and-automation-modes)
+  - [Set up and manage the Claude GitHub app](references/chapter.md#set-up-and-manage-the-claude-github-app)
+  - [Interactive and automation modes and run triggers](references/chapter.md#interactive-and-automation-modes-and-run-triggers)
   - [Example use cases](references/chapter.md#example-use-cases)
   - [Best practices for Claude in GitHub Actions](references/chapter.md#best-practices-for-claude-in-github-actions)
   - [Use a cloud provider](references/chapter.md#use-a-cloud-provider)

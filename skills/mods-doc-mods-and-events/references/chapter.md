@@ -4,8 +4,8 @@
 
 - [React to events with a mod](#react-to-events-with-a-mod)
   - [How a hook handles an event](#how-a-hook-handles-an-event)
-  - [Hook what Claude is doing](#hook-what-claude-is-doing)
-  - [Run alongside other mods](#run-alongside-other-mods)
+  - [Hook tool calls, prompts, and turns](#hook-tool-calls-prompts-and-turns)
+  - [Mod ordering and failed hooks](#mod-ordering-and-failed-hooks)
   - [Related Topics](#related-topics)
 
 ### React to events with a mod
@@ -97,7 +97,7 @@ The event name can be a wildcard. `'classic.*'` matches every [settings hook eve
 
 Register each event once per matcher. If you call `on` twice for `session.start` with no matcher, the module fails to load with `on("session.start") is registered twice without a matcher`. Put everything your mod does at session start in one hook.
 
-#### Hook what Claude is doing
+#### Hook tool calls, prompts, and turns
 
 Handle these events to see or change a tool call, a prompt, or a turn as it happens. For every event and what a hook can return, see the [events reference](https://code.claude.com/docs/en/plugins/mods/reference#events).
 
@@ -291,7 +291,7 @@ on('classic.Stop', async ($, e, next) => {
 
 Each time Claude finishes responding, a dim line in the transcript gives the path of the transcript file. The hook returns `next(e)`, so it observes the event and changes nothing about how the turn ends.
 
-#### Run alongside other mods
+#### Mod ordering and failed hooks
 
 Several mods can handle the same event, and any one of them can fail. If your mod blocks tool calls, check its position in the chain and what happens when its hook fails.
 
