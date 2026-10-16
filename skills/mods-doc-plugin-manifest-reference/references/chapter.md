@@ -3,15 +3,15 @@
 ## Table of Contents
 
 - [Plugin manifest reference](#plugin-manifest-reference-1)
-  - [Manifest file structure and validation](#manifest-file-structure-and-validation)
-  - [Manifest fields for identity metadata and defaults](#manifest-fields-for-identity-metadata-and-defaults)
-  - [Component path forms and per-component configuration](#component-path-forms-and-per-component-configuration)
-  - [Path rules covering containment and default locations](#path-rules-covering-containment-and-default-locations)
-  - [User configuration options and saved value handling](#user-configuration-options-and-saved-value-handling)
+  - [Manifest file](#manifest-file)
+  - [Manifest fields](#manifest-fields)
+  - [Component path forms](#component-path-forms)
+  - [Path rules](#path-rules)
+  - [User configuration options](#user-configuration-options)
   - [Channels](#channels)
-  - [Environment variable resolution and quoting](#environment-variable-resolution-and-quoting)
+  - [Environment variables in plugin files](#environment-variables-in-plugin-files)
   - [Standard layout](#standard-layout)
-  - [Marketplace entries and how they combine with the manifest](#marketplace-entries-and-how-they-combine-with-the-manifest)
+  - [Marketplace entries and the manifest](#marketplace-entries-and-the-manifest)
   - [Related Docs](#related-docs)
 
 > ## Documentation Index
@@ -41,7 +41,7 @@ Start at the section that matches what you're looking up:
 * Where each component's files go: [Standard layout](https://code.claude.com/docs/en/plugins/manifest-reference#standard-layout)
 * A message from `claude plugin validate`: the [troubleshooting page](https://code.claude.com/docs/en/plugins/troubleshooting) lists each message with its fix and links to the relevant sections on this page
 
-#### Manifest file structure and validation
+#### Manifest file
 
 The manifest is optional. Without it, Claude Code loads the components it finds in the [standard layout](https://code.claude.com/docs/en/plugins/manifest-reference#standard-layout). The plugin name then comes from the marketplace entry, or from the directory name when you load the plugin with `--plugin-dir`.
 
@@ -131,7 +131,7 @@ The command also checks each MCP server entry the plugin declares in `.mcp.json`
 * **Errors**: an entry Claude Code would drop when it loads the plugin, a `${user_config.KEY}` reference to an option the manifest doesn't declare, and a remote `url` that isn't a valid absolute URL
 * **Warnings**: an `http://` or `ws://` URL to a non-loopback host, and a header value that looks like a literal credential
 
-#### Manifest fields for identity metadata and defaults
+#### Manifest fields
 
 The table lists the top-level keys in `plugin.json`. `name` is the only required key. Where a field name is a link, the linked section has its full rules.
 
@@ -229,7 +229,7 @@ Plugins that must be enabled for this one to work. Each entry is `"name"`, `"nam
 
 Settings Claude Code applies while the plugin is enabled. Only `agent` and `subagentStatusLine` take effect; other keys are dropped at load. A `settings.json` at the plugin root takes precedence over this key. See [Default settings](https://code.claude.com/docs/en/plugins/components#default-settings).
 
-#### Component path forms and per-component configuration
+#### Component path forms
 
 Every component key accepts a path relative to the plugin root. `hooks`, `mcpServers`, `lspServers`, and `experimental.monitors` also accept inline configuration, `commands` also accepts an object map, and `mcpServers` also accepts MCP bundle paths and URLs. The examples that follow show each accepted shape once. For what each component does at runtime, see [Plugin components](https://code.claude.com/docs/en/plugins/components).
 
@@ -404,7 +404,7 @@ This inline array declares one monitor that starts the first time the `deploy` s
 
 A monitor `command` can't reference `${user_config.*}`. See [Fields that run through a shell](https://code.claude.com/docs/en/plugins/manifest-reference#fields-that-run-through-a-shell).
 
-#### Path rules covering containment and default locations
+#### Path rules
 
 Every component path in a manifest is relative to the plugin root and must start with `./`. A path such as `commands/foo.md` fails validation. `skills` and `mcpServers` each accept one form outside that rule:
 
@@ -434,7 +434,7 @@ If a plugin has a default folder such as `commands/` and also sets the manifest 
 
 To avoid the warning, set the key to a path inside that folder: `"commands": ["./commands/deploy.md"]` names a file in the default folder and produces no warning.
 
-#### User configuration options and saved value handling
+#### User configuration options
 
 `userConfig` declares values Claude Code prompts the user for when the plugin is enabled, so users don't edit `settings.json` themselves.
 
@@ -563,7 +563,7 @@ This manifest binds a channel to the plugin's `telegram` MCP server and prompts 
 }
 ```
 
-#### Environment variable resolution and quoting
+#### Environment variables in plugin files
 
 Claude Code provides three path variables to plugin components. Reference them as `${NAME}` in the fields listed under [Where each variable resolves](https://code.claude.com/docs/en/plugins/manifest-reference#where-each-variable-resolves), and read them as environment variables in the processes that receive them.
 
@@ -678,7 +678,7 @@ To click through this layout and read what each file does, open the [plugin expl
 
 A `CLAUDE.md` at the plugin root isn't loaded as context, and `claude plugin validate` warns when it finds one. To include instructions that load into Claude's context, put them in a skill.
 
-#### Marketplace entries and how they combine with the manifest
+#### Marketplace entries and the manifest
 
 A [marketplace entry](https://code.claude.com/docs/en/plugins/marketplace-reference) accepts [its own fields](https://code.claude.com/docs/en/plugins/marketplace-reference#plugin-entries), including `strict`, and every field on this page except the [directory listing fields](https://code.claude.com/docs/en/plugins/manifest-reference#directory-listing-fields).
 

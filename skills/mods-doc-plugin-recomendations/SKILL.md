@@ -44,7 +44,7 @@ Full chapter: [the chapter](references/chapter.md), with the section-level PLUGI
 - [Recommend plugins for your org](references/chapter.md#recommend-plugins-for-your-org)
   - [Understand how plugin relevance works](references/chapter.md#understand-how-plugin-relevance-works)
   - [Add relevance to a plugin entry](references/chapter.md#add-relevance-to-a-plugin-entry)
-  - [Relevance field reference and signal matching](references/chapter.md#relevance-field-reference-and-signal-matching)
+  - [Relevance field reference](references/chapter.md#relevance-field-reference)
   - [Validate your marketplace](references/chapter.md#validate-your-marketplace)
   - [Enable suggestions in managed settings](references/chapter.md#enable-suggestions-in-managed-settings)
   - [Preview what the user sees](references/chapter.md#preview-what-the-user-sees)

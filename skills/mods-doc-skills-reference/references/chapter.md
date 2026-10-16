@@ -6,9 +6,10 @@
   - [Bundled skills](#bundled-skills)
   - [Create and manage skills](#create-and-manage-skills)
   - [Configure skills](#configure-skills)
-  - [Advanced skill behavior and visibility](#advanced-skill-behavior-and-visibility)
+  - [Advanced skill patterns](#advanced-skill-patterns)
   - [Evaluate and iterate on a skill](#evaluate-and-iterate-on-a-skill)
-  - [Share skills and generate visual output](#share-skills-and-generate-visual-output)
+  - [Share skills](#share-skills)
+  - [Generate visual output](#generate-visual-output)
   - [Troubleshooting](#troubleshooting)
   - [Related resources](#related-resources)
 
@@ -688,7 +689,7 @@ Migrate the $0 component from $1 to $2.
 Preserve all existing behavior and tests.
 ```
 
-#### Advanced skill behavior and visibility
+#### Advanced skill patterns
 
 ##### Inject dynamic context
 
@@ -968,7 +969,7 @@ If the install summary reports `Run /reload-plugins to apply.`, Claude Code then
 
 For the eval file format and the full iteration workflow, see [Evaluating skill output quality](https://agentskills.io/skill-creation/evaluating-skills) on agentskills.io. For background on the benchmark and comparison modes, see the [skill-creator announcement](https://claude.com/blog/improving-skill-creator-test-measure-and-refine-agent-skills).
 
-#### Share skills and generate visual output
+#### Share skills
 
 Skills can be distributed at different scopes depending on your audience:
 
@@ -976,7 +977,7 @@ Skills can be distributed at different scopes depending on your audience:
 * **Plugins**: Create a `skills/` directory in your [plugin](https://code.claude.com/docs/en/plugins/overview)
 * **Managed**: Deploy organization-wide through [managed settings](https://code.claude.com/docs/en/managed-settings)
 
-##### Generate visual output
+#### Generate visual output
 
 Skills can bundle and run scripts in any language, giving Claude capabilities beyond what's possible in a single prompt. One pattern is generating visual output: interactive HTML files that open in your browser for exploring data, debugging, or creating reports.
 

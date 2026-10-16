@@ -3,12 +3,12 @@
 ## Table of Contents
 
 - [Manage Claude Code plugins for your organization](#manage-claude-code-plugins-for-your-organization)
-  - [Deliver and require plugins and confirm the rollout](#deliver-and-require-plugins-and-confirm-the-rollout)
+  - [Pre-install and require plugins](#pre-install-and-require-plugins)
   - [Seed containers and CI](#seed-containers-and-ci)
-  - [Restrict what users can install with allowlists and blocklists](#restrict-what-users-can-install-with-allowlists-and-blocklists)
-  - [Set update policy with auto-update and release channels](#set-update-policy-with-auto-update-and-release-channels)
+  - [Restrict what users can install](#restrict-what-users-can-install)
+  - [Set update policy](#set-update-policy)
   - [Recommend plugins](#recommend-plugins)
-  - [Audit and review plugin usage with telemetry](#audit-and-review-plugin-usage-with-telemetry)
+  - [Audit and review plugin usage](#audit-and-review-plugin-usage)
   - [Plan for what managed settings can't enforce](#plan-for-what-managed-settings-cant-enforce)
   - [Troubleshoot policy](#troubleshoot-policy)
   - [Related Docs](#related-docs)
@@ -36,7 +36,7 @@ This page is for administrators, and the settings here govern Claude Code.
 
 The sections follow the order most rollouts take: [require plugins](https://code.claude.com/docs/en/plugins/org#pre-install-and-require-plugins) for everyone or per repository, [seed containers and CI](https://code.claude.com/docs/en/plugins/org#seed-containers-and-ci), [restrict](https://code.claude.com/docs/en/plugins/org#restrict-what-users-can-install) what users can add on their own, [set update policy](https://code.claude.com/docs/en/plugins/org#set-update-policy), then [audit](https://code.claude.com/docs/en/plugins/org#audit-and-review) what's installed. To review every policy key in one place, see the [control matrix](https://code.claude.com/docs/en/plugins/org#control-matrix).
 
-#### Deliver and require plugins and confirm the rollout
+#### Pre-install and require plugins
 
 A marketplace is a catalog of plugins that Claude Code fetches from a git repository, a URL, or a local path. Once you register a marketplace on a machine, Claude Code can install plugins from it.
 
@@ -171,7 +171,7 @@ Seed marketplaces follow these rules:
 
 For fleets with no outbound git access, combine a seed with `directory` or `file` marketplace sources on a shared mount. Set `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1` as well, which also turns off [plugin auto-update](https://code.claude.com/docs/en/plugins/loading#when-auto-update-runs). If a proxy is available, see [Proxy configuration](https://code.claude.com/docs/en/network-config#proxy-configuration) for the variables to set.
 
-#### Restrict what users can install with allowlists and blocklists
+#### Restrict what users can install
 
 The managed `strictKnownMarketplaces` allowlist and `blockedMarketplaces` blocklist decide which marketplace sources plugins may come from. A marketplace's source is the git repository, URL, or local path that Claude Code fetches it from. Both lists match the source of the marketplace a plugin comes from, not the plugin's own entry inside that marketplace.
 
@@ -324,7 +324,7 @@ Register both marketplaces with explicit `extraKnownMarketplaces` entries, as th
 * **The official marketplace registers itself only in an interactive terminal session**: even there, it registers only when the allowlist permits it. A `-p` run or a terminal attached to a cloud session never registers it.
 * **A blocked attempt is remembered**: if a machine ever ran under a policy that blocked the official marketplace, Claude Code records the blocked attempt and doesn't retry after the policy changes. An `[]` lockdown is one such policy. That machine registers it again only through an `extraKnownMarketplaces` entry such as the one in this policy, an `enabledPlugins` entry for one of its plugins, or a manual `/plugin marketplace add`.
 
-#### Set update policy with auto-update and release channels
+#### Set update policy
 
 You can set update policy per marketplace, for the whole fleet, or per user group through release channels.
 
@@ -378,7 +378,7 @@ Marketplace owners can attach `relevance` signals to entries so Claude Code sugg
 
 Suggestions from a marketplace appear only when it's registered on the user's machine, you list its name in `pluginSuggestionMarketplaces` in managed settings, and you declare its source in the same policy. Declare the source either as the marketplace's `extraKnownMarketplaces` entry or as an allowlist entry. The official marketplace needs only the name. See [Enable suggestions in managed settings](https://code.claude.com/docs/en/plugins/relevance#enable-suggestions-in-managed-settings).
 
-#### Audit and review plugin usage with telemetry
+#### Audit and review plugin usage
 
 OpenTelemetry events and the Analytics API tell you what your fleet installs and runs.
 

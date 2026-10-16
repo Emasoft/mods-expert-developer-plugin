@@ -35,19 +35,19 @@ If an anchor misses, search the MANAGE PLUGINS IN ORGANIZATIONS headings for the
 
 ## Examples
 
-Input: a task about "Deliver and require plugins and confirm the rollout". Output: open [Deliver and require plugins and confirm the rollout](references/chapter.md#deliver-and-require-plugins-and-confirm-the-rollout) and read that section only.
+Input: a task about "Pre-install and require plugins". Output: open [Pre-install and require plugins](references/chapter.md#pre-install-and-require-plugins) and read that section only.
 
 ## Resources
 
 Full chapter: [the chapter](references/chapter.md), with the section-level MANAGE PLUGINS IN ORGANIZATIONS table of contents:
 
 - [Manage Claude Code plugins for your organization](references/chapter.md#manage-claude-code-plugins-for-your-organization)
-  - [Deliver and require plugins and confirm the rollout](references/chapter.md#deliver-and-require-plugins-and-confirm-the-rollout)
+  - [Pre-install and require plugins](references/chapter.md#pre-install-and-require-plugins)
   - [Seed containers and CI](references/chapter.md#seed-containers-and-ci)
-  - [Restrict what users can install with allowlists and blocklists](references/chapter.md#restrict-what-users-can-install-with-allowlists-and-blocklists)
-  - [Set update policy with auto-update and release channels](references/chapter.md#set-update-policy-with-auto-update-and-release-channels)
+  - [Restrict what users can install](references/chapter.md#restrict-what-users-can-install)
+  - [Set update policy](references/chapter.md#set-update-policy)
   - [Recommend plugins](references/chapter.md#recommend-plugins)
-  - [Audit and review plugin usage with telemetry](references/chapter.md#audit-and-review-plugin-usage-with-telemetry)
+  - [Audit and review plugin usage](references/chapter.md#audit-and-review-plugin-usage)
   - [Plan for what managed settings can't enforce](references/chapter.md#plan-for-what-managed-settings-cant-enforce)
   - [Troubleshoot policy](references/chapter.md#troubleshoot-policy)
   - [Related Docs](references/chapter.md#related-docs)

@@ -3,20 +3,20 @@
 ## Table of Contents
 
 - [What a mod can do](#what-a-mod-can-do)
-- [Install, update, or try a sample mod](#install-update-or-try-a-sample-mod)
+- [Install and update mods](#install-and-update-mods)
   - [Install or update a mod](#install-or-update-a-mod)
   - [Try a sample mod](#try-a-sample-mod)
 - [Decide whether to trust a mod](#decide-whether-to-trust-a-mod)
   - [What a mod can reach](#what-a-mod-can-reach)
   - [List what a mod does before you install one](#list-what-a-mod-does-before-you-install-one)
-- [Turn mods on or off and see which loaded](#turn-mods-on-or-off-and-see-which-loaded)
+- [Turn mods on or off](#turn-mods-on-or-off)
   - [See which mods a session loaded](#see-which-mods-a-session-loaded)
-- [How a mod works, what hooks do, and where mods run](#how-a-mod-works-what-hooks-do-and-where-mods-run)
+- [How a mod works](#how-a-mod-works)
   - [What a hook can do with an event](#what-a-hook-can-do-with-an-event)
   - [Where mods run](#where-mods-run)
 - [Control mods for your organization](#control-mods-for-your-organization)
 - [Compare mods, settings hooks, skills, and MCP servers](#compare-mods-settings-hooks-skills-and-mcp-servers)
-- [Mods built into Claude Code and their source](#mods-built-into-claude-code-and-their-source)
+- [Mods built into Claude Code](#mods-built-into-claude-code)
   - [Read the source of built-in mods](#read-the-source-of-built-in-mods)
 - [Related Topics](#related-topics)
 
@@ -40,7 +40,7 @@ Settings hooks, skills, status lines, and MCP servers run outside Claude Code (s
 
 Mods work in the CLI and Desktop app's Code tab; [Where mods run](https://code.claude.com/docs/en/plugins/mods/overview#where-mods-run) covers VS Code, `claude -p`, and cloud sessions. Before writing one, [compare](https://code.claude.com/docs/en/plugins/mods/overview#compare-mods-settings-hooks-skills-and-mcp-servers) whether a settings hook, skill, or MCP server suffices. Organization administration: [Manage mods for your organization](https://code.claude.com/docs/en/plugins/mods/admin).
 
-### Install, update, or try a sample mod
+### Install and update mods
 
 Choose:
 
@@ -106,7 +106,7 @@ claude plugin validate ./some-mod
 
 Output `hooks:`/`calls:` lists handled events/requested actions; [Review what a mod can do](https://code.claude.com/docs/en/plugins/mods/admin#review-what-a-mod-can-do) explains output and calls to inspect.
 
-### Turn mods on or off and see which loaded
+### Turn mods on or off
 
 Mods default on. Minimum Claude Code versions: terminal v2.1.287; Desktop's bundled copy v2.1.286. Check where you use mods:
 
@@ -133,7 +133,7 @@ Diagnose loading eligibility: [Check whether mods can load](https://code.claude.
 
 In a terminal session, `/plugin` shows a dim count/name line below the tabs (example `1 mod active · first-mod`). For missing installed mods, see [Find out why a mod does nothing](https://code.claude.com/docs/en/plugins/mods/troubleshoot#find-out-why-a-mod-does-nothing).
 
-### How a mod works, what hooks do, and where mods run
+### How a mod works
 
 A mod [plugin](https://code.claude.com/docs/en/plugins/overview) registers event handlers (hooks); Claude Code calls them on events such as tool calls or spinner draws. A small mod has three files:
 
@@ -234,7 +234,7 @@ Overlapping capabilities and selection criteria:
 
 See [Hooks](https://code.claude.com/docs/en/hooks), [Skills](https://code.claude.com/docs/en/skills), and [MCP](https://code.claude.com/docs/en/mcp). One plugin can contain all, including a mod, skill, and MCP server.
 
-### Mods built into Claude Code and their source
+### Mods built into Claude Code
 
 Built-in features appear in session `/plugin` -> **Installed** -> **Built-in**, under the names below. They cannot be updated/uninstalled; disable methods are in the last column. The [`mods active` line](https://code.claude.com/docs/en/plugins/mods/overview#see-which-mods-a-session-loaded) excludes them.
 

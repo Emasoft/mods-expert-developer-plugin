@@ -4,9 +4,9 @@
 
 - [How Claude remembers your project](#how-claude-remembers-your-project)
   - [CLAUDE.md vs auto memory](#claudemd-vs-auto-memory)
-  - [Write, load, and organize CLAUDE.md files, imports, and rules](#write-load-and-organize-claudemd-files-imports-and-rules)
-  - [Use AGENTS.md alongside CLAUDE.md and other tools](#use-agentsmd-alongside-claudemd-and-other-tools)
-  - [Auto memory behavior, storage, and settings](#auto-memory-behavior-storage-and-settings)
+  - [CLAUDE.md files and rules](#claudemd-files-and-rules)
+  - [Use AGENTS.md alongside CLAUDE.md](#use-agentsmd-alongside-claudemd)
+  - [Auto memory behavior and storage](#auto-memory-behavior-and-storage)
   - [View and edit with `/memory`](#view-and-edit-with-memory)
   - [Troubleshoot memory issues](#troubleshoot-memory-issues)
   - [Related resources](#related-resources)
@@ -48,7 +48,7 @@ Use CLAUDE.md files when you want to guide Claude's behavior. Auto memory lets C
 
 Subagents can also maintain their own auto memory. See [subagent configuration](https://code.claude.com/docs/en/sub-agents#enable-persistent-memory) for details.
 
-#### Write, load, and organize CLAUDE.md files, imports, and rules
+#### CLAUDE.md files and rules
 
 CLAUDE.md files are markdown files that give Claude persistent instructions for a project, your personal workflow, or your entire organization. You write these files in plain text; Claude reads them at the start of every session. If your repository uses `AGENTS.md` instead, see [AGENTS.md](https://code.claude.com/docs/en/memory#agents-md).
 
@@ -359,7 +359,7 @@ To exclude a rules file you reach through a [symlink](https://code.claude.com/do
 
 Managed policy CLAUDE.md files cannot be excluded. This ensures organization-wide instructions always apply regardless of individual settings.
 
-#### Use AGENTS.md alongside CLAUDE.md and other tools
+#### Use AGENTS.md alongside CLAUDE.md
 
 Claude Code can read [`AGENTS.md`](https://code.claude.com/docs/en/glossary#agents-md) as your project instructions, so a repository already set up for other coding agents works without adding a `CLAUDE.md`, an import, or a setting. This table shows what Claude reads by default for each combination of instruction files in your repository:
 
@@ -484,7 +484,7 @@ Running [`/init`](https://code.claude.com/docs/en/commands) reads other tools' i
 
 You can also run [`/import`](https://code.claude.com/docs/en/commands) to bring a supported coding agent's configuration into Claude Code, which appends a one-time copy of instruction files such as `AGENTS.md` to the matching `CLAUDE.md` and carries over MCP servers, commands, subagents, and skills. Requires Claude Code v2.1.213 or later.
 
-#### Auto memory behavior, storage, and settings
+#### Auto memory behavior and storage
 
 Auto memory lets Claude accumulate knowledge across sessions without you writing anything. As it works, Claude saves four kinds of notes for itself. Claude records the kind as a `type` field in the memory file's frontmatter:
 

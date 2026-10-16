@@ -6,7 +6,7 @@
   - [Where to run Claude Code](#where-to-run-claude-code)
   - [Connect your tools](#connect-your-tools)
   - [Work when you are away from your terminal](#work-when-you-are-away-from-your-terminal)
-  - [Related platform integration and remote access resources](#related-platform-integration-and-remote-access-resources)
+  - [Related resources](#related-resources)
 
 > ## Documentation Index
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
@@ -65,7 +65,7 @@ Claude Code offers several ways to work when you're not at your terminal. They d
 
 If you're not sure where to start, [install the CLI](https://code.claude.com/docs/en/quickstart) and run it in a project directory. If you'd rather not use a terminal, [Desktop](https://code.claude.com/docs/en/desktop-quickstart) gives you the same engine with a graphical interface.
 
-#### Related platform integration and remote access resources
+#### Related resources
 
 ##### Platforms
 

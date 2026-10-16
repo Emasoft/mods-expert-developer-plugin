@@ -3,7 +3,7 @@
 ## Table of Contents
 
 - [Create a mod](#create-a-mod)
-  - [Ask Claude for a mod and reuse it in other sessions](#ask-claude-for-a-mod-and-reuse-it-in-other-sessions)
+  - [Ask Claude for a mod](#ask-claude-for-a-mod)
   - [Write a mod yourself](#write-a-mod-yourself)
   - [Change and test a mod](#change-and-test-a-mod)
   - [Share your mod](#share-your-mod)
@@ -24,7 +24,7 @@ First [compare alternatives](https://code.claude.com/docs/en/plugins/mods/overvi
   Requires Claude Code v2.1.287+; check shell `claude --version`. See [Check whether mods can load](https://code.claude.com/docs/en/plugins/mods/troubleshoot#check-whether-mods-can-load).
 </Note>
 
-#### Ask Claude for a mod and reuse it in other sessions
+#### Ask Claude for a mod
 
 Describe it in an interactive session. Claude's built-in [skill](https://code.claude.com/docs/en/skills) `plugin-authoring` specifies write locations, your version's events/methods, and loading. Claude can load it on request, or you can run `/plugin-authoring` at the prompt.
 

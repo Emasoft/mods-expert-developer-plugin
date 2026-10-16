@@ -45,7 +45,7 @@ Full chapter: [the chapter](references/chapter.md), with the section-level HOOKS
   - [Hook lifecycle](references/chapter.md#hook-lifecycle)
   - [Hook configuration and management](references/chapter.md#hook-configuration-and-management)
   - [Hook input and output](references/chapter.md#hook-input-and-output)
-  - [Every hook event with its input and decision control](references/chapter.md#every-hook-event-with-its-input-and-decision-control)
+  - [Hook events and decision control](references/chapter.md#hook-events-and-decision-control)
   - [Prompt-based hooks](references/chapter.md#prompt-based-hooks)
   - [Agent-based hooks](references/chapter.md#agent-based-hooks)
   - [Run hooks in the background](references/chapter.md#run-hooks-in-the-background)

@@ -35,18 +35,18 @@ If an anchor misses, search the DEEP LINKS REFERENCE headings for the entry titl
 
 ## Examples
 
-Input: a task about "How deep links work and what a launched session shows". Output: open [How deep links work and what a launched session shows](references/chapter.md#how-deep-links-work-and-what-a-launched-session-shows) and read that section only.
+Input: a task about "How deep links work". Output: open [How deep links work](references/chapter.md#how-deep-links-work) and read that section only.
 
 ## Resources
 
 Full chapter: [the chapter](references/chapter.md), with the section-level DEEP LINKS REFERENCE table of contents:
 
 - [Launch sessions from links](references/chapter.md#launch-sessions-from-links)
-  - [How deep links work and what a launched session shows](references/chapter.md#how-deep-links-work-and-what-a-launched-session-shows)
-  - [Build a link and choose its working directory](references/chapter.md#build-a-link-and-choose-its-working-directory)
-  - [Link examples for runbooks and shell use](references/chapter.md#link-examples-for-runbooks-and-shell-use)
+  - [How deep links work](references/chapter.md#how-deep-links-work)
+  - [Build a link](references/chapter.md#build-a-link)
+  - [Deep link examples](references/chapter.md#deep-link-examples)
   - [Registration and supported platforms](references/chapter.md#registration-and-supported-platforms)
   - [Open a VS Code tab instead of a terminal](references/chapter.md#open-a-vs-code-tab-instead-of-a-terminal)
   - [Open a Claude Desktop session on an SSH connection](references/chapter.md#open-a-claude-desktop-session-on-an-ssh-connection)
-  - [Troubleshooting links that do nothing or open the wrong place](references/chapter.md#troubleshooting-links-that-do-nothing-or-open-the-wrong-place)
+  - [Deep link troubleshooting](references/chapter.md#deep-link-troubleshooting)
   - [Learn more](references/chapter.md#learn-more)

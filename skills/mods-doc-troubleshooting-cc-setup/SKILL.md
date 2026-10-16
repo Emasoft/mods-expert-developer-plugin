@@ -43,7 +43,7 @@ Full chapter: [the chapter](references/chapter.md), with the section-level TROUB
 
 - [Troubleshoot installation and login](references/chapter.md#troubleshoot-installation-and-login)
   - [Find your error](references/chapter.md#find-your-error)
-  - [Run network PATH permission and binary diagnostic checks](references/chapter.md#run-network-path-permission-and-binary-diagnostic-checks)
-  - [Fix common installation platform and binary errors](references/chapter.md#fix-common-installation-platform-and-binary-errors)
-  - [Login authentication and credential errors](references/chapter.md#login-authentication-and-credential-errors)
+  - [Run diagnostic checks](references/chapter.md#run-diagnostic-checks)
+  - [Common installation issues](references/chapter.md#common-installation-issues)
+  - [Login and authentication](references/chapter.md#login-and-authentication)
   - [Still stuck](references/chapter.md#still-stuck)

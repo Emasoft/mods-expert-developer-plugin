@@ -44,7 +44,7 @@ Full chapter: [the chapter](references/chapter.md), with the section-level AUTOM
 - [Automate actions with hooks](references/chapter.md#automate-actions-with-hooks-1)
   - [Set up your first hook](references/chapter.md#set-up-your-first-hook)
   - [Hook recipes for common automation tasks](references/chapter.md#hook-recipes-for-common-automation-tasks)
-  - [Hook execution, input and output, matchers, and locations](references/chapter.md#hook-execution-input-and-output-matchers-and-locations)
+  - [Hook lifecycle and configuration](references/chapter.md#hook-lifecycle-and-configuration)
   - [Prompt-based hooks](references/chapter.md#prompt-based-hooks)
   - [Agent-based hooks](references/chapter.md#agent-based-hooks)
   - [HTTP hooks](references/chapter.md#http-hooks)

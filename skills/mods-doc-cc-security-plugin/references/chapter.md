@@ -6,8 +6,8 @@
   - [Prerequisites](#prerequisites)
   - [Models and providers](#models-and-providers)
   - [Install and uninstall the plugin](#install-and-uninstall-the-plugin)
-  - [Scan changes or large repositories and read the results](#scan-changes-or-large-repositories-and-read-the-results)
-  - [Fix findings and review proposed patches](#fix-findings-and-review-proposed-patches)
+  - [Scan your codebase and read the results](#scan-your-codebase-and-read-the-results)
+  - [Fix findings and review patches](#fix-findings-and-review-patches)
   - [How the plugin fits with other security tools](#how-the-plugin-fits-with-other-security-tools)
   - [Troubleshooting](#troubleshooting)
   - [Related resources](#related-resources)
@@ -69,7 +69,7 @@ Once the plugin is active, you're ready to [scan and fix your codebase](https://
 
 To remove the plugin, uninstall it from the `/plugin` menu, or run `claude plugin uninstall claude-security` in your terminal.
 
-#### Scan changes or large repositories and read the results
+#### Scan your codebase and read the results
 
 The plugin adds one command, `/claude-security`, which opens a menu of its three jobs: scanning the codebase, scanning a set of changes, and suggesting patches. The happy path runs a full scan, then turns its findings into patches:
 
@@ -124,7 +124,7 @@ That directory is the only change a scan makes to your checkout, and it carries 
 
 Findings only appear in the report after independent verifier agents analyze them, which keeps reports short and worth reading. Scans are nondeterministic: two scans of the same code can surface different findings. Run scans regularly, and use the revision stamps to attribute each report to the exact code and settings it covered.
 
-#### Fix findings and review proposed patches
+#### Fix findings and review patches
 
 Start the fix flow by picking **Suggest patches** from the `/claude-security` menu, or ask in plain language, such as "fix finding F3", then pick which findings from the report to address. Patches are built against committed code, and the report has to still describe the code you have: findings whose code has since changed are skipped with a note, and the plugin offers a fresh scan instead of patching from a stale report. Each patch is drafted in a scratch copy of your repository, so your source files stay untouched until you apply a patch yourself.
 

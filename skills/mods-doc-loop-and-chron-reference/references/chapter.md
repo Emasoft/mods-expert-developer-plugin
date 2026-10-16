@@ -4,10 +4,10 @@
 
 - [Run prompts on a schedule](#run-prompts-on-a-schedule)
   - [Compare scheduling options](#compare-scheduling-options)
-  - [Run repeating prompts with loop and customize or stop them](#run-repeating-prompts-with-loop-and-customize-or-stop-them)
+  - [Run a prompt repeatedly with /loop](#run-a-prompt-repeatedly-with-loop)
   - [Set a one-time reminder](#set-a-one-time-reminder)
   - [Manage scheduled tasks](#manage-scheduled-tasks)
-  - [How scheduled tasks run with jitter and expiry](#how-scheduled-tasks-run-with-jitter-and-expiry)
+  - [How scheduled tasks run](#how-scheduled-tasks-run)
   - [Cron expression reference](#cron-expression-reference)
   - [Disable scheduled tasks](#disable-scheduled-tasks)
   - [Limitations](#limitations)
@@ -44,7 +44,7 @@ Claude Code offers three ways to schedule recurring or one-off work:
   Use **cloud tasks** for work that should run reliably without your machine. Use **Desktop tasks** when you need access to local files and tools. Use **`/loop`** for quick polling during a session.
 </Tip>
 
-#### Run repeating prompts with loop and customize or stop them
+#### Run a prompt repeatedly with /loop
 
 The `/loop` [bundled skill](https://code.claude.com/docs/en/commands) is the quickest way to run a prompt on repeat while the session stays open. Both the interval and the prompt are optional, and what you provide determines how the loop behaves.
 
@@ -175,7 +175,7 @@ These are the underlying tools Claude uses:
 
 Each scheduled task has an 8-character ID you can pass to `CronDelete`. A session can hold up to 50 scheduled tasks at once.
 
-#### How scheduled tasks run with jitter and expiry
+#### How scheduled tasks run
 
 The scheduler checks every second for due tasks and enqueues them at low priority. A scheduled prompt fires between your turns, not while Claude is mid-response. If Claude is busy when a task comes due, the prompt waits until the current turn ends.
 

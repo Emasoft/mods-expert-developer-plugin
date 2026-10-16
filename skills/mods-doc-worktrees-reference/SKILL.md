@@ -35,21 +35,21 @@ If an anchor misses, search the WORKTREES REFERENCE headings for the entry title
 
 ## Examples
 
-Input: a task about "Start Claude in a worktree and set up its environment". Output: open [Start Claude in a worktree and set up its environment](references/chapter.md#start-claude-in-a-worktree-and-set-up-its-environment) and read that section only.
+Input: a task about "Start Claude in a worktree". Output: open [Start Claude in a worktree](references/chapter.md#start-claude-in-a-worktree) and read that section only.
 
 ## Resources
 
 Full chapter: [the chapter](references/chapter.md), with the section-level WORKTREES REFERENCE table of contents:
 
 - [Run parallel sessions with worktrees](references/chapter.md#run-parallel-sessions-with-worktrees)
-  - [Start Claude in a worktree and set up its environment](references/chapter.md#start-claude-in-a-worktree-and-set-up-its-environment)
+  - [Start Claude in a worktree](references/chapter.md#start-claude-in-a-worktree)
   - [Clean up worktrees](references/chapter.md#clean-up-worktrees)
   - [Resume a worktree session](references/chapter.md#resume-a-worktree-session)
   - [How Claude Code enforces isolation](references/chapter.md#how-claude-code-enforces-isolation)
-  - [Isolate subagents with worktrees and clean up their leftovers](references/chapter.md#isolate-subagents-with-worktrees-and-clean-up-their-leftovers)
-  - [Customize worktree base branch PR source copied files and hooks](references/chapter.md#customize-worktree-base-branch-pr-source-copied-files-and-hooks)
+  - [Isolate subagents with worktrees](references/chapter.md#isolate-subagents-with-worktrees)
+  - [Customize worktree creation](references/chapter.md#customize-worktree-creation)
   - [What worktrees share with the main checkout](references/chapter.md#what-worktrees-share-with-the-main-checkout)
   - [Manage worktrees manually](references/chapter.md#manage-worktrees-manually)
   - [Non-git version control](references/chapter.md#non-git-version-control)
-  - [Troubleshoot worktree startup symlink refusal and resume problems](references/chapter.md#troubleshoot-worktree-startup-symlink-refusal-and-resume-problems)
+  - [Worktree troubleshooting](references/chapter.md#worktree-troubleshooting)
   - [See also](references/chapter.md#see-also)

@@ -3,7 +3,7 @@
 ## Table of Contents
 
 - [Model configuration](#model-configuration)
-  - [Available models and how to choose and set them](#available-models-and-how-to-choose-and-set-them)
+  - [Available models and how to set them](#available-models-and-how-to-set-them)
   - [Restrict and enforce model selection](#restrict-and-enforce-model-selection)
   - [Organization default model](#organization-default-model)
   - [Organization effort limits](#organization-effort-limits)
@@ -11,7 +11,7 @@
   - [Context window and auto-compaction](#context-window-and-auto-compaction)
   - [Checking your current model](#checking-your-current-model)
   - [Add a custom model option](#add-a-custom-model-option)
-  - [Model environment variables for pinning and caching](#model-environment-variables-for-pinning-and-caching)
+  - [Model environment variables](#model-environment-variables)
   - [Version history](#version-history)
 
 > ## Documentation Index
@@ -22,7 +22,7 @@
 
 > Configure which model Claude Code uses, effort levels, extended context, and the auto-compact window
 
-#### Available models and how to choose and set them
+#### Available models and how to set them
 
 For the `model` setting in Claude Code, you can configure either:
 
@@ -872,7 +872,7 @@ When [`availableModels`](https://code.claude.com/docs/en/model-config#restrict-m
 
 A custom ID that embeds a family name, such as `my-gateway/claude-opus-5-5`, counts as a specific entry for that family and disables its wildcard, so also list the versions you intend to keep selectable. See [Merge behavior](https://code.claude.com/docs/en/model-config#merge-behavior).
 
-#### Model environment variables for pinning and caching
+#### Model environment variables
 
 Use the following environment variables to control the model names that the aliases map to. Each value must be a full model name, or the equivalent identifier for your API provider. To choose the model your sessions start on, set [`ANTHROPIC_DEFAULT_MODEL`](https://code.claude.com/docs/en/model-config#set-a-default-model-for-new-sessions), which this table omits.
 

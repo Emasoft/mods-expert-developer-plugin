@@ -5,9 +5,9 @@
 - [Troubleshoot a mod](#troubleshoot-a-mod)
   - [Find out why a mod does nothing](#find-out-why-a-mod-does-nothing)
   - [Check whether mods can load](#check-whether-mods-can-load)
-  - [Fix load failures, refusals, and startup errors](#fix-load-failures-refusals-and-startup-errors)
-  - [Fix skipped hooks, crashed workers, and unloaded mods](#fix-skipped-hooks-crashed-workers-and-unloaded-mods)
-  - [Fix a denied tool call or changed tool input](#fix-a-denied-tool-call-or-changed-tool-input)
+  - [The mod doesn't load](#the-mod-doesnt-load)
+  - [A hook is skipped or a mod is unloaded](#a-hook-is-skipped-or-a-mod-is-unloaded)
+  - [A tool call is denied](#a-tool-call-is-denied)
   - [A drawing doesn't appear or respond](#a-drawing-doesnt-appear-or-respond)
   - [An edit or a value is lost](#an-edit-or-a-value-is-lost)
   - [Read the debug log](#read-the-debug-log)
@@ -42,7 +42,7 @@ To check whether your setup lets mods load at all, without installing one, run `
 
 An organization can also set `allowManagedModsOnly` to allow only its own mods, which this command doesn't report. In that case Claude Code refuses a mod you install, and [a message says why](https://code.claude.com/docs/en/plugins/mods/troubleshoot#messages-from-the-built-in-guard).
 
-#### Fix load failures, refusals, and startup errors
+#### The mod doesn't load
 
 Nothing the mod adds appears: no command, no drawing, and no change in behavior.
 
@@ -129,7 +129,7 @@ Claude writes a mod in an interactive session, nothing loads, and Claude Code do
 
 To run the mod, [copy its directory out of the mods folder](https://code.claude.com/docs/en/plugins/mods/create#use-the-mod-in-other-sessions), then in your shell start a new session with `--plugin-dir`, as in `claude --plugin-dir ~/mods/git-branch`.
 
-#### Fix skipped hooks, crashed workers, and unloaded mods
+#### A hook is skipped or a mod is unloaded
 
 The mod loaded, and then Claude Code skipped one of its hooks or unloaded it.
 
@@ -174,7 +174,7 @@ The line reads `hooks: mods that run in the hooks worker are off for this sessio
 
 Run `/reload-plugins` to load them again.
 
-#### Fix a denied tool call or changed tool input
+#### A tool call is denied
 
 The mod loaded and its hooks run, and a tool call it touched is refused.
 

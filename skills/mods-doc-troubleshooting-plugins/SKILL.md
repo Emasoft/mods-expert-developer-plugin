@@ -45,7 +45,7 @@ Full chapter: [the chapter](references/chapter.md), with the section-level TROUB
   - [Find where `/plugin` runs](references/chapter.md#find-where-plugin-runs)
   - [Add a marketplace](references/chapter.md#add-a-marketplace)
   - [Install a plugin](references/chapter.md#install-a-plugin)
-  - [Fix installed plugins whose hooks or servers fail](references/chapter.md#fix-installed-plugins-whose-hooks-or-servers-fail)
+  - [Plugin installed but not working](references/chapter.md#plugin-installed-but-not-working)
   - [Build a plugin](references/chapter.md#build-a-plugin)
   - [Host a marketplace](references/chapter.md#host-a-marketplace)
   - [Blocked by your organization](references/chapter.md#blocked-by-your-organization)

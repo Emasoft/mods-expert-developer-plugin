@@ -8,7 +8,7 @@
   - [Create your first eval suite](#create-your-first-eval-suite)
   - [Set up fixtures and mocks](#set-up-fixtures-and-mocks)
   - [Run evals](#run-evals)
-  - [Read results and trust the plugin directory](#read-results-and-trust-the-plugin-directory)
+  - [Read the results](#read-the-results)
   - [Eval suite reference](#eval-suite-reference)
   - [Troubleshooting](#troubleshooting)
   - [See also](#see-also)
@@ -446,7 +446,7 @@ A CI runner also needs these in place:
 
 To keep costs predictable, give quick every-change suites only graders that don't call a judge, use `--ablation none` where you don't need `Δ`, and leave `partial: true` documents and runs with `skippedPaidGraders` out of any trend you chart.
 
-#### Read results and trust the plugin directory
+#### Read the results
 
 Every run with at least one case writes a `results/<timestamp>/` directory inside the eval directory, containing `aggregate-result.json` and `report.html`. For a path target that's under the plugin; for a plugin you named, it's under your current directory, as the [target table](https://code.claude.com/docs/en/plugin-evals#choose-what-to-evaluate) shows. The summary table, the JSON, and the report all render the same result data.
 

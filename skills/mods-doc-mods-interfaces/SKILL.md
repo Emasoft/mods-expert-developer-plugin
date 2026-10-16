@@ -43,8 +43,8 @@ Full chapter: [the chapter](references/chapter.md), with the section-level MODS 
 
 - [Draw in the interface with a mod](references/chapter.md#draw-in-the-interface-with-a-mod)
   - [Build a pane with tabs](references/chapter.md#build-a-pane-with-tabs)
-  - [Pick where to draw, replace built-in drawing, and open panes](references/chapter.md#pick-where-to-draw-replace-built-in-drawing-and-open-panes)
-  - [Build a tree from elements and colored cell grids](references/chapter.md#build-a-tree-from-elements-and-colored-cell-grids)
-  - [Handle focus, keys, typed input, and redraws](references/chapter.md#handle-focus-keys-typed-input-and-redraws)
+  - [Pick where to draw and open panes](references/chapter.md#pick-where-to-draw-and-open-panes)
+  - [Build a tree from elements and cell grids](references/chapter.md#build-a-tree-from-elements-and-cell-grids)
+  - [Handle input and redraws](references/chapter.md#handle-input-and-redraws)
   - [Keep state across reloads and sessions](references/chapter.md#keep-state-across-reloads-and-sessions)
   - [Related Topics](references/chapter.md#related-topics)

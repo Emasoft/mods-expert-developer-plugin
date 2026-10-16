@@ -3,13 +3,13 @@
 ## Table of Contents
 
 - [Set up Claude Code in a monorepo or large codebase](#set-up-claude-code-in-a-monorepo-or-large-codebase)
-  - [What this guide covers with its settings and example monorepo](#what-this-guide-covers-with-its-settings-and-example-monorepo)
+  - [Guide scope and example monorepo](#guide-scope-and-example-monorepo)
   - [Choose where to start Claude](#choose-where-to-start-claude)
   - [Layer CLAUDE.md files by directory](#layer-claudemd-files-by-directory)
   - [Reduce what Claude reads](#reduce-what-claude-reads)
   - [Scope worktrees and file access](#scope-worktrees-and-file-access)
   - [Add per-directory skills](#add-per-directory-skills)
-  - [Centralize conventions and recommend plugins at session start](#centralize-conventions-and-recommend-plugins-at-session-start)
+  - [Centralize conventions and recommend plugins](#centralize-conventions-and-recommend-plugins)
   - [Put it together](#put-it-together)
   - [Scope and plan changes that span packages](#scope-and-plan-changes-that-span-packages)
   - [Next steps](#next-steps)
@@ -26,7 +26,7 @@ A large codebase can be one repository with millions of lines or a monorepo with
 
 This guide shows individual developers and engineering teams how to scope Claude to the part of the codebase a task touches. Each section notes whether a setting is personal to your machine or committed to the repository.
 
-#### What this guide covers with its settings and example monorepo
+#### Guide scope and example monorepo
 
 The [table below](https://code.claude.com/docs/en/large-codebases#settings-on-this-page) lists each setting and what it accomplishes. The [file tree after it](https://code.claude.com/docs/en/large-codebases#the-example-monorepo) is the example monorepo every code sample on this page refers to.
 
@@ -385,7 +385,7 @@ For skills that many directories share, such as PR conventions or a deploy check
 
 To find which skills go unused, enable the OpenTelemetry [logs exporter](https://code.claude.com/docs/en/monitoring-usage) and set `OTEL_LOG_TOOL_DETAILS=1` so skill names are recorded verbatim instead of redacted. The [`skill_activated` event](https://code.claude.com/docs/en/monitoring-usage#skill-activated-event) records every invocation in its `skill.name` attribute, and `invocation_trigger` records whether a command, Claude, or a nested skill invoked it, which tells you what to consolidate or retire.
 
-#### Centralize conventions and recommend plugins at session start
+#### Centralize conventions and recommend plugins
 
 Per-directory CLAUDE.md files can become hard to govern as the codebase grows. Conventions drift, files go stale, and no one owns the root. Solving that typically falls to the team that maintains the repository's Claude Code setup rather than to each developer working in their own area.
 

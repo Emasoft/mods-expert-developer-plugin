@@ -4,9 +4,9 @@
 
 - [Create a Claude Code plugin](#create-a-claude-code-plugin)
   - [Decide when to use a plugin](#decide-when-to-use-a-plugin)
-  - [Create your first plugin and understand its layout](#create-your-first-plugin-and-understand-its-layout)
-  - [Develop and load plugins locally without a marketplace](#develop-and-load-plugins-locally-without-a-marketplace)
-  - [Test and troubleshoot plugin loading and behavior](#test-and-troubleshoot-plugin-loading-and-behavior)
+  - [Create your first plugin](#create-your-first-plugin)
+  - [Develop without a marketplace](#develop-without-a-marketplace)
+  - [Test and debug plugins](#test-and-debug-plugins)
   - [RELATED DOCS](#related-docs)
 
 ### Create a Claude Code plugin
@@ -39,7 +39,7 @@ When you move standalone skills, agents, hooks, and MCP config into a plugin, th
 
 To move an existing setup into a plugin, see [Convert an existing `.claude/` setup](https://code.claude.com/docs/en/plugins/create#convert-an-existing-claude-setup).
 
-#### Create your first plugin and understand its layout
+#### Create your first plugin
 
 In this walkthrough, you create a plugin whose only component is one skill, a greeting, and run it with `--plugin-dir`, which loads a plugin for one session without installing it. A plugin can hold any mix of [components](https://code.claude.com/docs/en/plugins/components), such as skills, agents, hooks, and MCP servers, and none is required; one skill is the smallest example that shows the layout.
 
@@ -166,7 +166,7 @@ The table lists the directories most plugins start with, and the [full layout](h
   The plugin root is the plugin's own directory, not `~/.claude/` itself. A `.mcp.json` saved at `~/.claude/.mcp.json` doesn't load.
 </Warning>
 
-#### Develop and load plugins locally without a marketplace
+#### Develop without a marketplace
 
 You don't need a [marketplace](https://code.claude.com/docs/en/plugins/overview#get-plugins-from-a-marketplace) to run a plugin you're writing. Load it directly from disk or a URL instead:
 
@@ -265,7 +265,7 @@ To stop loading a scaffolded plugin, delete its directory, or run `claude plugin
 
 `claude plugin init` writes the plugin to your personal skills directory at `~/.claude/skills/`, so it loads for you in every project. To make a plugin load for everyone in one repository, create the same layout yourself at `<project>/.claude/skills/<name>/`, including its `.claude-plugin/plugin.json`. See [Plugins shared through a repository](https://code.claude.com/docs/en/plugins/loading#plugins-shared-through-a-repository) for the conditions under which Claude Code loads it.
 
-#### Test and troubleshoot plugin loading and behavior
+#### Test and debug plugins
 
 When a change to your plugin doesn't show up, work through these checks in order. Each one tells you what Claude Code did with the plugin:
 

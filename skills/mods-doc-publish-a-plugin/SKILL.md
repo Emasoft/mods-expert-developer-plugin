@@ -45,7 +45,7 @@ Full chapter: [the chapter](references/chapter.md), with the section-level PUBLI
   - [Choose how to distribute](references/chapter.md#choose-how-to-distribute)
   - [Prepare your plugin for release](references/chapter.md#prepare-your-plugin-for-release)
   - [Share a plugin without a marketplace](references/chapter.md#share-a-plugin-without-a-marketplace)
-  - [Run your own plugin marketplace](references/chapter.md#run-your-own-plugin-marketplace)
+  - [Publish through your own marketplace](references/chapter.md#publish-through-your-own-marketplace)
   - [Manage a plugin after release](references/chapter.md#manage-a-plugin-after-release)
   - [Declare dependencies](references/chapter.md#declare-dependencies)
   - [Related Docs](references/chapter.md#related-docs)

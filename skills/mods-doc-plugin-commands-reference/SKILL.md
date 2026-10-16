@@ -35,14 +35,14 @@ If an anchor misses, search the PLUGIN COMMANDS REFERENCE headings for the entry
 
 ## Examples
 
-Input: a task about "Claude plugin commands for plugin lifecycle and validation". Output: open [Claude plugin commands for plugin lifecycle and validation](references/chapter.md#claude-plugin-commands-for-plugin-lifecycle-and-validation) and read that section only.
+Input: a task about "claude plugin commands". Output: open [claude plugin commands](references/chapter.md#claude-plugin-commands) and read that section only.
 
 ## Resources
 
 Full chapter: [the chapter](references/chapter.md), with the section-level PLUGIN COMMANDS REFERENCE table of contents:
 
 - [Plugin commands reference](references/chapter.md#plugin-commands-reference-1)
-  - [Claude plugin commands for plugin lifecycle and validation](references/chapter.md#claude-plugin-commands-for-plugin-lifecycle-and-validation)
-  - [Claude plugin marketplace commands and plugin reloading](references/chapter.md#claude-plugin-marketplace-commands-and-plugin-reloading)
+  - [claude plugin commands](references/chapter.md#claude-plugin-commands)
+  - [claude plugin marketplace commands](references/chapter.md#claude-plugin-marketplace-commands)
   - [Flags that load a plugin for one session](references/chapter.md#flags-that-load-a-plugin-for-one-session)
   - [See Also:](references/chapter.md#see-also)

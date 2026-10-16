@@ -3,12 +3,12 @@
 ## Table of Contents
 
 - [Plugin loading reference](#plugin-loading-reference)
-  - [Check the load stage a plugin reached including late arrivals](#check-the-load-stage-a-plugin-reached-including-late-arrivals)
-  - [Find a plugin source manifest name and shared repository sync](#find-a-plugin-source-manifest-name-and-shared-repository-sync)
-  - [Find where a plugin is enabled and resolve settings conflicts](#find-where-a-plugin-is-enabled-and-resolve-settings-conflicts)
-  - [Find plugins on disk copies cleanup and dependencies](#find-plugins-on-disk-copies-cleanup-and-dependencies)
-  - [Versions marketplace refresh auto-update and command re-runs](#versions-marketplace-refresh-auto-update-and-command-re-runs)
-  - [Name conflicts and keeping a session-only plugin out](#name-conflicts-and-keeping-a-session-only-plugin-out)
+  - [Check which stage a plugin reached](#check-which-stage-a-plugin-reached)
+  - [Find where a plugin came from](#find-where-a-plugin-came-from)
+  - [Find where a plugin is enabled](#find-where-a-plugin-is-enabled)
+  - [Find plugins on disk](#find-plugins-on-disk)
+  - [Versions and updates](#versions-and-updates)
+  - [Name conflicts](#name-conflicts)
   - [Related Docs](#related-docs)
 
 > ## Documentation Index
@@ -35,7 +35,7 @@ Start with [Check which stage a plugin reached](https://code.claude.com/docs/en/
 * You're looking at the files under `~/.claude/plugins/`: [Find plugins on disk](https://code.claude.com/docs/en/plugins/loading#find-plugins-on-disk)
 * A `--plugin-dir` plugin didn't load, or a same-named plugin loaded instead: [Name conflicts](https://code.claude.com/docs/en/plugins/loading#name-conflicts)
 
-#### Check the load stage a plugin reached including late arrivals
+#### Check which stage a plugin reached
 
 An `enabledPlugins` entry becomes a plugin you can use in stages: your settings declare it, Claude Code fetches it to disk, and the running session loads it. When a plugin doesn't behave as a settings file suggests, check which stage it reached:
 
@@ -55,7 +55,7 @@ Plugins load at session start from `installed_plugins.json` and the cache withou
 
 An enabled plugin that neither path fetched and that has no usable cache directory shows `Plugin "<name>" not cached at <path>` in the `/plugin` **Errors** tab, and `claude plugin list` adds `— run /plugin to refresh` to the same line. For the fix, see [`Plugin "<name>" not cached at <path>`](https://code.claude.com/docs/en/plugins/troubleshooting#plugin-not-cached-at).
 
-#### Find a plugin source manifest name and shared repository sync
+#### Find where a plugin came from
 
 Every plugin has an id of the form `<name>@<origin>`, which is what you see in settings files and in `claude plugin list --json`. The part after `@` tells you where Claude Code found the plugin:
 
@@ -143,7 +143,7 @@ You can turn synced plugins off one at a time, except a plugin your organization
 
 For removing a plugin on claude.ai, see [Manage installed plugins](https://code.claude.com/docs/en/plugins/install#manage-installed-plugins).
 
-#### Find where a plugin is enabled and resolve settings conflicts
+#### Find where a plugin is enabled
 
 You can set an `enabledPlugins` entry in any of six sources. The table lists them from lowest precedence to highest, and who each one applies to. For the settings files themselves, see [Settings files and who they affect](https://code.claude.com/docs/en/settings#where-settings-live).
 
@@ -177,7 +177,7 @@ Claude Code fetches a plugin with an external source only when one of these sour
 * The `--settings` flag
 * Managed settings
 
-#### Find plugins on disk copies cleanup and dependencies
+#### Find plugins on disk
 
 Claude Code keeps plugin files and state records under one plugins root, which is `~/.claude/plugins` unless you set [`CLAUDE_CODE_PLUGIN_CACHE_DIR`](https://code.claude.com/docs/en/env-vars). Every path in the table is relative to that root.
 
@@ -282,7 +282,7 @@ If the install fails or is skipped, the plugin still loads, but the parts of it 
 
 When the automatic install can't provide a dependency, install it from a hook into the [persistent data directory](https://code.claude.com/docs/en/plugins/components#path-variables-and-persistent-data). That includes packages that need their lifecycle scripts to build, Python dependencies, plugins locked with Yarn or pnpm, and dependencies that aren't registry packages, such as git dependencies.
 
-#### Versions marketplace refresh auto-update and command re-runs
+#### Versions and updates
 
 If a plugin's author pushed new commits and `claude plugin update` prints `<name> is already at the latest version (<version>).`, the version Claude Code computes for the plugin is unchanged, so the plugin's files on disk don't change.
 
@@ -372,7 +372,7 @@ When the command's hashed output has changed, Claude Code installs the result as
 
 If reloading in place would invalidate the session's prompt cache, Claude Code instead prompts you to run `/reload-plugins`, which [warns about the cache cost and applies when rerun with `--force`](https://code.claude.com/docs/en/prompt-caching#enabling-or-disabling-a-plugin).
 
-#### Name conflicts and keeping a session-only plugin out
+#### Name conflicts
 
 When enabled plugins from different origins share a manifest name, this order decides which one loads, from highest precedence to lowest:
 

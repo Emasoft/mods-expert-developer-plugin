@@ -3,9 +3,9 @@
 ## Table of Contents
 
 - [Install and manage plugins](#install-and-manage-plugins-1)
-  - [Install plugins with a chosen scope from session or shell](#install-plugins-with-a-chosen-scope-from-session-or-shell)
-  - [Add public and private marketplaces and install in one step](#add-public-and-private-marketplaces-and-install-in-one-step)
-  - [Manage installed plugins and their dependencies and usage](#manage-installed-plugins-and-their-dependencies-and-usage)
+  - [Install a plugin](#install-a-plugin)
+  - [Add a marketplace](#add-a-marketplace)
+  - [Manage installed plugins](#manage-installed-plugins)
   - [Keep plugins updated](#keep-plugins-updated)
   - [Manage marketplaces](#manage-marketplaces)
   - [Related Docs](#related-docs)
@@ -31,7 +31,7 @@ This page is for anyone using plugins on their own machine or account, whether i
 
 Start with [Install a plugin](https://code.claude.com/docs/en/plugins/install#install-a-plugin). If someone sent you an install command whose `@` name isn't `claude-plugins-official`, [add that marketplace](https://code.claude.com/docs/en/plugins/install#add-a-marketplace) first.
 
-#### Install plugins with a chosen scope from session or shell
+#### Install a plugin
 
 As an example, this section installs [`commit-commands`](https://github.com/anthropics/claude-plugins-official/tree/main/plugins/commit-commands) from [Anthropic's official marketplace](https://code.claude.com/docs/en/plugins/anthropic-marketplaces), which adds commands for committing, pushing, and opening pull requests.
 
@@ -207,7 +207,7 @@ Some plugins install by running a command that their marketplace names, called a
 
 For the other `claude plugin install` flags, see [plugin install](https://code.claude.com/docs/en/plugins/cli-reference#plugin-install).
 
-#### Add public and private marketplaces and install in one step
+#### Add a marketplace
 
 You only need this section when the plugin you want isn't in Anthropic's official marketplace, for example one a coworker published or one from Anthropic's community marketplace.
 
@@ -295,7 +295,7 @@ If you sign out, or sign in to a different claude.ai organization, the marketpla
 
 The `From claude.ai:` section can also list git-based marketplaces shared through claude.ai, and it prints a source for each of those. Add them by that source as in [Add a marketplace](https://code.claude.com/docs/en/plugins/install#add-a-marketplace), not with `--claudeai`.
 
-#### Manage installed plugins and their dependencies and usage
+#### Manage installed plugins
 
 The **Installed** tab in `/plugin` lists your plugins with actions to enable, disable, update, or uninstall each one. In a Claude Code session, run `/plugin` and press **Tab** to reach it, or run `/plugin enable`, `/plugin disable`, or `/plugin uninstall` to open the panel and make that change there. Disabled plugins are grouped under a collapsed header at the bottom of the list. Use these keys on the list:
 

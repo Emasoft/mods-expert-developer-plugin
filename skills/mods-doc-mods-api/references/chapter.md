@@ -4,7 +4,7 @@
 
 - [Use the mods API](#use-the-mods-api)
   - [Add a command or a tool](#add-a-command-or-a-tool)
-  - [Call a model with prompts and caching](#call-a-model-with-prompts-and-caching)
+  - [Call a model](#call-a-model)
   - [Run and control background work](#run-and-control-background-work)
   - [Send and receive messages between sessions](#send-and-receive-messages-between-sessions)
   - [Reach files, processes, and the network](#reach-files-processes-and-the-network)
@@ -77,7 +77,7 @@ When you ask about a ticket, Claude can call `mcp__my-mod__ticket` with its id. 
   When [MCP tool search](https://code.claude.com/docs/en/mcp#scale-with-mcp-tool-search) defers a registered tool, Claude sees its name but not its description until it searches for it. If Claude should consider the tool on every turn, add [`isDeferred: false`](https://code.claude.com/docs/en/plugins/mods/reference#tools) to the registration to [load the full tool upfront](https://code.claude.com/docs/en/mcp#exempt-a-server-from-deferral). The field requires Claude Code v2.1.293 or later, and earlier versions ignore it.
 </Tip>
 
-#### Call a model with prompts and caching
+#### Call a model
 
 A mod can send its own requests to a model for a small job such as classifying or summarizing text. `$.model.complete` sends your prompt on its own, and `$.model.fork({ prompt })` sends the current conversation with your prompt at the end.
 

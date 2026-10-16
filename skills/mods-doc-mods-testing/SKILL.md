@@ -35,14 +35,14 @@ If an anchor misses, search the MODS TESTING headings for the entry title; if th
 
 ## Examples
 
-Input: a task about "Write a test with stubs and test kit rules". Output: open [Write a test with stubs and test kit rules](references/chapter.md#write-a-test-with-stubs-and-test-kit-rules) and read that section only.
+Input: a task about "Write a mod test". Output: open [Write a mod test](references/chapter.md#write-a-mod-test) and read that section only.
 
 ## Resources
 
 Full chapter: [the chapter](references/chapter.md), with the section-level MODS TESTING table of contents:
 
 - [Test a mod](references/chapter.md#test-a-mod)
-  - [Write a test with stubs and test kit rules](references/chapter.md#write-a-test-with-stubs-and-test-kit-rules)
+  - [Write a mod test](references/chapter.md#write-a-mod-test)
   - [Test a timer](references/chapter.md#test-a-timer)
   - [Test a drawing](references/chapter.md#test-a-drawing)
   - [Related Topics](references/chapter.md#related-topics)

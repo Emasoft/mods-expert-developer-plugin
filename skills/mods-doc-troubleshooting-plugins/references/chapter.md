@@ -6,7 +6,7 @@
   - [Find where `/plugin` runs](#find-where-plugin-runs)
   - [Add a marketplace](#add-a-marketplace)
   - [Install a plugin](#install-a-plugin)
-  - [Fix installed plugins whose hooks or servers fail](#fix-installed-plugins-whose-hooks-or-servers-fail)
+  - [Plugin installed but not working](#plugin-installed-but-not-working)
   - [Build a plugin](#build-a-plugin)
   - [Host a marketplace](#host-a-marketplace)
   - [Blocked by your organization](#blocked-by-your-organization)
@@ -710,7 +710,7 @@ The table lists each message and its fix. To declare dependencies as an author, 
 
 To see these programmatically, run `claude plugin list --json` in your shell. Plugins with problems carry an `errors` field with the messages and an `errorDetails` field with a `type` for each: the first two rows are `dependency-unsatisfied` and the third is `dependency-version-unsatisfied`.
 
-#### Fix installed plugins whose hooks or servers fail
+#### Plugin installed but not working
 
 The install succeeded, but the plugin's skills, hooks, or servers aren't doing anything. Start with [Plugin doesn't appear or its skills don't show up](https://code.claude.com/docs/en/plugins/troubleshooting#plugin-doesnt-appear-or-its-skills-dont-show-up), which tells you where Claude Code reports what it loaded, then match the message.
 

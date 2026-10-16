@@ -35,13 +35,13 @@ If an anchor misses, search the HEADLESS MODE REFERENCE headings for the entry t
 
 ## Examples
 
-Input: a task about "Basic usage startup options and shutdown behavior". Output: open [Basic usage startup options and shutdown behavior](references/chapter.md#basic-usage-startup-options-and-shutdown-behavior) and read that section only.
+Input: a task about "Basic usage and startup options". Output: open [Basic usage and startup options](references/chapter.md#basic-usage-and-startup-options) and read that section only.
 
 ## Resources
 
 Full chapter: [the chapter](references/chapter.md), with the section-level HEADLESS MODE REFERENCE table of contents:
 
 - [Run Claude Code programmatically](references/chapter.md#run-claude-code-programmatically)
-  - [Basic usage startup options and shutdown behavior](references/chapter.md#basic-usage-startup-options-and-shutdown-behavior)
-  - [Usage examples for scripts output permissions and sessions](references/chapter.md#usage-examples-for-scripts-output-permissions-and-sessions)
+  - [Basic usage and startup options](references/chapter.md#basic-usage-and-startup-options)
+  - [Headless usage examples](references/chapter.md#headless-usage-examples)
   - [Next steps](references/chapter.md#next-steps)

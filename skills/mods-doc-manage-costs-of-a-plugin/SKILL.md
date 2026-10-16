@@ -44,5 +44,5 @@ Full chapter: [the chapter](references/chapter.md), with the section-level MANAG
 - [Measure plugin cost and usage](references/chapter.md#measure-plugin-cost-and-usage)
   - [Measure and reduce what a plugin costs](references/chapter.md#measure-and-reduce-what-a-plugin-costs)
   - [Check whether a plugin is used](references/chapter.md#check-whether-a-plugin-is-used)
-  - [Measure across a fleet with the Analytics API](references/chapter.md#measure-across-a-fleet-with-the-analytics-api)
+  - [Measure across a fleet](references/chapter.md#measure-across-a-fleet)
   - [Related Docs](references/chapter.md#related-docs)

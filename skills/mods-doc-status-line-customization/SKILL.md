@@ -46,7 +46,7 @@ Full chapter: [the chapter](references/chapter.md), with the section-level STATU
   - [Build a status line step by step](references/chapter.md#build-a-status-line-step-by-step)
   - [How status lines work](references/chapter.md#how-status-lines-work)
   - [Available data](references/chapter.md#available-data)
-  - [Ready-made status line examples](references/chapter.md#ready-made-status-line-examples)
+  - [Status line examples](references/chapter.md#status-line-examples)
   - [Subagent status lines](references/chapter.md#subagent-status-lines)
   - [Tips](references/chapter.md#tips)
   - [Troubleshooting](references/chapter.md#troubleshooting)

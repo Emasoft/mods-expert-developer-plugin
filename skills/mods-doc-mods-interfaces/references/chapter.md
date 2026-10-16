@@ -4,9 +4,9 @@
 
 - [Draw in the interface with a mod](#draw-in-the-interface-with-a-mod)
   - [Build a pane with tabs](#build-a-pane-with-tabs)
-  - [Pick where to draw, replace built-in drawing, and open panes](#pick-where-to-draw-replace-built-in-drawing-and-open-panes)
-  - [Build a tree from elements and colored cell grids](#build-a-tree-from-elements-and-colored-cell-grids)
-  - [Handle focus, keys, typed input, and redraws](#handle-focus-keys-typed-input-and-redraws)
+  - [Pick where to draw and open panes](#pick-where-to-draw-and-open-panes)
+  - [Build a tree from elements and cell grids](#build-a-tree-from-elements-and-cell-grids)
+  - [Handle input and redraws](#handle-input-and-redraws)
   - [Keep state across reloads and sessions](#keep-state-across-reloads-and-sessions)
   - [Related Topics](#related-topics)
 
@@ -191,7 +191,7 @@ The tabs are two buttons in a row. The mod keeps track of which one is active an
   </Step>
 </Steps>
 
-#### Pick where to draw, replace built-in drawing, and open panes
+#### Pick where to draw and open panes
 
 A `ui.render` hook handles every render site unless its second `on` argument supplies a filter ([matcher](https://code.claude.com/docs/en/plugins/mods/events#filter-which-events-a-hook-handles)). `{ component: 'Pane' }` selects only panes. `e.component` names the site, `e.surface` the drawing app, and `e.props` the site's data. For panes, `e.requestId` is the opening `id`.
 
@@ -352,7 +352,7 @@ A pane your mod opens without being asked doesn't appear in a narrow terminal, s
 
 When the pane appears, `$.ui.open` resolves to `{ isPlaced: true }`. When the pane is waiting, `isPlaced` is `false` and `reason` is a string that says why. A waiting pane appears when the user opens it or widens the terminal. To say something is available without opening a pane, call `$.ui.toast('Your message')`, which shows a toast notification.
 
-#### Build a tree from elements and colored cell grids
+#### Build a tree from elements and cell grids
 
 A `ui.render` hook returns an element tree: nested boxes, text, and controls describing a drawing Claude Code renders in the terminal or Desktop app.
 
@@ -509,7 +509,7 @@ The `rows` array is the part you'd change, and `cellsOf` turns it into the packe
 
 Each character has to be one cell wide. To animate a `Raster` that's already on screen, call `$.ui.blit` with the pane's `id` as `requestId`, the `Raster`'s `key`, the same size, and new cells. For this example, that's `$.ui.blit({ requestId: 'heat', key: 'grid', columns: 3, rows: 2, cells: cellsOf(newRows) })`. It repaints that one element without running your `ui.render` hook again.
 
-#### Handle focus, keys, typed input, and redraws
+#### Handle input and redraws
 
 When the user presses a button, types into a field, or picks from a list your mod drew, Claude Code calls that control's callback, which runs in your module. Each control takes its own callbacks:
 

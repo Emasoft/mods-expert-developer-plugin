@@ -6,7 +6,7 @@
   - [Choose how to distribute](#choose-how-to-distribute)
   - [Prepare your plugin for release](#prepare-your-plugin-for-release)
   - [Share a plugin without a marketplace](#share-a-plugin-without-a-marketplace)
-  - [Run your own plugin marketplace](#run-your-own-plugin-marketplace)
+  - [Publish through your own marketplace](#publish-through-your-own-marketplace)
   - [Manage a plugin after release](#manage-a-plugin-after-release)
   - [Declare dependencies](#declare-dependencies)
   - [Related Docs](#related-docs)
@@ -93,7 +93,7 @@ Adding a `.claude-plugin/marketplace.json` to that same repository is what lets 
 
 If you maintain a CLI or SDK, publish the plugin in a marketplace and have your installer or post-install message run or print the two commands a user needs: `claude plugin marketplace add <source>`, then `claude plugin install <name>@<marketplace>`. For in-session discovery when someone uses your tool, see [Recommend your plugin from your CLI](https://code.claude.com/docs/en/plugins/cli-hints).
 
-#### Run your own plugin marketplace
+#### Publish through your own marketplace
 
 Your own marketplace is a `.claude-plugin/marketplace.json` file that lists your plugin, added to a git repository. Once the file is in the repository, the plugin is published, with no submission form. You can keep the file in the plugin's own repository or in a separate one.
 

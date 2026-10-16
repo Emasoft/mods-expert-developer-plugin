@@ -5,7 +5,7 @@
 - [Measure plugin cost and usage](#measure-plugin-cost-and-usage)
   - [Measure and reduce what a plugin costs](#measure-and-reduce-what-a-plugin-costs)
   - [Check whether a plugin is used](#check-whether-a-plugin-is-used)
-  - [Measure across a fleet with the Analytics API](#measure-across-a-fleet-with-the-analytics-api)
+  - [Measure across a fleet](#measure-across-a-fleet)
   - [Related Docs](#related-docs)
 
 > ## Documentation Index
@@ -128,7 +128,7 @@ The `/doctor` checkup lists each user-installed skill, MCP server, and plugin, a
 
 On a Pro, Max, Team, or Enterprise plan, the `/usage` breakdown attributes recent usage to skills, subagents, plugins, and MCP servers as a share of the total. See [Using the `/usage` command](https://code.claude.com/docs/en/costs#using-the-/usage-command).
 
-#### Measure across a fleet with the Analytics API
+#### Measure across a fleet
 
 If you administer Claude Code for an organization, you can measure plugin cost and usage across every machine from either of these sources:
 

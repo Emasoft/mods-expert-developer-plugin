@@ -5,7 +5,7 @@
 - [Automate actions with hooks](#automate-actions-with-hooks-1)
   - [Set up your first hook](#set-up-your-first-hook)
   - [Hook recipes for common automation tasks](#hook-recipes-for-common-automation-tasks)
-  - [Hook execution, input and output, matchers, and locations](#hook-execution-input-and-output-matchers-and-locations)
+  - [Hook lifecycle and configuration](#hook-lifecycle-and-configuration)
   - [Prompt-based hooks](#prompt-based-hooks)
   - [Agent-based hooks](#agent-based-hooks)
   - [HTTP hooks](#http-hooks)
@@ -485,7 +485,7 @@ To switch the session to `acceptEdits`, your hook writes this JSON to stdout:
 
 Keep the matcher as narrow as possible. Matching on `.*` or leaving the matcher empty would auto-approve every tool permission prompt, including file writes and shell commands. See the [PermissionRequest reference](https://code.claude.com/docs/en/hooks#permissionrequest-decision-control) for the full set of decision fields.
 
-#### Hook execution, input and output, matchers, and locations
+#### Hook lifecycle and configuration
 
 Claude Code fires hook events at specific points in its lifecycle. When an event fires, Claude Code runs all matching hooks in parallel; see [Hook handler fields](https://code.claude.com/docs/en/hooks#hook-handler-fields) for how duplicate handlers are treated. The table below shows each event and when it triggers:
 

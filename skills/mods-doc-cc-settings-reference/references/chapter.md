@@ -3,9 +3,9 @@
 ## Table of Contents
 
 - [Settings files and precedence](#settings-files-and-precedence)
-  - [Settings file scopes locations sharing and enforcement](#settings-file-scopes-locations-sharing-and-enforcement)
-  - [Change apply verify and repair settings](#change-apply-verify-and-repair-settings)
-  - [Settings precedence merging examples and troubleshooting](#settings-precedence-merging-examples-and-troubleshooting)
+  - [Settings files and who they affect](#settings-files-and-who-they-affect)
+  - [Change and verify a setting](#change-and-verify-a-setting)
+  - [Settings precedence and merging](#settings-precedence-and-merging)
   - [Settings in cloud sessions](#settings-in-cloud-sessions)
   - [What's next](#whats-next)
 
@@ -408,7 +408,7 @@ Claude Code reads settings from JSON settings files such as `~/.claude/settings.
 
 <span id="where-settings-live" />
 
-#### Settings file scopes locations sharing and enforcement
+#### Settings files and who they affect
 
 Claude Code reads settings from four files, and an organization can also deliver managed settings from the claude.ai console. Each source has a scope: the set of people and projects a setting saved in it applies to, whether that's only you, everyone in a project, or everyone in your organization.
 
@@ -521,7 +521,7 @@ In a [Cowork](https://claude.com/docs/cowork/overview) session that runs on your
 
 If you're the administrator, [Set up Claude Code for your organization](https://code.claude.com/docs/en/admin-setup) walks through choosing what to enforce, and [Deploy managed settings](https://code.claude.com/docs/en/managed-settings) covers delivery and how to confirm a policy is in force. For the warning the managed settings editor in the claude.ai admin console can show, see [Configure server-managed settings](https://code.claude.com/docs/en/server-managed-settings#configure-server-managed-settings).
 
-#### Change apply verify and repair settings
+#### Change and verify a setting
 
 You can change a setting from the `/config` menu, by editing a settings file, or for one session from the command line.
 
@@ -633,7 +633,7 @@ A `-p` run shows no dialog. Unless [a managed settings document can't be parsed]
 
 <span id="which-value-wins" />
 
-#### Settings precedence merging examples and troubleshooting
+#### Settings precedence and merging
 
 When the same key appears in more than one place, Claude Code uses the value from the highest level that sets it. The stack below shows the levels, highest on top; a key at a higher level overrides the same key anywhere below it.
 

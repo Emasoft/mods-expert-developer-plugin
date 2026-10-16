@@ -35,18 +35,18 @@ If an anchor misses, search the PROMPT CACHING REFERENCE headings for the entry 
 
 ## Examples
 
-Input: a task about "How the cache is organized and where it lives". Output: open [How the cache is organized and where it lives](references/chapter.md#how-the-cache-is-organized-and-where-it-lives) and read that section only.
+Input: a task about "How the cache is organized". Output: open [How the cache is organized](references/chapter.md#how-the-cache-is-organized) and read that section only.
 
 ## Resources
 
 Full chapter: [the chapter](references/chapter.md), with the section-level PROMPT CACHING REFERENCE table of contents:
 
 - [How Claude Code uses prompt caching](references/chapter.md#how-claude-code-uses-prompt-caching)
-  - [How the cache is organized and where it lives](references/chapter.md#how-the-cache-is-organized-and-where-it-lives)
+  - [How the cache is organized](references/chapter.md#how-the-cache-is-organized)
   - [Actions that invalidate the cache](references/chapter.md#actions-that-invalidate-the-cache)
   - [Actions that keep the cache](references/chapter.md#actions-that-keep-the-cache)
   - [Resuming a session](references/chapter.md#resuming-a-session)
-  - [Cache lifetime and TTL selection](references/chapter.md#cache-lifetime-and-ttl-selection)
+  - [Cache lifetime and TTL](references/chapter.md#cache-lifetime-and-ttl)
   - [Cache scope](references/chapter.md#cache-scope)
   - [Check cache performance](references/chapter.md#check-cache-performance)
   - [Subagents and the cache](references/chapter.md#subagents-and-the-cache)

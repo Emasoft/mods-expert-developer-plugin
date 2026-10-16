@@ -58,7 +58,7 @@ Full chapter: [the chapter](references/chapter.md), with the section-level RECOM
 - [Quick Start](references/chapter.md#quick-start)
   - [Creating Your First Plugin](references/chapter.md#creating-your-first-plugin)
 - [Development Workflow](references/chapter.md#development-workflow)
-- [Toolkit features and bundled resources](references/chapter.md#toolkit-features-and-bundled-resources)
+- [Toolkit features](references/chapter.md#toolkit-features)
   - [Progressive Disclosure](references/chapter.md#progressive-disclosure)
   - [Utility Scripts](references/chapter.md#utility-scripts)
   - [Working Examples](references/chapter.md#working-examples)

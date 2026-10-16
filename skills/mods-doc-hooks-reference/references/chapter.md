@@ -6,7 +6,7 @@
   - [Hook lifecycle](#hook-lifecycle)
   - [Hook configuration and management](#hook-configuration-and-management)
   - [Hook input and output](#hook-input-and-output)
-  - [Every hook event with its input and decision control](#every-hook-event-with-its-input-and-decision-control)
+  - [Hook events and decision control](#hook-events-and-decision-control)
   - [Prompt-based hooks](#prompt-based-hooks)
   - [Agent-based hooks](#agent-based-hooks)
   - [Run hooks in the background](#run-hooks-in-the-background)
@@ -1189,7 +1189,7 @@ Here are examples of each pattern in action:
 
 For extended examples including Bash command validation, prompt filtering, and auto-approval scripts, see [What you can automate](https://code.claude.com/docs/en/hooks-guide#what-you-can-automate) in the guide and the [Bash command validator reference implementation](https://github.com/anthropics/claude-code/blob/main/examples/hooks/bash_command_validator_example.py).
 
-#### Every hook event with its input and decision control
+#### Hook events and decision control
 
 Each event corresponds to a point in Claude Code's lifecycle where hooks can run. The sections below are ordered to match the lifecycle: from session setup through the agentic loop to session end. Each section describes when the event fires, what matchers it supports, the JSON input it receives, and how to control behavior through output.
 

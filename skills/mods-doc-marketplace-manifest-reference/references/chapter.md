@@ -3,12 +3,12 @@
 ## Table of Contents
 
 - [Marketplace reference](#marketplace-reference)
-  - [Marketplace file layout and reserved names](#marketplace-file-layout-and-reserved-names)
+  - [Marketplace file layout](#marketplace-file-layout)
   - [Top-level fields](#top-level-fields)
-  - [Plugin entries with display fields and strict mode](#plugin-entries-with-display-fields-and-strict-mode)
-  - [Plugin source types and install behavior](#plugin-source-types-and-install-behavior)
-  - [Marketplace source types and settings usage](#marketplace-source-types-and-settings-usage)
-  - [Validation messages and unvalidated failures](#validation-messages-and-unvalidated-failures)
+  - [Plugin entry fields](#plugin-entry-fields)
+  - [Plugin source types](#plugin-source-types)
+  - [Marketplace source types](#marketplace-source-types)
+  - [Validation messages](#validation-messages)
   - [See Also:](#see-also)
 
 > ## Documentation Index
@@ -39,7 +39,7 @@ Find the section for what you're writing or reading:
 * **A `source` object in settings**: [Marketplace sources](https://code.claude.com/docs/en/plugins/marketplace-reference#marketplace-sources)
 * **Output from [`claude plugin validate <path>`](https://code.claude.com/docs/en/plugins/cli-reference)**: [Validation messages](https://code.claude.com/docs/en/plugins/marketplace-reference#validation-messages), which maps each message to the field it names
 
-#### Marketplace file layout and reserved names
+#### Marketplace file layout
 
 Save the marketplace file at `.claude-plugin/marketplace.json` in your marketplace's directory. If you keep the file somewhere else in the repository, users have to declare the marketplace in [`extraKnownMarketplaces`](https://code.claude.com/docs/en/settings-reference#extraknownmarketplaces) with `path` set on its source, because `claude plugin marketplace add` has no option for it.
 
@@ -86,7 +86,7 @@ The table lists every key Claude Code reads from `marketplace.json`. `name`, `ow
 | `allowCrossMarketplaceDependenciesOn` | array of strings | Marketplace names whose plugins may be installed as dependencies of this marketplace's plugins. When you install a plugin, only the list in that plugin's own marketplace applies, for its whole dependency chain. See [Plugin dependencies](https://code.claude.com/docs/en/plugins/dependencies) |
 | `renames` | object | Map from a former plugin `name` to its current name, or to `null` for a plugin you removed. See [Host and maintain a marketplace](https://code.claude.com/docs/en/plugins/host-marketplace) |
 
-#### Plugin entries with display fields and strict mode
+#### Plugin entry fields
 
 Each object in the top-level `plugins` array of `marketplace.json` names a plugin and says where to fetch it. `name` and `source` are required.
 
@@ -144,7 +144,7 @@ Before install, Claude Code can read `plugin.json` only for entries with a [rela
 | `false` | present | none | `plugin.json` is the manifest, as with `true` |
 | `false` | present | one or more | Conflict. The plugin fails to load with `Plugin <name> has conflicting manifests: both plugin.json and marketplace entry specify components` |
 
-#### Plugin source types and install behavior
+#### Plugin source types
 
 A plugin entry's `source` says where Claude Code fetches that one plugin from. It's either a relative path string or an object whose own `source` key names the type, so an entry looks like `"source": { "source": "github", "repo": "your-org/formatter" }`.
 
@@ -348,7 +348,7 @@ A link-mode plugin has these requirements:
 * **Sessions started inside the directory**: a session started in the printed directory or anywhere below it doesn't load the plugin.
 * **Not on Windows**: Claude Code refuses to install a link-mode plugin on Windows. Declare `"mode": "copy"` there.
 
-#### Marketplace source types and settings usage
+#### Marketplace source types
 
 A marketplace source says where Claude Code fetches a `marketplace.json` from. The CLI builds one for you when you add a marketplace, and you write one yourself in settings:
 
@@ -438,7 +438,7 @@ An `extraKnownMarketplaces` value is a map from marketplace name to an object wi
 }
 ```
 
-#### Validation messages and unvalidated failures
+#### Validation messages
 
 `claude plugin validate <path>` takes the marketplace root or the marketplace file itself. It prints errors and warnings. For exit codes and `--strict`, see [plugin validate](https://code.claude.com/docs/en/plugins/cli-reference#plugin-validate).
 

@@ -3,8 +3,8 @@
 ## Table of Contents
 
 - [Run Claude Code programmatically](#run-claude-code-programmatically)
-  - [Basic usage startup options and shutdown behavior](#basic-usage-startup-options-and-shutdown-behavior)
-  - [Usage examples for scripts output permissions and sessions](#usage-examples-for-scripts-output-permissions-and-sessions)
+  - [Basic usage and startup options](#basic-usage-and-startup-options)
+  - [Headless usage examples](#headless-usage-examples)
   - [Next steps](#next-steps)
 *WARNING:* headless mode ( -p option ) requires API usage tokens paid separatedly from the subscription. Most users only have an Anthropic subscription and cannot use the headless mode.
 
@@ -26,7 +26,7 @@ claude -p "Find and fix the bug in auth.py" --allowedTools "Read,Edit,Bash"
 
 This page covers using the Agent SDK via the CLI (`claude -p`). For the Python and TypeScript SDK packages with structured outputs, tool approval callbacks, and native message objects, see the [full Agent SDK documentation](https://code.claude.com/docs/en/agent-sdk/overview).
 
-#### Basic usage startup options and shutdown behavior
+#### Basic usage and startup options
 
 Add the `-p` (or `--print`) flag to any `claude` command to run it non-interactively. Not every [CLI option](https://code.claude.com/docs/en/cli-reference) combines with `-p`. Claude Code rejects `--bg`, and rejects `--cloud` with a task description, with an error naming the conflict; `--cloud` with a session ID and `-p` instead [queues a message into that cloud session](https://code.claude.com/docs/en/claude-code-on-the-web#send-follow-ups-from-the-cli) and exits. Options you'll combine with `-p` often include:
 
@@ -114,7 +114,7 @@ When you [resume the session](https://code.claude.com/docs/en/headless#continue-
 
 If the working directory of a `claude -p` or Agent SDK session is deleted mid-session, the session keeps running. When a turn starts while the directory is missing, Claude Code emits a [warning message](https://code.claude.com/docs/en/agent-sdk/typescript#sdkinformationalmessage) in `stream-json` output, and shell commands fail until the directory exists again.
 
-#### Usage examples for scripts output permissions and sessions
+#### Headless usage examples
 
 These examples highlight common CLI patterns. Where a command names a file such as `auth.py` or `build-error.txt`, substitute a file from your own project. In CI or other scripted environments, add [`--bare`](https://code.claude.com/docs/en/headless#start-faster-with-bare-mode) so Claude Code starts without loading the host's hooks, plugins, auto memory, or `CLAUDE.md`.
 

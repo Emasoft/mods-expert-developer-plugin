@@ -19,7 +19,7 @@
 - [Quick Start](#quick-start)
   - [Creating Your First Plugin](#creating-your-first-plugin)
 - [Development Workflow](#development-workflow)
-- [Toolkit features and bundled resources](#toolkit-features-and-bundled-resources)
+- [Toolkit features](#toolkit-features)
   - [Progressive Disclosure](#progressive-disclosure)
   - [Utility Scripts](#utility-scripts)
   - [Working Examples](#working-examples)
@@ -296,7 +296,7 @@ The plugin-dev toolkit supports your entire plugin development lifecycle:
            │                 hook-linter.sh
 ```
 
-### Toolkit features and bundled resources
+### Toolkit features
 
 #### Progressive Disclosure
 

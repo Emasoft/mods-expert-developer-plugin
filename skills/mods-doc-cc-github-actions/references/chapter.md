@@ -3,10 +3,10 @@
 ## Table of Contents
 
 - [Claude Code GitHub Actions](#claude-code-github-actions)
-  - [Set up and uninstall the Claude GitHub app and its permissions](#set-up-and-uninstall-the-claude-github-app-and-its-permissions)
-  - [Interactive and automation modes and who can trigger runs](#interactive-and-automation-modes-and-who-can-trigger-runs)
+  - [Set up the Claude GitHub app](#set-up-the-claude-github-app)
+  - [Interactive and automation modes](#interactive-and-automation-modes)
   - [Example use cases](#example-use-cases)
-  - [Best practices for project standards, security, and cost](#best-practices-for-project-standards-security-and-cost)
+  - [Best practices for Claude in GitHub Actions](#best-practices-for-claude-in-github-actions)
   - [Use a cloud provider](#use-a-cloud-provider)
   - [Troubleshooting](#troubleshooting)
   - [Advanced configuration](#advanced-configuration)
@@ -30,7 +30,7 @@ Several products share the Claude Code name. This page covers the `claude-code-a
 * [Claude Agent SDK](https://code.claude.com/docs/en/agent-sdk/overview): custom automation outside GitHub Actions. The Claude Code GitHub Action is built on the SDK
 * [GitHub Enterprise Server](https://code.claude.com/docs/en/github-enterprise-server): Claude Code with self-hosted GitHub
 
-#### Set up and uninstall the Claude GitHub app and its permissions
+#### Set up the Claude GitHub app
 
 You can set up the Claude Code GitHub Action in one of two ways:
 
@@ -162,7 +162,7 @@ When you install the app, you accept its full permission set. GitHub doesn't let
 
 For details on how the Claude Code GitHub Action limits what Claude can do with these permissions, see the [security documentation](https://github.com/anthropics/claude-code-action/blob/main/docs/security.md).
 
-#### Interactive and automation modes and who can trigger runs
+#### Interactive and automation modes
 
 The Claude Code GitHub Action detects how to run from your workflow configuration:
 
@@ -299,7 +299,7 @@ jobs:
             --allowedTools "mcp__github__list_commits,mcp__github__list_issues"
 ```
 
-#### Best practices for project standards, security, and cost
+#### Best practices for Claude in GitHub Actions
 
 ##### Define project standards in CLAUDE.md
 

@@ -4,7 +4,7 @@
 
 - [Create a marketplace](#create-a-marketplace-1)
 - [Add plugin entries](#add-plugin-entries)
-- [Rules for plugin entry paths and names](#rules-for-plugin-entry-paths-and-names)
+- [Rules for plugin entries](#rules-for-plugin-entries)
   - [Write relative paths from the marketplace root](#write-relative-paths-from-the-marketplace-root)
   - [Keep the entry name and the manifest name the same](#keep-the-entry-name-and-the-manifest-name-the-same)
 - [Choose a plugin source](#choose-a-plugin-source)
@@ -140,7 +140,7 @@ Every plugin you distribute is one object in the `plugins` array of `marketplace
 
 For the full field list, see [Plugin entries](https://code.claude.com/docs/en/plugins/marketplace-reference#plugin-entries), which also covers the [`plugin.json`](https://code.claude.com/docs/en/plugins/manifest-reference) fields an entry can set and when they apply.
 
-### Rules for plugin entry paths and names
+### Rules for plugin entries
 
 Most failed installs from a new marketplace come from a relative path written from the wrong directory, or from an entry name that differs from the `name` in the plugin's `plugin.json`.
 

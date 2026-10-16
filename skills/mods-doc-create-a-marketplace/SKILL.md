@@ -43,7 +43,7 @@ Full chapter: [the chapter](references/chapter.md), with the section-level Creat
 
 - [Create a marketplace](references/chapter.md#create-a-marketplace-1)
 - [Add plugin entries](references/chapter.md#add-plugin-entries)
-- [Rules for plugin entry paths and names](references/chapter.md#rules-for-plugin-entry-paths-and-names)
+- [Rules for plugin entries](references/chapter.md#rules-for-plugin-entries)
   - [Write relative paths from the marketplace root](references/chapter.md#write-relative-paths-from-the-marketplace-root)
   - [Keep the entry name and the manifest name the same](references/chapter.md#keep-the-entry-name-and-the-manifest-name-the-same)
 - [Choose a plugin source](references/chapter.md#choose-a-plugin-source)

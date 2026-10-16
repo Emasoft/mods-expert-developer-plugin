@@ -47,7 +47,7 @@ Full chapter: [the chapter](references/chapter.md), with the section-level TEST 
   - [Create your first eval suite](references/chapter.md#create-your-first-eval-suite)
   - [Set up fixtures and mocks](references/chapter.md#set-up-fixtures-and-mocks)
   - [Run evals](references/chapter.md#run-evals)
-  - [Read results and trust the plugin directory](references/chapter.md#read-results-and-trust-the-plugin-directory)
+  - [Read the results](references/chapter.md#read-the-results)
   - [Eval suite reference](references/chapter.md#eval-suite-reference)
   - [Troubleshooting](references/chapter.md#troubleshooting)
   - [See also](references/chapter.md#see-also)

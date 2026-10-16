@@ -4,9 +4,9 @@
 
 - [Troubleshoot installation and login](#troubleshoot-installation-and-login)
   - [Find your error](#find-your-error)
-  - [Run network PATH permission and binary diagnostic checks](#run-network-path-permission-and-binary-diagnostic-checks)
-  - [Fix common installation platform and binary errors](#fix-common-installation-platform-and-binary-errors)
-  - [Login authentication and credential errors](#login-authentication-and-credential-errors)
+  - [Run diagnostic checks](#run-diagnostic-checks)
+  - [Common installation issues](#common-installation-issues)
+  - [Login and authentication](#login-and-authentication)
   - [Still stuck](#still-stuck)
 
 
@@ -79,7 +79,7 @@ If your issue isn't listed, work through the diagnostic checks below to narrow d
   If you'd rather skip the terminal entirely, the [Claude Code Desktop app](https://code.claude.com/docs/en/desktop-quickstart) lets you install and use Claude Code through a graphical interface. Download it for [macOS](https://claude.ai/api/desktop/darwin/universal/dmg/latest/redirect?utm_source=claude_code\&utm_medium=docs) or [Windows](https://claude.com/download?utm_source=claude_code\&utm_medium=docs) and start coding without any command-line setup. On Linux, install the app with apt by following the [Linux install instructions](https://code.claude.com/docs/en/desktop-linux).
 </Tip>
 
-#### Run network PATH permission and binary diagnostic checks
+#### Run diagnostic checks
 
 ##### Check network connectivity
 
@@ -422,7 +422,7 @@ Confirm the binary can execute:
 claude --version
 ```
 
-#### Fix common installation platform and binary errors
+#### Common installation issues
 
 These are the most frequently encountered installation problems and their solutions.
 
@@ -1119,7 +1119,7 @@ npm install -g @anthropic-ai/claude-code
 
 Confirm with `claude --version`, which prints a version number such as `2.1.211 (Claude Code)`.
 
-#### Login authentication and credential errors
+#### Login and authentication
 
 These sections address login failures, OAuth errors, and token issues.
 

@@ -3,8 +3,8 @@
 ## Table of Contents
 
 - [Plugin dependencies](#plugin-dependencies)
-  - [Declare and release plugin dependencies with version constraints](#declare-and-release-plugin-dependencies-with-version-constraints)
-  - [How dependency constraints resolve and combine for your users](#how-dependency-constraints-resolve-and-combine-for-your-users)
+  - [Declare dependencies](#declare-dependencies)
+  - [How dependencies behave for your users](#how-dependencies-behave-for-your-users)
   - [See also](#see-also)
 
 > ## Documentation Index
@@ -29,7 +29,7 @@ This page is for plugin authors who declare dependencies in `plugin.json` and fo
 
 To add a constraint, start at [Declare a dependency with a version constraint](https://code.claude.com/docs/en/plugins/dependencies#declare-a-dependency-with-a-version-constraint). If you maintain a plugin that others depend on, [tag your releases](https://code.claude.com/docs/en/plugins/dependencies#tag-plugin-releases-for-version-resolution) so their constraints can resolve.
 
-#### Declare and release plugin dependencies with version constraints
+#### Declare dependencies
 
 <span id="decide-whether-to-constrain-dependency-versions" />Without a version constraint, a dependency moves to each new release its marketplace publishes the next time users update. If that release renames an MCP tool your plugin calls, your plugin breaks for everyone who updates.
 
@@ -189,7 +189,7 @@ Besides `claude plugin install`, these operations also install any missing decla
 * Re-running `claude plugin install` on the dependent plugin
 * `claude plugin marketplace add`
 
-#### How dependency constraints resolve and combine for your users
+#### How dependencies behave for your users
 
 These sections describe how Claude Code resolves, checks, and combines the constraints you declare once your plugin is installed alongside others.
 

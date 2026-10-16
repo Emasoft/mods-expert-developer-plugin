@@ -9,7 +9,7 @@
   - [File reference](#file-reference)
   - [Frontmatter fields by file](#frontmatter-fields-by-file)
   - [Troubleshoot configuration](#troubleshoot-configuration)
-  - [Application data storage retention and cleanup](#application-data-storage-retention-and-cleanup)
+  - [Application data storage and cleanup](#application-data-storage-and-cleanup)
   - [Related resources](#related-resources)
 
 > ## Documentation Index
@@ -513,7 +513,7 @@ Agents shipped in a [plugin](https://code.claude.com/docs/en/plugins/components#
 
 If a setting, hook, or file isn't taking effect, see [Debug your configuration](https://code.claude.com/docs/en/debug-your-config) for the inspection commands and a symptom-first lookup table.
 
-#### Application data storage retention and cleanup
+#### Application data storage and cleanup
 
 Beyond the config you author, `~/.claude` holds data Claude Code writes during sessions. These files are plaintext. Anything that passes through a tool is written to a transcript on disk: file contents, command output, pasted text.
 

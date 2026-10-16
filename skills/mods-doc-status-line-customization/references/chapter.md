@@ -7,7 +7,7 @@
   - [Build a status line step by step](#build-a-status-line-step-by-step)
   - [How status lines work](#how-status-lines-work)
   - [Available data](#available-data)
-  - [Ready-made status line examples](#ready-made-status-line-examples)
+  - [Status line examples](#status-line-examples)
   - [Subagent status lines](#subagent-status-lines)
   - [Tips](#tips)
   - [Troubleshooting](#troubleshooting)
@@ -436,7 +436,7 @@ Two causes add counts to the object:
 * `tools_added` and `tools_removed`: with `tools_changed`, how many tools were added to or removed from the request
 * `system_char_delta`: with `system_prompt_changed`, the change in the system prompt's length, in characters
 
-#### Ready-made status line examples
+#### Status line examples
 
 These examples show common status line patterns. To use any example:
 

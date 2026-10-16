@@ -35,17 +35,17 @@ If an anchor misses, search the MARKETPLACE MANIFEST REFERENCE headings for the 
 
 ## Examples
 
-Input: a task about "Marketplace file layout and reserved names". Output: open [Marketplace file layout and reserved names](references/chapter.md#marketplace-file-layout-and-reserved-names) and read that section only.
+Input: a task about "Marketplace file layout". Output: open [Marketplace file layout](references/chapter.md#marketplace-file-layout) and read that section only.
 
 ## Resources
 
 Full chapter: [the chapter](references/chapter.md), with the section-level MARKETPLACE MANIFEST REFERENCE table of contents:
 
 - [Marketplace reference](references/chapter.md#marketplace-reference)
-  - [Marketplace file layout and reserved names](references/chapter.md#marketplace-file-layout-and-reserved-names)
+  - [Marketplace file layout](references/chapter.md#marketplace-file-layout)
   - [Top-level fields](references/chapter.md#top-level-fields)
-  - [Plugin entries with display fields and strict mode](references/chapter.md#plugin-entries-with-display-fields-and-strict-mode)
-  - [Plugin source types and install behavior](references/chapter.md#plugin-source-types-and-install-behavior)
-  - [Marketplace source types and settings usage](references/chapter.md#marketplace-source-types-and-settings-usage)
-  - [Validation messages and unvalidated failures](references/chapter.md#validation-messages-and-unvalidated-failures)
+  - [Plugin entry fields](references/chapter.md#plugin-entry-fields)
+  - [Plugin source types](references/chapter.md#plugin-source-types)
+  - [Marketplace source types](references/chapter.md#marketplace-source-types)
+  - [Validation messages](references/chapter.md#validation-messages)
   - [See Also:](references/chapter.md#see-also)

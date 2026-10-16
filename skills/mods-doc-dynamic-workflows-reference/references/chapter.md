@@ -5,10 +5,10 @@
 - [Orchestrate subagents at scale with dynamic workflows](#orchestrate-subagents-at-scale-with-dynamic-workflows)
   - [When to use a workflow](#when-to-use-a-workflow)
   - [Run and watch a bundled workflow](#run-and-watch-a-bundled-workflow)
-  - [Have Claude write approve save and reuse a workflow](#have-claude-write-approve-save-and-reuse-a-workflow)
+  - [Have Claude write and reuse a workflow](#have-claude-write-and-reuse-a-workflow)
   - [Example workflow prompts and saved scripts](#example-workflow-prompts-and-saved-scripts)
-  - [How a workflow runs caches and is limited](#how-a-workflow-runs-caches-and-is-limited)
-  - [Manage workflow runs recovery cost and settings](#manage-workflow-runs-recovery-cost-and-settings)
+  - [How a workflow runs and its limits](#how-a-workflow-runs-and-its-limits)
+  - [Manage workflow runs](#manage-workflow-runs)
   - [Related resources](#related-resources)
 
 > ## Documentation Index
@@ -116,7 +116,7 @@ The agent detail lists the agent's prompt, its recent tool calls, and its result
 
 Press `Enter` to expand the detail. The prompt and result then show in full, and each listed call shows its input and the start of its result.
 
-#### Have Claude write approve save and reuse a workflow
+#### Have Claude write and reuse a workflow
 
 You can have Claude write a workflow for your task in two ways:
 
@@ -348,7 +348,7 @@ Claude Code applies these rules to each part of the file when it loads and runs 
 
 You can also edit [the script of a single run](https://code.claude.com/docs/en/workflows#how-a-workflow-runs) rather than the saved copy. [Resume after a pause](https://code.claude.com/docs/en/workflows#resume-after-a-pause) covers which agents run again when you relaunch an edited script. For the Workflow tool's inputs, see its entry in the [Agent SDK reference](https://code.claude.com/docs/en/agent-sdk/typescript#workflow).
 
-#### How a workflow runs caches and is limited
+#### How a workflow runs and its limits
 
 The workflow runtime executes the script in an isolated environment, separate from your conversation. Intermediate results stay in script variables instead of landing in Claude's context.
 
@@ -380,7 +380,7 @@ The runtime applies the following constraints:
 | Up to 4,096 items in a single `parallel()` or `pipeline()` call: the runtime rejects a longer list with an error | A silent cap would drop part of the workload without telling the script |
 | 1,000 agents total per run | Prevents runaway loops |
 
-#### Manage workflow runs recovery cost and settings
+#### Manage workflow runs
 
 Once a run starts, you manage it from the `/workflows` view, or by expanding its progress line in the task panel below the input box.
 
