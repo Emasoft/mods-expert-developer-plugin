@@ -51,7 +51,9 @@ def _chapter_toc(chapter: str) -> list[tuple[str, str, str]]:
         match = CHAPTER_TOC_ENTRY.match(line)
         if not match:
             break
-        entries.append(match.groups())
+        # Unpacked explicitly: match.groups() is typed tuple[str | Any, ...], which mypy
+        # (as run by CI Mega-Linter) rejects for list[tuple[str, str, str]].
+        entries.append((match.group(1), match.group(2), match.group(3)))
     return entries
 
 
