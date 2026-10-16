@@ -13,6 +13,8 @@
   - [Read the debug log](#read-the-debug-log)
   - [Related Topics](#related-topics)
 
+## Chapter content
+
 ### Troubleshoot a mod
 
 > Find out why a Claude Code mod does nothing: match the symptom or message to its cause, look up refusal messages, and read the debug log.

@@ -8,6 +8,8 @@
   - [Flags that load a plugin for one session](#flags-that-load-a-plugin-for-one-session)
   - [See Also:](#see-also)
 
+## Chapter content
+
 > ## Documentation Index
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.

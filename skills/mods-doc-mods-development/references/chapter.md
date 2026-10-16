@@ -9,6 +9,8 @@
   - [Share your mod](#share-your-mod)
   - [Related Topics](#related-topics)
 
+## Chapter content
+
 ### Create a mod
 
 > Create a mod from a description or write a tool-call counter with a command; validate and reload during development.

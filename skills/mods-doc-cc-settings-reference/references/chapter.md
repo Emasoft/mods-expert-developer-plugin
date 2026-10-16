@@ -1,4 +1,4 @@
-##  CLAUDE CODE SETTINGS REFERENCE
+## CLAUDE CODE SETTINGS REFERENCE
 
 ## Table of Contents
 
@@ -9,6 +9,7 @@
   - [Settings in cloud sessions](#settings-in-cloud-sessions)
   - [What's next](#whats-next)
 
+## Chapter content
 
 > ## Documentation Index
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt

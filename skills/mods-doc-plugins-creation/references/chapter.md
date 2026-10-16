@@ -9,6 +9,8 @@
   - [Test and debug plugins](#test-and-debug-plugins)
   - [RELATED DOCS](#related-docs)
 
+## Chapter content
+
 ### Create a Claude Code plugin
 
 > Build your first Claude Code plugin from an empty directory, test it without a marketplace, and convert an existing .claude/ setup.

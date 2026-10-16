@@ -20,6 +20,8 @@
   - [Read the source of built-in mods](#read-the-source-of-built-in-mods)
 - [Related Topics](#related-topics)
 
+## Chapter content
+
 > Mods add panes, commands, and tool-call rules to Claude Code; this chapter covers capabilities, creation, installation, and runtimes.
 
 A mod is a [plugin](https://code.claude.com/docs/en/plugins/overview) of JavaScript/TypeScript event handlers running inside Claude Code. On a tool call, submitted prompt, or interface draw, a handler can observe, rewrite, or take over the event. Example: a pane charting context fullness after each request. See [How a mod works](https://code.claude.com/docs/en/plugins/mods/overview#how-a-mod-works) for files and a complete example.

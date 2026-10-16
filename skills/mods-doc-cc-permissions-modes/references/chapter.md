@@ -14,6 +14,7 @@
   - [Critical paths and how removals are guarded](#critical-paths-and-how-removals-are-guarded)
   - [See also](#see-also)
 
+## Chapter content
 
 > ## Documentation Index
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt

@@ -11,6 +11,7 @@
   - [Check common causes](#check-common-causes)
   - [Related resources](#related-resources)
 
+## Chapter content
 
 > ## Documentation Index
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt

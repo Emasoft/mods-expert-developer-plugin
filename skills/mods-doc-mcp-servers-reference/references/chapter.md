@@ -23,6 +23,8 @@
   - [Use MCP prompts as commands](#use-mcp-prompts-as-commands)
   - [Managed MCP configuration](#managed-mcp-configuration)
 
+## Chapter content
+
 > ## Documentation Index
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.

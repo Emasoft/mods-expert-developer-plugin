@@ -10,6 +10,7 @@
   - [How output styles work](#how-output-styles-work)
   - [Related resources](#related-resources)
 
+## Chapter content
 
 > ## Documentation Index
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt

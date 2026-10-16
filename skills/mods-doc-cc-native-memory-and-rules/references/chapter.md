@@ -1,4 +1,4 @@
-##  CLAUDE CODE NATIVE MEMORY AND RULES
+## CLAUDE CODE NATIVE MEMORY AND RULES
 
 ## Table of Contents
 
@@ -10,6 +10,8 @@
   - [View and edit with `/memory`](#view-and-edit-with-memory)
   - [Troubleshoot memory issues](#troubleshoot-memory-issues)
   - [Related resources](#related-resources)
+
+## Chapter content
 
 > ## Documentation Index
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt

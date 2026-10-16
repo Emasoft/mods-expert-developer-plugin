@@ -22,6 +22,7 @@
 - [Settings and environment variables](#settings-and-environment-variables)
 - [Commands](#commands)
 
+## Chapter content
 
 > Complete reference for Claude Code mods: hooks module layout, events, mods API methods, render sites, elements by surface, limits, and settings.
 

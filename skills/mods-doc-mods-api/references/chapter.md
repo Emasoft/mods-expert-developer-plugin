@@ -10,6 +10,8 @@
   - [Reach files, processes, and the network](#reach-files-processes-and-the-network)
   - [Related Topics](#related-topics)
 
+## Chapter content
+
 ### Use the mods API
 
 > Call the mods API from a Claude Code mod to add commands and tools, call a model, run work on a timer, message other sessions, and reach files and the network.

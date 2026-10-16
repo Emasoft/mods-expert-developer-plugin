@@ -11,6 +11,7 @@
   - [Example subagents](#example-subagents)
   - [Related Docs:](#related-docs)
 
+## Chapter content
 
 > ## Documentation Index
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt

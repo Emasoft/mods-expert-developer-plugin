@@ -15,6 +15,8 @@
   - [Work around what a marketplace can't do](#work-around-what-a-marketplace-cant-do)
   - [Related Docs](#related-docs)
 
+## Chapter content
+
 > ## Documentation Index
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.

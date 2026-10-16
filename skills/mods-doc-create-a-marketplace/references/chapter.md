@@ -16,6 +16,8 @@
 - [Host your marketplace](#host-your-marketplace)
 - [Related Docs](#related-docs)
 
+## Chapter content
+
 > Build a plugin marketplace from a marketplace.json file and test it locally before you host it.
 
 A plugin marketplace is a directory or repository with a `.claude-plugin/marketplace.json` file that lists your plugins and where to fetch each one. You push the directory to a git host, and anyone with access registers it in Claude Code with one command and installs your plugins from it.

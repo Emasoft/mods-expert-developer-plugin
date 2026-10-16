@@ -14,6 +14,8 @@
   - [Scope and plan changes that span packages](#scope-and-plan-changes-that-span-packages)
   - [Next steps](#next-steps)
 
+## Chapter content
+
 > ## Documentation Index
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.

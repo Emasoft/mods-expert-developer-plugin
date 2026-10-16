@@ -36,7 +36,7 @@ conventional_commits = true
 filter_unconventional = true
 split_commits = false
 commit_preprocessors = [
-  { pattern = '\((\w+\s)?#([0-9]+)\)', replace = "([#${2}](https://github.com//emasoft-mods-development-plugin/issues/${2}))" },
+  { pattern = '\((\w+\s)?#([0-9]+)\)', replace = "([#${2}](https://github.com/Emasoft/emasoft-mods-development-plugin/issues/${2}))" },
   { pattern = '\s+$', replace = "" },
 ]
 commit_parsers = [

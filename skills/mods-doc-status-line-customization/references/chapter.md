@@ -1,4 +1,4 @@
-##  STATUS LINE CUSTOMIZATION
+## STATUS LINE CUSTOMIZATION
 
 ## Table of Contents
 
@@ -11,6 +11,8 @@
   - [Subagent status lines](#subagent-status-lines)
   - [Tips](#tips)
   - [Troubleshooting](#troubleshooting)
+
+## Chapter content
 
 > ## Documentation Index
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
@@ -455,6 +457,7 @@ Display the current model and context window usage with a visual progress bar. E
 </Frame>
 
 <CodeGroup>
+
   ```bash Bash theme={null}
   #!/bin/bash
   # Read all of stdin into a variable
@@ -524,6 +527,7 @@ Show git branch with color-coded indicators for staged and modified files. This 
 Each script checks if the current directory is a git repository, counts staged and modified files, and displays color-coded indicators:
 
 <CodeGroup>
+
   ```bash Bash theme={null}
   #!/bin/bash
   input=$(cat)
@@ -618,6 +622,7 @@ Each script formats cost as currency and converts milliseconds to minutes and se
 </Frame>
 
 <CodeGroup>
+
   ```bash Bash theme={null}
   #!/bin/bash
   input=$(cat)
@@ -679,6 +684,7 @@ Your script can output multiple lines to create a richer display.
 This example combines several techniques: threshold-based colors (green under 70%, yellow 70-89%, red 90%+), a progress bar, and git branch info. Each `print` or `echo` statement creates a separate row:
 
 <CodeGroup>
+
   ```bash Bash theme={null}
   #!/bin/bash
   input=$(cat)
@@ -786,6 +792,7 @@ This example creates a clickable link to your GitHub repository. Hold Cmd (macOS
 Each script gets the git remote URL, converts SSH format to HTTPS, and wraps the repo name in OSC 8 escape codes. The Bash version uses `printf '%b'` which interprets backslash escapes more reliably than `echo -e` across different shells:
 
 <CodeGroup>
+
   ```bash Bash theme={null}
   #!/bin/bash
   input=$(cat)
@@ -862,6 +869,7 @@ Display claude.ai subscription rate limit usage, or your spend against a Claude 
 The `rate_limits` object is only present for claude.ai Pro and Max subscribers, or behind a Claude apps gateway with spend limits, and only after the first API response. Each script handles the absent fields gracefully, and behind a gateway prints `spend: $314.12 / $500`, or `spend: 63%` while the dollar fields are absent:
 
 <CodeGroup>
+
   ```bash Bash theme={null}
   #!/bin/bash
   input=$(cat)
@@ -951,6 +959,7 @@ The cache filename needs to be stable across status line invocations within a se
 Each script checks if the cache file is missing or older than 5 seconds before running git commands:
 
 <CodeGroup>
+
   ```bash Bash theme={null}
   #!/bin/bash
   input=$(cat)
@@ -1085,6 +1094,7 @@ Git Bash treats unquoted backslashes as escape characters, so a Windows-style pa
 To run a PowerShell script as your status line, invoke it via `powershell`. This works whether Claude Code routes the command through Git Bash or PowerShell:
 
 <CodeGroup>
+
   ```json settings.json theme={null}
   {
     "statusLine": {
@@ -1112,6 +1122,7 @@ To run a PowerShell script as your status line, invoke it via `powershell`. This
 Or, when Git Bash is installed, run a Bash script directly:
 
 <CodeGroup>
+
   ```json settings.json theme={null}
   {
     "statusLine": {

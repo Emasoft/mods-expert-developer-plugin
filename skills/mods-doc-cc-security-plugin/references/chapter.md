@@ -1,4 +1,4 @@
-##  CLAUDE SECURITY PLUGIN
+## CLAUDE SECURITY PLUGIN
 
 ## Table of Contents
 
@@ -11,6 +11,8 @@
   - [How the plugin fits with other security tools](#how-the-plugin-fits-with-other-security-tools)
   - [Troubleshooting](#troubleshooting)
   - [Related resources](#related-resources)
+
+## Chapter content
 
 > ## Documentation Index
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt

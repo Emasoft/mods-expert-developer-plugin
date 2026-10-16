@@ -12,6 +12,8 @@
   - [Limitations and troubleshooting](#limitations-and-troubleshooting)
   - [Learn more](#learn-more)
 
+## Chapter content
+
 > ## Documentation Index
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.

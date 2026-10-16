@@ -13,6 +13,8 @@
   - [See where a mod can draw](#see-where-a-mod-can-draw)
   - [Related Topics](#related-topics)
 
+## Chapter content
+
 ### Interface examples for mods
 
 > See the interface elements a Claude Code mod can draw, such as text, buttons, fields, Markdown, code, and diffs, with sample code and terminal screenshots.

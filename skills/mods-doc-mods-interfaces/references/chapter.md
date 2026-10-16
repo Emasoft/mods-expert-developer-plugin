@@ -10,6 +10,8 @@
   - [Keep state across reloads and sessions](#keep-state-across-reloads-and-sessions)
   - [Related Topics](#related-topics)
 
+## Chapter content
+
 ### Draw in the interface with a mod
 
 > Draw panes, a band above the prompt, buttons, and text fields from a Claude Code mod, handle presses and input, and keep state between redraws and sessions.

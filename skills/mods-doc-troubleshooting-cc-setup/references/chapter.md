@@ -9,6 +9,7 @@
   - [Login and authentication](#login-and-authentication)
   - [Still stuck](#still-stuck)
 
+## Chapter content
 
 > ## Documentation Index
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt

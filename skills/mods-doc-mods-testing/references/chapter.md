@@ -8,6 +8,8 @@
   - [Test a drawing](#test-a-drawing)
   - [Related Topics](#related-topics)
 
+## Chapter content
+
 ### Test a mod
 
 > Write automated tests for a Claude Code mod that fire events, stub Claude Code's answers, and press buttons, with no session, sign-in, or network.

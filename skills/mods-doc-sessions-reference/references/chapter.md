@@ -11,6 +11,7 @@
   - [Access and manage stored session data](#access-and-manage-stored-session-data)
   - [See also](#see-also)
 
+## Chapter content
 
 > ## Documentation Index
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt

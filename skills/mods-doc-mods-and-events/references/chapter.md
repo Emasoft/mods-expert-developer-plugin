@@ -8,6 +8,8 @@
   - [Mod ordering and failed hooks](#mod-ordering-and-failed-hooks)
   - [Related Topics](#related-topics)
 
+## Chapter content
+
 ### React to events with a mod
 
 > Handle Claude Code events from a mod: observe, rewrite, or answer tool calls, prompts, and turns, filter which events a hook handles, and plan for other mods.

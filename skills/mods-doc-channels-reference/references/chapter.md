@@ -11,7 +11,7 @@
   - [How channels compare](#how-channels-compare)
   - [Next steps](#next-steps)
 
-
+## Chapter content
 
 > ## Documentation Index
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt

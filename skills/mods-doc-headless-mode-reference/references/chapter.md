@@ -6,6 +6,9 @@
   - [Basic usage and startup options](#basic-usage-and-startup-options)
   - [Headless usage examples](#headless-usage-examples)
   - [Next steps](#next-steps)
+
+## Chapter content
+
 *WARNING:* headless mode ( -p option ) requires API usage tokens paid separatedly from the subscription. Most users only have an Anthropic subscription and cannot use the headless mode.
 
 > ## Documentation Index
