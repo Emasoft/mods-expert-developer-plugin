@@ -7,11 +7,11 @@
   - [Common setups](#common-setups)
   - [Switch permission modes](#switch-permission-modes)
   - [Auto-approve file edits with acceptEdits mode](#auto-approve-file-edits-with-acceptedits-mode)
-  - [Analyze before you edit with plan mode](#analyze-before-you-edit-with-plan-mode)
+  - [Plan mode and auto mode with classifier review](#plan-mode-and-auto-mode-with-classifier-review)
   - [Allow only pre-approved tools with dontAsk mode](#allow-only-pre-approved-tools-with-dontask-mode)
   - [Skip all checks with bypassPermissions mode](#skip-all-checks-with-bypasspermissions-mode)
   - [Protected paths](#protected-paths)
-  - [Critical paths](#critical-paths)
+  - [Critical paths and how removals are checked in each mode](#critical-paths-and-how-removals-are-checked-in-each-mode)
   - [See also](#see-also)
 
 
@@ -278,7 +278,7 @@ Press `Shift+Tab` once from Manual mode to enter it, or start with it directly:
 claude --permission-mode acceptEdits
 ```
 
-#### Analyze before you edit with plan mode
+#### Plan mode and auto mode with classifier review
 
 Plan mode tells Claude to research and propose changes without making them. Claude reads files, runs shell commands to explore, and writes a plan, but does not edit your source. Except in interactive terminal sessions with [bypass permissions available](https://code.claude.com/docs/en/permission-modes#skip-all-checks-with-bypasspermissions-mode), edits stay blocked until you approve the plan.
 
@@ -698,7 +698,7 @@ Protected files:
 * `.mcp.json`, `.claude.json`
 * The file that your user, project, or local [settings file](https://code.claude.com/docs/en/settings#settings-files-and-who-they-affect) points to when the settings file is itself a symbolic link, for example into a dotfiles repository. In the modes that route protected-path writes to the classifier, a write to this file prompts you instead, even when an allow rule matches. If the file's own path is also that of a settings file, such as `.claude/settings.json` in another folder, the write goes to the classifier as other protected-path writes do
 
-#### Critical paths
+#### Critical paths and how removals are checked in each mode
 
 Critical paths are the directories Claude Code protects from `rm` and `rmdir` commands, such as the filesystem root, your home directory, and your working directory.
 

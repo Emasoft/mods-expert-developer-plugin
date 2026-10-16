@@ -35,17 +35,17 @@ If an anchor misses, search the CLAUDE GITHUB ACTIONS headings for the entry tit
 
 ## Examples
 
-Input: a task about "Setup". Output: open [Setup](references/chapter.md#setup) and read that section only.
+Input: a task about "Set up and uninstall the Claude GitHub app and its permissions". Output: open [Set up and uninstall the Claude GitHub app and its permissions](references/chapter.md#set-up-and-uninstall-the-claude-github-app-and-its-permissions) and read that section only.
 
 ## Resources
 
 Full chapter: [the chapter](references/chapter.md), with the section-level CLAUDE GITHUB ACTIONS table of contents:
 
 - [Claude Code GitHub Actions](references/chapter.md#claude-code-github-actions)
-  - [Setup](references/chapter.md#setup)
-  - [Interactive and automation modes](references/chapter.md#interactive-and-automation-modes)
+  - [Set up and uninstall the Claude GitHub app and its permissions](references/chapter.md#set-up-and-uninstall-the-claude-github-app-and-its-permissions)
+  - [Interactive and automation modes and who can trigger runs](references/chapter.md#interactive-and-automation-modes-and-who-can-trigger-runs)
   - [Example use cases](references/chapter.md#example-use-cases)
-  - [Best practices](references/chapter.md#best-practices)
+  - [Best practices for project standards, security, and cost](references/chapter.md#best-practices-for-project-standards-security-and-cost)
   - [Use a cloud provider](references/chapter.md#use-a-cloud-provider)
   - [Troubleshooting](references/chapter.md#troubleshooting)
   - [Advanced configuration](references/chapter.md#advanced-configuration)

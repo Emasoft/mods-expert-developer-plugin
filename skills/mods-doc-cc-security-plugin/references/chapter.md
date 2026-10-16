@@ -5,9 +5,9 @@
 - [Scan your codebase for vulnerabilities](#scan-your-codebase-for-vulnerabilities)
   - [Prerequisites](#prerequisites)
   - [Models and providers](#models-and-providers)
-  - [Install the plugin](#install-the-plugin)
-  - [Scan and fix your codebase](#scan-and-fix-your-codebase)
-  - [Fix findings](#fix-findings)
+  - [Install and uninstall the plugin](#install-and-uninstall-the-plugin)
+  - [Scan changes or large repositories and read the results](#scan-changes-or-large-repositories-and-read-the-results)
+  - [Fix findings and review proposed patches](#fix-findings-and-review-proposed-patches)
   - [How the plugin fits with other security tools](#how-the-plugin-fits-with-other-security-tools)
   - [Troubleshooting](#troubleshooting)
   - [Related resources](#related-resources)
@@ -46,7 +46,7 @@ On a third-party provider, the `sonnet` alias can resolve to a different version
 
 [Automatic model fallback](https://code.claude.com/docs/en/model-config#automatic-model-fallback) re-runs a request that a model's safeguards flag. On Amazon Bedrock, Google Cloud's Agent Platform, and Microsoft Foundry, the request can end with a refusal message instead, depending on [how your deployment is set up](https://code.claude.com/docs/en/model-config#enable-fallback-on-bedrock-agent-platform-and-foundry).
 
-#### Install the plugin
+#### Install and uninstall the plugin
 
 In the VS Code extension or the desktop app, install it by following [Install a plugin](https://code.claude.com/docs/en/plugins/install#install-a-plugin). In a terminal, start Claude Code by running `claude`, then enter this at its prompt to install from the [official Anthropic marketplace](https://code.claude.com/docs/en/plugins/anthropic-marketplaces):
 
@@ -69,7 +69,7 @@ Once the plugin is active, you're ready to [scan and fix your codebase](https://
 
 To remove the plugin, uninstall it from the `/plugin` menu, or run `claude plugin uninstall claude-security` in your terminal.
 
-#### Scan and fix your codebase
+#### Scan changes or large repositories and read the results
 
 The plugin adds one command, `/claude-security`, which opens a menu of its three jobs: scanning the codebase, scanning a set of changes, and suggesting patches. The happy path runs a full scan, then turns its findings into patches:
 
@@ -124,7 +124,7 @@ That directory is the only change a scan makes to your checkout, and it carries 
 
 Findings only appear in the report after independent verifier agents analyze them, which keeps reports short and worth reading. Scans are nondeterministic: two scans of the same code can surface different findings. Run scans regularly, and use the revision stamps to attribute each report to the exact code and settings it covered.
 
-#### Fix findings
+#### Fix findings and review proposed patches
 
 Start the fix flow by picking **Suggest patches** from the `/claude-security` menu, or ask in plain language, such as "fix finding F3", then pick which findings from the report to address. Patches are built against committed code, and the report has to still describe the code you have: findings whose code has since changed are skipped with a note, and the plugin offers a fresh scan instead of patching from a stale report. Each patch is drafted in a scratch copy of your repository, so your source files stay untouched until you apply a patch yourself.
 

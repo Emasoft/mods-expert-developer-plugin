@@ -43,5 +43,5 @@ Full chapter: [the chapter](references/chapter.md), with the section-level ADD C
 
 - [Add components to a plugin](references/chapter.md#add-components-to-a-plugin-1)
   - [Explore the plugin directory](references/chapter.md#explore-the-plugin-directory)
-  - [Add each kind of component](references/chapter.md#add-each-kind-of-component)
+  - [Add and configure every plugin component type](references/chapter.md#add-and-configure-every-plugin-component-type)
   - [Related Docs](references/chapter.md#related-docs)

@@ -43,9 +43,9 @@ Full chapter: [the chapter](references/chapter.md), with the section-level CLAUD
 
 - [How Claude remembers your project](references/chapter.md#how-claude-remembers-your-project)
   - [CLAUDE.md vs auto memory](references/chapter.md#claudemd-vs-auto-memory)
-  - [CLAUDE.md files](references/chapter.md#claudemd-files)
-  - [AGENTS.md](references/chapter.md#agentsmd)
-  - [Auto memory](references/chapter.md#auto-memory)
+  - [Write, load, and organize CLAUDE.md files, imports, and rules](references/chapter.md#write-load-and-organize-claudemd-files-imports-and-rules)
+  - [Use AGENTS.md alongside CLAUDE.md and other tools](references/chapter.md#use-agentsmd-alongside-claudemd-and-other-tools)
+  - [Auto memory behavior, storage, and settings](references/chapter.md#auto-memory-behavior-storage-and-settings)
   - [View and edit with `/memory`](references/chapter.md#view-and-edit-with-memory)
   - [Troubleshoot memory issues](references/chapter.md#troubleshoot-memory-issues)
   - [Related resources](references/chapter.md#related-resources)

@@ -4,7 +4,7 @@
 
 - [Add components to a plugin](#add-components-to-a-plugin-1)
   - [Explore the plugin directory](#explore-the-plugin-directory)
-  - [Add each kind of component](#add-each-kind-of-component)
+  - [Add and configure every plugin component type](#add-and-configure-every-plugin-component-type)
   - [Related Docs](#related-docs)
 
 > ## Documentation Index
@@ -639,7 +639,7 @@ Each file is the smallest valid example of its format, there to show the shape r
   </Piece>
 </PluginExplorer>
 
-#### Add each kind of component
+#### Add and configure every plugin component type
 
 Each section below covers one kind of component: where its files go in the plugin, an example that validates, what the user sees once the plugin loads, and the manifest key that changes the default location. Add the ones your plugin needs; none is required.
 
