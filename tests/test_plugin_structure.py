@@ -1,7 +1,7 @@
 """Structural tests for emasoft-mods-development-plugin.
 
 The plugin ships no executable code: its behaviour IS its file layout (one agent
-that preloads 60 routing skills, each wrapping a verbatim documentation chapter).
+that preloads 60 routing skills, each wrapping an adapted documentation chapter).
 These tests pin the invariants that make that layout work, so a later edit that
 breaks routing or progressive discovery fails the publish gate instead of
 shipping silently.
@@ -109,7 +109,7 @@ def test_manifest_and_pyproject_versions_agree() -> None:
 
 
 def test_cpv_exclude_paths_are_exactly_the_vendored_chapters() -> None:
-    """cpv.exclude_paths lists every verbatim chapter.md and nothing else.
+    """cpv.exclude_paths lists every adapted chapter.md and nothing else.
 
     CPV matches exclude_paths by exact path or prefix, never by glob, so the 60
     chapters are listed one by one. This pins the list to the files on disk: a
