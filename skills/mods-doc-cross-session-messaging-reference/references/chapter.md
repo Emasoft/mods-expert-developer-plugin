@@ -2,14 +2,14 @@
 
 ## Table of Contents
 
-- [Message your other Claude Code sessions](#message-your-other-claude-code-sessions)
-  - [When to use cross-session messaging](#when-to-use-cross-session-messaging)
-  - [Send messages and track other sessions](#send-messages-and-track-other-sessions)
-  - [How a session treats an incoming message](#how-a-session-treats-an-incoming-message)
-  - [Restrict or turn off cross-session messaging](#restrict-or-turn-off-cross-session-messaging)
-  - [Availability](#availability)
-  - [Limitations](#limitations)
-  - [Related resources](#related-resources)
+* [Message your other Claude Code sessions](#message-your-other-claude-code-sessions)
+  * [When to use cross-session messaging](#when-to-use-cross-session-messaging)
+  * [Send messages and track other sessions](#send-messages-and-track-other-sessions)
+  * [How a session treats an incoming message](#how-a-session-treats-an-incoming-message)
+  * [Restrict or turn off cross-session messaging](#restrict-or-turn-off-cross-session-messaging)
+  * [Availability](#availability)
+  * [Limitations](#limitations)
+  * [Related resources](#related-resources)
 
 ## Chapter content
 
@@ -360,6 +360,4 @@ The limits here are properties of the messaging channel itself and apply whereve
 * [Tools reference](https://code.claude.com/docs/en/tools-reference): the `ListAgents` and `SendMessage` rows in the tools table
 * [Run agents in parallel](https://code.claude.com/docs/en/agents): compare the ways Claude Code runs multiple agents
 
-
 ---
-

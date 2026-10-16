@@ -2,15 +2,15 @@
 
 ## Table of Contents
 
-- [Customize your status line](#customize-your-status-line)
-  - [Set up a status line](#set-up-a-status-line)
-  - [Build a status line step by step](#build-a-status-line-step-by-step)
-  - [How status lines work](#how-status-lines-work)
-  - [Available data](#available-data)
-  - [Status line examples](#status-line-examples)
-  - [Subagent status lines](#subagent-status-lines)
-  - [Tips](#tips)
-  - [Troubleshooting](#troubleshooting)
+* [Customize your status line](#customize-your-status-line)
+  * [Set up a status line](#set-up-a-status-line)
+  * [Build a status line step by step](#build-a-status-line-step-by-step)
+  * [How status lines work](#how-status-lines-work)
+  * [Available data](#available-data)
+  * [Status line examples](#status-line-examples)
+  * [Subagent status lines](#subagent-status-lines)
+  * [Tips](#tips)
+  * [Troubleshooting](#troubleshooting)
 
 ## Chapter content
 
@@ -1268,7 +1268,4 @@ Outside [fullscreen rendering](https://code.claude.com/docs/en/fullscreen), Clau
 * Enabling verbose mode adds a token counter to this area, showing the size of your context as the last API response reported it, not the [per-turn count beside the spinner](https://code.claude.com/docs/en/costs#read-the-token-count-beside-the-spinner)
 * On narrow terminals, these notifications may truncate your status line output
 
-
 ---
-
-

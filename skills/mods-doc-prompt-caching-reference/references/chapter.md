@@ -2,17 +2,17 @@
 
 ## Table of Contents
 
-- [How Claude Code uses prompt caching](#how-claude-code-uses-prompt-caching)
-  - [How the cache is organized](#how-the-cache-is-organized)
-  - [Actions that invalidate the cache](#actions-that-invalidate-the-cache)
-  - [Actions that keep the cache](#actions-that-keep-the-cache)
-  - [Resuming a session](#resuming-a-session)
-  - [Cache lifetime and TTL](#cache-lifetime-and-ttl)
-  - [Cache scope](#cache-scope)
-  - [Check cache performance](#check-cache-performance)
-  - [Subagents and the cache](#subagents-and-the-cache)
-  - [Disable prompt caching](#disable-prompt-caching)
-  - [Related resources](#related-resources)
+* [How Claude Code uses prompt caching](#how-claude-code-uses-prompt-caching)
+  * [How the cache is organized](#how-the-cache-is-organized)
+  * [Actions that invalidate the cache](#actions-that-invalidate-the-cache)
+  * [Actions that keep the cache](#actions-that-keep-the-cache)
+  * [Resuming a session](#resuming-a-session)
+  * [Cache lifetime and TTL](#cache-lifetime-and-ttl)
+  * [Cache scope](#cache-scope)
+  * [Check cache performance](#check-cache-performance)
+  * [Subagents and the cache](#subagents-and-the-cache)
+  * [Disable prompt caching](#disable-prompt-caching)
+  * [Related resources](#related-resources)
 
 ## Chapter content
 
@@ -385,6 +385,3 @@ To set caching policy across an organization, put any of these or the [TTL varia
 * [Reduce token usage](https://code.claude.com/docs/en/costs#reduce-token-usage): strategies beyond caching for managing context size
 * [Track and reduce costs](https://code.claude.com/docs/en/agent-sdk/cost-tracking): cache token tracking and TTL configuration for Agent SDK callers
 * [Prompt caching](https://platform.claude.com/docs/en/build-with-claude/prompt-caching): the underlying API mechanism, breakpoints, and pricing
-
-
-

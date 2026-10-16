@@ -2,27 +2,27 @@
 
 ## Table of Contents
 
-- [Tools reference](#tools-reference)
-  - [Configure tools with permission rules and hooks](#configure-tools-with-permission-rules-and-hooks)
-  - [Agent tool behavior](#agent-tool-behavior)
-  - [AskUserQuestion tool behavior](#askuserquestion-tool-behavior)
-  - [Bash tool behavior](#bash-tool-behavior)
-  - [Edit tool behavior](#edit-tool-behavior)
-  - [EndConversation tool behavior](#endconversation-tool-behavior)
-  - [Glob tool behavior](#glob-tool-behavior)
-  - [Grep tool behavior](#grep-tool-behavior)
-  - [LSP tool behavior](#lsp-tool-behavior)
-  - [Monitor tool and WebSocket sources](#monitor-tool-and-websocket-sources)
-  - [NotebookEdit tool behavior](#notebookedit-tool-behavior)
-  - [PowerShell tool setup and limits](#powershell-tool-setup-and-limits)
-  - [Read tool behavior](#read-tool-behavior)
-  - [SendFeedback tool behavior](#sendfeedback-tool-behavior)
-  - [Task tool availability](#task-tool-availability)
-  - [WebFetch tool behavior](#webfetch-tool-behavior)
-  - [WebSearch tool behavior](#websearch-tool-behavior)
-  - [Write tool behavior](#write-tool-behavior)
-  - [Check which tools are available](#check-which-tools-are-available)
-  - [See also](#see-also)
+* [Tools reference](#tools-reference)
+  * [Configure tools with permission rules and hooks](#configure-tools-with-permission-rules-and-hooks)
+  * [Agent tool behavior](#agent-tool-behavior)
+  * [AskUserQuestion tool behavior](#askuserquestion-tool-behavior)
+  * [Bash tool behavior](#bash-tool-behavior)
+  * [Edit tool behavior](#edit-tool-behavior)
+  * [EndConversation tool behavior](#endconversation-tool-behavior)
+  * [Glob tool behavior](#glob-tool-behavior)
+  * [Grep tool behavior](#grep-tool-behavior)
+  * [LSP tool behavior](#lsp-tool-behavior)
+  * [Monitor tool and WebSocket sources](#monitor-tool-and-websocket-sources)
+  * [NotebookEdit tool behavior](#notebookedit-tool-behavior)
+  * [PowerShell tool setup and limits](#powershell-tool-setup-and-limits)
+  * [Read tool behavior](#read-tool-behavior)
+  * [SendFeedback tool behavior](#sendfeedback-tool-behavior)
+  * [Task tool availability](#task-tool-availability)
+  * [WebFetch tool behavior](#webfetch-tool-behavior)
+  * [WebSearch tool behavior](#websearch-tool-behavior)
+  * [Write tool behavior](#write-tool-behavior)
+  * [Check which tools are available](#check-which-tools-are-available)
+  * [See also](#see-also)
 
 ## Chapter content
 
@@ -730,7 +730,4 @@ Claude gives a conversational summary. For exact MCP tool names, run `/mcp`.
 * [Subagents](https://code.claude.com/docs/en/sub-agents): configure tool access for subagents
 * [Hooks](https://code.claude.com/docs/en/hooks-guide): run custom commands before or after tool execution
 
-
-
 ---
-

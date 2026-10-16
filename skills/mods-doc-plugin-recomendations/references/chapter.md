@@ -2,14 +2,14 @@
 
 ## Table of Contents
 
-- [Recommend plugins for your org](#recommend-plugins-for-your-org)
-  - [Understand how plugin relevance works](#understand-how-plugin-relevance-works)
-  - [Add relevance to a plugin entry](#add-relevance-to-a-plugin-entry)
-  - [Relevance field reference](#relevance-field-reference)
-  - [Validate your marketplace](#validate-your-marketplace)
-  - [Enable suggestions in managed settings](#enable-suggestions-in-managed-settings)
-  - [Preview what the user sees](#preview-what-the-user-sees)
-  - [See also](#see-also)
+* [Recommend plugins for your org](#recommend-plugins-for-your-org)
+  * [Understand how plugin relevance works](#understand-how-plugin-relevance-works)
+  * [Add relevance to a plugin entry](#add-relevance-to-a-plugin-entry)
+  * [Relevance field reference](#relevance-field-reference)
+  * [Validate your marketplace](#validate-your-marketplace)
+  * [Enable suggestions in managed settings](#enable-suggestions-in-managed-settings)
+  * [Preview what the user sees](#preview-what-the-user-sees)
+  * [See also](#see-also)
 
 ## Chapter content
 
@@ -237,7 +237,4 @@ Claude Code limits how often it suggests a given plugin:
 * [Recommend your plugin from your CLI](https://code.claude.com/docs/en/plugins/cli-hints): prompt users from your own CLI instead of from Claude Code's session signals
 * [Manage plugins for your organization](https://code.claude.com/docs/en/plugins/org): `extraKnownMarketplaces`, `strictKnownMarketplaces`, and the rest of the plugin policy keys
 
-
 ---
-
-

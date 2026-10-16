@@ -2,16 +2,16 @@
 
 ## Table of Contents
 
-- [Interface examples for mods](#interface-examples-for-mods)
-  - [Try a sample](#try-a-sample)
-  - [Pick an element](#pick-an-element)
-  - [Show text](#show-text)
-  - [Show code and changes](#show-code-and-changes)
-  - [Arrange elements](#arrange-elements)
-  - [Take input](#take-input)
-  - [Draw pictures](#draw-pictures)
-  - [See where a mod can draw](#see-where-a-mod-can-draw)
-  - [Related Topics](#related-topics)
+* [Interface examples for mods](#interface-examples-for-mods)
+  * [Try a sample](#try-a-sample)
+  * [Pick an element](#pick-an-element)
+  * [Show text](#show-text)
+  * [Show code and changes](#show-code-and-changes)
+  * [Arrange elements](#arrange-elements)
+  * [Take input](#take-input)
+  * [Draw pictures](#draw-pictures)
+  * [See where a mod can draw](#see-where-a-mod-can-draw)
+  * [Related Topics](#related-topics)
 
 ## Chapter content
 
@@ -413,6 +413,4 @@ The samples all draw in a pane. A mod can also draw in other places, and call Cl
 * [Test a drawing](https://code.claude.com/docs/en/plugins/mods/test#test-a-drawing): press your buttons from a test
 * [Elements reference](https://code.claude.com/docs/en/plugins/mods/reference#elements): each element's main props and the apps that draw it
 
-
 ---
-

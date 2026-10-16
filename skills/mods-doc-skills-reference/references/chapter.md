@@ -2,16 +2,16 @@
 
 ## Table of Contents
 
-- [Extend Claude with skills](#extend-claude-with-skills)
-  - [Bundled skills](#bundled-skills)
-  - [Create and manage skills](#create-and-manage-skills)
-  - [Configure skills](#configure-skills)
-  - [Advanced skill patterns](#advanced-skill-patterns)
-  - [Evaluate and iterate on a skill](#evaluate-and-iterate-on-a-skill)
-  - [Share skills](#share-skills)
-  - [Generate visual output](#generate-visual-output)
-  - [Troubleshooting](#troubleshooting)
-  - [Related resources](#related-resources)
+* [Extend Claude with skills](#extend-claude-with-skills)
+  * [Bundled skills](#bundled-skills)
+  * [Create and manage skills](#create-and-manage-skills)
+  * [Configure skills](#configure-skills)
+  * [Advanced skill patterns](#advanced-skill-patterns)
+  * [Evaluate and iterate on a skill](#evaluate-and-iterate-on-a-skill)
+  * [Share skills](#share-skills)
+  * [Generate visual output](#generate-visual-output)
+  * [Troubleshooting](#troubleshooting)
+  * [Related resources](#related-resources)
 
 ## Chapter content
 
@@ -1233,8 +1233,4 @@ To restore a skill, move its folder from the timestamped folder back into `~/.cl
 * **[Permissions](https://code.claude.com/docs/en/permissions)**: control tool and skill access
 * **[Claude Tag skills](https://claude.com/docs/claude-tag/admins/skills-repo)**: project skills committed to a repo also load when that repo is used in a Claude Tag channel
 
-
-
 ---
-
-

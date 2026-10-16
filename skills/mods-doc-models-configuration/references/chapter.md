@@ -2,17 +2,17 @@
 
 ## Table of Contents
 
-- [Model configuration](#model-configuration)
-  - [Available models and how to set them](#available-models-and-how-to-set-them)
-  - [Restrict and enforce model selection](#restrict-and-enforce-model-selection)
-  - [Organization default model](#organization-default-model)
-  - [Organization effort limits](#organization-effort-limits)
-  - [Special model behavior and tuning](#special-model-behavior-and-tuning)
-  - [Context window and auto-compaction](#context-window-and-auto-compaction)
-  - [Checking your current model](#checking-your-current-model)
-  - [Add a custom model option](#add-a-custom-model-option)
-  - [Model environment variables](#model-environment-variables)
-  - [Version history](#version-history)
+* [Model configuration](#model-configuration)
+  * [Available models and how to set them](#available-models-and-how-to-set-them)
+  * [Restrict and enforce model selection](#restrict-and-enforce-model-selection)
+  * [Organization default model](#organization-default-model)
+  * [Organization effort limits](#organization-effort-limits)
+  * [Special model behavior and tuning](#special-model-behavior-and-tuning)
+  * [Context window and auto-compaction](#context-window-and-auto-compaction)
+  * [Checking your current model](#checking-your-current-model)
+  * [Add a custom model option](#add-a-custom-model-option)
+  * [Model environment variables](#model-environment-variables)
+  * [Version history](#version-history)
 
 ## Chapter content
 
@@ -1042,8 +1042,4 @@ This table lists the Claude Code version at which each model alias changed the m
 | v2.1.154 | `opus` resolves to Opus 4.8 on the Anthropic API |
 | Earlier | `opus` resolves to Opus 4.7 on Claude Platform on AWS and to Opus 4.6 on Amazon Bedrock and Agent Platform. `fable` resolves to Fable 5 and `haiku` resolves to Haiku 4.5 on every provider |
 
-
-
-
 ---
-

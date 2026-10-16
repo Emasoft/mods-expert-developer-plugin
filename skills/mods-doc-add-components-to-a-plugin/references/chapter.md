@@ -2,10 +2,10 @@
 
 ## Table of Contents
 
-- [Add components to a plugin](#add-components-to-a-plugin-1)
-  - [Explore the plugin directory](#explore-the-plugin-directory)
-  - [Add and configure every plugin component type](#add-and-configure-every-plugin-component-type)
-  - [Related Docs](#related-docs)
+* [Add components to a plugin](#add-components-to-a-plugin-1)
+  * [Explore the plugin directory](#explore-the-plugin-directory)
+  * [Add and configure every plugin component type](#add-and-configure-every-plugin-component-type)
+  * [Related Docs](#related-docs)
 
 ## Chapter content
 
@@ -1109,4 +1109,3 @@ After the first session, `~/.claude/plugins/data/<id>/node_modules` exists. An M
 * [Troubleshoot plugins](https://code.claude.com/docs/en/plugins/troubleshooting): what to do when a component doesn't load or a hook doesn't fire
 
 ---
-

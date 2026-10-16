@@ -2,16 +2,16 @@
 
 ## Table of Contents
 
-- [Troubleshoot a mod](#troubleshoot-a-mod)
-  - [Find out why a mod does nothing](#find-out-why-a-mod-does-nothing)
-  - [Check whether mods can load](#check-whether-mods-can-load)
-  - [The mod doesn't load](#the-mod-doesnt-load)
-  - [A hook is skipped or a mod is unloaded](#a-hook-is-skipped-or-a-mod-is-unloaded)
-  - [A tool call is denied](#a-tool-call-is-denied)
-  - [A drawing doesn't appear or respond](#a-drawing-doesnt-appear-or-respond)
-  - [An edit or a value is lost](#an-edit-or-a-value-is-lost)
-  - [Read the debug log](#read-the-debug-log)
-  - [Related Topics](#related-topics)
+* [Troubleshoot a mod](#troubleshoot-a-mod)
+  * [Find out why a mod does nothing](#find-out-why-a-mod-does-nothing)
+  * [Check whether mods can load](#check-whether-mods-can-load)
+  * [The mod doesn't load](#the-mod-doesnt-load)
+  * [A hook is skipped or a mod is unloaded](#a-hook-is-skipped-or-a-mod-is-unloaded)
+  * [A tool call is denied](#a-tool-call-is-denied)
+  * [A drawing doesn't appear or respond](#a-drawing-doesnt-appear-or-respond)
+  * [An edit or a value is lost](#an-edit-or-a-value-is-lost)
+  * [Read the debug log](#read-the-debug-log)
+  * [Related Topics](#related-topics)
 
 ## Chapter content
 
@@ -300,4 +300,3 @@ While you edit a mod loaded with `--plugin-dir`, the transcript shows a line for
 * [Troubleshoot plugins](https://code.claude.com/docs/en/plugins/troubleshooting): problems with installing and loading a plugin that aren't specific to mods
 
 ---
-

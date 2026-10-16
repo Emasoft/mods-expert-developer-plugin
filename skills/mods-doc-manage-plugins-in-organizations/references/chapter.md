@@ -2,16 +2,16 @@
 
 ## Table of Contents
 
-- [Manage Claude Code plugins for your organization](#manage-claude-code-plugins-for-your-organization)
-  - [Pre-install and require plugins](#pre-install-and-require-plugins)
-  - [Seed containers and CI](#seed-containers-and-ci)
-  - [Restrict what users can install](#restrict-what-users-can-install)
-  - [Set update policy](#set-update-policy)
-  - [Recommend plugins](#recommend-plugins)
-  - [Audit and review plugin usage](#audit-and-review-plugin-usage)
-  - [Plan for what managed settings can't enforce](#plan-for-what-managed-settings-cant-enforce)
-  - [Troubleshoot policy](#troubleshoot-policy)
-  - [Related Docs](#related-docs)
+* [Manage Claude Code plugins for your organization](#manage-claude-code-plugins-for-your-organization)
+  * [Pre-install and require plugins](#pre-install-and-require-plugins)
+  * [Seed containers and CI](#seed-containers-and-ci)
+  * [Restrict what users can install](#restrict-what-users-can-install)
+  * [Set update policy](#set-update-policy)
+  * [Recommend plugins](#recommend-plugins)
+  * [Audit and review plugin usage](#audit-and-review-plugin-usage)
+  * [Plan for what managed settings can't enforce](#plan-for-what-managed-settings-cant-enforce)
+  * [Troubleshoot policy](#troubleshoot-policy)
+  * [Related Docs](#related-docs)
 
 ## Chapter content
 
@@ -422,6 +422,4 @@ If plugin policy doesn't behave as expected on a machine, check for these sympto
 * [Server-managed settings](https://code.claude.com/docs/en/server-managed-settings): deliver these keys from the claude.ai admin console
 * [Troubleshoot plugins](https://code.claude.com/docs/en/plugins/troubleshooting#blocked-by-your-organization): the messages users see when policy blocks them
 
-
 ---
-

@@ -2,13 +2,13 @@
 
 ## Table of Contents
 
-- [Plugin security and trust](#plugin-security-and-trust)
-  - [Understand what a plugin can do](#understand-what-a-plugin-can-do)
-  - [Review plugins before and after you install](#review-plugins-before-and-after-you-install)
-  - [Recognize when Claude Code refuses or warns](#recognize-when-claude-code-refuses-or-warns)
-  - [Enforce plugin controls for your organization](#enforce-plugin-controls-for-your-organization)
-  - [Find plugins in telemetry](#find-plugins-in-telemetry)
-  - [Related Docs](#related-docs)
+* [Plugin security and trust](#plugin-security-and-trust)
+  * [Understand what a plugin can do](#understand-what-a-plugin-can-do)
+  * [Review plugins before and after you install](#review-plugins-before-and-after-you-install)
+  * [Recognize when Claude Code refuses or warns](#recognize-when-claude-code-refuses-or-warns)
+  * [Enforce plugin controls for your organization](#enforce-plugin-controls-for-your-organization)
+  * [Find plugins in telemetry](#find-plugins-in-telemetry)
+  * [Related Docs](#related-docs)
 
 ## Chapter content
 
@@ -181,10 +181,8 @@ If your organization exports Claude Code's [OpenTelemetry events](https://code.c
 * [Anthropic's marketplaces](https://code.claude.com/docs/en/plugins/anthropic-marketplaces): which marketplace names are Anthropic's
 * [Security](https://code.claude.com/docs/en/security): Claude Code's own security model
 
-
 ---
 
 > ## Documentation Index
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
-

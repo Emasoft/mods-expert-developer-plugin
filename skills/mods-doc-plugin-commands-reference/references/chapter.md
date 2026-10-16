@@ -2,11 +2,11 @@
 
 ## Table of Contents
 
-- [Plugin commands reference](#plugin-commands-reference-1)
-  - [claude plugin commands](#claude-plugin-commands)
-  - [claude plugin marketplace commands](#claude-plugin-marketplace-commands)
-  - [Flags that load a plugin for one session](#flags-that-load-a-plugin-for-one-session)
-  - [See Also:](#see-also)
+* [Plugin commands reference](#plugin-commands-reference-1)
+  * [claude plugin commands](#claude-plugin-commands)
+  * [claude plugin marketplace commands](#claude-plugin-marketplace-commands)
+  * [Flags that load a plugin for one session](#flags-that-load-a-plugin-for-one-session)
+  * [See Also:](#see-also)
 
 ## Chapter content
 
@@ -904,7 +904,4 @@ From the Agent SDK, the [`plugins`](https://code.claude.com/docs/en/agent-sdk/pl
 * [Troubleshoot plugins](https://code.claude.com/docs/en/plugins/troubleshooting): install, marketplace, load, and validation error messages with their fixes
 * [Plugin manifest reference](https://code.claude.com/docs/en/plugins/manifest-reference): the fields `claude plugin validate` checks
 
-
 ---
-
-

@@ -2,14 +2,14 @@
 
 ## Table of Contents
 
-- [How Claude remembers your project](#how-claude-remembers-your-project)
-  - [CLAUDE.md vs auto memory](#claudemd-vs-auto-memory)
-  - [CLAUDE.md files and rules](#claudemd-files-and-rules)
-  - [Use AGENTS.md alongside CLAUDE.md](#use-agentsmd-alongside-claudemd)
-  - [Auto memory behavior and storage](#auto-memory-behavior-and-storage)
-  - [View and edit with `/memory`](#view-and-edit-with-memory)
-  - [Troubleshoot memory issues](#troubleshoot-memory-issues)
-  - [Related resources](#related-resources)
+* [How Claude remembers your project](#how-claude-remembers-your-project)
+  * [CLAUDE.md vs auto memory](#claudemd-vs-auto-memory)
+  * [CLAUDE.md files and rules](#claudemd-files-and-rules)
+  * [Use AGENTS.md alongside CLAUDE.md](#use-agentsmd-alongside-claudemd)
+  * [Auto memory behavior and storage](#auto-memory-behavior-and-storage)
+  * [View and edit with `/memory`](#view-and-edit-with-memory)
+  * [Troubleshoot memory issues](#troubleshoot-memory-issues)
+  * [Related resources](#related-resources)
 
 ## Chapter content
 
@@ -650,7 +650,4 @@ See [Write effective instructions](https://code.claude.com/docs/en/memory#write-
 * [Settings](https://code.claude.com/docs/en/settings): configure Claude Code behavior with settings files
 * [Subagent memory](https://code.claude.com/docs/en/sub-agents#enable-persistent-memory): let subagents maintain their own auto memory
 
-
 ---
-
-

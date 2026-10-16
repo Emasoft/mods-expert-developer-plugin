@@ -2,11 +2,11 @@
 
 ## Table of Contents
 
-- [Test a mod](#test-a-mod)
-  - [Write a mod test](#write-a-mod-test)
-  - [Test a timer](#test-a-timer)
-  - [Test a drawing](#test-a-drawing)
-  - [Related Topics](#related-topics)
+* [Test a mod](#test-a-mod)
+  * [Write a mod test](#write-a-mod-test)
+  * [Test a timer](#test-a-timer)
+  * [Test a drawing](#test-a-drawing)
+  * [Related Topics](#related-topics)
 
 ## Chapter content
 
@@ -423,4 +423,3 @@ The kit loads every mod at the test's first call on `$`. When your mod refuses o
 * [Mods reference](https://code.claude.com/docs/en/plugins/mods/reference): every event's input and result, for writing stubs
 
 ---
-

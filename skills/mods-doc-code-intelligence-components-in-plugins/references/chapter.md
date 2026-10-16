@@ -2,13 +2,13 @@
 
 ## Table of Contents
 
-- [Code intelligence plugins](#code-intelligence-plugins)
-  - [Install a code intelligence plugin](#install-a-code-intelligence-plugin)
-  - [See what Claude gains and view diagnostics](#see-what-claude-gains-and-view-diagnostics)
-  - [Handle the plugin recommendation dialog](#handle-the-plugin-recommendation-dialog)
-  - [Troubleshoot code intelligence](#troubleshoot-code-intelligence)
-  - [Add a language without an official plugin](#add-a-language-without-an-official-plugin)
-  - [Related Docs](#related-docs)
+* [Code intelligence plugins](#code-intelligence-plugins)
+  * [Install a code intelligence plugin](#install-a-code-intelligence-plugin)
+  * [See what Claude gains and view diagnostics](#see-what-claude-gains-and-view-diagnostics)
+  * [Handle the plugin recommendation dialog](#handle-the-plugin-recommendation-dialog)
+  * [Troubleshoot code intelligence](#troubleshoot-code-intelligence)
+  * [Add a language without an official plugin](#add-a-language-without-an-official-plugin)
+  * [Related Docs](#related-docs)
 
 ## Chapter content
 
@@ -149,6 +149,4 @@ For the file's fields and a worked example, see [LSP servers in plugin component
 * [Troubleshoot plugins](https://code.claude.com/docs/en/plugins/troubleshooting): load errors beyond the language-server ones on this page
 * [Find plugins in the official marketplace](https://code.claude.com/docs/en/plugins/anthropic-marketplaces#find-plugins-in-the-official-marketplace): where to browse the rest of the official marketplace
 
-
 ----
-

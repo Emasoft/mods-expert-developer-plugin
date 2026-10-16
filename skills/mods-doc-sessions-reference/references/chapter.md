@@ -2,14 +2,14 @@
 
 ## Table of Contents
 
-- [Manage sessions](#manage-sessions)
-  - [Resume a session](#resume-a-session)
-  - [Name your sessions](#name-your-sessions)
-  - [Use the session picker](#use-the-session-picker)
-  - [Branch a session](#branch-a-session)
-  - [Manage context within a session](#manage-context-within-a-session)
-  - [Access and manage stored session data](#access-and-manage-stored-session-data)
-  - [See also](#see-also)
+* [Manage sessions](#manage-sessions)
+  * [Resume a session](#resume-a-session)
+  * [Name your sessions](#name-your-sessions)
+  * [Use the session picker](#use-the-session-picker)
+  * [Branch a session](#branch-a-session)
+  * [Manage context within a session](#manage-context-within-a-session)
+  * [Access and manage stored session data](#access-and-manage-stored-session-data)
+  * [See also](#see-also)
 
 ## Chapter content
 
@@ -317,7 +317,4 @@ These pages cover related session and parallelism mechanics:
 * [Context window](https://code.claude.com/docs/en/context-window): what fills context and what survives compaction
 * [Non-interactive mode](https://code.claude.com/docs/en/headless): session behavior under `claude -p`
 
-
 ---
-
-

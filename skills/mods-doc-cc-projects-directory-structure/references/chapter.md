@@ -2,15 +2,15 @@
 
 ## Table of Contents
 
-- [Explore the .claude directory](#explore-the-claude-directory)
-  - [Explore the directory](#explore-the-directory)
-  - [What's not shown](#whats-not-shown)
-  - [Choose the right file](#choose-the-right-file)
-  - [File reference](#file-reference)
-  - [Frontmatter fields by file](#frontmatter-fields-by-file)
-  - [Troubleshoot configuration](#troubleshoot-configuration)
-  - [Application data storage and cleanup](#application-data-storage-and-cleanup)
-  - [Related resources](#related-resources)
+* [Explore the .claude directory](#explore-the-claude-directory)
+  * [Explore the directory](#explore-the-directory)
+  * [What's not shown](#whats-not-shown)
+  * [Choose the right file](#choose-the-right-file)
+  * [File reference](#file-reference)
+  * [Frontmatter fields by file](#frontmatter-fields-by-file)
+  * [Troubleshoot configuration](#troubleshoot-configuration)
+  * [Application data storage and cleanup](#application-data-storage-and-cleanup)
+  * [Related resources](#related-resources)
 
 ## Chapter content
 
@@ -708,5 +708,3 @@ Don't delete `~/.claude.json`, `~/.claude/settings.json`, or `~/.claude/plugins/
 * [Configure subagents](https://code.claude.com/docs/en/sub-agents): define specialized agents with their own context
 
 ---
-
-

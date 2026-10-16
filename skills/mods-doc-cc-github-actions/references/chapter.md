@@ -2,16 +2,16 @@
 
 ## Table of Contents
 
-- [Claude Code GitHub Actions](#claude-code-github-actions)
-  - [Set up and manage the Claude GitHub app](#set-up-and-manage-the-claude-github-app)
-  - [Interactive and automation modes and run triggers](#interactive-and-automation-modes-and-run-triggers)
-  - [Example use cases](#example-use-cases)
-  - [Best practices for Claude in GitHub Actions](#best-practices-for-claude-in-github-actions)
-  - [Use a cloud provider](#use-a-cloud-provider)
-  - [Troubleshooting](#troubleshooting)
-  - [Advanced configuration](#advanced-configuration)
-  - [Upgrade from beta](#upgrade-from-beta)
-  - [Also See:](#also-see)
+* [Claude Code GitHub Actions](#claude-code-github-actions)
+  * [Set up and manage the Claude GitHub app](#set-up-and-manage-the-claude-github-app)
+  * [Interactive and automation modes and run triggers](#interactive-and-automation-modes-and-run-triggers)
+  * [Example use cases](#example-use-cases)
+  * [Best practices for Claude in GitHub Actions](#best-practices-for-claude-in-github-actions)
+  * [Use a cloud provider](#use-a-cloud-provider)
+  * [Troubleshooting](#troubleshooting)
+  * [Advanced configuration](#advanced-configuration)
+  * [Upgrade from beta](#upgrade-from-beta)
+  * [Also See:](#also-see)
 
 ## Chapter content
 
@@ -424,7 +424,4 @@ For the full input mapping and before-and-after examples, see the [migration gui
 * [Examples directory](https://github.com/anthropics/claude-code-action/tree/main/examples): ready-to-use workflows for more scenarios
 * [Code Review](https://code.claude.com/docs/en/code-review): automatic pull request review without maintaining a workflow file
 
-
 ---
-
-

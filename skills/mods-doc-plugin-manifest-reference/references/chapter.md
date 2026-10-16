@@ -2,17 +2,17 @@
 
 ## Table of Contents
 
-- [Plugin manifest reference](#plugin-manifest-reference-1)
-  - [Manifest file](#manifest-file)
-  - [Manifest fields](#manifest-fields)
-  - [Component path forms](#component-path-forms)
-  - [Path rules](#path-rules)
-  - [User configuration options](#user-configuration-options)
-  - [Channels](#channels)
-  - [Environment variable resolution and quoting](#environment-variable-resolution-and-quoting)
-  - [Standard layout](#standard-layout)
-  - [Marketplace entries and the manifest](#marketplace-entries-and-the-manifest)
-  - [Related Docs](#related-docs)
+* [Plugin manifest reference](#plugin-manifest-reference-1)
+  * [Manifest file](#manifest-file)
+  * [Manifest fields](#manifest-fields)
+  * [Component path forms](#component-path-forms)
+  * [Path rules](#path-rules)
+  * [User configuration options](#user-configuration-options)
+  * [Channels](#channels)
+  * [Environment variable resolution and quoting](#environment-variable-resolution-and-quoting)
+  * [Standard layout](#standard-layout)
+  * [Marketplace entries and the manifest](#marketplace-entries-and-the-manifest)
+  * [Related Docs](#related-docs)
 
 ## Chapter content
 
@@ -713,7 +713,4 @@ For the full precedence table, see [Strict mode](https://code.claude.com/docs/en
 * [Plugin commands reference](https://code.claude.com/docs/en/plugins/cli-reference#plugin-validate): `claude plugin validate` flags and output
 * [Troubleshoot plugins](https://code.claude.com/docs/en/plugins/troubleshooting#claude-plugin-validate-reports-errors): each validation message with its fix
 
-
 ---
-
-

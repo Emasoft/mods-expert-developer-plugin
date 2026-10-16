@@ -2,18 +2,18 @@
 
 ## Table of Contents
 
-- [Run parallel sessions with worktrees](#run-parallel-sessions-with-worktrees)
-  - [Start Claude in a worktree](#start-claude-in-a-worktree)
-  - [Clean up worktrees](#clean-up-worktrees)
-  - [Resume a worktree session](#resume-a-worktree-session)
-  - [How Claude Code enforces isolation](#how-claude-code-enforces-isolation)
-  - [Isolate subagents with worktrees](#isolate-subagents-with-worktrees)
-  - [Customize worktree creation](#customize-worktree-creation)
-  - [What worktrees share with the main checkout](#what-worktrees-share-with-the-main-checkout)
-  - [Manage worktrees manually](#manage-worktrees-manually)
-  - [Non-git version control](#non-git-version-control)
-  - [Worktree troubleshooting](#worktree-troubleshooting)
-  - [See also](#see-also)
+* [Run parallel sessions with worktrees](#run-parallel-sessions-with-worktrees)
+  * [Start Claude in a worktree](#start-claude-in-a-worktree)
+  * [Clean up worktrees](#clean-up-worktrees)
+  * [Resume a worktree session](#resume-a-worktree-session)
+  * [How Claude Code enforces isolation](#how-claude-code-enforces-isolation)
+  * [Isolate subagents with worktrees](#isolate-subagents-with-worktrees)
+  * [Customize worktree creation](#customize-worktree-creation)
+  * [What worktrees share with the main checkout](#what-worktrees-share-with-the-main-checkout)
+  * [Manage worktrees manually](#manage-worktrees-manually)
+  * [Non-git version control](#non-git-version-control)
+  * [Worktree troubleshooting](#worktree-troubleshooting)
+  * [See also](#see-also)
 
 ## Chapter content
 
@@ -409,7 +409,4 @@ Worktrees handle file isolation. The related pages below cover delegating work i
 * [Manage sessions](https://code.claude.com/docs/en/sessions): name, resume, and switch between conversations
 * [Desktop parallel sessions](https://code.claude.com/docs/en/desktop#work-in-parallel-with-sessions): worktree-backed sessions in the desktop app
 
-
-
 ---
-

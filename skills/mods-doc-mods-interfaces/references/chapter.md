@@ -2,13 +2,13 @@
 
 ## Table of Contents
 
-- [Draw in the interface with a mod](#draw-in-the-interface-with-a-mod)
-  - [Build a pane with tabs](#build-a-pane-with-tabs)
-  - [Pick where to draw and open panes](#pick-where-to-draw-and-open-panes)
-  - [Build a tree from elements and cell grids](#build-a-tree-from-elements-and-cell-grids)
-  - [Handle input and redraws](#handle-input-and-redraws)
-  - [Keep state across reloads and sessions](#keep-state-across-reloads-and-sessions)
-  - [Related Topics](#related-topics)
+* [Draw in the interface with a mod](#draw-in-the-interface-with-a-mod)
+  * [Build a pane with tabs](#build-a-pane-with-tabs)
+  * [Pick where to draw and open panes](#pick-where-to-draw-and-open-panes)
+  * [Build a tree from elements and cell grids](#build-a-tree-from-elements-and-cell-grids)
+  * [Handle input and redraws](#handle-input-and-redraws)
+  * [Keep state across reloads and sessions](#keep-state-across-reloads-and-sessions)
+  * [Related Topics](#related-topics)
 
 ## Chapter content
 

@@ -2,10 +2,10 @@
 
 ## Table of Contents
 
-- [Plugin dependencies](#plugin-dependencies)
-  - [Declare dependencies](#declare-dependencies)
-  - [How dependencies behave for your users](#how-dependencies-behave-for-your-users)
-  - [See also](#see-also)
+* [Plugin dependencies](#plugin-dependencies)
+  * [Declare dependencies](#declare-dependencies)
+  * [How dependencies behave for your users](#how-dependencies-behave-for-your-users)
+  * [See also](#see-also)
 
 ## Chapter content
 
@@ -231,6 +231,4 @@ When a user uninstalls the last plugin that constrains a dependency, the depende
 * [`claude plugin prune`](https://code.claude.com/docs/en/plugins/cli-reference#plugin-prune): remove auto-installed dependencies no plugin needs anymore
 * [Host a marketplace](https://code.claude.com/docs/en/plugins/host-marketplace): release channels and recommending other plugins
 
-
 ---
-

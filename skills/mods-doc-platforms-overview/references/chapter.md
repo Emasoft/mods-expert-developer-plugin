@@ -2,11 +2,11 @@
 
 ## Table of Contents
 
-- [Platforms and integrations](#platforms-and-integrations)
-  - [Where to run Claude Code](#where-to-run-claude-code)
-  - [Connect your tools](#connect-your-tools)
-  - [Work when you are away from your terminal](#work-when-you-are-away-from-your-terminal)
-  - [Related resources](#related-resources)
+* [Platforms and integrations](#platforms-and-integrations)
+  * [Where to run Claude Code](#where-to-run-claude-code)
+  * [Connect your tools](#connect-your-tools)
+  * [Work when you are away from your terminal](#work-when-you-are-away-from-your-terminal)
+  * [Related resources](#related-resources)
 
 ## Chapter content
 
@@ -96,7 +96,4 @@ If you're not sure where to start, [install the CLI](https://code.claude.com/doc
 * [Channels](https://code.claude.com/docs/en/channels): push events from chat apps or your own servers into a session
 * [Scheduled tasks](https://code.claude.com/docs/en/scheduled-tasks): run prompts on a recurring schedule
 
-
 ---
-
-

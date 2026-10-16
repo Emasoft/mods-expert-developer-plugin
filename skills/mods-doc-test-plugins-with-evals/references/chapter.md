@@ -2,16 +2,16 @@
 
 ## Table of Contents
 
-- [Test plugins with evals](#test-plugins-with-evals-1)
-  - [Requirements](#requirements)
-  - [How an eval run works](#how-an-eval-run-works)
-  - [Create your first eval suite](#create-your-first-eval-suite)
-  - [Set up fixtures and mocks](#set-up-fixtures-and-mocks)
-  - [Run evals](#run-evals)
-  - [Read the results](#read-the-results)
-  - [Eval suite reference](#eval-suite-reference)
-  - [Troubleshooting](#troubleshooting)
-  - [See also](#see-also)
+* [Test plugins with evals](#test-plugins-with-evals-1)
+  * [Requirements](#requirements)
+  * [How an eval run works](#how-an-eval-run-works)
+  * [Create your first eval suite](#create-your-first-eval-suite)
+  * [Set up fixtures and mocks](#set-up-fixtures-and-mocks)
+  * [Run evals](#run-evals)
+  * [Read the results](#read-the-results)
+  * [Eval suite reference](#eval-suite-reference)
+  * [Troubleshooting](#troubleshooting)
+  * [See also](#see-also)
 
 ## Chapter content
 
@@ -759,4 +759,3 @@ The defaults are 10 turns and 300 seconds. Raise `max_turns` and `timeout_second
 * [Measure plugin cost and usage](https://code.claude.com/docs/en/plugins/measure): what the plugin adds to each session's context and whether people still use it
 
 ---
-

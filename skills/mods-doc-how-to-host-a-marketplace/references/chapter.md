@@ -2,18 +2,18 @@
 
 ## Table of Contents
 
-- [Host and maintain a marketplace](#host-and-maintain-a-marketplace)
-  - [Host your marketplace](#host-your-marketplace)
-  - [Distribute through organization settings](#distribute-through-organization-settings)
-  - [Grant access to a private marketplace](#grant-access-to-a-private-marketplace)
-  - [Roll out to a whole company](#roll-out-to-a-whole-company)
-  - [Keep users up to date and control versions](#keep-users-up-to-date-and-control-versions)
-  - [Run release channels](#run-release-channels)
-  - [Rename or remove a plugin](#rename-or-remove-a-plugin)
-  - [Authenticate archive downloads](#authenticate-archive-downloads)
-  - [Depend on and recommend other plugins](#depend-on-and-recommend-other-plugins)
-  - [Work around what a marketplace can't do](#work-around-what-a-marketplace-cant-do)
-  - [Related Docs](#related-docs)
+* [Host and maintain a marketplace](#host-and-maintain-a-marketplace)
+  * [Host your marketplace](#host-your-marketplace)
+  * [Distribute through organization settings](#distribute-through-organization-settings)
+  * [Grant access to a private marketplace](#grant-access-to-a-private-marketplace)
+  * [Roll out to a whole company](#roll-out-to-a-whole-company)
+  * [Keep users up to date and control versions](#keep-users-up-to-date-and-control-versions)
+  * [Run release channels](#run-release-channels)
+  * [Rename or remove a plugin](#rename-or-remove-a-plugin)
+  * [Authenticate archive downloads](#authenticate-archive-downloads)
+  * [Depend on and recommend other plugins](#depend-on-and-recommend-other-plugins)
+  * [Work around what a marketplace can't do](#work-around-what-a-marketplace-cant-do)
+  * [Related Docs](#related-docs)
 
 ## Chapter content
 
@@ -446,7 +446,4 @@ Some things owners ask for have no field in `marketplace.json`. Here is the near
 * [Plugin dependencies](https://code.claude.com/docs/en/plugins/dependencies): tag releases so plugins that depend on yours can resolve versions
 * [Troubleshoot plugins](https://code.claude.com/docs/en/plugins/troubleshooting): the errors your users see when adding or updating from your marketplace
 
-
 ---
-
-

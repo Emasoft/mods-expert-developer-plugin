@@ -72,6 +72,9 @@
       "skills/mods-doc-troubleshooting-cc-setup/references/chapter.md",
       "skills/mods-doc-troubleshooting-plugins/references/chapter.md",
       "skills/mods-doc-worktrees-reference/references/chapter.md"
-    ]
+    ],
+    "pipeline": {
+      "intentional_divergence": ["cliff.toml", ".github/workflows/notify-marketplace.yml"]
+    }
   }
 }

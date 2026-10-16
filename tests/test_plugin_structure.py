@@ -20,7 +20,9 @@ ROOT = Path(__file__).resolve().parent.parent
 SKILLS = ROOT / "skills"
 AGENT = ROOT / "agents/mods-expert-developer-agent.md"
 SKILL_DIRS = sorted(d for d in SKILLS.iterdir() if d.is_dir())
-CHAPTER_TOC_ENTRY = re.compile(r"^( *)- \[(.+)\]\(#([^)\s]+)\)$")
+# Chapter TOCs use "* " (the marker of the Anthropic body, so markdownlint MD004 stays consistent);
+# the SKILL.md copy keeps "- ". Entries are compared by indent, title and anchor, not by marker.
+CHAPTER_TOC_ENTRY = re.compile(r"^( *)[-*] \[(.+)\]\(#([^)\s]+)\)$")
 RESERVED = ("claude", "anthropic")
 
 

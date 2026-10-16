@@ -2,12 +2,12 @@
 
 ## Table of Contents
 
-- [Create a Claude Code plugin](#create-a-claude-code-plugin)
-  - [Decide when to use a plugin](#decide-when-to-use-a-plugin)
-  - [Create your first plugin](#create-your-first-plugin)
-  - [Develop without a marketplace](#develop-without-a-marketplace)
-  - [Test and debug plugins](#test-and-debug-plugins)
-  - [RELATED DOCS](#related-docs)
+* [Create a Claude Code plugin](#create-a-claude-code-plugin)
+  * [Decide when to use a plugin](#decide-when-to-use-a-plugin)
+  * [Create your first plugin](#create-your-first-plugin)
+  * [Develop without a marketplace](#develop-without-a-marketplace)
+  * [Test and debug plugins](#test-and-debug-plugins)
+  * [RELATED DOCS](#related-docs)
 
 ## Chapter content
 
@@ -396,7 +396,6 @@ While the originals are still under `.claude/`, they stay loaded alongside the p
 
 After you've confirmed the plugin works, delete the originals from `.claude/` and remove the `hooks` object from your settings file.
 
-
 #### RELATED DOCS
 
 * [Plugin components](https://code.claude.com/docs/en/plugins/components): add agents, hooks, MCP servers, LSP servers, and user configuration to your plugin
@@ -407,6 +406,4 @@ After you've confirmed the plugin works, delete the originals from `.claude/` an
 * [Skills](https://code.claude.com/docs/en/skills): write the skills your plugin provides
 * [Anthropic's plugins in the claude-code repository](https://github.com/anthropics/claude-code/tree/main/plugins): complete worked examples of the layout on this page, such as `feature-dev` and `code-review`
 
-
 ---
-

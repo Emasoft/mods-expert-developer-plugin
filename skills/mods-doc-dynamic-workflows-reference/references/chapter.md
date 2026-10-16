@@ -2,14 +2,14 @@
 
 ## Table of Contents
 
-- [Orchestrate subagents at scale with dynamic workflows](#orchestrate-subagents-at-scale-with-dynamic-workflows)
-  - [When to use a workflow](#when-to-use-a-workflow)
-  - [Run and watch a bundled workflow](#run-and-watch-a-bundled-workflow)
-  - [Have Claude write and reuse a workflow](#have-claude-write-and-reuse-a-workflow)
-  - [Example workflow prompts and saved scripts](#example-workflow-prompts-and-saved-scripts)
-  - [How a workflow runs and its limits](#how-a-workflow-runs-and-its-limits)
-  - [Manage workflow runs](#manage-workflow-runs)
-  - [Related resources](#related-resources)
+* [Orchestrate subagents at scale with dynamic workflows](#orchestrate-subagents-at-scale-with-dynamic-workflows)
+  * [When to use a workflow](#when-to-use-a-workflow)
+  * [Run and watch a bundled workflow](#run-and-watch-a-bundled-workflow)
+  * [Have Claude write and reuse a workflow](#have-claude-write-and-reuse-a-workflow)
+  * [Example workflow prompts and saved scripts](#example-workflow-prompts-and-saved-scripts)
+  * [How a workflow runs and its limits](#how-a-workflow-runs-and-its-limits)
+  * [Manage workflow runs](#manage-workflow-runs)
+  * [Related resources](#related-resources)
 
 ## Chapter content
 
@@ -521,5 +521,3 @@ Turning workflows off also makes [ultracode](https://code.claude.com/docs/en/wor
 * [Manage costs](https://code.claude.com/docs/en/costs): how multi-agent runs count toward usage limits
 
 ---
-
-

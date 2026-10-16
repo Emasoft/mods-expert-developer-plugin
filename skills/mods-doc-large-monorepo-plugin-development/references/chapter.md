@@ -2,17 +2,17 @@
 
 ## Table of Contents
 
-- [Set up Claude Code in a monorepo or large codebase](#set-up-claude-code-in-a-monorepo-or-large-codebase)
-  - [What this guide covers and its example monorepo](#what-this-guide-covers-and-its-example-monorepo)
-  - [Choose where to start Claude](#choose-where-to-start-claude)
-  - [Layer CLAUDE.md files by directory](#layer-claudemd-files-by-directory)
-  - [Reduce what Claude reads](#reduce-what-claude-reads)
-  - [Scope worktrees and file access](#scope-worktrees-and-file-access)
-  - [Add per-directory skills](#add-per-directory-skills)
-  - [Centralize conventions and recommend plugins](#centralize-conventions-and-recommend-plugins)
-  - [Put it together](#put-it-together)
-  - [Scope and plan changes that span packages](#scope-and-plan-changes-that-span-packages)
-  - [Next steps](#next-steps)
+* [Set up Claude Code in a monorepo or large codebase](#set-up-claude-code-in-a-monorepo-or-large-codebase)
+  * [What this guide covers and its example monorepo](#what-this-guide-covers-and-its-example-monorepo)
+  * [Choose where to start Claude](#choose-where-to-start-claude)
+  * [Layer CLAUDE.md files by directory](#layer-claudemd-files-by-directory)
+  * [Reduce what Claude reads](#reduce-what-claude-reads)
+  * [Scope worktrees and file access](#scope-worktrees-and-file-access)
+  * [Add per-directory skills](#add-per-directory-skills)
+  * [Centralize conventions and recommend plugins](#centralize-conventions-and-recommend-plugins)
+  * [Put it together](#put-it-together)
+  * [Scope and plan changes that span packages](#scope-and-plan-changes-that-span-packages)
+  * [Next steps](#next-steps)
 
 ## Chapter content
 
@@ -493,8 +493,4 @@ Once this configuration is in place, you can refine it:
 * Review [Manage costs effectively](https://code.claude.com/docs/en/costs) to understand how codebase size affects token usage and how to set spend limits before a wider rollout
 * Read [How Claude Code works in large codebases](https://claude.com/blog/how-claude-code-works-in-large-codebases-best-practices-and-where-to-start) on the Claude blog for organizational rollout patterns and ownership models that sit above the per-repository configuration on this page
 
-
-
 ---
-
-

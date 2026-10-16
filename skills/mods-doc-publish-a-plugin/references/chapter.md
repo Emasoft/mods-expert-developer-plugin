@@ -2,14 +2,14 @@
 
 ## Table of Contents
 
-- [Publish and distribute a plugin](#publish-and-distribute-a-plugin)
-  - [Choose how to distribute](#choose-how-to-distribute)
-  - [Prepare your plugin for release](#prepare-your-plugin-for-release)
-  - [Share a plugin without a marketplace](#share-a-plugin-without-a-marketplace)
-  - [Publish through your own marketplace](#publish-through-your-own-marketplace)
-  - [Manage a plugin after release](#manage-a-plugin-after-release)
-  - [Declare dependencies](#declare-dependencies)
-  - [Related Docs](#related-docs)
+* [Publish and distribute a plugin](#publish-and-distribute-a-plugin)
+  * [Choose how to distribute](#choose-how-to-distribute)
+  * [Prepare your plugin for release](#prepare-your-plugin-for-release)
+  * [Share a plugin without a marketplace](#share-a-plugin-without-a-marketplace)
+  * [Publish through your own marketplace](#publish-through-your-own-marketplace)
+  * [Manage a plugin after release](#manage-a-plugin-after-release)
+  * [Declare dependencies](#declare-dependencies)
+  * [Related Docs](#related-docs)
 
 ## Chapter content
 
@@ -211,6 +211,4 @@ If your plugin needs another plugin from the same marketplace to be enabled, lis
 * [Recommend your plugin from your CLI](https://code.claude.com/docs/en/plugins/cli-hints): prompt Claude Code users of your CLI to install the plugin
 * [Measure plugin cost and usage](https://code.claude.com/docs/en/plugins/measure): see what your plugin costs in context and whether people use it
 
-
 ---
-

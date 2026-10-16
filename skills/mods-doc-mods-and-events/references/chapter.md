@@ -2,11 +2,11 @@
 
 ## Table of Contents
 
-- [React to events with a mod](#react-to-events-with-a-mod)
-  - [How a hook handles an event](#how-a-hook-handles-an-event)
-  - [Hook tool calls, prompts, and turns](#hook-tool-calls-prompts-and-turns)
-  - [Mod ordering and failed hooks](#mod-ordering-and-failed-hooks)
-  - [Related Topics](#related-topics)
+* [React to events with a mod](#react-to-events-with-a-mod)
+  * [How a hook handles an event](#how-a-hook-handles-an-event)
+  * [Hook tool calls, prompts, and turns](#hook-tool-calls-prompts-and-turns)
+  * [Mod ordering and failed hooks](#mod-ordering-and-failed-hooks)
+  * [Related Topics](#related-topics)
 
 ## Chapter content
 
@@ -364,4 +364,3 @@ At `tool.call`, a `deny` returned after `next` resolved [withholds the result fr
 * [Mods reference](https://code.claude.com/docs/en/plugins/mods/reference): every event, every mods API method, and the limits
 
 ---
-

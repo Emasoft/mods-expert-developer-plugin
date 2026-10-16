@@ -348,6 +348,30 @@
       "ruleId": "SUPPLY_CHAIN",
       "lineSha256": "c9edce118be7c9373c64372fe93065dc8322b4ba899af559393ce7fd89fc7ee7",
       "reason": "Adapted Anthropic docs prose naming a command pattern while explaining an error or a blocked action; descriptive text, no command line."
+    },
+    {
+      "file": "skills/mods-doc-worktrees-reference/references/chapter.md",
+      "ruleId": "INTENT_DESTRUCTIVE_INTENT",
+      "lineSha256": "46940d4d09fbfa099247d980f1a8cfa45868271a31671267f7fa099a04b8de17",
+      "reason": "Adapted Anthropic docs prose the plugin does not execute; sentence describes that removing a Windows worktree deletes only nested links, not the folders they point to."
+    },
+    {
+      "file": "skills/mods-doc-skills-reference/references/chapter.md",
+      "ruleId": "A2A_CROSS_AGENT_INJECT",
+      "lineSha256": "c17cdf5e2e3d0993a613e3238b1745549a5f3b23346a9f08c8edd96318693911",
+      "reason": "Adapted Anthropic docs prose the plugin does not execute; sentence describes that skillOverrides off hides a skill from Remote Control and Agent SDK command lists."
+    },
+    {
+      "file": "skills/mods-doc-prompt-caching-reference/references/chapter.md",
+      "ruleId": "A2A_CROSS_AGENT_INJECT",
+      "lineSha256": "d39fcaf68fe27b6247729a2842c0a2913ef2ea05a40d5cd4012f68ece469b484",
+      "reason": "Adapted Anthropic docs prose the plugin does not execute; sentence describes that skills and commands add their instructions as user messages without altering earlier conversation."
+    },
+    {
+      "file": "skills/mods-doc-hooks-reference/references/chapter.md",
+      "ruleId": "A2A_CROSS_AGENT_INJECT",
+      "lineSha256": "cb779177ffa77485b787a586adf10ed6e591cd7d963ae5088330dacdc0f5c084",
+      "reason": "Adapted Anthropic docs prose the plugin does not execute; sentence describes when Claude Code re-injects a hook's returned context into a subagent."
     }
   ]
 }

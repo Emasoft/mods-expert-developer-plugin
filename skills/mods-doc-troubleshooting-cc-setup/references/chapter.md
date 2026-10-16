@@ -2,12 +2,12 @@
 
 ## Table of Contents
 
-- [Troubleshoot installation and login](#troubleshoot-installation-and-login)
-  - [Find your error](#find-your-error)
-  - [Run diagnostic checks](#run-diagnostic-checks)
-  - [Common installation issues](#common-installation-issues)
-  - [Login and authentication](#login-and-authentication)
-  - [Still stuck](#still-stuck)
+* [Troubleshoot installation and login](#troubleshoot-installation-and-login)
+  * [Find your error](#find-your-error)
+  * [Run diagnostic checks](#run-diagnostic-checks)
+  * [Common installation issues](#common-installation-issues)
+  * [Login and authentication](#login-and-authentication)
+  * [Still stuck](#still-stuck)
 
 ## Chapter content
 
@@ -1279,7 +1279,4 @@ If none of the above resolves your issue:
 3. If you can start a session, use `/feedback` inside Claude Code to report the problem
 4. If the problem is with your account rather than the install, such as a login loop, a subscription that isn't recognized, or a disabled organization, contact Anthropic support: sign in at [claude.ai](https://claude.ai) (Console users: [platform.claude.com](https://platform.claude.com)), click your initials in the lower left, and select **Get help**. See [How to get support](https://support.claude.com/en/articles/9015913-how-to-get-support) for the full flow.
 
-
-
 ---
-

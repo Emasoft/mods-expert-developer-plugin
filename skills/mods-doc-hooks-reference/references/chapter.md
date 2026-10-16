@@ -2,17 +2,17 @@
 
 ## Table of Contents
 
-- [Hooks reference](#hooks-reference-1)
-  - [Hook lifecycle](#hook-lifecycle)
-  - [Hook configuration and management](#hook-configuration-and-management)
-  - [Hook input and output](#hook-input-and-output)
-  - [Hook events and decision control](#hook-events-and-decision-control)
-  - [Prompt-based hooks](#prompt-based-hooks)
-  - [Agent-based hooks](#agent-based-hooks)
-  - [Run hooks in the background](#run-hooks-in-the-background)
-  - [Security considerations](#security-considerations)
-  - [Windows PowerShell tool](#windows-powershell-tool)
-  - [Debug hooks](#debug-hooks)
+* [Hooks reference](#hooks-reference-1)
+  * [Hook lifecycle](#hook-lifecycle)
+  * [Hook configuration and management](#hook-configuration-and-management)
+  * [Hook input and output](#hook-input-and-output)
+  * [Hook events and decision control](#hook-events-and-decision-control)
+  * [Prompt-based hooks](#prompt-based-hooks)
+  * [Agent-based hooks](#agent-based-hooks)
+  * [Run hooks in the background](#run-hooks-in-the-background)
+  * [Security considerations](#security-considerations)
+  * [Windows PowerShell tool](#windows-powershell-tool)
+  * [Debug hooks](#debug-hooks)
 
 ## Chapter content
 
@@ -4198,7 +4198,4 @@ For more granular hook matching details, set `CLAUDE_CODE_DEBUG_LOG_LEVEL=verbos
 
 For troubleshooting common issues like hooks not firing, Stop hooks that keep blocking, or configuration errors, see [Limitations and troubleshooting](https://code.claude.com/docs/en/hooks-guide#limitations-and-troubleshooting) in the guide. For a broader diagnostic walkthrough covering `/context`, `/doctor`, and settings precedence, see [Debug your config](https://code.claude.com/docs/en/debug-your-config).
 
-
 ---
-
-

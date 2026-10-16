@@ -2,13 +2,13 @@
 
 ## Table of Contents
 
-- [Output styles](#output-styles)
-  - [Built-in output styles](#built-in-output-styles)
-  - [Change your output style](#change-your-output-style)
-  - [Create a custom output style](#create-a-custom-output-style)
-  - [Choose between an output style and other features](#choose-between-an-output-style-and-other-features)
-  - [How output styles work](#how-output-styles-work)
-  - [Related resources](#related-resources)
+* [Output styles](#output-styles)
+  * [Built-in output styles](#built-in-output-styles)
+  * [Change your output style](#change-your-output-style)
+  * [Create a custom output style](#create-a-custom-output-style)
+  * [Choose between an output style and other features](#choose-between-an-output-style-and-other-features)
+  * [How output styles work](#how-output-styles-work)
+  * [Related resources](#related-resources)
 
 ## Chapter content
 
@@ -223,7 +223,4 @@ The built-in Explanatory and Learning styles produce longer responses than Defau
 * [Plugins](https://code.claude.com/docs/en/plugins/overview): package and distribute output styles alongside skills, hooks, and agents
 * [Debug your configuration](https://code.claude.com/docs/en/debug-your-config): diagnose why an output style isn't taking effect
 
-
 ---
-
-

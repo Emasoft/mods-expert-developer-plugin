@@ -2,12 +2,12 @@
 
 ## Table of Contents
 
-- [Create a mod](#create-a-mod)
-  - [Ask Claude for a mod](#ask-claude-for-a-mod)
-  - [Write a mod yourself](#write-a-mod-yourself)
-  - [Change and test a mod](#change-and-test-a-mod)
-  - [Share your mod](#share-your-mod)
-  - [Related Topics](#related-topics)
+* [Create a mod](#create-a-mod)
+  * [Ask Claude for a mod](#ask-claude-for-a-mod)
+  * [Write a mod yourself](#write-a-mod-yourself)
+  * [Change and test a mod](#change-and-test-a-mod)
+  * [Share your mod](#share-your-mod)
+  * [Related Topics](#related-topics)
 
 ## Chapter content
 

@@ -2,15 +2,15 @@
 
 ## Table of Contents
 
-- [Scan your codebase for vulnerabilities](#scan-your-codebase-for-vulnerabilities)
-  - [Prerequisites](#prerequisites)
-  - [Models and providers](#models-and-providers)
-  - [Install and uninstall the plugin](#install-and-uninstall-the-plugin)
-  - [Scan your codebase and read the results](#scan-your-codebase-and-read-the-results)
-  - [Fix findings and review patches](#fix-findings-and-review-patches)
-  - [How the plugin fits with other security tools](#how-the-plugin-fits-with-other-security-tools)
-  - [Troubleshooting](#troubleshooting)
-  - [Related resources](#related-resources)
+* [Scan your codebase for vulnerabilities](#scan-your-codebase-for-vulnerabilities)
+  * [Prerequisites](#prerequisites)
+  * [Models and providers](#models-and-providers)
+  * [Install and uninstall the plugin](#install-and-uninstall-the-plugin)
+  * [Scan your codebase and read the results](#scan-your-codebase-and-read-the-results)
+  * [Fix findings and review patches](#fix-findings-and-review-patches)
+  * [How the plugin fits with other security tools](#how-the-plugin-fits-with-other-security-tools)
+  * [Troubleshooting](#troubleshooting)
+  * [Related resources](#related-resources)
 
 ## Chapter content
 
@@ -173,8 +173,4 @@ To go deeper on the pieces this page touches:
 * [Claude Code security](https://code.claude.com/docs/en/security): how Claude Code approaches trust, permissions, and safeguards
 * [Install and manage plugins](https://code.claude.com/docs/en/plugins/install): find and install other plugins from the official marketplace
 
-
-
-
 ----
-

@@ -2,11 +2,11 @@
 
 ## Table of Contents
 
-- [Measure plugin cost and usage](#measure-plugin-cost-and-usage)
-  - [Measure and reduce what a plugin costs](#measure-and-reduce-what-a-plugin-costs)
-  - [Check whether a plugin is used](#check-whether-a-plugin-is-used)
-  - [Measure across a fleet](#measure-across-a-fleet)
-  - [Related Docs](#related-docs)
+* [Measure plugin cost and usage](#measure-plugin-cost-and-usage)
+  * [Measure and reduce what a plugin costs](#measure-and-reduce-what-a-plugin-costs)
+  * [Check whether a plugin is used](#check-whether-a-plugin-is-used)
+  * [Measure across a fleet](#measure-across-a-fleet)
+  * [Related Docs](#related-docs)
 
 ## Chapter content
 
@@ -182,6 +182,4 @@ See the [endpoint reference](https://platform.claude.com/docs/en/api/admin/analy
 * [Plugin security and trust](https://code.claude.com/docs/en/plugins/security#find-plugins-in-telemetry): which telemetry fields carry plugin names and when they're redacted
 * [Monitoring usage](https://code.claude.com/docs/en/monitoring-usage): the full OpenTelemetry event reference
 
-
 ---
-

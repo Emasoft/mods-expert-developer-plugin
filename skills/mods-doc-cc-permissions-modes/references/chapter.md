@@ -2,17 +2,17 @@
 
 ## Table of Contents
 
-- [Choose a permission mode](#choose-a-permission-mode)
-  - [Available modes](#available-modes)
-  - [Common setups](#common-setups)
-  - [Switch permission modes](#switch-permission-modes)
-  - [Auto-approve file edits with acceptEdits mode](#auto-approve-file-edits-with-acceptedits-mode)
-  - [Plan mode and auto mode](#plan-mode-and-auto-mode)
-  - [Allow only pre-approved tools with dontAsk mode](#allow-only-pre-approved-tools-with-dontask-mode)
-  - [Skip all checks with bypassPermissions mode](#skip-all-checks-with-bypasspermissions-mode)
-  - [Protected paths](#protected-paths)
-  - [Critical paths and how removals are guarded](#critical-paths-and-how-removals-are-guarded)
-  - [See also](#see-also)
+* [Choose a permission mode](#choose-a-permission-mode)
+  * [Available modes](#available-modes)
+  * [Common setups](#common-setups)
+  * [Switch permission modes](#switch-permission-modes)
+  * [Auto-approve file edits with acceptEdits mode](#auto-approve-file-edits-with-acceptedits-mode)
+  * [Plan mode and auto mode](#plan-mode-and-auto-mode)
+  * [Allow only pre-approved tools with dontAsk mode](#allow-only-pre-approved-tools-with-dontask-mode)
+  * [Skip all checks with bypassPermissions mode](#skip-all-checks-with-bypasspermissions-mode)
+  * [Protected paths](#protected-paths)
+  * [Critical paths and how removals are guarded](#critical-paths-and-how-removals-are-guarded)
+  * [See also](#see-also)
 
 ## Chapter content
 
@@ -809,6 +809,4 @@ To turn the `cmd` check off, set [`CLAUDE_CODE_DISABLE_POWERSHELL_CMD_RM_DENY=1`
 * [Sandboxing](https://code.claude.com/docs/en/sandboxing): filesystem and network isolation for Bash commands
 * [Non-interactive mode](https://code.claude.com/docs/en/headless): run Claude Code with the `-p` flag
 
-
 ---
-

@@ -2,26 +2,26 @@
 
 ## Table of Contents
 
-- [Connect Claude Code to tools via MCP](#connect-claude-code-to-tools-via-mcp)
-  - [What you can do with MCP](#what-you-can-do-with-mcp)
-  - [Find and build MCP servers](#find-and-build-mcp-servers)
-  - [Install and manage MCP servers](#install-and-manage-mcp-servers)
-  - [MCP installation scopes and variable expansion](#mcp-installation-scopes-and-variable-expansion)
-  - [Practical MCP server examples](#practical-mcp-server-examples)
-  - [Authenticate with remote MCP servers](#authenticate-with-remote-mcp-servers)
-  - [Add MCP servers from JSON configuration](#add-mcp-servers-from-json-configuration)
-  - [Import MCP servers from Claude Desktop](#import-mcp-servers-from-claude-desktop)
-  - [Use MCP connectors from claude.ai](#use-mcp-connectors-from-claudeai)
-  - [Use Claude Code as an MCP server](#use-claude-code-as-an-mcp-server)
-  - [MCP output limits and warnings](#mcp-output-limits-and-warnings)
-  - [Tool input schemas with a root-level combinator](#tool-input-schemas-with-a-root-level-combinator)
-  - [Tools with invalid input schemas](#tools-with-invalid-input-schemas)
-  - [Require approval for a specific tool](#require-approval-for-a-specific-tool)
-  - [Respond to MCP elicitation requests](#respond-to-mcp-elicitation-requests)
-  - [Use MCP resources](#use-mcp-resources)
-  - [Scale with MCP tool search](#scale-with-mcp-tool-search)
-  - [Use MCP prompts as commands](#use-mcp-prompts-as-commands)
-  - [Managed MCP configuration](#managed-mcp-configuration)
+* [Connect Claude Code to tools via MCP](#connect-claude-code-to-tools-via-mcp)
+  * [What you can do with MCP](#what-you-can-do-with-mcp)
+  * [Find and build MCP servers](#find-and-build-mcp-servers)
+  * [Install and manage MCP servers](#install-and-manage-mcp-servers)
+  * [MCP installation scopes and variable expansion](#mcp-installation-scopes-and-variable-expansion)
+  * [Practical MCP server examples](#practical-mcp-server-examples)
+  * [Authenticate with remote MCP servers](#authenticate-with-remote-mcp-servers)
+  * [Add MCP servers from JSON configuration](#add-mcp-servers-from-json-configuration)
+  * [Import MCP servers from Claude Desktop](#import-mcp-servers-from-claude-desktop)
+  * [Use MCP connectors from claude.ai](#use-mcp-connectors-from-claudeai)
+  * [Use Claude Code as an MCP server](#use-claude-code-as-an-mcp-server)
+  * [MCP output limits and warnings](#mcp-output-limits-and-warnings)
+  * [Tool input schemas with a root-level combinator](#tool-input-schemas-with-a-root-level-combinator)
+  * [Tools with invalid input schemas](#tools-with-invalid-input-schemas)
+  * [Require approval for a specific tool](#require-approval-for-a-specific-tool)
+  * [Respond to MCP elicitation requests](#respond-to-mcp-elicitation-requests)
+  * [Use MCP resources](#use-mcp-resources)
+  * [Scale with MCP tool search](#scale-with-mcp-tool-search)
+  * [Use MCP prompts as commands](#use-mcp-prompts-as-commands)
+  * [Managed MCP configuration](#managed-mcp-configuration)
 
 ## Chapter content
 
@@ -366,7 +366,7 @@ On v2, Claude Code also:
 * Receives `list_changed` notifications from servers on the newer revision over a [stream it holds open](https://code.claude.com/docs/en/mcp#notification-streams-on-the-v2-runtime).
 * Doesn't register a [channel](https://code.claude.com/docs/en/mcp#push-messages-with-channels) server that connects on the newer revision, because that revision can't carry channel messages.
 * Fails an [MCP OAuth sign-in](https://code.claude.com/docs/en/mcp#authenticate-with-remote-mcp-servers) whose authorization response names an unexpected issuer.
-* Sends [MCP OAuth](https://code.claude.com/docs/en/mcp#authenticate-with-remote-mcp-servers) credentials only to a token endpoint served over HTTPS or at `localhost`, `127.0.0.1`, or `::1`. Sign-in fails for a server whose token endpoint is plain `http://` anywhere else, such as a device on your local network. See [Refusing to send credentials to non-https token endpoint](https://code.claude.com/docs/en/errors#refusing-to-send-credentials-to-non-https-token-endpoint).
+* Completes an [MCP OAuth](https://code.claude.com/docs/en/mcp#authenticate-with-remote-mcp-servers) sign-in only when the server's token endpoint is served over HTTPS or at `localhost`, `127.0.0.1`, or `::1`. Sign-in fails for a server whose token endpoint is plain `http://` anywhere else, such as a device on your local network. See the [refusal of credentials for a non-https token endpoint](https://code.claude.com/docs/en/errors#refusing-to-send-credentials-to-non-https-token-endpoint) error.
 
 Anthropic can keep a specific server on the earlier protocol, or off that stream, with a feature flag Claude Code fetches.
 
@@ -1627,7 +1627,4 @@ Prompts from a server named `anthropic-skills` don't appear, because Claude Code
 
 For organizations that need centralized control over which MCP servers users can connect to, see [Managed MCP configuration](https://code.claude.com/docs/en/managed-mcp). It covers deploying a fixed server set with `managed-mcp.json`, providing servers to every user with `managedMcpServers`, restricting servers with `allowedMcpServers` and `deniedMcpServers`, and what users see when a server is blocked.
 
-
 ---
-
-

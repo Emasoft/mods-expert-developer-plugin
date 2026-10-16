@@ -2,13 +2,13 @@
 
 ## Table of Contents
 
-- [Manage mods for your organization](#manage-mods-for-your-organization)
-  - [Stop user-installed mods from loading](#stop-user-installed-mods-from-loading)
-  - [Know what happens by default](#know-what-happens-by-default)
-  - [Decide whether to leave mods on](#decide-whether-to-leave-mods-on)
-  - [Control which mods run and configure the built-in guard](#control-which-mods-run-and-configure-the-built-in-guard)
-  - [Enforce policy with your own mods](#enforce-policy-with-your-own-mods)
-  - [Related Docs](#related-docs)
+* [Manage mods for your organization](#manage-mods-for-your-organization)
+  * [Stop user-installed mods from loading](#stop-user-installed-mods-from-loading)
+  * [Know what happens by default](#know-what-happens-by-default)
+  * [Decide whether to leave mods on](#decide-whether-to-leave-mods-on)
+  * [Control which mods run and configure the built-in guard](#control-which-mods-run-and-configure-the-built-in-guard)
+  * [Enforce policy with your own mods](#enforce-policy-with-your-own-mods)
+  * [Related Docs](#related-docs)
 
 ## Chapter content
 
@@ -418,7 +418,4 @@ With the handler in place, a mod that was being checked when the check threw or 
 * [The order mods run in](https://code.claude.com/docs/en/plugins/mods/events#the-order-mods-run-in): how `prependPlugins` and `appendPlugins` fit with users' mods
 * [Settings and environment variables](https://code.claude.com/docs/en/plugins/mods/reference#settings-and-environment-variables): every setting named on this page in one table
 
-
 ---
-
-

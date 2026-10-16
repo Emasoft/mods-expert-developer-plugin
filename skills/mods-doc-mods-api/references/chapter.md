@@ -2,13 +2,13 @@
 
 ## Table of Contents
 
-- [Use the mods API](#use-the-mods-api)
-  - [Add a command or a tool](#add-a-command-or-a-tool)
-  - [Call a model](#call-a-model)
-  - [Run and control background work](#run-and-control-background-work)
-  - [Send and receive messages between sessions](#send-and-receive-messages-between-sessions)
-  - [Reach files, processes, and the network](#reach-files-processes-and-the-network)
-  - [Related Topics](#related-topics)
+* [Use the mods API](#use-the-mods-api)
+  * [Add a command or a tool](#add-a-command-or-a-tool)
+  * [Call a model](#call-a-model)
+  * [Run and control background work](#run-and-control-background-work)
+  * [Send and receive messages between sessions](#send-and-receive-messages-between-sessions)
+  * [Reach files, processes, and the network](#reach-files-processes-and-the-network)
+  * [Related Topics](#related-topics)
 
 ## Chapter content
 
@@ -305,4 +305,3 @@ A mod can refuse your `$.process.spawn` call after the command has produced outp
 * [Mods reference](https://code.claude.com/docs/en/plugins/mods/reference): events, mods API methods, and limits
 
 ---
-

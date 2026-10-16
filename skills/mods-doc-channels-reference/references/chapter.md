@@ -2,14 +2,14 @@
 
 ## Table of Contents
 
-- [Push events into a running session with channels](#push-events-into-a-running-session-with-channels)
-  - [Supported channels](#supported-channels)
-  - [Quickstart](#quickstart)
-  - [Security](#security)
-  - [Enterprise controls for channels](#enterprise-controls-for-channels)
-  - [Research preview](#research-preview)
-  - [How channels compare](#how-channels-compare)
-  - [Next steps](#next-steps)
+* [Push events into a running session with channels](#push-events-into-a-running-session-with-channels)
+  * [Supported channels](#supported-channels)
+  * [Quickstart](#quickstart)
+  * [Security](#security)
+  * [Enterprise controls for channels](#enterprise-controls-for-channels)
+  * [Research preview](#research-preview)
+  * [How channels compare](#how-channels-compare)
+  * [Next steps](#next-steps)
 
 ## Chapter content
 
@@ -390,7 +390,4 @@ Once you have a channel running, explore these related features:
 * [Remote Control](https://code.claude.com/docs/en/remote-control) to drive a local session from your phone instead of forwarding events into it
 * [Scheduled tasks](https://code.claude.com/docs/en/scheduled-tasks) to poll on a timer instead of reacting to pushed events
 
-
-
 ---
-

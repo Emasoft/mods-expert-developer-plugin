@@ -2,23 +2,23 @@
 
 ## Table of Contents
 
-- [What a mod can do](#what-a-mod-can-do)
-- [Install, update, or try a mod](#install-update-or-try-a-mod)
-  - [Install or update a mod](#install-or-update-a-mod)
-  - [Try a sample mod](#try-a-sample-mod)
-- [Decide whether to trust a mod](#decide-whether-to-trust-a-mod)
-  - [What a mod can reach](#what-a-mod-can-reach)
-  - [List what a mod does before you install one](#list-what-a-mod-does-before-you-install-one)
-- [Turn mods on or off](#turn-mods-on-or-off)
-  - [See which mods a session loaded](#see-which-mods-a-session-loaded)
-- [How a mod works](#how-a-mod-works)
-  - [What a hook can do with an event](#what-a-hook-can-do-with-an-event)
-  - [Where mods run](#where-mods-run)
-- [Control mods for your organization](#control-mods-for-your-organization)
-- [Compare mods, settings hooks, skills, and MCP servers](#compare-mods-settings-hooks-skills-and-mcp-servers)
-- [Mods built into Claude Code](#mods-built-into-claude-code)
-  - [Read the source of built-in mods](#read-the-source-of-built-in-mods)
-- [Related Topics](#related-topics)
+* [What a mod can do](#what-a-mod-can-do)
+* [Install, update, or try a mod](#install-update-or-try-a-mod)
+  * [Install or update a mod](#install-or-update-a-mod)
+  * [Try a sample mod](#try-a-sample-mod)
+* [Decide whether to trust a mod](#decide-whether-to-trust-a-mod)
+  * [What a mod can reach](#what-a-mod-can-reach)
+  * [List what a mod does before you install one](#list-what-a-mod-does-before-you-install-one)
+* [Turn mods on or off](#turn-mods-on-or-off)
+  * [See which mods a session loaded](#see-which-mods-a-session-loaded)
+* [How a mod works](#how-a-mod-works)
+  * [What a hook can do with an event](#what-a-hook-can-do-with-an-event)
+  * [Where mods run](#where-mods-run)
+* [Control mods for your organization](#control-mods-for-your-organization)
+* [Compare mods, settings hooks, skills, and MCP servers](#compare-mods-settings-hooks-skills-and-mcp-servers)
+* [Mods built into Claude Code](#mods-built-into-claude-code)
+  * [Read the source of built-in mods](#read-the-source-of-built-in-mods)
+* [Related Topics](#related-topics)
 
 ## Chapter content
 
@@ -272,4 +272,3 @@ Some built-ins have public source in the Claude Code repository's [`mods` direct
 * [Mods reference](https://code.claude.com/docs/en/plugins/mods/reference): events, methods, elements, and limits
 
 ---
-

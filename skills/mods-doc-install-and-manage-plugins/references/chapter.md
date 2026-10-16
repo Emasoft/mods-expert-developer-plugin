@@ -2,13 +2,13 @@
 
 ## Table of Contents
 
-- [Install and manage plugins](#install-and-manage-plugins-1)
-  - [Install a plugin](#install-a-plugin)
-  - [Add a marketplace](#add-a-marketplace)
-  - [Manage installed plugins](#manage-installed-plugins)
-  - [Keep plugins updated](#keep-plugins-updated)
-  - [Manage marketplaces](#manage-marketplaces)
-  - [Related Docs](#related-docs)
+* [Install and manage plugins](#install-and-manage-plugins-1)
+  * [Install a plugin](#install-a-plugin)
+  * [Add a marketplace](#add-a-marketplace)
+  * [Manage installed plugins](#manage-installed-plugins)
+  * [Keep plugins updated](#keep-plugins-updated)
+  * [Manage marketplaces](#manage-marketplaces)
+  * [Related Docs](#related-docs)
 
 ## Chapter content
 
@@ -418,4 +418,3 @@ When you remove a marketplace, Claude Code uninstalls every plugin you installed
 * [Create a plugin](https://code.claude.com/docs/en/plugins/create): build your own
 
 ---
-

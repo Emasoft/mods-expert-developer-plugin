@@ -2,15 +2,15 @@
 
 ## Table of Contents
 
-- [Troubleshoot plugins](#troubleshoot-plugins)
-  - [Find where `/plugin` runs](#find-where-plugin-runs)
-  - [Add a marketplace](#add-a-marketplace)
-  - [Install a plugin](#install-a-plugin)
-  - [Plugin installed but not working](#plugin-installed-but-not-working)
-  - [Build a plugin](#build-a-plugin)
-  - [Host a marketplace](#host-a-marketplace)
-  - [Blocked by your organization](#blocked-by-your-organization)
-  - [Related Docs](#related-docs)
+* [Troubleshoot plugins](#troubleshoot-plugins)
+  * [Find where `/plugin` runs](#find-where-plugin-runs)
+  * [Add a marketplace](#add-a-marketplace)
+  * [Install a plugin](#install-a-plugin)
+  * [Plugin installed but not working](#plugin-installed-but-not-working)
+  * [Build a plugin](#build-a-plugin)
+  * [Host a marketplace](#host-a-marketplace)
+  * [Blocked by your organization](#blocked-by-your-organization)
+  * [Related Docs](#related-docs)
 
 ## Chapter content
 
@@ -1298,7 +1298,4 @@ To change the marketplace's content, ask the person who maintains the seed image
 * [Install and manage plugins](https://code.claude.com/docs/en/plugins/install): the install steps from the start
 * [Manage plugins for your organization](https://code.claude.com/docs/en/plugins/org#troubleshoot-policy): policy-side troubleshooting for administrators
 
-
 ---
-
-

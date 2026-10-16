@@ -2,12 +2,12 @@
 
 ## Table of Contents
 
-- [Recommend your plugin from your CLI](#recommend-your-plugin-from-your-cli)
-  - [Emit the hint](#emit-the-hint)
-  - [Hint format](#hint-format)
-  - [Check when the prompt appears](#check-when-the-prompt-appears)
-  - [Preview what the user sees](#preview-what-the-user-sees)
-  - [Related Docs](#related-docs)
+* [Recommend your plugin from your CLI](#recommend-your-plugin-from-your-cli)
+  * [Emit the hint](#emit-the-hint)
+  * [Hint format](#hint-format)
+  * [Check when the prompt appears](#check-when-the-prompt-appears)
+  * [Preview what the user sees](#preview-what-the-user-sees)
+  * [Related Docs](#related-docs)
 
 ## Chapter content
 
@@ -138,6 +138,4 @@ The dialog names the first word of the shell command Claude ran, so users can sp
 * [Publish and distribute a plugin](https://code.claude.com/docs/en/plugins/publish): the routes for distributing a plugin, including the official marketplace, which the hint requires
 * [Plugin commands reference](https://code.claude.com/docs/en/plugins/cli-reference#plugin-install): the shell command that installs the same plugin outside a session
 
-
 ---
-

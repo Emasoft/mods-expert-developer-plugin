@@ -2,15 +2,15 @@
 
 ## Table of Contents
 
-- [Launch sessions from links](#launch-sessions-from-links)
-  - [How deep links work](#how-deep-links-work)
-  - [Build a link](#build-a-link)
-  - [Deep link examples](#deep-link-examples)
-  - [Registration and supported platforms](#registration-and-supported-platforms)
-  - [Open a VS Code tab instead of a terminal](#open-a-vs-code-tab-instead-of-a-terminal)
-  - [Open a Claude Desktop session on an SSH connection](#open-a-claude-desktop-session-on-an-ssh-connection)
-  - [Deep link troubleshooting](#deep-link-troubleshooting)
-  - [Learn more](#learn-more)
+* [Launch sessions from links](#launch-sessions-from-links)
+  * [How deep links work](#how-deep-links-work)
+  * [Build a link](#build-a-link)
+  * [Deep link examples](#deep-link-examples)
+  * [Registration and supported platforms](#registration-and-supported-platforms)
+  * [Open a VS Code tab instead of a terminal](#open-a-vs-code-tab-instead-of-a-terminal)
+  * [Open a Claude Desktop session on an SSH connection](#open-a-claude-desktop-session-on-an-ssh-connection)
+  * [Deep link troubleshooting](#deep-link-troubleshooting)
+  * [Learn more](#learn-more)
 
 ## Chapter content
 
@@ -215,8 +215,4 @@ These pages cover related ways to launch or extend Claude Code sessions:
 * [Skills](https://code.claude.com/docs/en/skills): store a long runbook prompt as a `/skill` in the repo so the deep link's `q` parameter only has to name it
 * [Non-interactive mode](https://code.claude.com/docs/en/headless): run Claude from a script and capture the output without opening a terminal
 
-
-
 ---
-
-

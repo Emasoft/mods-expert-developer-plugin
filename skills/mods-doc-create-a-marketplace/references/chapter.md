@@ -2,19 +2,19 @@
 
 ## Table of Contents
 
-- [Create a marketplace](#create-a-marketplace-1)
-- [Add plugin entries](#add-plugin-entries)
-- [Rules for plugin entries](#rules-for-plugin-entries)
-  - [Write relative paths from the marketplace root](#write-relative-paths-from-the-marketplace-root)
-  - [Keep the entry name and the manifest name the same](#keep-the-entry-name-and-the-manifest-name-the-same)
-- [Choose a plugin source](#choose-a-plugin-source)
-- [Validate and test](#validate-and-test)
-  - [Problems that validation reports](#problems-that-validation-reports)
-  - [Problems that surface when you add or install](#problems-that-surface-when-you-add-or-install)
-  - [Test an edit to a plugin](#test-an-edit-to-a-plugin)
-  - [Remove the marketplace to start over](#remove-the-marketplace-to-start-over)
-- [Host your marketplace](#host-your-marketplace)
-- [Related Docs](#related-docs)
+* [Create a marketplace](#create-a-marketplace-1)
+* [Add plugin entries](#add-plugin-entries)
+* [Rules for plugin entries](#rules-for-plugin-entries)
+  * [Write relative paths from the marketplace root](#write-relative-paths-from-the-marketplace-root)
+  * [Keep the entry name and the manifest name the same](#keep-the-entry-name-and-the-manifest-name-the-same)
+* [Choose a plugin source](#choose-a-plugin-source)
+* [Validate and test](#validate-and-test)
+  * [Problems that validation reports](#problems-that-validation-reports)
+  * [Problems that surface when you add or install](#problems-that-surface-when-you-add-or-install)
+  * [Test an edit to a plugin](#test-an-edit-to-a-plugin)
+  * [Remove the marketplace to start over](#remove-the-marketplace-to-start-over)
+* [Host your marketplace](#host-your-marketplace)
+* [Related Docs](#related-docs)
 
 ## Chapter content
 
@@ -236,8 +236,4 @@ For private-repository access, updates, versioning, and renaming or removing ent
 * [Manage plugins for your organization](https://code.claude.com/docs/en/plugins/org): require your marketplace and its plugins on every machine
 * [Suggest plugins by relevance](https://code.claude.com/docs/en/plugins/relevance): have Claude Code suggest a plugin from your marketplace when a session matches
 
-
-
 ---
-
-

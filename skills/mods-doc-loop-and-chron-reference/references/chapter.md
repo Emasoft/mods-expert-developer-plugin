@@ -2,15 +2,15 @@
 
 ## Table of Contents
 
-- [Run prompts on a schedule](#run-prompts-on-a-schedule)
-  - [Compare scheduling options](#compare-scheduling-options)
-  - [Run a prompt repeatedly with /loop](#run-a-prompt-repeatedly-with-loop)
-  - [Set a one-time reminder](#set-a-one-time-reminder)
-  - [Manage scheduled tasks](#manage-scheduled-tasks)
-  - [How scheduled tasks run](#how-scheduled-tasks-run)
-  - [Cron expression reference](#cron-expression-reference)
-  - [Disable scheduled tasks](#disable-scheduled-tasks)
-  - [Limitations](#limitations)
+* [Run prompts on a schedule](#run-prompts-on-a-schedule)
+  * [Compare scheduling options](#compare-scheduling-options)
+  * [Run a prompt repeatedly with /loop](#run-a-prompt-repeatedly-with-loop)
+  * [Set a one-time reminder](#set-a-one-time-reminder)
+  * [Manage scheduled tasks](#manage-scheduled-tasks)
+  * [How scheduled tasks run](#how-scheduled-tasks-run)
+  * [Cron expression reference](#cron-expression-reference)
+  * [Disable scheduled tasks](#disable-scheduled-tasks)
+  * [Limitations](#limitations)
 
 ## Chapter content
 
@@ -251,5 +251,3 @@ For cron-driven automation that needs to run unattended:
 * [Desktop scheduled tasks](https://code.claude.com/docs/en/desktop-scheduled-tasks): run locally on your machine
 
 ---
-
-

@@ -2,12 +2,12 @@
 
 ## Table of Contents
 
-- [Settings files and precedence](#settings-files-and-precedence)
-  - [Settings files and who they affect](#settings-files-and-who-they-affect)
-  - [Change and verify a setting](#change-and-verify-a-setting)
-  - [Settings precedence and conflict resolution](#settings-precedence-and-conflict-resolution)
-  - [Settings in cloud sessions](#settings-in-cloud-sessions)
-  - [What's next](#whats-next)
+* [Settings files and precedence](#settings-files-and-precedence)
+  * [Settings files and who they affect](#settings-files-and-who-they-affect)
+  * [Change and verify a setting](#change-and-verify-a-setting)
+  * [Settings precedence and conflict resolution](#settings-precedence-and-conflict-resolution)
+  * [Settings in cloud sessions](#settings-in-cloud-sessions)
+  * [What's next](#whats-next)
 
 ## Chapter content
 
@@ -779,5 +779,3 @@ A [cloud session](https://code.claude.com/docs/en/claude-code-on-the-web) runs i
 * [Environment variables](https://code.claude.com/docs/en/env-vars): the variables Claude Code reads and the `env` block
 * [Debug your configuration](https://code.claude.com/docs/en/debug-your-config): when a setting doesn't apply
 * [Claude directory reference](https://code.claude.com/docs/en/claude-directory): every file Claude Code reads, including subagents, MCP servers, plugins, and `CLAUDE.md`
-
-

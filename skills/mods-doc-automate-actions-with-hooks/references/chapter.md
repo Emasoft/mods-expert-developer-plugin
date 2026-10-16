@@ -2,15 +2,15 @@
 
 ## Table of Contents
 
-- [Automate actions with hooks](#automate-actions-with-hooks-1)
-  - [Set up your first hook](#set-up-your-first-hook)
-  - [Hook recipes for common automation tasks](#hook-recipes-for-common-automation-tasks)
-  - [Hook lifecycle and configuration](#hook-lifecycle-and-configuration)
-  - [Prompt-based hooks](#prompt-based-hooks)
-  - [Agent-based hooks](#agent-based-hooks)
-  - [HTTP hooks](#http-hooks)
-  - [Limitations and troubleshooting](#limitations-and-troubleshooting)
-  - [Learn more](#learn-more)
+* [Automate actions with hooks](#automate-actions-with-hooks-1)
+  * [Set up your first hook](#set-up-your-first-hook)
+  * [Hook recipes for common automation tasks](#hook-recipes-for-common-automation-tasks)
+  * [Hook lifecycle and configuration](#hook-lifecycle-and-configuration)
+  * [Prompt-based hooks](#prompt-based-hooks)
+  * [Agent-based hooks](#agent-based-hooks)
+  * [HTTP hooks](#http-hooks)
+  * [Limitations and troubleshooting](#limitations-and-troubleshooting)
+  * [Learn more](#learn-more)
 
 ## Chapter content
 
@@ -1083,6 +1083,4 @@ For full execution details, including hook exit codes, stdout, and stderr, read 
 * [Security considerations](https://code.claude.com/docs/en/hooks#security-considerations): review before deploying hooks in shared or production environments
 * [Bash command validator example](https://github.com/anthropics/claude-code/blob/main/examples/hooks/bash_command_validator_example.py): complete reference implementation
 
-
 ---
-

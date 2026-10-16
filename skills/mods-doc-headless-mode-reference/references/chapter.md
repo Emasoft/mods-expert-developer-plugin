@@ -2,10 +2,10 @@
 
 ## Table of Contents
 
-- [Run Claude Code programmatically](#run-claude-code-programmatically)
-  - [Basic usage and startup options](#basic-usage-and-startup-options)
-  - [Headless usage examples](#headless-usage-examples)
-  - [Next steps](#next-steps)
+* [Run Claude Code programmatically](#run-claude-code-programmatically)
+  * [Basic usage and startup options](#basic-usage-and-startup-options)
+  * [Headless usage examples](#headless-usage-examples)
+  * [Next steps](#next-steps)
 
 ## Chapter content
 
@@ -415,6 +415,4 @@ In place of the session ID, you can pass `--resume` the absolute path to a sessi
 * [GitHub Actions](https://code.claude.com/docs/en/github-actions): use the Agent SDK in GitHub workflows
 * [GitLab CI/CD](https://code.claude.com/docs/en/gitlab-ci-cd): use the Agent SDK in GitLab pipelines
 
-
 ---
-

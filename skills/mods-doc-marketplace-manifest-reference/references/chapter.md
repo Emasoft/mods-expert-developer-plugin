@@ -2,14 +2,14 @@
 
 ## Table of Contents
 
-- [Marketplace reference](#marketplace-reference)
-  - [Marketplace file layout](#marketplace-file-layout)
-  - [Top-level fields](#top-level-fields)
-  - [Plugin entry fields](#plugin-entry-fields)
-  - [Plugin source types](#plugin-source-types)
-  - [Marketplace source types](#marketplace-source-types)
-  - [Validation messages](#validation-messages)
-  - [See Also:](#see-also)
+* [Marketplace reference](#marketplace-reference)
+  * [Marketplace file layout](#marketplace-file-layout)
+  * [Top-level fields](#top-level-fields)
+  * [Plugin entry fields](#plugin-entry-fields)
+  * [Plugin source types](#plugin-source-types)
+  * [Marketplace source types](#marketplace-source-types)
+  * [Validation messages](#validation-messages)
+  * [See Also:](#see-also)
 
 ## Chapter content
 
@@ -513,7 +513,4 @@ A relative path that doesn't start with `./`, other than `"."` or a [bare name u
 * [Plugin manifest reference](https://code.claude.com/docs/en/plugins/manifest-reference): the `plugin.json` fields an entry can override
 * [Manage plugins for your organization](https://code.claude.com/docs/en/plugins/org): allowlist and blocklist recipes that use these source values
 
-
 ---
-
-

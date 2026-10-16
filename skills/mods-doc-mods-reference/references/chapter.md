@@ -2,25 +2,25 @@
 
 ## Table of Contents
 
-- [Files](#files)
-- [The hook function](#the-hook-function)
-- [Events a mod can hook](#events-a-mod-can-hook)
-  - [Tool events and tool.check fields](#tool-events-and-toolcheck-fields)
-  - [Prompts and what Claude reads](#prompts-and-what-claude-reads)
-  - [Commands and configuration](#commands-and-configuration)
-  - [Turns](#turns)
-  - [Subagents](#subagents)
-  - [Interface](#interface)
-  - [Other mods](#other-mods)
-  - [Telemetry](#telemetry)
-  - [Settings hook events](#settings-hook-events)
-  - [Mods API calls](#mods-api-calls)
-- [Mods API methods](#mods-api-methods)
-- [Render sites](#render-sites)
-- [Elements](#elements)
-- [Limits](#limits)
-- [Settings and environment variables](#settings-and-environment-variables)
-- [Commands](#commands)
+* [Files](#files)
+* [The hook function](#the-hook-function)
+* [Events a mod can hook](#events-a-mod-can-hook)
+  * [Tool events and tool.check fields](#tool-events-and-toolcheck-fields)
+  * [Prompts and what Claude reads](#prompts-and-what-claude-reads)
+  * [Commands and configuration](#commands-and-configuration)
+  * [Turns](#turns)
+  * [Subagents](#subagents)
+  * [Interface](#interface)
+  * [Other mods](#other-mods)
+  * [Telemetry](#telemetry)
+  * [Settings hook events](#settings-hook-events)
+  * [Mods API calls](#mods-api-calls)
+* [Mods API methods](#mods-api-methods)
+* [Render sites](#render-sites)
+* [Elements](#elements)
+* [Limits](#limits)
+* [Settings and environment variables](#settings-and-environment-variables)
+* [Commands](#commands)
 
 ## Chapter content
 
@@ -352,7 +352,4 @@ These commands and flags load, inspect, and test a mod. The `claude` commands ru
 | [`claude --plugin-dir <directory>`](https://code.claude.com/docs/en/plugins/mods/create#write-a-mod-yourself) | Loads a plugin directory for one session and reloads its hooks module when you save. Repeat the flag to load several. |
 | `/reload-plugins` | Reloads plugins when you run it |
 
-
 ---
-
-

@@ -2,14 +2,14 @@
 
 ## Table of Contents
 
-- [Create custom subagents](#create-custom-subagents)
-  - [Built-in subagents](#built-in-subagents)
-  - [Quickstart: create your first subagent](#quickstart-create-your-first-subagent)
-  - [Configure subagents](#configure-subagents)
-  - [Work with subagents](#work-with-subagents)
-  - [Fork the current conversation](#fork-the-current-conversation)
-  - [Example subagents](#example-subagents)
-  - [Related Docs:](#related-docs)
+* [Create custom subagents](#create-custom-subagents)
+  * [Built-in subagents](#built-in-subagents)
+  * [Quickstart: create your first subagent](#quickstart-create-your-first-subagent)
+  * [Configure subagents](#configure-subagents)
+  * [Work with subagents](#work-with-subagents)
+  * [Fork the current conversation](#fork-the-current-conversation)
+  * [Example subagents](#example-subagents)
+  * [Related Docs:](#related-docs)
 
 ## Chapter content
 
@@ -1424,6 +1424,4 @@ The system prompt tells the subagent to refuse write requests, so the hook is a 
 * [Run Claude Code programmatically](https://code.claude.com/docs/en/headless) with the Agent SDK for CI/CD and automation
 * [Use MCP servers](https://code.claude.com/docs/en/mcp) to give subagents access to external tools and data
 
-
 ---
-

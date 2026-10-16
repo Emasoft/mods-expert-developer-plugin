@@ -2,14 +2,14 @@
 
 ## Table of Contents
 
-- [Plugin loading reference](#plugin-loading-reference)
-  - [Check which stage a plugin reached](#check-which-stage-a-plugin-reached)
-  - [Find where a plugin came from](#find-where-a-plugin-came-from)
-  - [Find where a plugin is enabled](#find-where-a-plugin-is-enabled)
-  - [Find plugins on disk](#find-plugins-on-disk)
-  - [Versions and updates](#versions-and-updates)
-  - [Name conflicts](#name-conflicts)
-  - [Related Docs](#related-docs)
+* [Plugin loading reference](#plugin-loading-reference)
+  * [Check which stage a plugin reached](#check-which-stage-a-plugin-reached)
+  * [Find where a plugin came from](#find-where-a-plugin-came-from)
+  * [Find where a plugin is enabled](#find-where-a-plugin-is-enabled)
+  * [Find plugins on disk](#find-plugins-on-disk)
+  * [Versions and updates](#versions-and-updates)
+  * [Name conflicts](#name-conflicts)
+  * [Related Docs](#related-docs)
 
 ## Chapter content
 
@@ -409,8 +409,4 @@ To keep a `--plugin-dir` plugin from shadowing anything, or to turn one off when
 * [Plugin commands reference](https://code.claude.com/docs/en/plugins/cli-reference): the flags and commands named on this page
 * [Manage plugins for your organization](https://code.claude.com/docs/en/plugins/org): the managed settings that force-enable or block plugins
 
-
-
 ---
-
-

@@ -2,12 +2,12 @@
 
 ## Table of Contents
 
-- [Anthropic's marketplaces](#anthropics-marketplaces)
-  - [Anthropic's marketplaces](#anthropics-marketplaces-1)
-  - [Find plugins in the official marketplace](#find-plugins-in-the-official-marketplace)
-  - [Browse and install from Anthropic's marketplaces](#browse-and-install-from-anthropics-marketplaces)
-  - [Third-party marketplaces](#third-party-marketplaces)
-  - [Related Docs](#related-docs)
+* [Anthropic's marketplaces](#anthropics-marketplaces)
+  * [Anthropic's marketplaces](#anthropics-marketplaces-1)
+  * [Find plugins in the official marketplace](#find-plugins-in-the-official-marketplace)
+  * [Browse and install from Anthropic's marketplaces](#browse-and-install-from-anthropics-marketplaces)
+  * [Third-party marketplaces](#third-party-marketplaces)
+  * [Related Docs](#related-docs)
 
 ## Chapter content
 
@@ -103,7 +103,4 @@ For other ways to add a marketplace, see [Add a marketplace](https://code.claude
 * [Code intelligence plugins](https://code.claude.com/docs/en/plugins/code-intelligence): install one of the official marketplace's language-server plugins
 * [Create a marketplace](https://code.claude.com/docs/en/plugins/create-marketplace): run your own marketplace alongside Anthropic's
 
-
 ---
-
-

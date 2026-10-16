@@ -2,14 +2,14 @@
 
 ## Table of Contents
 
-- [Debug your configuration](#debug-your-configuration)
-  - [See what loaded into context](#see-what-loaded-into-context)
-  - [Check resolved settings](#check-resolved-settings)
-  - [Check MCP servers](#check-mcp-servers)
-  - [Check hooks](#check-hooks)
-  - [Test against a clean configuration](#test-against-a-clean-configuration)
-  - [Check common causes](#check-common-causes)
-  - [Related resources](#related-resources)
+* [Debug your configuration](#debug-your-configuration)
+  * [See what loaded into context](#see-what-loaded-into-context)
+  * [Check resolved settings](#check-resolved-settings)
+  * [Check MCP servers](#check-mcp-servers)
+  * [Check hooks](#check-hooks)
+  * [Test against a clean configuration](#test-against-a-clean-configuration)
+  * [Check common causes](#check-common-causes)
+  * [Related resources](#related-resources)
 
 ## Chapter content
 
@@ -193,6 +193,4 @@ For full reference on each configuration surface, see the dedicated page:
 * **[Troubleshoot installation and login](https://code.claude.com/docs/en/troubleshoot-install)**: `command not found`, PATH, and authentication problems
 * **[Troubleshooting](https://code.claude.com/docs/en/troubleshooting)**: performance, hangs, and search issues
 
-
 ---
-
