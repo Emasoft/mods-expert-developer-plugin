@@ -1,4 +1,4 @@
-"""Structural tests for emasoft-mods-development-plugin.
+"""Structural tests for mods-expert-developer-plugin.
 
 The plugin ships no executable code: its behaviour IS its file layout (one agent
 that preloads 60 routing skills, each wrapping an adapted documentation chapter).

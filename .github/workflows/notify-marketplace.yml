@@ -1,6 +1,6 @@
 # Notify marketplace repo when this plugin is updated
 # Requires MARKETPLACE_PAT secret (Personal Access Token with repo scope).
-# Create via: gh secret set MARKETPLACE_PAT --repo Emasoft/emasoft-mods-development-plugin \
+# Create via: gh secret set MARKETPLACE_PAT --repo Emasoft/mods-expert-developer-plugin \
 #               --body "$MARKETPLACE_PAT"
 # (assumes $MARKETPLACE_PAT is exported in your shell or .env file)
 

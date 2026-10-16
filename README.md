@@ -1,4 +1,4 @@
-# emasoft-mods-development-plugin
+# mods-expert-developer-plugin
 
 <!--BADGES-START-->
 ![Version](https://img.shields.io/badge/version-0.1.0-blue)
@@ -9,9 +9,9 @@ A Claude Code plugin that bundles an expert agent and 60 preserved Claude Code d
 
 ## Components
 
-Agent: `emasoft-mods-development-plugin:mods-expert-developer-agent`
+Agent: `mods-expert-developer-plugin:mods-expert-developer-agent`
 
-Skills: plugin skills are namespaced `emasoft-mods-development-plugin:<skill>` and are reference-only (`user-invocable: false`).
+Skills: plugin skills are namespaced `mods-expert-developer-plugin:<skill>` and are reference-only (`user-invocable: false`).
 
 | Skill | SKILL.md heading |
 |---|---|
@@ -85,13 +85,13 @@ The agent preloads the user-scope skills `tldr-code`, `fastedit`, `jgrep` and `q
 Local install for development and testing:
 
 ```bash
-claude --plugin-dir /absolute/path/to/emasoft-mods-development-plugin
+claude --plugin-dir /absolute/path/to/mods-expert-developer-plugin
 ```
 
 Marketplace install: once this plugin is published in a Claude Code marketplace you have added, install it with the plugin install command and the marketplace name of your choice:
 
 ```bash
-claude plugin install emasoft-mods-development-plugin@<marketplace-name>
+claude plugin install mods-expert-developer-plugin@<marketplace-name>
 ```
 
 ## Usage
@@ -99,7 +99,7 @@ claude plugin install emasoft-mods-development-plugin@<marketplace-name>
 Invoke the agent by its namespaced name, for example through the Agent tool or by asking Claude Code to use it:
 
 ```text
-emasoft-mods-development-plugin:mods-expert-developer-agent
+mods-expert-developer-plugin:mods-expert-developer-agent
 ```
 
 Give it a task such as creating a new mod, fixing a broken plugin hook, or reviewing a plugin manifest. The agent plans with TRDD proposals, loads only the chapter skills it needs, and verifies each step before moving on.
