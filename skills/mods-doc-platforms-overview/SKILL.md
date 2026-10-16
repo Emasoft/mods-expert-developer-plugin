@@ -1,14 +1,51 @@
 ---
-coordination: exempt
-user-invocable: false
 name: mods-doc-platforms-overview
-description: "Use when working on platforms overview. Read-only routing to the preserved Claude Code chapter."
+description: "Use when working on platforms overview. Read-only routing to the preserved Claude Code chapter. Loaded by mods-expert-developer-agent."
+user-invocable: false
+metadata:
+  coordination: exempt
 ---
 
 # PLATFORMS OVERVIEW
 
-Consult the preserved reference for this topic.
+## Overview
+
+Routes reads about platforms overview to its verbatim Claude Code chapter. Consult the preserved reference for this topic.
 
 This skill is coordination-exempt: skip the ai-coord gate for its declared work.
 
-Read [the chapter](references/chapter.md) only when the current task needs platforms overview. Resolve the path relative to this skill directory. Search its headings for the relevant section, then read that section and its applicable rules, syntax, examples, and caveats. Do not preload the chapter or read other chapter references merely because wrappers were preloaded. This wrapper only routes reference reads; it does not authorize writing or expand the task scope.
+## Prerequisites
+
+Only the PLATFORMS OVERVIEW chapter shipped in the references folder of this skill.
+
+## Instructions
+
+1. Confirm the task needs platforms overview; otherwise stop without opening the chapter.
+2. Pick the PLATFORMS OVERVIEW section from the Table of Contents under Resources and follow its link.
+3. Read only that platforms overview section; do not preload this or any other chapter.
+4. Stop when the PLATFORMS OVERVIEW section is read: this wrapper routes reads only and authorizes no writes.
+
+## Output
+
+The PLATFORMS OVERVIEW section the task needs, read into context; nothing is written.
+
+## Error Handling
+
+If an anchor misses, search the PLATFORMS OVERVIEW headings for the entry title; if the section is absent, report `[BLOCKED]` naming it.
+
+## Examples
+
+Input: a task about "Where to run Claude Code". Output: open [Where to run Claude Code](references/chapter.md#where-to-run-claude-code) and read that section only.
+
+## Resources
+
+Full chapter: [the chapter](references/chapter.md), with the complete PLATFORMS OVERVIEW table of contents:
+
+- [Platforms and integrations](references/chapter.md#platforms-and-integrations)
+  - [Where to run Claude Code](references/chapter.md#where-to-run-claude-code)
+  - [Connect your tools](references/chapter.md#connect-your-tools)
+  - [Work when you are away from your terminal](references/chapter.md#work-when-you-are-away-from-your-terminal)
+  - [Related resources](references/chapter.md#related-resources)
+    - [Platforms](references/chapter.md#platforms)
+    - [Integrations](references/chapter.md#integrations)
+    - [Remote access](references/chapter.md#remote-access)

@@ -1,5 +1,10 @@
 # emasoft-mods-development-plugin
 
+<!--BADGES-START-->
+![Version](https://img.shields.io/badge/version-0.1.0-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+<!--BADGES-END-->
+
 A Claude Code plugin that bundles an expert agent and 60 preserved Claude Code documentation chapters (mods, plugins, hooks, skills, subagents, marketplaces, settings). Use it to create, fix, improve and evaluate Claude Code mods and plugins.
 
 ## Components
@@ -11,16 +16,16 @@ Skills: plugin skills are namespaced `emasoft-mods-development-plugin:<skill>` a
 | Skill | SKILL.md heading |
 |---|---|
 | mods-doc-add-components-to-a-plugin | ADD COMPONENTS TO A PLUGIN |
-| mods-doc-anthropic-marketplaces | ANTHROPIC MARKETPLACES |
+| mods-doc-official-marketplaces | ANTHROPIC MARKETPLACES |
 | mods-doc-automate-actions-with-hooks | AUTOMATE ACTIONS WITH HOOKS |
 | mods-doc-channels-reference | CHANNELS REFERENCE |
-| mods-doc-claude-code-debug-mode | CLAUDE CODE DEBUG MODE |
-| mods-doc-claude-code-native-memory-and-rules | CLAUDE CODE NATIVE MEMORY AND RULES |
-| mods-doc-claude-code-settings-reference | CLAUDE CODE SETTINGS REFERENCE |
-| mods-doc-claude-github-actions | CLAUDE GITHUB ACTIONS |
-| mods-doc-claude-permissions-modes | CLAUDE PERMISSIONS MODES |
-| mods-doc-claude-projects-directory-structure | CLAUDE PROJECTS DIRECTORY STRUCTURE |
-| mods-doc-claude-security-plugin | CLAUDE SECURITY PLUGIN |
+| mods-doc-cc-debug-mode | CLAUDE CODE DEBUG MODE |
+| mods-doc-cc-native-memory-and-rules | CLAUDE CODE NATIVE MEMORY AND RULES |
+| mods-doc-cc-settings-reference | CLAUDE CODE SETTINGS REFERENCE |
+| mods-doc-cc-github-actions | CLAUDE GITHUB ACTIONS |
+| mods-doc-cc-permissions-modes | CLAUDE PERMISSIONS MODES |
+| mods-doc-cc-projects-directory-structure | CLAUDE PROJECTS DIRECTORY STRUCTURE |
+| mods-doc-cc-security-plugin | CLAUDE SECURITY PLUGIN |
 | mods-doc-code-intelligence-components-in-plugins | CODE INTELLIGENCE COMPONENTS IN PLUGINS |
 | mods-doc-create-a-marketplace | Create a marketplace |
 | mods-doc-cross-session-messaging-reference | CROSS SESSION MESSAGING REFERENCE |
@@ -29,7 +34,7 @@ Skills: plugin skills are namespaced `emasoft-mods-development-plugin:<skill>` a
 | mods-doc-headless-mode-reference | HEADLESS MODE REFERENCE |
 | mods-doc-hooks-reference | HOOKS REFERENCE |
 | mods-doc-how-to-host-a-marketplace | HOW TO HOST A MARKETPLACE |
-| mods-doc-how-to-use-a-large-monorepo-with-claude-usuall-f868e63e | HOW TO USE A LARGE MONOREPO WITH CLAUDE (Usually the case when developing Plugins) |
+| mods-doc-large-monorepo-plugin-development | HOW TO USE A LARGE MONOREPO WITH CLAUDE (Usually the case when developing Plugins) |
 | mods-doc-install-and-manage-plugins | INSTALL AND MANAGE PLUGINS |
 | mods-doc-loop-and-chron-reference | LOOP AND CHRON REFERENCE |
 | mods-doc-manage-costs-of-a-plugin | MANAGE COSTS OF A PLUGIN |
@@ -48,7 +53,7 @@ Skills: plugin skills are namespaced `emasoft-mods-development-plugin:<skill>` a
 | mods-doc-mods-reference | MODS REFERENCE |
 | mods-doc-mods-testing | MODS TESTING |
 | mods-doc-mods-troubleshooting | MODS TROUBLESHOOTING |
-| mods-doc-native-tools-reference | NATIVE TOOLS REFERENCE |
+| mods-doc-native-toolset-reference | NATIVE TOOLS REFERENCE |
 | mods-doc-output-style-reference | OUTPUT STYLE REFERENCE |
 | mods-doc-platforms-overview | PLATFORMS OVERVIEW |
 | mods-doc-plugin-commands-reference | PLUGIN COMMANDS REFERENCE |
@@ -67,7 +72,7 @@ Skills: plugin skills are namespaced `emasoft-mods-development-plugin:<skill>` a
 | mods-doc-subagents-reference | SUBAGENTS REFERENCE |
 | mods-doc-test-plugins-with-evals | TEST PLUGINS WITH EVALS |
 | mods-doc-tracing-the-origin-of-a-plugin | TRACING THE ORIGIN OF A PLUGIN |
-| mods-doc-troubleshooting-claude-setup | TROUBLESHOOTING CLAUDE SETUP |
+| mods-doc-troubleshooting-cc-setup | TROUBLESHOOTING CLAUDE SETUP |
 | mods-doc-troubleshooting-plugins | TROUBLESHOOTING PLUGINS |
 | mods-doc-worktrees-reference | WORKTREES REFERENCE |
 
@@ -75,11 +80,29 @@ Skills: plugin skills are namespaced `emasoft-mods-development-plugin:<skill>` a
 
 The agent preloads the user-scope skills `tldr-code`, `fastedit`, `jgrep` and `quicksilver`, and delegates to the user-scope agents `fast-worker` and `cheap-worker`. These are NOT bundled with this plugin; without them the agent reports `[BLOCKED]`. Node is also required.
 
-## Install / test locally
+## Installation
+
+Local install for development and testing:
 
 ```bash
 claude --plugin-dir /absolute/path/to/emasoft-mods-development-plugin
 ```
+
+Marketplace install: once this plugin is published in a Claude Code marketplace you have added, install it with the plugin install command and the marketplace name of your choice:
+
+```bash
+claude plugin install emasoft-mods-development-plugin@<marketplace-name>
+```
+
+## Usage
+
+Invoke the agent by its namespaced name, for example through the Agent tool or by asking Claude Code to use it:
+
+```text
+emasoft-mods-development-plugin:mods-expert-developer-agent
+```
+
+Give it a task such as creating a new mod, fixing a broken plugin hook, or reviewing a plugin manifest. The agent plans with TRDD proposals, loads only the chapter skills it needs, and verifies each step before moving on.
 
 ## Validate
 

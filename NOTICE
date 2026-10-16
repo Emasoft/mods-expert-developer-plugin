@@ -1,12 +1,13 @@
 NOTICE
 
-The MIT license in LICENSE applies only to the original files of this plugin authored by Emasoft:
+The MIT license in LICENSE applies to every file in this repository authored by Emasoft, that is,
+every file except skills/*/references/chapter.md. This includes:
   - .claude-plugin/plugin.json
   - agents/mods-expert-developer-agent.md
   - each skills/*/SKILL.md wrapper
   - skills/*/agents/openai.yaml
-  - README.md
-  - NOTICE
+  - README.md, CHANGELOG.md and NOTICE
+  - the pipeline files: scripts/, git-hooks/, .github/, pyproject.toml, cliff.toml and the lint configuration files
 
 Every skills/*/references/chapter.md file is a verbatim copy of Anthropic's Claude Code
 documentation (https://code.claude.com/docs), copyright Anthropic, included for reference

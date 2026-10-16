@@ -8,3 +8,17 @@ reports_dev/
 *_dev/
 .trashcan/
 .DS_Store
+
+# Added by CPV standardize
+.claude/
+.tldr/
+llm_externalizer_output/
+__pycache__/
+.venv/
+.env
+dist/
+build/
+.coverage
+.pytest_cache/
+.ruff_cache/
+node_modules/

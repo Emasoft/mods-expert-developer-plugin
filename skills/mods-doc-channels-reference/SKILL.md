@@ -1,14 +1,53 @@
 ---
-coordination: exempt
-user-invocable: false
 name: mods-doc-channels-reference
-description: "Use when working on channels reference. Read-only routing to the preserved Claude Code chapter."
+description: "Use when working on channels reference. Read-only routing to the preserved Claude Code chapter. Loaded by mods-expert-developer-agent."
+user-invocable: false
+metadata:
+  coordination: exempt
 ---
 
 # CHANNELS REFERENCE
 
-Consult the preserved reference for this topic.
+## Overview
+
+Routes reads about channels reference to its verbatim Claude Code chapter. Consult the preserved reference for this topic.
 
 This skill is coordination-exempt: skip the ai-coord gate for its declared work.
 
-Read [the chapter](references/chapter.md) only when the current task needs channels reference. Resolve the path relative to this skill directory. Search its headings for the relevant section, then read that section and its applicable rules, syntax, examples, and caveats. Do not preload the chapter or read other chapter references merely because wrappers were preloaded. This wrapper only routes reference reads; it does not authorize writing or expand the task scope.
+## Prerequisites
+
+Only the CHANNELS REFERENCE chapter shipped in the references folder of this skill.
+
+## Instructions
+
+1. Confirm the task needs channels reference; otherwise stop without opening the chapter.
+2. Pick the CHANNELS REFERENCE section from the Table of Contents under Resources and follow its link.
+3. Read only that channels reference section; do not preload this or any other chapter.
+4. Stop when the CHANNELS REFERENCE section is read: this wrapper routes reads only and authorizes no writes.
+
+## Output
+
+The CHANNELS REFERENCE section the task needs, read into context; nothing is written.
+
+## Error Handling
+
+If an anchor misses, search the CHANNELS REFERENCE headings for the entry title; if the section is absent, report `[BLOCKED]` naming it.
+
+## Examples
+
+Input: a task about "Supported channels". Output: open [Supported channels](references/chapter.md#supported-channels) and read that section only.
+
+## Resources
+
+Full chapter: [the chapter](references/chapter.md), with the complete CHANNELS REFERENCE table of contents:
+
+- [Push events into a running session with channels](references/chapter.md#push-events-into-a-running-session-with-channels)
+  - [Supported channels](references/chapter.md#supported-channels)
+  - [Quickstart](references/chapter.md#quickstart)
+  - [Security](references/chapter.md#security)
+  - [Enterprise controls](references/chapter.md#enterprise-controls)
+    - [Enable channels for your organization](references/chapter.md#enable-channels-for-your-organization)
+    - [Restrict which channel plugins can run](references/chapter.md#restrict-which-channel-plugins-can-run)
+  - [Research preview](references/chapter.md#research-preview)
+  - [How channels compare](references/chapter.md#how-channels-compare)
+  - [Next steps](references/chapter.md#next-steps)
