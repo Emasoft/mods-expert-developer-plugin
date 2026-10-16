@@ -11,5 +11,7 @@ every file except skills/*/references/chapter.md. This includes:
 
 Every skills/*/references/chapter.md file is adapted from Anthropic's Claude Code
 documentation (https://code.claude.com/docs), copyright Anthropic (section-level tables of
-contents added, and a few passages reworded for the agent), included for reference
+contents added, section titles reworded to describe what each section covers, one subsection
+promoted to a section, website-only components rewritten as plain Markdown, and a few passages
+reworded for the agent), included for reference
 only. These files are NOT licensed under MIT and remain subject to Anthropic's own terms.

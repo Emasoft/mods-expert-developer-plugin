@@ -72,7 +72,7 @@ skills:
 
 ## Chapter skill index
 
-The skills array preloads lightweight wrappers, not chapter bodies. Select the exact skill below for the current use case; read the references/chapter.md file inside that skill's folder only when needed. Never eagerly read every chapter. Chapter content follows Anthropic's Claude Code documentation; the only changes are section-level tables of contents and a few passages reworded for the agent.
+The skills array preloads lightweight wrappers, not chapter bodies. Select the exact skill below for the current use case; read the references/chapter.md file inside that skill's folder only when needed. Never eagerly read every chapter. Chapter content follows Anthropic's Claude Code documentation, adapted for the agent: section-level tables of contents, section titles that describe what each section covers, website-only components rewritten as plain Markdown, and a few passages reworded.
 
 | Use case | Skill |
 | --- | --- |

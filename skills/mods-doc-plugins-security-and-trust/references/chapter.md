@@ -4,7 +4,7 @@
 
 - [Plugin security and trust](#plugin-security-and-trust)
   - [Understand what a plugin can do](#understand-what-a-plugin-can-do)
-  - [Review a plugin before you install](#review-a-plugin-before-you-install)
+  - [Review plugins before and after you install](#review-plugins-before-and-after-you-install)
   - [Recognize when Claude Code refuses or warns](#recognize-when-claude-code-refuses-or-warns)
   - [Enforce plugin controls for your organization](#enforce-plugin-controls-for-your-organization)
   - [Find plugins in telemetry](#find-plugins-in-telemetry)
@@ -92,7 +92,7 @@ These marketplace names make up the official tier:
 
 For how the official, community, and demo marketplaces differ and where to browse what each one lists, see [Anthropic's marketplaces](https://code.claude.com/docs/en/plugins/anthropic-marketplaces).
 
-#### Review a plugin before you install
+#### Review plugins before and after you install
 
 Before you install a plugin, look at what it adds and where it comes from.
 

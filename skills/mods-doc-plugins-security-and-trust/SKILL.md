@@ -43,7 +43,7 @@ Full chapter: [the chapter](references/chapter.md), with the section-level PLUGI
 
 - [Plugin security and trust](references/chapter.md#plugin-security-and-trust)
   - [Understand what a plugin can do](references/chapter.md#understand-what-a-plugin-can-do)
-  - [Review a plugin before you install](references/chapter.md#review-a-plugin-before-you-install)
+  - [Review plugins before and after you install](references/chapter.md#review-plugins-before-and-after-you-install)
   - [Recognize when Claude Code refuses or warns](references/chapter.md#recognize-when-claude-code-refuses-or-warns)
   - [Enforce plugin controls for your organization](references/chapter.md#enforce-plugin-controls-for-your-organization)
   - [Find plugins in telemetry](references/chapter.md#find-plugins-in-telemetry)
