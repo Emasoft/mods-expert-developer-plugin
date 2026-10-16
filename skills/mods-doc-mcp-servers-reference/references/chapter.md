@@ -754,7 +754,7 @@ Show me all open PRs assigned to me
 
 ```bash theme={null}
 claude mcp add --transport stdio db -- npx -y @bytebase/dbhub \
-  --dsn "postgresql://readonly:pass@prod.db.com:5432/analytics"
+  --dsn "postgresql://readonly:<password>@prod.db.com:5432/analytics"
 ```
 
 To confirm the server starts, run `/mcp` and check that `db` shows `connected`.
