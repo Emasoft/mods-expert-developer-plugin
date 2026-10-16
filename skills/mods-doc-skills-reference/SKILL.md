@@ -43,10 +43,10 @@ Full chapter: [the chapter](references/chapter.md), with the section-level SKILL
 
 - [Extend Claude with skills](references/chapter.md#extend-claude-with-skills)
   - [Bundled skills](references/chapter.md#bundled-skills)
-  - [Getting started](references/chapter.md#getting-started)
+  - [Create and manage skills](references/chapter.md#create-and-manage-skills)
   - [Configure skills](references/chapter.md#configure-skills)
-  - [Advanced patterns](references/chapter.md#advanced-patterns)
+  - [Advanced skill behavior and visibility](references/chapter.md#advanced-skill-behavior-and-visibility)
   - [Evaluate and iterate on a skill](references/chapter.md#evaluate-and-iterate-on-a-skill)
-  - [Share skills](references/chapter.md#share-skills)
+  - [Share skills and generate visual output](references/chapter.md#share-skills-and-generate-visual-output)
   - [Troubleshooting](references/chapter.md#troubleshooting)
   - [Related resources](references/chapter.md#related-resources)

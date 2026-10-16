@@ -35,17 +35,17 @@ If an anchor misses, search the MARKETPLACE MANIFEST REFERENCE headings for the 
 
 ## Examples
 
-Input: a task about "Marketplace file". Output: open [Marketplace file](references/chapter.md#marketplace-file) and read that section only.
+Input: a task about "Marketplace file layout and reserved names". Output: open [Marketplace file layout and reserved names](references/chapter.md#marketplace-file-layout-and-reserved-names) and read that section only.
 
 ## Resources
 
 Full chapter: [the chapter](references/chapter.md), with the section-level MARKETPLACE MANIFEST REFERENCE table of contents:
 
 - [Marketplace reference](references/chapter.md#marketplace-reference)
-  - [Marketplace file](references/chapter.md#marketplace-file)
+  - [Marketplace file layout and reserved names](references/chapter.md#marketplace-file-layout-and-reserved-names)
   - [Top-level fields](references/chapter.md#top-level-fields)
-  - [Plugin entries](references/chapter.md#plugin-entries)
-  - [Plugin sources](references/chapter.md#plugin-sources)
-  - [Marketplace sources](references/chapter.md#marketplace-sources)
-  - [Validation messages](references/chapter.md#validation-messages)
+  - [Plugin entries with display fields and strict mode](references/chapter.md#plugin-entries-with-display-fields-and-strict-mode)
+  - [Plugin source types and install behavior](references/chapter.md#plugin-source-types-and-install-behavior)
+  - [Marketplace source types and settings usage](references/chapter.md#marketplace-source-types-and-settings-usage)
+  - [Validation messages and unvalidated failures](references/chapter.md#validation-messages-and-unvalidated-failures)
   - [See Also:](references/chapter.md#see-also)

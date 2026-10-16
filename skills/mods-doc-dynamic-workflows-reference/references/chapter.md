@@ -4,11 +4,11 @@
 
 - [Orchestrate subagents at scale with dynamic workflows](#orchestrate-subagents-at-scale-with-dynamic-workflows)
   - [When to use a workflow](#when-to-use-a-workflow)
-  - [Run a bundled workflow](#run-a-bundled-workflow)
-  - [Have Claude write a workflow](#have-claude-write-a-workflow)
-  - [Example workflow prompts](#example-workflow-prompts)
-  - [How a workflow runs](#how-a-workflow-runs)
-  - [Manage runs](#manage-runs)
+  - [Run and watch a bundled workflow](#run-and-watch-a-bundled-workflow)
+  - [Have Claude write approve save and reuse a workflow](#have-claude-write-approve-save-and-reuse-a-workflow)
+  - [Example workflow prompts and saved scripts](#example-workflow-prompts-and-saved-scripts)
+  - [How a workflow runs caches and is limited](#how-a-workflow-runs-caches-and-is-limited)
+  - [Manage workflow runs recovery cost and settings](#manage-workflow-runs-recovery-cost-and-settings)
   - [Related resources](#related-resources)
 
 > ## Documentation Index
@@ -44,7 +44,7 @@ A workflow moves the plan into code. With subagents, skills, and agent teams, Cl
 
 Moving the plan into code also lets a workflow apply a repeatable quality pattern, not just run more agents: it can have independent agents adversarially review each other's findings before they're reported, or draft a plan from several angles and weigh them against each other, so you get a more trustworthy result than a single pass.
 
-#### Run a bundled workflow
+#### Run and watch a bundled workflow
 
 The quickest way to see a workflow in action is to run `/deep-research`, the [built-in workflow](https://code.claude.com/docs/en/workflows#bundled-workflows) Claude Code includes for investigating a question across many sources. You'll see agents work through a set of phases in the background while your session stays free, and get one report at the end instead of a turn-by-turn transcript.
 
@@ -116,7 +116,7 @@ The agent detail lists the agent's prompt, its recent tool calls, and its result
 
 Press `Enter` to expand the detail. The prompt and result then show in full, and each listed call shows its input and the start of its result.
 
-#### Have Claude write a workflow
+#### Have Claude write approve save and reuse a workflow
 
 You can have Claude write a workflow for your task in two ways:
 
@@ -250,7 +250,7 @@ Run /triage-issues on issues 1024, 1025, and 1030
 
 Claude passes the list as structured data, so the script can call array and object methods on `args` directly without parsing it first. If `args` is omitted, the global is `undefined` inside the script.
 
-#### Example workflow prompts
+#### Example workflow prompts and saved scripts
 
 A workflow fits best when the task is larger than one agent can hold in context, or when the same step needs to run across many items. The prompts below show common shapes. Each one asks Claude to write and run a workflow for that task; you don't write the script yourself.
 
@@ -348,7 +348,7 @@ Claude Code applies these rules to each part of the file when it loads and runs 
 
 You can also edit [the script of a single run](https://code.claude.com/docs/en/workflows#how-a-workflow-runs) rather than the saved copy. [Resume after a pause](https://code.claude.com/docs/en/workflows#resume-after-a-pause) covers which agents run again when you relaunch an edited script. For the Workflow tool's inputs, see its entry in the [Agent SDK reference](https://code.claude.com/docs/en/agent-sdk/typescript#workflow).
 
-#### How a workflow runs
+#### How a workflow runs caches and is limited
 
 The workflow runtime executes the script in an isolated environment, separate from your conversation. Intermediate results stay in script variables instead of landing in Claude's context.
 
@@ -380,7 +380,7 @@ The runtime applies the following constraints:
 | Up to 4,096 items in a single `parallel()` or `pipeline()` call: the runtime rejects a longer list with an error | A silent cap would drop part of the workload without telling the script |
 | 1,000 agents total per run | Prevents runaway loops |
 
-#### Manage runs
+#### Manage workflow runs recovery cost and settings
 
 Once a run starts, you manage it from the `/workflows` view, or by expanding its progress line in the task panel below the input box.
 

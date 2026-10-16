@@ -35,15 +35,15 @@ If an anchor misses, search the CLAUDE CODE SETTINGS REFERENCE headings for the 
 
 ## Examples
 
-Input: a task about "Settings files and who they affect". Output: open [Settings files and who they affect](references/chapter.md#settings-files-and-who-they-affect) and read that section only.
+Input: a task about "Settings file scopes locations sharing and enforcement". Output: open [Settings file scopes locations sharing and enforcement](references/chapter.md#settings-file-scopes-locations-sharing-and-enforcement) and read that section only.
 
 ## Resources
 
 Full chapter: [the chapter](references/chapter.md), with the section-level CLAUDE CODE SETTINGS REFERENCE table of contents:
 
 - [Settings files and precedence](references/chapter.md#settings-files-and-precedence)
-  - [Settings files and who they affect](references/chapter.md#settings-files-and-who-they-affect)
-  - [Change a setting](references/chapter.md#change-a-setting)
-  - [Settings precedence](references/chapter.md#settings-precedence)
+  - [Settings file scopes locations sharing and enforcement](references/chapter.md#settings-file-scopes-locations-sharing-and-enforcement)
+  - [Change apply verify and repair settings](references/chapter.md#change-apply-verify-and-repair-settings)
+  - [Settings precedence merging examples and troubleshooting](references/chapter.md#settings-precedence-merging-examples-and-troubleshooting)
   - [Settings in cloud sessions](references/chapter.md#settings-in-cloud-sessions)
   - [What's next](references/chapter.md#whats-next)

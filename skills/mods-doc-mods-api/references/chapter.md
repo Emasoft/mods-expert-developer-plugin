@@ -4,8 +4,8 @@
 
 - [Use the mods API](#use-the-mods-api)
   - [Add a command or a tool](#add-a-command-or-a-tool)
-  - [Call a model](#call-a-model)
-  - [Run work in the background](#run-work-in-the-background)
+  - [Call a model with prompts and caching](#call-a-model-with-prompts-and-caching)
+  - [Run and control background work](#run-and-control-background-work)
   - [Send and receive messages between sessions](#send-and-receive-messages-between-sessions)
   - [Reach files, processes, and the network](#reach-files-processes-and-the-network)
   - [Related Topics](#related-topics)
@@ -77,7 +77,7 @@ When you ask about a ticket, Claude can call `mcp__my-mod__ticket` with its id. 
   When [MCP tool search](https://code.claude.com/docs/en/mcp#scale-with-mcp-tool-search) defers a registered tool, Claude sees its name but not its description until it searches for it. If Claude should consider the tool on every turn, add [`isDeferred: false`](https://code.claude.com/docs/en/plugins/mods/reference#tools) to the registration to [load the full tool upfront](https://code.claude.com/docs/en/mcp#exempt-a-server-from-deferral). The field requires Claude Code v2.1.293 or later, and earlier versions ignore it.
 </Tip>
 
-#### Call a model
+#### Call a model with prompts and caching
 
 A mod can send its own requests to a model for a small job such as classifying or summarizing text. `$.model.complete` sends your prompt on its own, and `$.model.fork({ prompt })` sends the current conversation with your prompt at the end.
 
@@ -189,7 +189,7 @@ If you hook the [`model.complete`](https://code.claude.com/docs/en/plugins/mods/
 
 Claude Code sends the strings your hook passes to `next` and uses the arrays you pass with them to place [cache breakpoints](https://code.claude.com/docs/en/plugins/mods/api#use-prompt-caching). It keeps the leading blocks that still match the start of the string, with their breakpoints, and sends the rest of the string with no breakpoint. For example, `next({ ...e, prompt: e.prompt + NOTE })` keeps the caller's breakpoints, and a hook that changes the start of `prompt` removes them.
 
-#### Run work in the background
+#### Run and control background work
 
 Work that outlives one event, such as checking on something once a minute, runs on a timer you start from `session.start`. A hook itself runs for one event and has a [time limit](https://code.claude.com/docs/en/plugins/mods/reference#limits) on its own execution time. Time spent waiting on `next` or on a mods API call doesn't count, except a `$.clock.sleep`. `$.clock.every` and `$.clock.after` take the place of `setInterval` and `setTimeout`, with the delay in milliseconds first: `$.clock.after(5000, fn)` calls `fn` once, five seconds from now. Each returns a timer with a `cancel()` method, and `await $.clock.now()` gives the time in milliseconds.
 

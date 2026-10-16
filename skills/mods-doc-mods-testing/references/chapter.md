@@ -3,7 +3,7 @@
 ## Table of Contents
 
 - [Test a mod](#test-a-mod)
-  - [Write a test](#write-a-test)
+  - [Write a test with stubs and test kit rules](#write-a-test-with-stubs-and-test-kit-rules)
   - [Test a timer](#test-a-timer)
   - [Test a drawing](#test-a-drawing)
   - [Related Topics](#related-topics)
@@ -14,7 +14,7 @@
 
 You can write automated tests for a mod and run them from your shell with [`claude plugin test`](https://code.claude.com/docs/en/plugins/mods/reference#commands). A test fires the events your hooks handle and checks what the hooks did, so you catch a problem before it reaches a session. The first example tests the mod from [Create a mod](https://code.claude.com/docs/en/plugins/mods/create).
 
-#### Write a test
+#### Write a test with stubs and test kit rules
 
 A test loads your mod, sends events through its hooks the way Claude Code would, and checks what the hooks did, without a session, a sign-in, or a network. You run tests from your shell with `claude plugin test`, and each test file imports the test kit, a test library in the `claude-code/testing` module.
 

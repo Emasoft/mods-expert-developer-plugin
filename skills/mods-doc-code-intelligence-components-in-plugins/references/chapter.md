@@ -4,8 +4,8 @@
 
 - [Code intelligence plugins](#code-intelligence-plugins)
   - [Install a code intelligence plugin](#install-a-code-intelligence-plugin)
-  - [See what Claude gains](#see-what-claude-gains)
-  - [Accept or dismiss the recommendation dialog](#accept-or-dismiss-the-recommendation-dialog)
+  - [See what Claude gains and view diagnostics](#see-what-claude-gains-and-view-diagnostics)
+  - [Handle the plugin recommendation dialog](#handle-the-plugin-recommendation-dialog)
   - [Troubleshoot code intelligence](#troubleshoot-code-intelligence)
   - [Add a language without an official plugin](#add-a-language-without-an-official-plugin)
   - [Related Docs](#related-docs)
@@ -81,7 +81,7 @@ A code intelligence plugin tells Claude Code which command starts the language s
   </Step>
 </Steps>
 
-#### See what Claude gains
+#### See what Claude gains and view diagnostics
 
 With a language server running, Claude gains diagnostics and code navigation:
 
@@ -92,7 +92,7 @@ With a language server running, Claude gains diagnostics and code navigation:
 
 After Claude edits a file the server handles, the conversation shows only the `Found N new diagnostic issues` summary. To read the issues themselves, press **Ctrl+O**.
 
-#### Accept or dismiss the recommendation dialog
+#### Handle the plugin recommendation dialog
 
 If a language server binary is already on your `PATH` and the plugin that uses it isn't installed, Claude Code offers to install the plugin for you in a dialog titled **LSP plugin recommendation**.
 

@@ -4,8 +4,8 @@
 
 - [Settings files and precedence](#settings-files-and-precedence)
   - [Settings files and who they affect](#settings-files-and-who-they-affect)
-  - [Change a setting](#change-a-setting)
-  - [Settings precedence](#settings-precedence)
+  - [Change and verify a setting](#change-and-verify-a-setting)
+  - [Settings precedence and conflict resolution](#settings-precedence-and-conflict-resolution)
   - [Settings in cloud sessions](#settings-in-cloud-sessions)
   - [What's next](#whats-next)
 
@@ -520,7 +520,7 @@ In a [Cowork](https://claude.com/docs/cowork/overview) session that runs on your
 
 If you're the administrator, [Set up Claude Code for your organization](https://code.claude.com/docs/en/admin-setup) walks through choosing what to enforce, and [Deploy managed settings](https://code.claude.com/docs/en/managed-settings) covers delivery and how to confirm a policy is in force. For the warning the managed settings editor in the claude.ai admin console can show, see [Configure server-managed settings](https://code.claude.com/docs/en/server-managed-settings#configure-server-managed-settings).
 
-#### Change a setting
+#### Change and verify a setting
 
 You can change a setting from the `/config` menu, by editing a settings file, or for one session from the command line.
 
@@ -632,7 +632,7 @@ A `-p` run shows no dialog. Unless [a managed settings document can't be parsed]
 
 <span id="which-value-wins" />
 
-#### Settings precedence
+#### Settings precedence and conflict resolution
 
 When the same key appears in more than one place, Claude Code uses the value from the highest level that sets it. The stack below shows the levels, highest on top; a key at a higher level overrides the same key anywhere below it.
 

@@ -6,7 +6,7 @@
   - [Supported channels](#supported-channels)
   - [Quickstart](#quickstart)
   - [Security](#security)
-  - [Enterprise controls](#enterprise-controls)
+  - [Enterprise controls for enabling and restricting channels](#enterprise-controls-for-enabling-and-restricting-channels)
   - [Research preview](#research-preview)
   - [How channels compare](#how-channels-compare)
   - [Next steps](#next-steps)
@@ -313,7 +313,7 @@ Being in `.mcp.json` isn't enough to push messages: a server also has to be name
 
 The allowlist also gates [permission relay](https://code.claude.com/docs/en/channels-reference#relay-permission-prompts) if the channel declares it. Anyone who can reply through the channel can approve or deny tool use in your session, so only allowlist senders you trust with that authority.
 
-#### Enterprise controls
+#### Enterprise controls for enabling and restricting channels
 
 Admins control availability through two [managed settings](https://code.claude.com/docs/en/settings) that users cannot override. The default depends on how you authenticate:
 

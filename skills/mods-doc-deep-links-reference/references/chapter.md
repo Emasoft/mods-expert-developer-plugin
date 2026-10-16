@@ -3,13 +3,13 @@
 ## Table of Contents
 
 - [Launch sessions from links](#launch-sessions-from-links)
-  - [How deep links work](#how-deep-links-work)
-  - [Build a link](#build-a-link)
-  - [Examples](#examples)
+  - [How deep links work and what a launched session shows](#how-deep-links-work-and-what-a-launched-session-shows)
+  - [Build a link and choose its working directory](#build-a-link-and-choose-its-working-directory)
+  - [Link examples for runbooks and shell use](#link-examples-for-runbooks-and-shell-use)
   - [Registration and supported platforms](#registration-and-supported-platforms)
   - [Open a VS Code tab instead of a terminal](#open-a-vs-code-tab-instead-of-a-terminal)
   - [Open a Claude Desktop session on an SSH connection](#open-a-claude-desktop-session-on-an-ssh-connection)
-  - [Troubleshooting](#troubleshooting)
+  - [Troubleshooting links that do nothing or open the wrong place](#troubleshooting-links-that-do-nothing-or-open-the-wrong-place)
   - [Learn more](#learn-more)
 
 > ## Documentation Index
@@ -33,7 +33,7 @@ Because a deep link is a URL, you can put one anywhere a link can go:
 
 This page covers how to [build a link](https://code.claude.com/docs/en/deep-links#build-a-link), [embed one in a runbook or trigger it from the shell](https://code.claude.com/docs/en/deep-links#examples), and [manage or disable handler registration](https://code.claude.com/docs/en/deep-links#registration-and-supported-platforms) on each platform.
 
-#### How deep links work
+#### How deep links work and what a launched session shows
 
 The `claude-cli://` prefix is a custom URL scheme that Claude Code registers with your operating system, similar to how `mailto:` links open your email client. When you click a deep link:
 
@@ -52,7 +52,7 @@ A deep link never executes anything on its own. The link only chooses a director
 
 When the session opens, a warning line below the input box reads `Prompt from an external link` and stays visible until you send or clear the prompt. For prompts over 1,000 characters, the warning includes the character count and tells you to scroll and review the full text before pressing Enter, since long prompts can push instructions off screen. Permission rules, `CLAUDE.md`, and trust prompts for the selected directory apply the same way as for any other session.
 
-#### Build a link
+#### Build a link and choose its working directory
 
 A deep link starts with `claude-cli://open`, followed by optional query parameters. The minimal form opens Claude Code in your home directory with an empty prompt:
 
@@ -98,7 +98,7 @@ Use `repo` when the link is shared and each person clones to a different locatio
 
 The welcome header shows which path it picked so you can confirm the right clone opened.
 
-#### Examples
+#### Link examples for runbooks and shell use
 
 The sections below show two common ways to use a deep link: as a Markdown link in a document and as a command in a script or shell alias.
 
@@ -184,7 +184,7 @@ The VS Code extension registers its own handler at `vscode://anthropic.claude-co
 
 Claude Desktop handles its own `claude://` links. To open a Desktop session on a remote machine over SSH, see [Open an SSH session from a link](https://code.claude.com/docs/en/desktop#open-an-ssh-session-from-a-link).
 
-#### Troubleshooting
+#### Troubleshooting links that do nothing or open the wrong place
 
 ##### Clicking the link does nothing
 

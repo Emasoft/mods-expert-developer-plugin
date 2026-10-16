@@ -8,7 +8,7 @@
   - [Use the session picker](#use-the-session-picker)
   - [Branch a session](#branch-a-session)
   - [Manage context within a session](#manage-context-within-a-session)
-  - [Export and locate session data](#export-and-locate-session-data)
+  - [Access and manage stored session data](#access-and-manage-stored-session-data)
   - [See also](#see-also)
 
 
@@ -246,7 +246,7 @@ These commands control what's in the context window without leaving the session:
 
 For how compaction interacts with CLAUDE.md, skills, and rules, see the [context window guide](https://code.claude.com/docs/en/context-window). For strategies on when to clear versus compact, see [Best practices](https://code.claude.com/docs/en/best-practices#manage-your-session).
 
-#### Export and locate session data
+#### Access and manage stored session data
 
 Run `/export` to open a menu that lets you copy the current conversation to your clipboard or save it as a plain-text file, with messages and tool outputs rendered as readable text. Pass a filename to skip the menu and write directly to that file.
 

@@ -43,7 +43,7 @@ Full chapter: [the chapter](references/chapter.md), with the section-level PLUGI
 
 - [Create a Claude Code plugin](references/chapter.md#create-a-claude-code-plugin)
   - [Decide when to use a plugin](references/chapter.md#decide-when-to-use-a-plugin)
-  - [Create your first plugin](references/chapter.md#create-your-first-plugin)
-  - [Develop without a marketplace](references/chapter.md#develop-without-a-marketplace)
-  - [Test and debug](references/chapter.md#test-and-debug)
+  - [Create your first plugin and understand its layout](references/chapter.md#create-your-first-plugin-and-understand-its-layout)
+  - [Develop and load plugins locally without a marketplace](references/chapter.md#develop-and-load-plugins-locally-without-a-marketplace)
+  - [Test and troubleshoot plugin loading and behavior](references/chapter.md#test-and-troubleshoot-plugin-loading-and-behavior)
   - [RELATED DOCS](references/chapter.md#related-docs)

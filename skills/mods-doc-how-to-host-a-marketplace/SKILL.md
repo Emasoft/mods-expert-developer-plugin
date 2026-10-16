@@ -35,21 +35,21 @@ If an anchor misses, search the HOW TO HOST A MARKETPLACE headings for the entry
 
 ## Examples
 
-Input: a task about "Host your marketplace". Output: open [Host your marketplace](references/chapter.md#host-your-marketplace) and read that section only.
+Input: a task about "Host your marketplace and handle its plugin files". Output: open [Host your marketplace and handle its plugin files](references/chapter.md#host-your-marketplace-and-handle-its-plugin-files) and read that section only.
 
 ## Resources
 
 Full chapter: [the chapter](references/chapter.md), with the section-level HOW TO HOST A MARKETPLACE table of contents:
 
 - [Host and maintain a marketplace](references/chapter.md#host-and-maintain-a-marketplace)
-  - [Host your marketplace](references/chapter.md#host-your-marketplace)
+  - [Host your marketplace and handle its plugin files](references/chapter.md#host-your-marketplace-and-handle-its-plugin-files)
   - [Distribute through organization settings](references/chapter.md#distribute-through-organization-settings)
-  - [Grant access to a private marketplace](references/chapter.md#grant-access-to-a-private-marketplace)
+  - [Grant access and credentials for a private marketplace](references/chapter.md#grant-access-and-credentials-for-a-private-marketplace)
   - [Roll out to a whole company](references/chapter.md#roll-out-to-a-whole-company)
-  - [Keep users up to date](references/chapter.md#keep-users-up-to-date)
+  - [Keep users up to date and control versions](references/chapter.md#keep-users-up-to-date-and-control-versions)
   - [Run release channels](references/chapter.md#run-release-channels)
   - [Rename or remove a plugin](references/chapter.md#rename-or-remove-a-plugin)
-  - [Authenticate archive downloads](references/chapter.md#authenticate-archive-downloads)
+  - [Authenticate archive downloads with a headersHelper](references/chapter.md#authenticate-archive-downloads-with-a-headershelper)
   - [Depend on and recommend other plugins](references/chapter.md#depend-on-and-recommend-other-plugins)
   - [Work around what a marketplace can't do](references/chapter.md#work-around-what-a-marketplace-cant-do)
   - [Related Docs](references/chapter.md#related-docs)

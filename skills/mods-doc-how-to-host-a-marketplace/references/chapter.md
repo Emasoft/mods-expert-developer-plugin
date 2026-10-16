@@ -3,14 +3,14 @@
 ## Table of Contents
 
 - [Host and maintain a marketplace](#host-and-maintain-a-marketplace)
-  - [Host your marketplace](#host-your-marketplace)
+  - [Host your marketplace and handle its plugin files](#host-your-marketplace-and-handle-its-plugin-files)
   - [Distribute through organization settings](#distribute-through-organization-settings)
-  - [Grant access to a private marketplace](#grant-access-to-a-private-marketplace)
+  - [Grant access and credentials for a private marketplace](#grant-access-and-credentials-for-a-private-marketplace)
   - [Roll out to a whole company](#roll-out-to-a-whole-company)
-  - [Keep users up to date](#keep-users-up-to-date)
+  - [Keep users up to date and control versions](#keep-users-up-to-date-and-control-versions)
   - [Run release channels](#run-release-channels)
   - [Rename or remove a plugin](#rename-or-remove-a-plugin)
-  - [Authenticate archive downloads](#authenticate-archive-downloads)
+  - [Authenticate archive downloads with a headersHelper](#authenticate-archive-downloads-with-a-headershelper)
   - [Depend on and recommend other plugins](#depend-on-and-recommend-other-plugins)
   - [Work around what a marketplace can't do](#work-around-what-a-marketplace-cant-do)
   - [Related Docs](#related-docs)
@@ -36,7 +36,7 @@ This page is for the person who operates a marketplace.
 
 Start with [Host your marketplace](https://code.claude.com/docs/en/plugins/host-marketplace#host-your-marketplace) to pick a host and the command your users run. Read [Keep users up to date](https://code.claude.com/docs/en/plugins/host-marketplace#keep-users-up-to-date) before your first release. Read [Rename or remove a plugin](https://code.claude.com/docs/en/plugins/host-marketplace#rename-or-remove-a-plugin) before you change a plugin's `name`.
 
-#### Host your marketplace
+#### Host your marketplace and handle its plugin files
 
 You can host the marketplace on GitHub, on another git host, as a hosted `marketplace.json` URL, or in a directory on a shared filesystem. Send your users the add command for your host and tell them what they need on their machine:
 
@@ -115,7 +115,7 @@ Organization sync is stricter about the repository than `/plugin marketplace add
 
 [Sync your organization's plugins from a repository](https://claude.com/docs/plugins/org-sync) on claude.com lists the accepted sources, the GitLab setup, and the `bin/` error, and [Manage plugins for your organization](https://claude.com/docs/plugins/admin) covers the admin workflow.
 
-#### Grant access to a private marketplace
+#### Grant access and credentials for a private marketplace
 
 When a user adds, installs from, or updates your marketplace, Claude Code runs `git` on their machine with interactive prompts turned off and relies on whatever credentials that machine already holds. Claude Code has no git token of its own, and `marketplace.json` has no field for one.
 
@@ -185,7 +185,7 @@ For people who have no git-host account, these sections each cover one way to re
 * **A pre-populated plugins directory**: [Seed containers and CI](https://code.claude.com/docs/en/plugins/org#seed-containers-and-ci), which also serves users who have no git-host account
 * **claude.ai organization settings**: [Distribute through organization settings](https://code.claude.com/docs/en/plugins/host-marketplace#distribute-through-organization-settings), where your users' git credentials aren't involved
 
-#### Keep users up to date
+#### Keep users up to date and control versions
 
 Your changes reach users through background auto-update, once it's turned on for your marketplace, or when users update the plugin themselves. In both cases a user gets a new copy of a plugin only when its computed version changes, as described under [Release a new version](https://code.claude.com/docs/en/plugins/host-marketplace#release-a-new-version).
 
@@ -312,7 +312,7 @@ To uninstall a removed plugin from users' machines rather than leave a copy behi
 2. Uninstalls each removed plugin from the user, project, and local scopes. Plugins that only managed settings installed stay in place.
 3. Lists each removed plugin under a **Flagged** heading in `/plugin` with the status `Removed from marketplace`.
 
-#### Authenticate archive downloads
+#### Authenticate archive downloads with a headersHelper
 
 To authenticate an [`archive`](https://code.claude.com/docs/en/plugins/marketplace-reference#archive-plugin-source) download, such as a download from a private registry, set the HTTP headers Claude Code sends with it. You can set `headers` in either of these places:
 

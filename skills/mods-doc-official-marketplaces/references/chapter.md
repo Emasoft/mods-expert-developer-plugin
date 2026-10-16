@@ -3,9 +3,9 @@
 ## Table of Contents
 
 - [Anthropic's marketplaces](#anthropics-marketplaces)
-  - [Anthropic's marketplaces](#anthropics-marketplaces-1)
+  - [Anthropic marketplaces and the demo marketplace](#anthropic-marketplaces-and-the-demo-marketplace)
   - [Find plugins in the official marketplace](#find-plugins-in-the-official-marketplace)
-  - [Browse and install from Anthropic's marketplaces](#browse-and-install-from-anthropics-marketplaces)
+  - [Browse, install, and add Anthropic marketplaces](#browse-install-and-add-anthropic-marketplaces)
   - [Third-party marketplaces](#third-party-marketplaces)
   - [Related Docs](#related-docs)
 
@@ -33,7 +33,7 @@ Go to the part of the page you need:
 * To distinguish the three marketplaces by repository, marketplace name, and how you get each one, see [Anthropic's marketplaces](https://code.claude.com/docs/en/plugins/anthropic-marketplaces#anthropic’s-marketplaces).
 * To find a plugin in the official marketplace, see [Find plugins in the official marketplace](https://code.claude.com/docs/en/plugins/anthropic-marketplaces#find-plugins-in-the-official-marketplace).
 
-#### Anthropic's marketplaces
+#### Anthropic marketplaces and the demo marketplace
 
 A marketplace is a catalog of plugins that a repository defines in its `.claude-plugin/marketplace.json` file. The official, community, and demo marketplaces each come from their own GitHub repository. Anthropic also publishes topic-specific marketplaces, such as `anthropics/skills` and `anthropics/knowledge-work-plugins`, which you add in a Claude Code session with `/plugin marketplace add <owner>/<repo>`.
 
@@ -60,7 +60,7 @@ By default, Claude Code adds the official marketplace, `claude-plugins-official`
 
 To see what's in it, use the **Discover** tab of `/plugin` in a Claude Code session, which you can search, or browse [Claude Marketplace](https://claude.com/marketplace/plugins) on the web.
 
-#### Browse and install from Anthropic's marketplaces
+#### Browse, install, and add Anthropic marketplaces
 
 You can search Anthropic's marketplaces for a plugin in Claude Code, on the web, or on GitHub:
 

@@ -35,15 +35,15 @@ If an anchor misses, search the Mods Development headings for the entry title; i
 
 ## Examples
 
-Input: a task about "Ask Claude for a mod". Output: open [Ask Claude for a mod](references/chapter.md#ask-claude-for-a-mod) and read that section only.
+Input: a task about "Ask Claude for a mod and reuse it in other sessions". Output: open [Ask Claude for a mod and reuse it in other sessions](references/chapter.md#ask-claude-for-a-mod-and-reuse-it-in-other-sessions) and read that section only.
 
 ## Resources
 
 Full chapter: [the chapter](references/chapter.md), with the section-level Mods Development table of contents:
 
 - [Create a mod](references/chapter.md#create-a-mod)
-  - [Ask Claude for a mod](references/chapter.md#ask-claude-for-a-mod)
+  - [Ask Claude for a mod and reuse it in other sessions](references/chapter.md#ask-claude-for-a-mod-and-reuse-it-in-other-sessions)
   - [Write a mod yourself](references/chapter.md#write-a-mod-yourself)
-  - [Keep working on a mod](references/chapter.md#keep-working-on-a-mod)
+  - [Change and test a mod](references/chapter.md#change-and-test-a-mod)
   - [Share your mod](references/chapter.md#share-your-mod)
   - [Related Topics](references/chapter.md#related-topics)

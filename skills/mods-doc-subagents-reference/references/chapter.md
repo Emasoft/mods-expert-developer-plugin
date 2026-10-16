@@ -715,7 +715,7 @@ fi
 exit 0
 ```
 
-On macOS and Linux, when you create `./scripts/validate-readonly-query.sh`, give it the executable permission bit for its owner, or the hook fails instead of blocking anything.
+On macOS and Linux, when you create `./scripts/validate-readonly-query.sh`, make it executable with `chmod +x ./scripts/validate-readonly-query.sh`, or the hook fails instead of blocking anything.
 
 To test the rule, ask the subagent to run an `UPDATE` statement: the script exits with code 2, Claude Code blocks the command, and the subagent sees the `Blocked: Only SELECT queries are allowed` message.
 
@@ -1409,7 +1409,7 @@ fi
 exit 0
 ```
 
-On macOS and Linux, when you create `./scripts/validate-readonly-query.sh`, give it the executable permission bit for its owner.
+On macOS and Linux, when you create `./scripts/validate-readonly-query.sh`, make it executable with `chmod +x ./scripts/validate-readonly-query.sh`.
 
 On Windows, write the validation script in PowerShell and add `shell: powershell` to the hook entry. See [running hooks in PowerShell](https://code.claude.com/docs/en/hooks#windows-powershell-tool).
 

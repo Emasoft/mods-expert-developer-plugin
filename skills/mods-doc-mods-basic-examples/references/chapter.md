@@ -5,7 +5,7 @@
 - [Interface examples for mods](#interface-examples-for-mods)
   - [Try a sample](#try-a-sample)
   - [Pick an element](#pick-an-element)
-  - [Show text](#show-text)
+  - [Show text with markdown and links](#show-text-with-markdown-and-links)
   - [Show code and changes](#show-code-and-changes)
   - [Arrange elements](#arrange-elements)
   - [Take input](#take-input)
@@ -111,7 +111,7 @@ The samples are grouped by what you want to put on screen:
 * **[Take input](https://code.claude.com/docs/en/plugins/mods/gallery#take-input)**: `Button`, `Input`, and `Select`
 * **[Draw pictures](https://code.claude.com/docs/en/plugins/mods/gallery#draw-pictures)**: `Raster`, `Svg`, `Image`, and `Client`
 
-#### Show text
+#### Show text with markdown and links
 
 Three elements put words on screen: `Text` for your own styling, `Markdown` for content that's already formatted, and `Link` for a URL.
 

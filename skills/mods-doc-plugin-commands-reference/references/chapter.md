@@ -3,8 +3,8 @@
 ## Table of Contents
 
 - [Plugin commands reference](#plugin-commands-reference-1)
-  - [claude plugin commands](#claude-plugin-commands)
-  - [claude plugin marketplace commands](#claude-plugin-marketplace-commands)
+  - [Claude plugin commands for plugin lifecycle and validation](#claude-plugin-commands-for-plugin-lifecycle-and-validation)
+  - [Claude plugin marketplace commands and plugin reloading](#claude-plugin-marketplace-commands-and-plugin-reloading)
   - [Flags that load a plugin for one session](#flags-that-load-a-plugin-for-one-session)
   - [See Also:](#see-also)
 
@@ -28,7 +28,7 @@ The tables below list each subcommand's commonly used options, not every option.
   * **What an error message means**: see [Troubleshoot plugins](https://code.claude.com/docs/en/plugins/troubleshooting)
 </Note>
 
-#### claude plugin commands
+#### Claude plugin commands for plugin lifecycle and validation
 
 Run `claude plugin <subcommand>` from your shell or a script, outside a Claude Code session. These subcommands install and manage plugins without opening the [`/plugin`](https://code.claude.com/docs/en/plugins/cli-reference#plugin-in-a-session) panel.
 
@@ -654,7 +654,7 @@ With `--json`, Claude Code writes the report to stdout as one JSON object with t
 
 On exit `2`, the command writes nothing to stdout. The error message goes to stderr.
 
-#### claude plugin marketplace commands
+#### Claude plugin marketplace commands and plugin reloading
 
 Run `claude plugin marketplace <subcommand>` from your shell to add, list, refresh, and remove the marketplaces you install plugins from.
 

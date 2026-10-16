@@ -4,9 +4,9 @@
 
 - [Message your other Claude Code sessions](#message-your-other-claude-code-sessions)
   - [When to use cross-session messaging](#when-to-use-cross-session-messaging)
-  - [Message another session](#message-another-session)
-  - [How a session treats an incoming message](#how-a-session-treats-an-incoming-message)
-  - [Restrict cross-session messaging](#restrict-cross-session-messaging)
+  - [Send messages and track other sessions on any machine](#send-messages-and-track-other-sessions-on-any-machine)
+  - [How a session handles incoming messages and inbound controls](#how-a-session-handles-incoming-messages-and-inbound-controls)
+  - [Restrict or turn off cross-session messaging](#restrict-or-turn-off-cross-session-messaging)
   - [Availability](#availability)
   - [Limitations](#limitations)
   - [Related resources](#related-resources)
@@ -36,7 +36,7 @@ Use messaging when one of your sessions has something another session needs mid-
 * **Get status from long-running work**: have a migration or test run report back to the session you're watching, or ask it yourself from there. If that session is on this machine, Claude can also [ask it for one notice when it next goes idle or exits](https://code.claude.com/docs/en/cross-session-messaging#get-a-notice-when-another-session-goes-idle).
 * **Message across machines**: reach one of your sessions on another machine or in the cloud.
 
-#### Message another session
+#### Send messages and track other sessions on any machine
 
 When one of your sessions learns something another session needs, such as a finding, a status, or a decision, Claude passes it along instead of you copy-pasting between terminals. Claude discovers the target with `ListAgents` and sends with `SendMessage`, so you never call either tool yourself. Claude can decide to send a message without being asked, and you can also prompt for one.
 
@@ -167,7 +167,7 @@ If this session isn't connected to Remote Control when Claude sends to a session
 
 To require your approval before any message goes beyond this machine, set [`isolatePeerMachines`](https://code.claude.com/docs/en/cross-session-messaging#require-approval-for-cross-machine-messages).
 
-#### How a session treats an incoming message
+#### How a session handles incoming messages and inbound controls
 
 When session A messages session B, Claude Code tells B's Claude that the message came from another session, not from you, and limits what the message can do:
 
@@ -276,7 +276,7 @@ Open the connection only when the message you're posting is ready. Claude Code c
   * When Claude Code can verify neither way, it treats the message like any other that asserts no permission class, so a session that bypasses permission prompts holds it for your approval.
 * **Sandboxed sessions**: control whether a Bash command can reach the socket from inside the [sandbox](https://code.claude.com/docs/en/sandboxing) with the sandbox's Unix-socket settings, [`sandbox.network.allowAllUnixSockets` and `sandbox.network.allowUnixSockets`](https://code.claude.com/docs/en/settings-reference#sandbox-settings).
 
-#### Restrict cross-session messaging
+#### Restrict or turn off cross-session messaging
 
 Beyond the per-message defaults, you can narrow messaging in two ways. Require your approval before any message leaves the machine, or turn messaging off for a session or an organization.
 

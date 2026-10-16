@@ -5,7 +5,7 @@
 - [Recommend plugins for your org](#recommend-plugins-for-your-org)
   - [Understand how plugin relevance works](#understand-how-plugin-relevance-works)
   - [Add relevance to a plugin entry](#add-relevance-to-a-plugin-entry)
-  - [Field reference](#field-reference)
+  - [Relevance field reference and signal matching](#relevance-field-reference-and-signal-matching)
   - [Validate your marketplace](#validate-your-marketplace)
   - [Enable suggestions in managed settings](#enable-suggestions-in-managed-settings)
   - [Preview what the user sees](#preview-what-the-user-sees)
@@ -82,7 +82,7 @@ While none of its signals match, the plugin keeps its normal position in the Dis
 
 To check the block before publishing, [validate your marketplace](https://code.claude.com/docs/en/plugins/relevance#validate-your-marketplace).
 
-#### Field reference
+#### Relevance field reference and signal matching
 
 The `relevance` object and its nested `signals` object accept the fields in the following tables.
 

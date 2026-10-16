@@ -45,7 +45,7 @@ Full chapter: [the chapter](references/chapter.md), with the section-level CHANN
   - [Supported channels](references/chapter.md#supported-channels)
   - [Quickstart](references/chapter.md#quickstart)
   - [Security](references/chapter.md#security)
-  - [Enterprise controls](references/chapter.md#enterprise-controls)
+  - [Enterprise controls for enabling and restricting channels](references/chapter.md#enterprise-controls-for-enabling-and-restricting-channels)
   - [Research preview](references/chapter.md#research-preview)
   - [How channels compare](references/chapter.md#how-channels-compare)
   - [Next steps](references/chapter.md#next-steps)

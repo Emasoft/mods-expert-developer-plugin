@@ -3,15 +3,15 @@
 ## Table of Contents
 
 - [Model configuration](#model-configuration)
-  - [Available models](#available-models)
-  - [Restrict model selection](#restrict-model-selection)
+  - [Available models and how to choose and set them](#available-models-and-how-to-choose-and-set-them)
+  - [Restrict and enforce model selection](#restrict-and-enforce-model-selection)
   - [Organization default model](#organization-default-model)
   - [Organization effort limits](#organization-effort-limits)
-  - [Special model behavior](#special-model-behavior)
+  - [Special model behavior and tuning](#special-model-behavior-and-tuning)
   - [Context window and auto-compaction](#context-window-and-auto-compaction)
   - [Checking your current model](#checking-your-current-model)
   - [Add a custom model option](#add-a-custom-model-option)
-  - [Environment variables](#environment-variables)
+  - [Model environment variables for pinning and caching](#model-environment-variables-for-pinning-and-caching)
   - [Version history](#version-history)
 
 > ## Documentation Index
@@ -22,7 +22,7 @@
 
 > Configure which model Claude Code uses, effort levels, extended context, and the auto-compact window
 
-#### Available models
+#### Available models and how to choose and set them
 
 For the `model` setting in Claude Code, you can configure either:
 
@@ -241,7 +241,7 @@ When you pick a model with `/model` and your next session starts on something el
 * **Claude Code couldn't save your choice.** `/model` writes `model` to `~/.claude/settings.json`. If you can't write to that file, for example because another tool generates it or links it to a read-only copy, the model you chose lasts for the session and the next launch reads the old value. Set `model` in the tool that generates the file, or make the file writable. See [A change you made in Claude Code is lost in new sessions](https://code.claude.com/docs/en/settings#a-change-you-made-in-claude-code-is-lost-in-new-sessions).
 * **You resumed a session.** A session you resume with `claude --resume` or `--continue` usually [keeps the model it was using](https://code.claude.com/docs/en/model-config#setting-your-model) rather than your current default.
 
-#### Restrict model selection
+#### Restrict and enforce model selection
 
 Administrators can use `availableModels` in [managed or policy settings](https://code.claude.com/docs/en/managed-settings) to restrict which models users can select. Entries match a model family such as `sonnet`, a version prefix such as `claude-sonnet-4-5`, or a full model ID such as `claude-sonnet-4-5-20250929`. A version prefix also matches later model IDs that extend it with another segment, so `claude-fable-5` permits both Fable 5 and Fable 5.1, while `claude-fable-5-1` permits Fable 5.1 only. To block a model the list permits, or to make each model ID entry permit only the version it names, see [Block specific models or versions](https://code.claude.com/docs/en/model-config#block-specific-models-or-versions).
 
@@ -462,7 +462,7 @@ Organization admins on Claude Enterprise plans can set a maximum [effort level](
 
 Effort limits are delivered together with [organization model restrictions](https://code.claude.com/docs/en/model-config#organization-model-restrictions) and reach the same sessions.
 
-#### Special model behavior
+#### Special model behavior and tuning
 
 ##### `default` model setting
 
@@ -872,7 +872,7 @@ When [`availableModels`](https://code.claude.com/docs/en/model-config#restrict-m
 
 A custom ID that embeds a family name, such as `my-gateway/claude-opus-5-5`, counts as a specific entry for that family and disables its wildcard, so also list the versions you intend to keep selectable. See [Merge behavior](https://code.claude.com/docs/en/model-config#merge-behavior).
 
-#### Environment variables
+#### Model environment variables for pinning and caching
 
 Use the following environment variables to control the model names that the aliases map to. Each value must be a full model name, or the equivalent identifier for your API provider. To choose the model your sessions start on, set [`ANTHROPIC_DEFAULT_MODEL`](https://code.claude.com/docs/en/model-config#set-a-default-model-for-new-sessions), which this table omits.
 

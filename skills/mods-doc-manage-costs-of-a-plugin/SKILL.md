@@ -35,14 +35,14 @@ If an anchor misses, search the MANAGE COSTS OF A PLUGIN headings for the entry 
 
 ## Examples
 
-Input: a task about "Measure what a plugin costs". Output: open [Measure what a plugin costs](references/chapter.md#measure-what-a-plugin-costs) and read that section only.
+Input: a task about "Measure and reduce what a plugin costs". Output: open [Measure and reduce what a plugin costs](references/chapter.md#measure-and-reduce-what-a-plugin-costs) and read that section only.
 
 ## Resources
 
 Full chapter: [the chapter](references/chapter.md), with the section-level MANAGE COSTS OF A PLUGIN table of contents:
 
 - [Measure plugin cost and usage](references/chapter.md#measure-plugin-cost-and-usage)
-  - [Measure what a plugin costs](references/chapter.md#measure-what-a-plugin-costs)
+  - [Measure and reduce what a plugin costs](references/chapter.md#measure-and-reduce-what-a-plugin-costs)
   - [Check whether a plugin is used](references/chapter.md#check-whether-a-plugin-is-used)
-  - [Measure across a fleet](references/chapter.md#measure-across-a-fleet)
+  - [Measure across a fleet with the Analytics API](references/chapter.md#measure-across-a-fleet-with-the-analytics-api)
   - [Related Docs](references/chapter.md#related-docs)

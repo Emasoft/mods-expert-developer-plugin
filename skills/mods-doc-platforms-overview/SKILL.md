@@ -45,4 +45,4 @@ Full chapter: [the chapter](references/chapter.md), with the section-level PLATF
   - [Where to run Claude Code](references/chapter.md#where-to-run-claude-code)
   - [Connect your tools](references/chapter.md#connect-your-tools)
   - [Work when you are away from your terminal](references/chapter.md#work-when-you-are-away-from-your-terminal)
-  - [Related resources](references/chapter.md#related-resources)
+  - [Related platform integration and remote access resources](references/chapter.md#related-platform-integration-and-remote-access-resources)

@@ -35,16 +35,16 @@ If an anchor misses, search the PLUGINS SECURITY AND TRUST headings for the entr
 
 ## Examples
 
-Input: a task about "Understand what a plugin can do". Output: open [Understand what a plugin can do](references/chapter.md#understand-what-a-plugin-can-do) and read that section only.
+Input: a task about "Understand what a plugin can do and official marketplace names". Output: open [Understand what a plugin can do and official marketplace names](references/chapter.md#understand-what-a-plugin-can-do-and-official-marketplace-names) and read that section only.
 
 ## Resources
 
 Full chapter: [the chapter](references/chapter.md), with the section-level PLUGINS SECURITY AND TRUST table of contents:
 
 - [Plugin security and trust](references/chapter.md#plugin-security-and-trust)
-  - [Understand what a plugin can do](references/chapter.md#understand-what-a-plugin-can-do)
-  - [Review a plugin before you install](references/chapter.md#review-a-plugin-before-you-install)
-  - [Recognize when Claude Code refuses or warns](references/chapter.md#recognize-when-claude-code-refuses-or-warns)
+  - [Understand what a plugin can do and official marketplace names](references/chapter.md#understand-what-a-plugin-can-do-and-official-marketplace-names)
+  - [Review a plugin before install and remove untrusted plugins](references/chapter.md#review-a-plugin-before-install-and-remove-untrusted-plugins)
+  - [Recognize trust warnings and failed integrity checks](references/chapter.md#recognize-trust-warnings-and-failed-integrity-checks)
   - [Enforce plugin controls for your organization](references/chapter.md#enforce-plugin-controls-for-your-organization)
   - [Find plugins in telemetry](references/chapter.md#find-plugins-in-telemetry)
   - [Related Docs](references/chapter.md#related-docs)

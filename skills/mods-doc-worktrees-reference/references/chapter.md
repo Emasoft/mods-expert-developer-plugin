@@ -3,16 +3,16 @@
 ## Table of Contents
 
 - [Run parallel sessions with worktrees](#run-parallel-sessions-with-worktrees)
-  - [Start Claude in a worktree](#start-claude-in-a-worktree)
+  - [Start Claude in a worktree and set up its environment](#start-claude-in-a-worktree-and-set-up-its-environment)
   - [Clean up worktrees](#clean-up-worktrees)
   - [Resume a worktree session](#resume-a-worktree-session)
   - [How Claude Code enforces isolation](#how-claude-code-enforces-isolation)
-  - [Isolate subagents with worktrees](#isolate-subagents-with-worktrees)
-  - [Customize worktree creation](#customize-worktree-creation)
+  - [Isolate subagents with worktrees and clean up their leftovers](#isolate-subagents-with-worktrees-and-clean-up-their-leftovers)
+  - [Customize worktree base branch PR source copied files and hooks](#customize-worktree-base-branch-pr-source-copied-files-and-hooks)
   - [What worktrees share with the main checkout](#what-worktrees-share-with-the-main-checkout)
   - [Manage worktrees manually](#manage-worktrees-manually)
   - [Non-git version control](#non-git-version-control)
-  - [Troubleshooting](#troubleshooting)
+  - [Troubleshoot worktree startup symlink refusal and resume problems](#troubleshoot-worktree-startup-symlink-refusal-and-resume-problems)
   - [See also](#see-also)
 
 > ## Documentation Index
@@ -33,7 +33,7 @@ Worktrees are one of several ways to run Claude in parallel. They isolate file e
 
 Most sessions need only the first two sections: [start Claude in a worktree](https://code.claude.com/docs/en/worktrees#start-claude-in-a-worktree), then [clean up when you exit](https://code.claude.com/docs/en/worktrees#clean-up-worktrees). Return to the rest of the page when you need to [resume a session](https://code.claude.com/docs/en/worktrees#resume-a-worktree-session), [change how worktrees are created](https://code.claude.com/docs/en/worktrees#customize-worktree-creation), or [debug a failure](https://code.claude.com/docs/en/worktrees#troubleshooting).
 
-#### Start Claude in a worktree
+#### Start Claude in a worktree and set up its environment
 
 Pass `--worktree` or `-w` with a name to create an isolated worktree and start Claude in it. By default, the worktree is created under `.claude/worktrees/<name>/` at your repository root, on a new branch named `worktree-<name>`:
 
@@ -115,7 +115,7 @@ The checks apply to the repository you launched Claude Code from. They also cove
 
 Claude sees each refusal as a tool error that names the worktree and says how to proceed. For a refused command, see [what the refusal message means and how to clear it](https://code.claude.com/docs/en/errors#command-blocked-by-the-worktree-isolation-checks).
 
-#### Isolate subagents with worktrees
+#### Isolate subagents with worktrees and clean up their leftovers
 
 Subagents can run in their own worktrees so parallel edits don't conflict. Ask Claude to "use worktrees for your agents", or make the isolation permanent for a [custom subagent](https://code.claude.com/docs/en/sub-agents#supported-frontmatter-fields) by adding `isolation: worktree` to its frontmatter.
 
@@ -158,7 +158,7 @@ The sweep also releases a lock Claude Code set for a session whose process has e
 
 To clean up a worktree that the sweep keeps, run `git worktree remove`, adding `--force` if the worktree has uncommitted changes or untracked files. If git refuses because the worktree is locked, run `git worktree unlock` on it first.
 
-#### Customize worktree creation
+#### Customize worktree base branch PR source copied files and hooks
 
 Claude Code's defaults for creating worktrees cover most sessions: it creates them under `.claude/worktrees/`, branches them from your repository's default branch, and checks out only tracked files. The options in this section change those defaults.
 
@@ -323,7 +323,7 @@ Pair it with a `WorktreeRemove` hook to clean up when the session ends. See the 
 
 A `WorktreeCreate` hook also lets you run [`/batch`](https://code.claude.com/docs/en/commands#all-commands) outside a git repository. Each `/batch` subagent then publishes its change with your project's version-control commands and, when it can't open a pull request, reports what it published instead. Running `/batch` outside a git repository requires Claude Code v2.1.281 or later.
 
-#### Troubleshooting
+#### Troubleshoot worktree startup symlink refusal and resume problems
 
 Claude Code reports the errors below when it creates a worktree, enters one at startup, or returns a resumed session to one.
 

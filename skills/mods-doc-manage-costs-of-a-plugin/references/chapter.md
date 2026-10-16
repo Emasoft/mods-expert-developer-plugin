@@ -3,9 +3,9 @@
 ## Table of Contents
 
 - [Measure plugin cost and usage](#measure-plugin-cost-and-usage)
-  - [Measure what a plugin costs](#measure-what-a-plugin-costs)
+  - [Measure and reduce what a plugin costs](#measure-and-reduce-what-a-plugin-costs)
   - [Check whether a plugin is used](#check-whether-a-plugin-is-used)
-  - [Measure across a fleet](#measure-across-a-fleet)
+  - [Measure across a fleet with the Analytics API](#measure-across-a-fleet-with-the-analytics-api)
   - [Related Docs](#related-docs)
 
 > ## Documentation Index
@@ -29,7 +29,7 @@ This page is for plugin authors and maintainers. If you administer Claude Code f
 
 Start with [Measure what a plugin costs](https://code.claude.com/docs/en/plugins/measure#measure-what-a-plugin-costs).
 
-#### Measure what a plugin costs
+#### Measure and reduce what a plugin costs
 
 To see what a plugin adds to Claude's context, run [`claude plugin details`](https://code.claude.com/docs/en/plugins/cli-reference#plugin-details) with the plugin's name. You run it in your shell, not at the prompt of a running Claude Code session. The plugin has to be loaded: installed, in a skills directory, or passed with `--plugin-dir` in the same command, as in `claude --plugin-dir ./formatter plugin details formatter`.
 
@@ -128,7 +128,7 @@ The `/doctor` checkup lists each user-installed skill, MCP server, and plugin, a
 
 On a Pro, Max, Team, or Enterprise plan, the `/usage` breakdown attributes recent usage to skills, subagents, plugins, and MCP servers as a share of the total. See [Using the `/usage` command](https://code.claude.com/docs/en/costs#using-the-/usage-command).
 
-#### Measure across a fleet
+#### Measure across a fleet with the Analytics API
 
 If you administer Claude Code for an organization, you can measure plugin cost and usage across every machine from either of these sources:
 

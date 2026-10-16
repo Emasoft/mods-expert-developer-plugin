@@ -5,21 +5,21 @@
 - [Tools reference](#tools-reference)
   - [Configure tools with permission rules and hooks](#configure-tools-with-permission-rules-and-hooks)
   - [Agent tool behavior](#agent-tool-behavior)
-  - [AskUserQuestion tool behavior](#askuserquestion-tool-behavior)
-  - [Bash tool behavior](#bash-tool-behavior)
-  - [Edit tool behavior](#edit-tool-behavior)
+  - [AskUserQuestion tool behavior and auto-continue timeout](#askuserquestion-tool-behavior-and-auto-continue-timeout)
+  - [Bash tool behavior, limits, and background commands](#bash-tool-behavior-limits-and-background-commands)
+  - [Edit tool behavior and non-UTF-8 files](#edit-tool-behavior-and-non-utf-8-files)
   - [EndConversation tool behavior](#endconversation-tool-behavior)
   - [Glob tool behavior](#glob-tool-behavior)
   - [Grep tool behavior](#grep-tool-behavior)
   - [LSP tool behavior](#lsp-tool-behavior)
-  - [Monitor tool](#monitor-tool)
+  - [Monitor tool and WebSocket sources](#monitor-tool-and-websocket-sources)
   - [NotebookEdit tool behavior](#notebookedit-tool-behavior)
-  - [PowerShell tool](#powershell-tool)
-  - [Read tool behavior](#read-tool-behavior)
-  - [SendFeedback tool behavior](#sendfeedback-tool-behavior)
+  - [PowerShell tool setup, shell selection, and limits](#powershell-tool-setup-shell-selection-and-limits)
+  - [Read tool behavior and large files](#read-tool-behavior-and-large-files)
+  - [SendFeedback tool behavior and Claude-drafted feedback](#sendfeedback-tool-behavior-and-claude-drafted-feedback)
   - [Task tool availability](#task-tool-availability)
-  - [WebFetch tool behavior](#webfetch-tool-behavior)
-  - [WebSearch tool behavior](#websearch-tool-behavior)
+  - [WebFetch tool behavior and availability](#webfetch-tool-behavior-and-availability)
+  - [WebSearch tool behavior and search limit](#websearch-tool-behavior-and-search-limit)
   - [Write tool behavior](#write-tool-behavior)
   - [Check which tools are available](#check-which-tools-are-available)
   - [See also](#see-also)
@@ -148,7 +148,7 @@ Where you see a subagent's permission prompts depends on whether it runs in the 
 
 To [limit what a subagent can reach](https://code.claude.com/docs/en/sub-agents#control-subagent-capabilities) in the first place, narrow its `tools` field, for example by leaving Bash off the list, or set deny rules in your settings.
 
-#### AskUserQuestion tool behavior
+#### AskUserQuestion tool behavior and auto-continue timeout
 
 Claude uses `AskUserQuestion` to ask you multiple-choice questions when it needs a decision or a clarification. Answer by picking an option, or type your own text through the `Other` row or the notes field.
 
@@ -162,7 +162,7 @@ After a question sits that long with no input, the dialog closes on its own: it 
 
 The timer never starts for a question Claude asks in a [background session](https://code.claude.com/docs/en/agent-view), in [screen reader mode](https://code.claude.com/docs/en/accessibility), or while the session is connected to [Remote Control](https://code.claude.com/docs/en/remote-control). Those questions wait until you answer them. The timeout applies only to `AskUserQuestion`'s multiple-choice questions; permission prompts, including plan approval, never auto-resolve on idle.
 
-#### Bash tool behavior
+#### Bash tool behavior, limits, and background commands
 
 The Bash tool runs each command in a separate process.
 
@@ -271,7 +271,7 @@ Whatever you list, these rules apply:
 * **Variable unset**: Claude Code takes the set of other capped kinds from configuration Anthropic delivers from the server, and that set can change over time, so set the variable when you need a set that doesn't change
 * **Permission-gating hooks**: even with every kind capped, Claude Code excludes from the cap a hook that can block or change the outcome of an action, and any MCP server that such a hook calls, so the kernel killing a permission-gating hook can't allow the action it was blocking
 
-#### Edit tool behavior
+#### Edit tool behavior and non-UTF-8 files
 
 The Edit tool performs exact string replacement. It takes an `old_string` and a `new_string` and replaces the first with the second. It doesn't use regex or fuzzy matching.
 
@@ -385,7 +385,7 @@ Claude Code keeps the tool inactive until you install a [code intelligence plugi
 
 Claude Code returns an error result for each LSP call on a file whose language server it can't start.
 
-#### Monitor tool
+#### Monitor tool and WebSocket sources
 
 The Monitor tool lets Claude watch something in the background and react when it changes, without pausing the conversation. Ask Claude to:
 
@@ -449,7 +449,7 @@ NotebookEdit refuses a notebook file that doesn't decode as UTF-8, under the [sa
 
 Permission rules use the `Edit(...)` path format. A rule like `Edit(notebooks/**)` covers NotebookEdit calls on files in that directory.
 
-#### PowerShell tool
+#### PowerShell tool setup, shell selection, and limits
 
 The PowerShell tool lets Claude run PowerShell commands natively. On Windows, this means commands run in PowerShell instead of routing through Git Bash. How the tool becomes available depends on your platform:
 
@@ -523,7 +523,7 @@ The PowerShell tool has the following known limitations during the preview:
 * PowerShell profiles are not loaded
 * On Windows, sandboxing is not supported
 
-#### Read tool behavior
+#### Read tool behavior and large files
 
 The Read tool takes a file path and returns the contents with line numbers. Claude is instructed to always pass absolute paths.
 
@@ -546,7 +546,7 @@ What Claude receives when a read goes over the default limits:
 * **Whole file over the token limit**: the first page of the file, with a `PARTIAL view` notice saying how much of the file it received and how to read more with `offset` and `limit`
 * **Whole file over 256 KB, or an `offset` or `limit` read over the token limit**: an error telling it to read a portion with `offset` and `limit`, or to search for specific content with [Grep](https://code.claude.com/docs/en/tools-reference#grep-tool-behavior) instead
 
-#### SendFeedback tool behavior
+#### SendFeedback tool behavior and Claude-drafted feedback
 
 Claude-drafted feedback is a feedback report about Claude Code that Claude writes for you. It requires Claude Code v2.1.238 or later. Claude Code saves each draft on your machine under `~/.claude/feedback/drafts/`, and nothing reaches Anthropic until you send it. Claude drafts one with the SendFeedback tool when:
 
@@ -623,7 +623,7 @@ Claude Code gives a subagent the tools only when your session has them, even whe
 
 The default set described here applies in Claude Code v2.1.268 and later.
 
-#### WebFetch tool behavior
+#### WebFetch tool behavior and availability
 
 WebFetch takes a URL and a prompt describing what to extract. It fetches the page and converts the response to Markdown when the server returns HTML. For most fetches, it then runs the prompt against the content in a separate model call, and Claude receives the result of that call rather than the raw page. The conversion step is not configurable.
 
@@ -663,7 +663,7 @@ If you sign in with a Team or Enterprise claude.ai account and don't connect thr
 
 If WebFetch is missing from a session, run `/status` in the session. If its `Organization policy` line reports that the policy didn't load and names web fetch among the features that wait for it, Claude Code is withholding WebFetch until it can confirm that your organization allows it. Outside a session, `claude doctor` makes its own request and prints the same line. Once a policy that allows WebFetch loads, the tool returns without a restart.
 
-#### WebSearch tool behavior
+#### WebSearch tool behavior and search limit
 
 WebSearch runs a query against Anthropic's [web search](https://platform.claude.com/docs/en/agents-and-tools/tool-use/web-search-tool) backend and returns result titles and URLs. It doesn't fetch the result pages. To read a page Claude finds in search results, it follows up with [WebFetch](https://code.claude.com/docs/en/tools-reference#webfetch-tool-behavior).
 

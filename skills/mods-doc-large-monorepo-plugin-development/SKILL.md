@@ -35,20 +35,20 @@ If an anchor misses, search the HOW TO USE A LARGE MONOREPO WITH CLAUDE (Usually
 
 ## Examples
 
-Input: a task about "What this guide covers". Output: open [What this guide covers](references/chapter.md#what-this-guide-covers) and read that section only.
+Input: a task about "What this guide covers with its settings and example monorepo". Output: open [What this guide covers with its settings and example monorepo](references/chapter.md#what-this-guide-covers-with-its-settings-and-example-monorepo) and read that section only.
 
 ## Resources
 
 Full chapter: [the chapter](references/chapter.md), with the section-level HOW TO USE A LARGE MONOREPO WITH CLAUDE (Usually the case when developing Plugins) table of contents:
 
 - [Set up Claude Code in a monorepo or large codebase](references/chapter.md#set-up-claude-code-in-a-monorepo-or-large-codebase)
-  - [What this guide covers](references/chapter.md#what-this-guide-covers)
+  - [What this guide covers with its settings and example monorepo](references/chapter.md#what-this-guide-covers-with-its-settings-and-example-monorepo)
   - [Choose where to start Claude](references/chapter.md#choose-where-to-start-claude)
   - [Layer CLAUDE.md files by directory](references/chapter.md#layer-claudemd-files-by-directory)
   - [Reduce what Claude reads](references/chapter.md#reduce-what-claude-reads)
   - [Scope worktrees and file access](references/chapter.md#scope-worktrees-and-file-access)
   - [Add per-directory skills](references/chapter.md#add-per-directory-skills)
-  - [Centralize conventions when layering stops scaling](references/chapter.md#centralize-conventions-when-layering-stops-scaling)
+  - [Centralize conventions and recommend plugins at session start](references/chapter.md#centralize-conventions-and-recommend-plugins-at-session-start)
   - [Put it together](references/chapter.md#put-it-together)
   - [Scope and plan changes that span packages](references/chapter.md#scope-and-plan-changes-that-span-packages)
   - [Next steps](references/chapter.md#next-steps)

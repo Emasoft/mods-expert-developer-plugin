@@ -4,11 +4,11 @@
 
 - [Extend Claude with skills](#extend-claude-with-skills)
   - [Bundled skills](#bundled-skills)
-  - [Getting started](#getting-started)
+  - [Create and manage skills](#create-and-manage-skills)
   - [Configure skills](#configure-skills)
-  - [Advanced patterns](#advanced-patterns)
+  - [Advanced skill behavior and visibility](#advanced-skill-behavior-and-visibility)
   - [Evaluate and iterate on a skill](#evaluate-and-iterate-on-a-skill)
-  - [Share skills](#share-skills)
+  - [Share skills and generate visual output](#share-skills-and-generate-visual-output)
   - [Troubleshooting](#troubleshooting)
   - [Related resources](#related-resources)
 
@@ -106,7 +106,7 @@ To start one of the skill's workflows, type a subcommand after the skill name at
 | `hillclimb` | Iteratively improve your app against an existing eval | v2.1.259 or later |
 | `preserved-thinking-migration` | Find the edits your integration makes to earlier turns, its system prompt, or its tool list that invalidate [preserved thinking](https://platform.claude.com/docs/en/build-with-claude/preserved-thinking) blocks, measure how much reasoning each one drops, and propose fixes one at a time, re-measuring after each change | v2.1.282 or later |
 
-#### Getting started
+#### Create and manage skills
 
 ##### Create your first skill
 
@@ -688,7 +688,7 @@ Migrate the $0 component from $1 to $2.
 Preserve all existing behavior and tests.
 ```
 
-#### Advanced patterns
+#### Advanced skill behavior and visibility
 
 ##### Inject dynamic context
 
@@ -968,7 +968,7 @@ If the install summary reports `Run /reload-plugins to apply.`, Claude Code then
 
 For the eval file format and the full iteration workflow, see [Evaluating skill output quality](https://agentskills.io/skill-creation/evaluating-skills) on agentskills.io. For background on the benchmark and comparison modes, see the [skill-creator announcement](https://claude.com/blog/improving-skill-creator-test-measure-and-refine-agent-skills).
 
-#### Share skills
+#### Share skills and generate visual output
 
 Skills can be distributed at different scopes depending on your audience:
 

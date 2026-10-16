@@ -35,13 +35,13 @@ If an anchor misses, search the PLUGINS DEPENDING ON OTHER PLUGINS headings for 
 
 ## Examples
 
-Input: a task about "Declare dependencies". Output: open [Declare dependencies](references/chapter.md#declare-dependencies) and read that section only.
+Input: a task about "Declare and release plugin dependencies with version constraints". Output: open [Declare and release plugin dependencies with version constraints](references/chapter.md#declare-and-release-plugin-dependencies-with-version-constraints) and read that section only.
 
 ## Resources
 
 Full chapter: [the chapter](references/chapter.md), with the section-level PLUGINS DEPENDING ON OTHER PLUGINS table of contents:
 
 - [Plugin dependencies](references/chapter.md#plugin-dependencies)
-  - [Declare dependencies](references/chapter.md#declare-dependencies)
-  - [How dependencies behave for your users](references/chapter.md#how-dependencies-behave-for-your-users)
+  - [Declare and release plugin dependencies with version constraints](references/chapter.md#declare-and-release-plugin-dependencies-with-version-constraints)
+  - [How dependency constraints resolve and combine for your users](references/chapter.md#how-dependency-constraints-resolve-and-combine-for-your-users)
   - [See also](references/chapter.md#see-also)

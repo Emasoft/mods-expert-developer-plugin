@@ -3,9 +3,9 @@
 ## Table of Contents
 
 - [Plugin security and trust](#plugin-security-and-trust)
-  - [Understand what a plugin can do](#understand-what-a-plugin-can-do)
-  - [Review a plugin before you install](#review-a-plugin-before-you-install)
-  - [Recognize when Claude Code refuses or warns](#recognize-when-claude-code-refuses-or-warns)
+  - [Understand what a plugin can do and official marketplace names](#understand-what-a-plugin-can-do-and-official-marketplace-names)
+  - [Review a plugin before install and remove untrusted plugins](#review-a-plugin-before-install-and-remove-untrusted-plugins)
+  - [Recognize trust warnings and failed integrity checks](#recognize-trust-warnings-and-failed-integrity-checks)
   - [Enforce plugin controls for your organization](#enforce-plugin-controls-for-your-organization)
   - [Find plugins in telemetry](#find-plugins-in-telemetry)
   - [Related Docs](#related-docs)
@@ -34,7 +34,7 @@ Read this page if you're deciding whether to install a plugin, or if you review 
 
 Start with [what a plugin can do](https://code.claude.com/docs/en/plugins/security#understand-what-a-plugin-can-do) and [which marketplaces are Anthropic's](https://code.claude.com/docs/en/plugins/security#marketplace-tiers), then [review the plugin before you install it](https://code.claude.com/docs/en/plugins/security#review-a-plugin-before-you-install).
 
-#### Understand what a plugin can do
+#### Understand what a plugin can do and official marketplace names
 
 A plugin can carry content that runs code on your machine with your user privileges and content that enters Claude's context as instructions, so [review a plugin before you install it](https://code.claude.com/docs/en/plugins/security#review-a-plugin-before-you-install). Here's what an installed plugin can do:
 
@@ -92,7 +92,7 @@ These marketplace names make up the official tier:
 
 For how the official, community, and demo marketplaces differ and where to browse what each one lists, see [Anthropic's marketplaces](https://code.claude.com/docs/en/plugins/anthropic-marketplaces).
 
-#### Review a plugin before you install
+#### Review a plugin before install and remove untrusted plugins
 
 Before you install a plugin, look at what it adds and where it comes from.
 
@@ -128,7 +128,7 @@ In your shell, run [`claude plugin uninstall <plugin>`](https://code.claude.com/
 * **Cached files**: the plugin's files stay on disk under `~/.claude/plugins/cache/` for 14 days before a [background sweep removes them](https://code.claude.com/docs/en/plugins/loading#cleanup-of-previous-versions). After you uninstall your last plugin, orphaned directories stay until you install another. To delete the files now, remove the plugin's directory under `~/.claude/plugins/cache/<marketplace>/<plugin>/` yourself.
 * **The marketplace**: if you don't trust the marketplace's owner either, [remove the marketplace](https://code.claude.com/docs/en/plugins/install#manage-marketplaces) too, which uninstalls every plugin you installed from it.
 
-#### Recognize when Claude Code refuses or warns
+#### Recognize trust warnings and failed integrity checks
 
 The details pane you open from the **Discover** or **Marketplaces** tab in `/plugin` shows the same trust warning for each plugin. Claude Code refuses instead of warning in cases such as those under [Untrusted marketplace sources and failed integrity checks](https://code.claude.com/docs/en/plugins/security#untrusted-marketplace-sources-and-failed-integrity-checks).
 

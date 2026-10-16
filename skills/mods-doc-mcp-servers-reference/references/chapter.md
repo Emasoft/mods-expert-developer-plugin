@@ -5,21 +5,21 @@
 - [Connect Claude Code to tools via MCP](#connect-claude-code-to-tools-via-mcp)
   - [What you can do with MCP](#what-you-can-do-with-mcp)
   - [Find and build MCP servers](#find-and-build-mcp-servers)
-  - [Installing MCP servers](#installing-mcp-servers)
-  - [MCP installation scopes](#mcp-installation-scopes)
-  - [Practical examples](#practical-examples)
-  - [Authenticate with remote MCP servers](#authenticate-with-remote-mcp-servers)
+  - [Install and manage MCP servers and their connections](#install-and-manage-mcp-servers-and-their-connections)
+  - [MCP installation scopes and environment variable expansion](#mcp-installation-scopes-and-environment-variable-expansion)
+  - [Practical examples with GitHub and PostgreSQL](#practical-examples-with-github-and-postgresql)
+  - [Authenticate with remote MCP servers using OAuth and headers](#authenticate-with-remote-mcp-servers-using-oauth-and-headers)
   - [Add MCP servers from JSON configuration](#add-mcp-servers-from-json-configuration)
   - [Import MCP servers from Claude Desktop](#import-mcp-servers-from-claude-desktop)
-  - [Use MCP servers from claude.ai](#use-mcp-servers-from-claudeai)
+  - [Use and control connectors from the Claude web app](#use-and-control-connectors-from-the-claude-web-app)
   - [Use Claude Code as an MCP server](#use-claude-code-as-an-mcp-server)
-  - [MCP output limits and warnings](#mcp-output-limits-and-warnings)
+  - [MCP output size limits warnings and images](#mcp-output-size-limits-warnings-and-images)
   - [Tool input schemas with a root-level combinator](#tool-input-schemas-with-a-root-level-combinator)
   - [Tools with invalid input schemas](#tools-with-invalid-input-schemas)
   - [Require approval for a specific tool](#require-approval-for-a-specific-tool)
   - [Respond to MCP elicitation requests](#respond-to-mcp-elicitation-requests)
   - [Use MCP resources](#use-mcp-resources)
-  - [Scale with MCP tool search](#scale-with-mcp-tool-search)
+  - [Scale with MCP tool search configuration and deferral](#scale-with-mcp-tool-search-configuration-and-deferral)
   - [Use MCP prompts as commands](#use-mcp-prompts-as-commands)
   - [Managed MCP configuration](#managed-mcp-configuration)
 
@@ -85,7 +85,7 @@ You can also have Claude scaffold a server for you with the official [`mcp-serve
   </Step>
 </Steps>
 
-#### Installing MCP servers
+#### Install and manage MCP servers and their connections
 
 MCP servers can be configured in several ways depending on your needs:
 
@@ -549,7 +549,7 @@ The server itself registers under the scoped name `plugin:<plugin-name>:<server-
 
 See the [plugin components reference](https://code.claude.com/docs/en/plugins/components#mcp-servers) for details on bundling MCP servers with plugins.
 
-#### MCP installation scopes
+#### MCP installation scopes and environment variable expansion
 
 MCP servers can be configured at three scopes. The scope you choose controls which projects the server loads in and whether the configuration is shared with your team. Administrators can also deploy or provide servers for every user via [managed configuration](https://code.claude.com/docs/en/mcp#managed-mcp-configuration).
 
@@ -719,7 +719,7 @@ For a server your organization provides through the `managedMcpServers` setting,
 
 To check what `claude mcp list`, `claude mcp get`, and `/mcp` show when a connection fails, see [Server status detail](https://code.claude.com/docs/en/mcp#server-status-detail).
 
-#### Practical examples
+#### Practical examples with GitHub and PostgreSQL
 
 ##### Example: Connect to GitHub for code reviews
 
@@ -771,7 +771,7 @@ Show me the schema for the orders table
 Find customers who haven't made a purchase in 90 days
 ```
 
-#### Authenticate with remote MCP servers
+#### Authenticate with remote MCP servers using OAuth and headers
 
 Many cloud-based MCP servers require authentication. Claude Code supports OAuth 2.0 for secure connections.
 
@@ -1141,7 +1141,7 @@ Server names added through `claude mcp` commands can contain only letters, numbe
   * If servers with the same names already exist, they get a numerical suffix (for example, `server_1`)
 </Tip>
 
-#### Use MCP servers from claude.ai
+#### Use and control connectors from the Claude web app
 
 If you've logged into Claude Code with a [claude.ai](https://claude.ai) account, MCP servers you've added in claude.ai, known as [connectors](https://claude.com/docs/connectors), are automatically available in Claude Code:
 
@@ -1299,7 +1299,7 @@ You can use this in Claude Desktop by adding this configuration to claude\_deskt
   * This MCP server only exposes Claude Code's tools to your MCP client, so your own client is responsible for implementing user confirmation for individual tool calls.
 </Tip>
 
-#### MCP output limits and warnings
+#### MCP output size limits warnings and images
 
 When MCP tools produce large outputs, Claude Code helps manage the token usage to prevent overwhelming your conversation context:
 
@@ -1460,7 +1460,7 @@ MCP servers can expose resources that you can reference using @ mentions, simila
 
 MCP Apps UI resources are entries with a `ui://` URI or the `text/html;profile=mcp-app` media type: pages for a host application to render rather than content for Claude to read. They don't appear in the `@` suggestions or in the resource list tool's results, and a server that offers only UI resources shows an empty resource list. Reading a UI resource by its URI still works.
 
-#### Scale with MCP tool search
+#### Scale with MCP tool search configuration and deferral
 
 Tool search keeps MCP context usage low by deferring tool definitions until Claude needs them. Only tool names and server instructions load at session start, so adding more MCP servers has minimal impact on your context window. Claude Code doesn't impose a fixed per-server tool cap; the practical limit is your context window budget.
 

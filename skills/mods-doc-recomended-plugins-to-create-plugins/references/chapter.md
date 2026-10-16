@@ -7,7 +7,7 @@
 - [Overview](#overview)
 - [Guided Workflow Command](#guided-workflow-command)
   - [/plugin-dev:create-plugin](#plugin-devcreate-plugin)
-- [Skills](#skills)
+- [Plugin development skills](#plugin-development-skills)
   - [1. hook-development](#1-hook-development)
   - [2. mcp-integration](#2-mcp-integration)
   - [3. plugin-structure](#3-plugin-structure)
@@ -19,13 +19,13 @@
 - [Quick Start](#quick-start)
   - [Creating Your First Plugin](#creating-your-first-plugin)
 - [Development Workflow](#development-workflow)
-- [Features](#features)
+- [Toolkit features and bundled resources](#toolkit-features-and-bundled-resources)
   - [Progressive Disclosure](#progressive-disclosure)
   - [Utility Scripts](#utility-scripts)
   - [Working Examples](#working-examples)
 - [Documentation Standards](#documentation-standards)
 - [Total Content](#total-content)
-- [Use Cases](#use-cases)
+- [Example plugin use cases](#example-plugin-use-cases)
   - [Building a Database Plugin](#building-a-database-plugin)
   - [Creating a Validation Plugin](#creating-a-validation-plugin)
   - [Integrating External Services](#integrating-external-services)
@@ -90,7 +90,7 @@ A comprehensive, end-to-end workflow command for creating plugins from scratch, 
 
 Use this workflow for structured, high-quality plugin development from concept to completion.
 
-### Skills
+### Plugin development skills
 
 #### 1. hook-development
 
@@ -296,7 +296,7 @@ The plugin-dev toolkit supports your entire plugin development lifecycle:
            │                 hook-linter.sh
 ```
 
-### Features
+### Toolkit features and bundled resources
 
 #### Progressive Disclosure
 
@@ -347,7 +347,7 @@ All skills follow consistent standards:
 - **Examples**: 12+ working examples (hook scripts, MCP configs, plugin layouts, settings files)
 - **Utilities**: 6 production-ready validation/testing/parsing scripts
 
-### Use Cases
+### Example plugin use cases
 
 #### Building a Database Plugin
 

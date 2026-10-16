@@ -35,20 +35,20 @@ If an anchor misses, search the PLUGIN MANIFEST REFERENCE headings for the entry
 
 ## Examples
 
-Input: a task about "Manifest file". Output: open [Manifest file](references/chapter.md#manifest-file) and read that section only.
+Input: a task about "Manifest file structure and validation". Output: open [Manifest file structure and validation](references/chapter.md#manifest-file-structure-and-validation) and read that section only.
 
 ## Resources
 
 Full chapter: [the chapter](references/chapter.md), with the section-level PLUGIN MANIFEST REFERENCE table of contents:
 
 - [Plugin manifest reference](references/chapter.md#plugin-manifest-reference-1)
-  - [Manifest file](references/chapter.md#manifest-file)
-  - [Fields](references/chapter.md#fields)
-  - [Component path forms](references/chapter.md#component-path-forms)
-  - [Path rules](references/chapter.md#path-rules)
-  - [User configuration](references/chapter.md#user-configuration)
+  - [Manifest file structure and validation](references/chapter.md#manifest-file-structure-and-validation)
+  - [Manifest fields for identity metadata and defaults](references/chapter.md#manifest-fields-for-identity-metadata-and-defaults)
+  - [Component path forms and per-component configuration](references/chapter.md#component-path-forms-and-per-component-configuration)
+  - [Path rules covering containment and default locations](references/chapter.md#path-rules-covering-containment-and-default-locations)
+  - [User configuration options and saved value handling](references/chapter.md#user-configuration-options-and-saved-value-handling)
   - [Channels](references/chapter.md#channels)
-  - [Environment variables](references/chapter.md#environment-variables)
+  - [Environment variable resolution and quoting](references/chapter.md#environment-variable-resolution-and-quoting)
   - [Standard layout](references/chapter.md#standard-layout)
-  - [Marketplace entries and the manifest](references/chapter.md#marketplace-entries-and-the-manifest)
+  - [Marketplace entries and how they combine with the manifest](references/chapter.md#marketplace-entries-and-how-they-combine-with-the-manifest)
   - [Related Docs](references/chapter.md#related-docs)

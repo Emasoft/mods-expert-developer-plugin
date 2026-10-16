@@ -35,16 +35,16 @@ If an anchor misses, search the INSTALL AND MANAGE PLUGINS headings for the entr
 
 ## Examples
 
-Input: a task about "Install a plugin". Output: open [Install a plugin](references/chapter.md#install-a-plugin) and read that section only.
+Input: a task about "Install plugins with a chosen scope from session or shell". Output: open [Install plugins with a chosen scope from session or shell](references/chapter.md#install-plugins-with-a-chosen-scope-from-session-or-shell) and read that section only.
 
 ## Resources
 
 Full chapter: [the chapter](references/chapter.md), with the section-level INSTALL AND MANAGE PLUGINS table of contents:
 
 - [Install and manage plugins](references/chapter.md#install-and-manage-plugins-1)
-  - [Install a plugin](references/chapter.md#install-a-plugin)
-  - [Add a marketplace](references/chapter.md#add-a-marketplace)
-  - [Manage installed plugins](references/chapter.md#manage-installed-plugins)
+  - [Install plugins with a chosen scope from session or shell](references/chapter.md#install-plugins-with-a-chosen-scope-from-session-or-shell)
+  - [Add public and private marketplaces and install in one step](references/chapter.md#add-public-and-private-marketplaces-and-install-in-one-step)
+  - [Manage installed plugins and their dependencies and usage](references/chapter.md#manage-installed-plugins-and-their-dependencies-and-usage)
   - [Keep plugins updated](references/chapter.md#keep-plugins-updated)
   - [Manage marketplaces](references/chapter.md#manage-marketplaces)
   - [Related Docs](references/chapter.md#related-docs)

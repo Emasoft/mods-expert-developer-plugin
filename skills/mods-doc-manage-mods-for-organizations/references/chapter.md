@@ -6,8 +6,8 @@
   - [Stop user-installed mods from loading](#stop-user-installed-mods-from-loading)
   - [Know what happens by default](#know-what-happens-by-default)
   - [Decide whether to leave mods on](#decide-whether-to-leave-mods-on)
-  - [Choose how much to allow](#choose-how-much-to-allow)
-  - [Run your organization's own mods](#run-your-organizations-own-mods)
+  - [Choose how much to allow and tune the built-in guard](#choose-how-much-to-allow-and-tune-the-built-in-guard)
+  - [Run your own organization mods and enforce policy](#run-your-own-organization-mods-and-enforce-policy)
   - [Related Docs](#related-docs)
 
 > ## Documentation Index
@@ -149,7 +149,7 @@ Look at the `calls:` line for these:
 
 In the `hooks:` line, [`tool.call`](https://code.claude.com/docs/en/plugins/mods/reference#tools) and [`prompt.submit`](https://code.claude.com/docs/en/plugins/mods/reference#prompts-and-what-claude-reads) mean the mod sees every tool call and every prompt, and can change them. [`session.append`](https://code.claude.com/docs/en/plugins/mods/reference#session) means the mod can rewrite each row of the conversation before it's stored. [`ui.render{component=AskUserQuestion}`](https://code.claude.com/docs/en/plugins/mods/interface#change-what-claude-code-already-draws) means the mod can redraw the dialog Claude uses to ask the user a question. `tool.check` means the mod can approve or deny a tool call before a permission prompt appears. [Know what happens by default](https://code.claude.com/docs/en/plugins/mods/admin#know-what-happens-by-default) lists which of your rules and hooks take precedence over its answer.
 
-#### Choose how much to allow
+#### Choose how much to allow and tune the built-in guard
 
 Mod policies range from no installed mods at all to any mod a user chooses, with your own mod checking the others, and each one is a few managed settings. Find the policy you want in the first column and set what the second column names. [Deploy managed settings](https://code.claude.com/docs/en/managed-settings) covers where managed settings live.
 
@@ -239,7 +239,7 @@ These rules decide whether an option takes effect:
 
 The [messages from the built-in guard](https://code.claude.com/docs/en/plugins/mods/troubleshoot#messages-from-the-built-in-guard) are what your users see when either option applies.
 
-#### Run your organization's own mods
+#### Run your own organization mods and enforce policy
 
 You can deploy mods of your own to every user, choose where they run relative to users' mods, and use one to enforce a policy.
 

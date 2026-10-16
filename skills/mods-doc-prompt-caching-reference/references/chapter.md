@@ -3,11 +3,11 @@
 ## Table of Contents
 
 - [How Claude Code uses prompt caching](#how-claude-code-uses-prompt-caching)
-  - [How the cache is organized](#how-the-cache-is-organized)
+  - [How the cache is organized and where it lives](#how-the-cache-is-organized-and-where-it-lives)
   - [Actions that invalidate the cache](#actions-that-invalidate-the-cache)
   - [Actions that keep the cache](#actions-that-keep-the-cache)
   - [Resuming a session](#resuming-a-session)
-  - [Cache lifetime](#cache-lifetime)
+  - [Cache lifetime and TTL selection](#cache-lifetime-and-ttl-selection)
   - [Cache scope](#cache-scope)
   - [Check cache performance](#check-cache-performance)
   - [Subagents and the cache](#subagents-and-the-cache)
@@ -26,7 +26,7 @@ Prompt caching makes Claude Code faster and more cost-efficient. Without caching
 
 Claude Code handles prompt caching for you, unless you [disable it](https://code.claude.com/docs/en/prompt-caching#disable-prompt-caching). It is still useful to know how prompt caching works, because some actions invalidate the cache and make the next response slower and more expensive while it rebuilds. This page covers which actions those are, why some settings wait for a restart to apply, and how to check cache performance when usage looks high.
 
-#### How the cache is organized
+#### How the cache is organized and where it lives
 
 Each time you send a message in Claude Code, it makes a new API request. The model doesn't remember anything between requests, so Claude Code re-sends the full context: the system prompt, your project context, every prior message and tool result, and your new message. New content is appended at the end, which means most of each request is identical to the one before it. Prompt caching is how the API avoids reprocessing the part that didn't change.
 
@@ -266,7 +266,7 @@ When you [resume a session](https://code.claude.com/docs/en/sessions#resume-a-se
 
 The system prompt would change after a [Claude Code upgrade](https://code.claude.com/docs/en/prompt-caching#upgrading-claude-code) or with different [`--append-system-prompt`](https://code.claude.com/docs/en/cli-reference#system-prompt-flags) text on the resume. By default, the resumed conversation keeps the system prompt it started with, so its history still sits behind the same prompt, and the change takes effect once the conversation is compacted or in a new conversation. [System prompt flags in resumed conversations](https://code.claude.com/docs/en/cli-reference#system-prompt-flags-in-resumed-conversations) covers the cases where Claude Code rebuilds the prompt on every request instead.
 
-#### Cache lifetime
+#### Cache lifetime and TTL selection
 
 Cached prefixes expire after a period of inactivity. Each request that hits the cache resets the timer, so the cache stays warm as long as you keep working. After a long enough gap, the next request recomputes the full input and re-establishes the cache, which is why the first turn back after stepping away can be noticeably slower.
 

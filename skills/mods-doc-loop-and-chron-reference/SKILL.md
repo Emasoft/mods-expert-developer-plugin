@@ -43,10 +43,10 @@ Full chapter: [the chapter](references/chapter.md), with the section-level LOOP 
 
 - [Run prompts on a schedule](references/chapter.md#run-prompts-on-a-schedule)
   - [Compare scheduling options](references/chapter.md#compare-scheduling-options)
-  - [Run a prompt repeatedly with /loop](references/chapter.md#run-a-prompt-repeatedly-with-loop)
+  - [Run repeating prompts with loop and customize or stop them](references/chapter.md#run-repeating-prompts-with-loop-and-customize-or-stop-them)
   - [Set a one-time reminder](references/chapter.md#set-a-one-time-reminder)
   - [Manage scheduled tasks](references/chapter.md#manage-scheduled-tasks)
-  - [How scheduled tasks run](references/chapter.md#how-scheduled-tasks-run)
+  - [How scheduled tasks run with jitter and expiry](references/chapter.md#how-scheduled-tasks-run-with-jitter-and-expiry)
   - [Cron expression reference](references/chapter.md#cron-expression-reference)
   - [Disable scheduled tasks](references/chapter.md#disable-scheduled-tasks)
   - [Limitations](references/chapter.md#limitations)

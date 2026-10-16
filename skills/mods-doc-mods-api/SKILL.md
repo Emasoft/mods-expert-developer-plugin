@@ -43,8 +43,8 @@ Full chapter: [the chapter](references/chapter.md), with the section-level MODS 
 
 - [Use the mods API](references/chapter.md#use-the-mods-api)
   - [Add a command or a tool](references/chapter.md#add-a-command-or-a-tool)
-  - [Call a model](references/chapter.md#call-a-model)
-  - [Run work in the background](references/chapter.md#run-work-in-the-background)
+  - [Call a model with prompts and caching](references/chapter.md#call-a-model-with-prompts-and-caching)
+  - [Run and control background work](references/chapter.md#run-and-control-background-work)
   - [Send and receive messages between sessions](references/chapter.md#send-and-receive-messages-between-sessions)
   - [Reach files, processes, and the network](references/chapter.md#reach-files-processes-and-the-network)
   - [Related Topics](references/chapter.md#related-topics)

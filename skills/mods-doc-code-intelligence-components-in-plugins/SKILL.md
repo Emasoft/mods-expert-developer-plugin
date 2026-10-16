@@ -43,8 +43,8 @@ Full chapter: [the chapter](references/chapter.md), with the section-level CODE 
 
 - [Code intelligence plugins](references/chapter.md#code-intelligence-plugins)
   - [Install a code intelligence plugin](references/chapter.md#install-a-code-intelligence-plugin)
-  - [See what Claude gains](references/chapter.md#see-what-claude-gains)
-  - [Accept or dismiss the recommendation dialog](references/chapter.md#accept-or-dismiss-the-recommendation-dialog)
+  - [See what Claude gains and view diagnostics](references/chapter.md#see-what-claude-gains-and-view-diagnostics)
+  - [Handle the plugin recommendation dialog](references/chapter.md#handle-the-plugin-recommendation-dialog)
   - [Troubleshoot code intelligence](references/chapter.md#troubleshoot-code-intelligence)
   - [Add a language without an official plugin](references/chapter.md#add-a-language-without-an-official-plugin)
   - [Related Docs](references/chapter.md#related-docs)

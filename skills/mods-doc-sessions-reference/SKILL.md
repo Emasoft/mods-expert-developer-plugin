@@ -47,5 +47,5 @@ Full chapter: [the chapter](references/chapter.md), with the section-level SESSI
   - [Use the session picker](references/chapter.md#use-the-session-picker)
   - [Branch a session](references/chapter.md#branch-a-session)
   - [Manage context within a session](references/chapter.md#manage-context-within-a-session)
-  - [Export and locate session data](references/chapter.md#export-and-locate-session-data)
+  - [Access and manage stored session data](references/chapter.md#access-and-manage-stored-session-data)
   - [See also](references/chapter.md#see-also)

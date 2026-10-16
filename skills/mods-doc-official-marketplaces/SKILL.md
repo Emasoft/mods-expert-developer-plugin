@@ -35,15 +35,15 @@ If an anchor misses, search the ANTHROPIC MARKETPLACES headings for the entry ti
 
 ## Examples
 
-Input: a task about "Anthropic's marketplaces". Output: open [Anthropic's marketplaces](references/chapter.md#anthropics-marketplaces-1) and read that section only.
+Input: a task about "Anthropic marketplaces and the demo marketplace". Output: open [Anthropic marketplaces and the demo marketplace](references/chapter.md#anthropic-marketplaces-and-the-demo-marketplace) and read that section only.
 
 ## Resources
 
 Full chapter: [the chapter](references/chapter.md), with the section-level ANTHROPIC MARKETPLACES table of contents:
 
 - [Anthropic's marketplaces](references/chapter.md#anthropics-marketplaces)
-  - [Anthropic's marketplaces](references/chapter.md#anthropics-marketplaces-1)
+  - [Anthropic marketplaces and the demo marketplace](references/chapter.md#anthropic-marketplaces-and-the-demo-marketplace)
   - [Find plugins in the official marketplace](references/chapter.md#find-plugins-in-the-official-marketplace)
-  - [Browse and install from Anthropic's marketplaces](references/chapter.md#browse-and-install-from-anthropics-marketplaces)
+  - [Browse, install, and add Anthropic marketplaces](references/chapter.md#browse-install-and-add-anthropic-marketplaces)
   - [Third-party marketplaces](references/chapter.md#third-party-marketplaces)
   - [Related Docs](references/chapter.md#related-docs)

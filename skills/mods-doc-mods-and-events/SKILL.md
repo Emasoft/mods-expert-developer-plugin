@@ -35,14 +35,14 @@ If an anchor misses, search the MODS AND EVENTS headings for the entry title; if
 
 ## Examples
 
-Input: a task about "How a hook handles an event". Output: open [How a hook handles an event](references/chapter.md#how-a-hook-handles-an-event) and read that section only.
+Input: a task about "How a hook handles and filters an event". Output: open [How a hook handles and filters an event](references/chapter.md#how-a-hook-handles-and-filters-an-event) and read that section only.
 
 ## Resources
 
 Full chapter: [the chapter](references/chapter.md), with the section-level MODS AND EVENTS table of contents:
 
 - [React to events with a mod](references/chapter.md#react-to-events-with-a-mod)
-  - [How a hook handles an event](references/chapter.md#how-a-hook-handles-an-event)
-  - [Hook what Claude is doing](references/chapter.md#hook-what-claude-is-doing)
-  - [Run alongside other mods](references/chapter.md#run-alongside-other-mods)
+  - [How a hook handles and filters an event](references/chapter.md#how-a-hook-handles-and-filters-an-event)
+  - [Hook tool calls prompts and turns](references/chapter.md#hook-tool-calls-prompts-and-turns)
+  - [Mod ordering and failure handling alongside other mods](references/chapter.md#mod-ordering-and-failure-handling-alongside-other-mods)
   - [Related Topics](references/chapter.md#related-topics)

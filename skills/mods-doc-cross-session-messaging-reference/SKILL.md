@@ -43,9 +43,9 @@ Full chapter: [the chapter](references/chapter.md), with the section-level CROSS
 
 - [Message your other Claude Code sessions](references/chapter.md#message-your-other-claude-code-sessions)
   - [When to use cross-session messaging](references/chapter.md#when-to-use-cross-session-messaging)
-  - [Message another session](references/chapter.md#message-another-session)
-  - [How a session treats an incoming message](references/chapter.md#how-a-session-treats-an-incoming-message)
-  - [Restrict cross-session messaging](references/chapter.md#restrict-cross-session-messaging)
+  - [Send messages and track other sessions on any machine](references/chapter.md#send-messages-and-track-other-sessions-on-any-machine)
+  - [How a session handles incoming messages and inbound controls](references/chapter.md#how-a-session-handles-incoming-messages-and-inbound-controls)
+  - [Restrict or turn off cross-session messaging](references/chapter.md#restrict-or-turn-off-cross-session-messaging)
   - [Availability](references/chapter.md#availability)
   - [Limitations](references/chapter.md#limitations)
   - [Related resources](references/chapter.md#related-resources)

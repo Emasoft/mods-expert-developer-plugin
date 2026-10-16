@@ -43,7 +43,7 @@ Full chapter: [the chapter](references/chapter.md), with the section-level SETTI
 
 - [Settings files and precedence](references/chapter.md#settings-files-and-precedence)
   - [Settings files and who they affect](references/chapter.md#settings-files-and-who-they-affect)
-  - [Change a setting](references/chapter.md#change-a-setting)
-  - [Settings precedence](references/chapter.md#settings-precedence)
+  - [Change and verify a setting](references/chapter.md#change-and-verify-a-setting)
+  - [Settings precedence and conflict resolution](references/chapter.md#settings-precedence-and-conflict-resolution)
   - [Settings in cloud sessions](references/chapter.md#settings-in-cloud-sessions)
   - [What's next](references/chapter.md#whats-next)

@@ -4,8 +4,8 @@
 
 - [Files](#files)
 - [The hook function](#the-hook-function)
-- [Events](#events)
-  - [Tools](#tools)
+- [Events a mod can hook, grouped by area](#events-a-mod-can-hook-grouped-by-area)
+  - [Tool events and tool check fields](#tool-events-and-tool-check-fields)
   - [Prompts and what Claude reads](#prompts-and-what-claude-reads)
   - [Commands and configuration](#commands-and-configuration)
   - [Turns](#turns)
@@ -61,13 +61,13 @@ A mod registers each of its hooks, which are event handlers, by calling `on` ins
 | `next.error` | In a `.catch` handler only. `kind` is `throw` or `timeout` when the hook failed, and `message` is the error's text. `kind` is `re-entry` when the hook was skipped because the event came from inside one of its own mods API calls, and `cause` is `lent` if a method another mod adds to the mods API fired that event. `re-entry` and `cause` require Claude Code v2.1.292 or later. |
 | `next.called` | In a `.catch` handler only. `true` when the hook had called `next`. |
 
-### Events
+### Events a mod can hook, grouped by area
 
 Events are grouped by what they concern, each with when it fires and what a hook on it can return. Hooks on `turn.step` and `process.spawn` are async generators, and other hooks are async functions.
 
 The last column of each table uses shorthand. `next(e)` passes the event on unchanged. `next({ ...e, text })` passes on a copy with the named field changed, as in `next({ ...e, text: e.text.trim() })`. An object answers the event without calling `next`, and a word such as `reason` stands for a string you write, as in `{ deny: 'Use the file tools.' }`.
 
-#### Tools
+#### Tool events and tool check fields
 
 Tool events fire around each tool call Claude makes, from the description Claude reads to the decision on whether the call runs:
 

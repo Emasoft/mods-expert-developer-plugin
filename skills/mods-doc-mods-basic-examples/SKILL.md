@@ -44,7 +44,7 @@ Full chapter: [the chapter](references/chapter.md), with the section-level MODS 
 - [Interface examples for mods](references/chapter.md#interface-examples-for-mods)
   - [Try a sample](references/chapter.md#try-a-sample)
   - [Pick an element](references/chapter.md#pick-an-element)
-  - [Show text](references/chapter.md#show-text)
+  - [Show text with markdown and links](references/chapter.md#show-text-with-markdown-and-links)
   - [Show code and changes](references/chapter.md#show-code-and-changes)
   - [Arrange elements](references/chapter.md#arrange-elements)
   - [Take input](references/chapter.md#take-input)

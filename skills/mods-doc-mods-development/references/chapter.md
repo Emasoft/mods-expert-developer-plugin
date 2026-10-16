@@ -3,9 +3,9 @@
 ## Table of Contents
 
 - [Create a mod](#create-a-mod)
-  - [Ask Claude for a mod](#ask-claude-for-a-mod)
+  - [Ask Claude for a mod and reuse it in other sessions](#ask-claude-for-a-mod-and-reuse-it-in-other-sessions)
   - [Write a mod yourself](#write-a-mod-yourself)
-  - [Keep working on a mod](#keep-working-on-a-mod)
+  - [Change and test a mod](#change-and-test-a-mod)
   - [Share your mod](#share-your-mod)
   - [Related Topics](#related-topics)
 
@@ -24,7 +24,7 @@ First [compare alternatives](https://code.claude.com/docs/en/plugins/mods/overvi
   Requires Claude Code v2.1.287+; check shell `claude --version`. See [Check whether mods can load](https://code.claude.com/docs/en/plugins/mods/troubleshoot#check-whether-mods-can-load).
 </Note>
 
-#### Ask Claude for a mod
+#### Ask Claude for a mod and reuse it in other sessions
 
 Describe it in an interactive session. Claude's built-in [skill](https://code.claude.com/docs/en/skills) `plugin-authoring` specifies write locations, your version's events/methods, and loading. Claude can load it on request, or you can run `/plugin-authoring` at the prompt.
 
@@ -254,7 +254,7 @@ Every hook passed to `on` receives:
 
 Claude Code watches `--plugin-dir` directories and hot-reloads the hooks module when files change. Reload reruns `register`, resets `calls` to `0`, and restarts `/tally` counting. For persistence, see [Keep state](https://code.claude.com/docs/en/plugins/mods/interface#keep-state).
 
-#### Keep working on a mod
+#### Change and test a mod
 
 After loading, ask Claude for changes, check against version-specific types, inspect detected events/calls, and test.
 

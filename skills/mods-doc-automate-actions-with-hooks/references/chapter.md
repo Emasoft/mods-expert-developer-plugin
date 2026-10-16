@@ -290,7 +290,7 @@ This example uses a separate script file that the hook calls. The script checks 
   </Step>
 
   <Step title="Make the script executable on macOS and Linux">
-    Hook scripts must be executable for Claude Code to run them. When you create `.claude/hooks/protect-files.sh`, give it the executable permission bit for its owner (the owner-execute mode bit) so Claude Code can launch it.
+    Hook scripts must be executable for Claude Code to run them. When you create `.claude/hooks/protect-files.sh`, make it executable with `chmod +x .claude/hooks/protect-files.sh`.
   </Step>
 
   <Step title="Register the hook">
