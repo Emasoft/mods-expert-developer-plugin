@@ -15,6 +15,7 @@ import tomllib
 from pathlib import Path
 
 import pytest
+import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
 SKILLS = ROOT / "skills"
@@ -120,3 +121,43 @@ def test_manifest_declares_no_cpv_exclude_paths() -> None:
     """
     manifest = json.loads((ROOT / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8"))
     assert "exclude_paths" not in manifest.get("cpv", {})
+
+
+def _chapter_globs(entries: list[str]) -> list[str]:
+    """Return the entries that exclude skills or chapter files."""
+    return [e for e in entries if "skills/" in e or "chapter.md" in e]
+
+
+def _contains_key(node: object, key: str) -> bool:
+    """Return True if `key` appears as a dict key at any depth of the parsed JSON."""
+    if isinstance(node, dict):
+        return key in node or any(_contains_key(v, key) for v in node.values())
+    if isinstance(node, list):
+        return any(_contains_key(v, key) for v in node)
+    return False
+
+
+def test_manifest_has_no_exclude_paths_at_any_depth() -> None:
+    """plugin.json contains no exclude_paths key anywhere in its nesting."""
+    manifest = json.loads((ROOT / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8"))
+    assert not _contains_key(manifest, "exclude_paths")
+
+
+def test_cspell_ignore_paths_exclude_no_chapters() -> None:
+    """.cspell.json ignorePaths has no entry covering skills/ or chapter.md."""
+    config = json.loads((ROOT / ".cspell.json").read_text(encoding="utf-8"))
+    assert _chapter_globs(config["ignorePaths"]) == []
+
+
+def test_jscpd_ignore_excludes_no_chapters() -> None:
+    """.jscpd.json ignore has no entry covering skills/ or chapter.md."""
+    config = json.loads((ROOT / ".jscpd.json").read_text(encoding="utf-8"))
+    assert _chapter_globs(config["ignore"]) == []
+
+
+def test_mega_linter_filter_excludes_no_chapters() -> None:
+    """.mega-linter.yml FILTER_REGEX_EXCLUDE mentions neither skills nor chapter."""
+    config = yaml.safe_load((ROOT / ".mega-linter.yml").read_text(encoding="utf-8"))
+    regex = config["FILTER_REGEX_EXCLUDE"]
+    assert "skills" not in regex
+    assert "chapter" not in regex
