@@ -110,15 +110,13 @@ def test_manifest_and_pyproject_versions_agree() -> None:
     assert manifest["version"] == project["version"]
 
 
-def test_cpv_exclude_paths_are_exactly_the_vendored_chapters() -> None:
-    """cpv.exclude_paths lists every adapted chapter.md and nothing else.
+def test_manifest_declares_no_cpv_exclude_paths() -> None:
+    """plugin.json declares no cpv.exclude_paths, so CPV scans every tracked file.
 
-    CPV matches exclude_paths by exact path or prefix, never by glob, so the 60
-    chapters are listed one by one. This pins the list to the files on disk: a
-    renamed or added skill must update it, and no Emasoft-authored file may be
-    slipped into it (only the Anthropic chapters covered by NOTICE are vendored).
+    The chapters were once listed in cpv.exclude_paths, which made CPV skip them
+    for its absolute-path and backtick-reference rules. A scan-exclusion list is
+    exactly what a malicious author would use to ship unscanned content, so the
+    plugin carries none: a chapter finding is fixed in the chapter instead.
     """
     manifest = json.loads((ROOT / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8"))
-    declared = manifest["cpv"]["exclude_paths"]
-    on_disk = sorted(f"skills/{d.name}/references/chapter.md" for d in SKILL_DIRS)
-    assert declared == on_disk
+    assert "exclude_paths" not in manifest.get("cpv", {})

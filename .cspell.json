@@ -30,8 +30,7 @@
     "**/spec/fixtures/**",
     "**/__fixtures__/**",
     "**/testdata/**",
-    "**/fixtures/**",
-    "skills/*/references/chapter.md"
+    "**/fixtures/**"
   ],
   "words": [
     "actionlint",
