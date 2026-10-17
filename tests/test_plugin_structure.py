@@ -120,8 +120,11 @@ def _contains_key(node: object, key: str) -> bool:
     return False
 
 
-# Adding an entry requires the owner's approval: an ignore entry keeps tracked files out of the spell-check scan.
-ALLOWED_CSPELL_IGNORE_PATHS = [
+# Pinned, not approved: adding or changing an entry needs the owner's approval because it keeps files out of the scan.
+# The only entry that keeps authored tracked files out of the scan here is **/*.json (six tracked JSON files, plugin.json among them);
+# it is reported to CPV (issue #257) and should go once CPV's template drops it. **/uv.lock and **/*.lock skip the tracked, uv-generated uv.lock, which Trivy scans separately.
+# Equals CPV 5.22.0 generator output (_CSPELL_IGNORE_PATHS in standardize_plugin.py), verified by comparing the two lists.
+PINNED_CSPELL_IGNORE_PATHS = [
     "**/*.json",
     "**/uv.lock",
     "**/package-lock.json",
@@ -152,8 +155,12 @@ ALLOWED_CSPELL_IGNORE_PATHS = [
     "**/fixtures/**",
 ]
 
-# Adding an entry requires the owner's approval: an ignore entry keeps tracked files out of the duplicate scan.
-ALLOWED_JSCPD_IGNORE = [
+
+# Pinned, not approved: adding or changing an entry needs the owner's approval because it keeps files out of the scan.
+# None of these entries matches a tracked file in this repo today; **/.claude/** and the fixture globs are reported to CPV
+# (issue #257) because repos that track those paths lose them from the scan.
+# Equals CPV 5.22.0 generator output (the ignore list in gen_jscpd_json), verified by comparing the two lists.
+PINNED_JSCPD_IGNORE = [
     "**/tests_dev/**",
     "**/docs_dev/**",
     "**/scripts_dev/**",
@@ -174,12 +181,9 @@ ALLOWED_JSCPD_IGNORE = [
     "**/node_modules/**",
     "**/.git/**",
 ]
-
 # Adding or changing this requires the owner's approval: an exclusion keeps tracked files out of the Mega-Linter scan.
-# CPV 5.22.0 canon output; its \.claude/ and fixtures exclusions are reported upstream to CPV as tracked-path exclusions.
-CANON_MEGALINTER_FILTER_REGEX_EXCLUDE = (
-    r'(tests_dev/|docs_dev/|scripts_dev/|samples_dev/|examples_dev/|builds_dev/|downloads_dev/|libs_dev/|llm_externalizer_output/|\.claude/|\.tldr/|tests?/fixtures/|spec/fixtures/|__fixtures__/|testdata/|fixtures/)'
-)
+# CPV 5.22.0 canon output; its \.claude/ and fixtures exclusions are reported to CPV (issue #257) as tracked-path exclusions.
+CANON_MEGALINTER_FILTER_REGEX_EXCLUDE = r"(tests_dev/|docs_dev/|scripts_dev/|samples_dev/|examples_dev/|builds_dev/|downloads_dev/|libs_dev/|llm_externalizer_output/|\.claude/|\.tldr/|tests?/fixtures/|spec/fixtures/|__fixtures__/|testdata/|fixtures/)"
 
 
 def test_manifest_has_no_exclude_paths_at_any_depth() -> None:
@@ -195,15 +199,15 @@ def test_manifest_has_no_exclude_paths_at_any_depth() -> None:
 
 
 def test_cspell_ignore_paths_match_pinned_list() -> None:
-    """.cspell.json ignorePaths equals ALLOWED_CSPELL_IGNORE_PATHS exactly."""
+    """.cspell.json ignorePaths equals PINNED_CSPELL_IGNORE_PATHS exactly."""
     config = json.loads((ROOT / ".cspell.json").read_text(encoding="utf-8"))
-    assert config["ignorePaths"] == ALLOWED_CSPELL_IGNORE_PATHS
+    assert config["ignorePaths"] == PINNED_CSPELL_IGNORE_PATHS
 
 
 def test_jscpd_ignore_matches_pinned_list() -> None:
-    """.jscpd.json ignore equals ALLOWED_JSCPD_IGNORE exactly."""
+    """.jscpd.json ignore equals PINNED_JSCPD_IGNORE exactly."""
     config = json.loads((ROOT / ".jscpd.json").read_text(encoding="utf-8"))
-    assert config["ignore"] == ALLOWED_JSCPD_IGNORE
+    assert config["ignore"] == PINNED_JSCPD_IGNORE
 
 
 def test_mega_linter_filter_matches_pinned_regex() -> None:
