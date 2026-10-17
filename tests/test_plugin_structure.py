@@ -121,7 +121,7 @@ def _contains_key(node: object, key: str) -> bool:
 
 
 # Pinned, not approved: adding or changing an entry needs the owner's approval because it keeps files out of the scan.
-# The only entry that keeps authored tracked files out of the scan here is **/*.json (six tracked JSON files, plugin.json among them);
+# The only entry that keeps authored tracked files out of the scan here is **/*.json (five tracked JSON files, plugin.json among them);
 # it is reported to CPV (issue #257) and should go once CPV's template drops it. **/uv.lock and **/*.lock skip the tracked, uv-generated uv.lock, which Trivy scans separately.
 # Equals CPV 5.22.0 generator output (_CSPELL_IGNORE_PATHS in standardize_plugin.py), verified by comparing the two lists.
 PINNED_CSPELL_IGNORE_PATHS = [

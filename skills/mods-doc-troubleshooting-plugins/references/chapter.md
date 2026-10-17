@@ -42,7 +42,7 @@ Search for the exact message you saw. Each message is listed under the stage tha
 
 `/plugin` is a command you type inside a running Claude Code terminal session, and it opens an interactive panel. The entries in this section cover the places where you can type it but it can't run, and the command spellings that don't exist.
 
-<h3 id="plugin-isnt-available-in-this-environment">
+<h3 id="plugin-is-not-available-in-this-environment">
   `/plugin isn't available in this environment`
 </h3>
 
@@ -486,7 +486,7 @@ The message names the way out:
 * **The other plugin is installed**: the message says `Only one of the two can be installed.` and names the `claude plugin uninstall` command, or the uninstall step in `/plugin`, that removes the other plugin. Run it, then install again. For what the uninstall removes, see [What an uninstall deletes and keeps](https://code.claude.com/docs/en/plugins/cli-reference#what-an-uninstall-deletes-and-keeps).
 * **Both ids arrive in one install**, such as a plugin and a dependency it needs: no install order helps. Only a maintainer of the marketplace that lists the two plugins can fix it, by renaming one of them. When the two come from different marketplaces, a maintainer of either one can.
 
-<h3 id="this-plugin-uses-a-source-type-your-claude-code-version-does-not-suppo">
+<h3 id="this-plugin-uses-a-source-type-your-claude-code-version-does-not-support">
   `This plugin uses a source type your Claude Code version does not support`
 </h3>
 
@@ -631,7 +631,7 @@ Choose which source you want:
 * **The marketplace you already added**: install from it by name with `/plugin install <plugin>@<name>`
 * **The new source**: run `/plugin marketplace remove <name>`, then retry the install
 
-<h3 id="cannot-add-marketplace-source-doesnt-match">
+<h3 id="cannot-add-marketplace-source-does-not-match">
   `Cannot add marketplace "<name>": its source doesn't match its extraKnownMarketplaces entry in user or managed settings`
 </h3>
 
@@ -716,7 +716,7 @@ To see these programmatically, run `claude plugin list --json` in your shell. Pl
 
 The install succeeded, but the plugin's skills, hooks, or servers aren't doing anything. Start with [Plugin doesn't appear or its skills don't show up](https://code.claude.com/docs/en/plugins/troubleshooting#plugin-doesnt-appear-or-its-skills-dont-show-up), which tells you where Claude Code reports what it loaded, then match the message.
 
-<h3 id="plugin-doesnt-appear-or-its-skills-dont-show-up">
+<h3 id="plugin-does-not-appear-or-its-skills-do-not-show-up">
   Plugin doesn't appear or its skills don't show up
 </h3>
 
@@ -863,7 +863,7 @@ To opt out of a project-enabled plugin on your machine, set the id to `false` in
 
 If `claude plugin list` instead marks the plugin `required by your org`, no settings file is involved: your organization marks that synced plugin as required on claude.ai, and it loads even if you disabled it earlier. See [Plugins synced from claude.ai](https://code.claude.com/docs/en/plugins/loading#synced-plugins).
 
-<h3 id="plugin-is-enabled-in-project-settings-but-isnt-installed-here">
+<h3 id="plugin-is-enabled-in-project-settings-but-is-not-installed-here">
   `Plugin "<name>" is enabled in project settings but isn't installed here`
 </h3>
 
@@ -998,7 +998,7 @@ Claude Code copies an installed plugin into its cache, so a path that only works
 
 For paths that reach outside the plugin directory, see [Files the plugin references outside its directory aren't found](https://code.claude.com/docs/en/plugins/troubleshooting#files-the-plugin-references-outside-its-directory-arent-found).
 
-<h3 id="language-server-doesnt-start">
+<h3 id="language-server-does-not-start">
   Language server doesn't start, uses too much memory, or reports wrong diagnostics
 </h3>
 
@@ -1053,7 +1053,7 @@ claude --plugin-dir ./my-marketplace/plugins/my-plugin
 
 Then open **Installed** in `/plugin`, where the plugin's details pane lists its components.
 
-<h3 id="files-the-plugin-references-outside-its-directory-arent-found">
+<h3 id="files-the-plugin-references-outside-its-directory-are-not-found">
   Files the plugin references outside its directory aren't found
 </h3>
 
