@@ -9,7 +9,7 @@
 
 ## Chapter content
 
-*WARNING:* headless mode ( -p option ) requires API usage tokens paid separatedly from the subscription. Most users only have an Anthropic subscription and cannot use the headless mode.
+*WARNING:* headless mode ( -p option ) requires API usage tokens paid separately from the subscription. Most users only have an Anthropic subscription and cannot use the headless mode.
 
 > ## Documentation Index
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
