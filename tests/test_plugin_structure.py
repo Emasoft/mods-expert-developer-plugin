@@ -111,23 +111,6 @@ def test_manifest_and_pyproject_versions_agree() -> None:
     assert manifest["version"] == project["version"]
 
 
-def test_manifest_declares_no_cpv_exclude_paths() -> None:
-    """plugin.json declares no cpv.exclude_paths, so CPV scans every tracked file.
-
-    The chapters were once listed in cpv.exclude_paths, which made CPV skip them
-    for its absolute-path and backtick-reference rules. A scan-exclusion list is
-    exactly what a malicious author would use to ship unscanned content, so the
-    plugin carries none: a chapter finding is fixed in the chapter instead.
-    """
-    manifest = json.loads((ROOT / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8"))
-    assert "exclude_paths" not in manifest.get("cpv", {})
-
-
-def _chapter_globs(entries: list[str]) -> list[str]:
-    """Return the entries that exclude skills or chapter files."""
-    return [e for e in entries if "skills/" in e or "chapter.md" in e]
-
-
 def _contains_key(node: object, key: str) -> bool:
     """Return True if `key` appears as a dict key at any depth of the parsed JSON."""
     if isinstance(node, dict):
@@ -137,27 +120,93 @@ def _contains_key(node: object, key: str) -> bool:
     return False
 
 
+# Adding an entry requires the owner's approval: an ignore entry keeps tracked files out of the spell-check scan.
+ALLOWED_CSPELL_IGNORE_PATHS = [
+    "**/*.json",
+    "**/uv.lock",
+    "**/package-lock.json",
+    "**/*.lock",
+    "**/.git/**",
+    "**/node_modules/**",
+    "**/.venv/**",
+    "**/venv/**",
+    "**/__pycache__/**",
+    "**/tests_dev/**",
+    "**/docs_dev/**",
+    "**/scripts_dev/**",
+    "**/samples_dev/**",
+    "**/examples_dev/**",
+    "**/builds_dev/**",
+    "**/downloads_dev/**",
+    "**/libs_dev/**",
+    "**/reports/**",
+    "**/reports_dev/**",
+    "**/llm_externalizer_output/**",
+    "**/.claude/**",
+    "**/.tldr/**",
+    "**/tests/fixtures/**",
+    "**/test/fixtures/**",
+    "**/spec/fixtures/**",
+    "**/__fixtures__/**",
+    "**/testdata/**",
+    "**/fixtures/**",
+]
+
+# Adding an entry requires the owner's approval: an ignore entry keeps tracked files out of the duplicate scan.
+ALLOWED_JSCPD_IGNORE = [
+    "**/tests_dev/**",
+    "**/docs_dev/**",
+    "**/scripts_dev/**",
+    "**/samples_dev/**",
+    "**/examples_dev/**",
+    "**/builds_dev/**",
+    "**/downloads_dev/**",
+    "**/libs_dev/**",
+    "**/llm_externalizer_output/**",
+    "**/.claude/**",
+    "**/.tldr/**",
+    "**/tests/fixtures/**",
+    "**/test/fixtures/**",
+    "**/spec/fixtures/**",
+    "**/__fixtures__/**",
+    "**/testdata/**",
+    "**/fixtures/**",
+    "**/node_modules/**",
+    "**/.git/**",
+]
+
+# Adding or changing this requires the owner's approval: an exclusion keeps tracked files out of the Mega-Linter scan.
+# CPV 5.22.0 canon output; its \.claude/ and fixtures exclusions are reported upstream to CPV as tracked-path exclusions.
+CANON_MEGALINTER_FILTER_REGEX_EXCLUDE = (
+    r'(tests_dev/|docs_dev/|scripts_dev/|samples_dev/|examples_dev/|builds_dev/|downloads_dev/|libs_dev/|llm_externalizer_output/|\.claude/|\.tldr/|tests?/fixtures/|spec/fixtures/|__fixtures__/|testdata/|fixtures/)'
+)
+
+
 def test_manifest_has_no_exclude_paths_at_any_depth() -> None:
-    """plugin.json contains no exclude_paths key anywhere in its nesting."""
+    """plugin.json contains no exclude_paths key anywhere in its nesting.
+
+    The chapters were once listed in cpv.exclude_paths, which made CPV skip them
+    for its absolute-path and backtick-reference rules. A scan-exclusion list is
+    exactly what a malicious author would use to ship unscanned content, so the
+    plugin carries none: a chapter finding is fixed in the chapter instead.
+    """
     manifest = json.loads((ROOT / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8"))
     assert not _contains_key(manifest, "exclude_paths")
 
 
-def test_cspell_ignore_paths_exclude_no_chapters() -> None:
-    """.cspell.json ignorePaths has no entry covering skills/ or chapter.md."""
+def test_cspell_ignore_paths_match_pinned_list() -> None:
+    """.cspell.json ignorePaths equals ALLOWED_CSPELL_IGNORE_PATHS exactly."""
     config = json.loads((ROOT / ".cspell.json").read_text(encoding="utf-8"))
-    assert _chapter_globs(config["ignorePaths"]) == []
+    assert config["ignorePaths"] == ALLOWED_CSPELL_IGNORE_PATHS
 
 
-def test_jscpd_ignore_excludes_no_chapters() -> None:
-    """.jscpd.json ignore has no entry covering skills/ or chapter.md."""
+def test_jscpd_ignore_matches_pinned_list() -> None:
+    """.jscpd.json ignore equals ALLOWED_JSCPD_IGNORE exactly."""
     config = json.loads((ROOT / ".jscpd.json").read_text(encoding="utf-8"))
-    assert _chapter_globs(config["ignore"]) == []
+    assert config["ignore"] == ALLOWED_JSCPD_IGNORE
 
 
-def test_mega_linter_filter_excludes_no_chapters() -> None:
-    """.mega-linter.yml FILTER_REGEX_EXCLUDE mentions neither skills nor chapter."""
+def test_mega_linter_filter_matches_pinned_regex() -> None:
+    """.mega-linter.yml FILTER_REGEX_EXCLUDE equals the pinned CPV canon string exactly."""
     config = yaml.safe_load((ROOT / ".mega-linter.yml").read_text(encoding="utf-8"))
-    regex = config["FILTER_REGEX_EXCLUDE"]
-    assert "skills" not in regex
-    assert "chapter" not in regex
+    assert config["FILTER_REGEX_EXCLUDE"] == CANON_MEGALINTER_FILTER_REGEX_EXCLUDE
