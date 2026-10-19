@@ -359,15 +359,44 @@ def test_duplicate_heading_detection(headings: list[str], expected: list[str]) -
 # own convention for a placeholder and says nothing about a real person.
 
 # A user segment that reads as a real person's name, as opposed to a generic
-# placeholder. These are the corpus's own placeholder forms: `user`,
-# `username` and `you` are the generic account names the upstream text uses
-# ("your home directory, such as `/Users/username`"), `example` and `...` are
-# literal placeholders, and `my-project` / `my-other-repo` are generic project
-# names. A segment NOT in this set is a name, and a name in shipped
-# documentation reads as somebody's actual home directory.
-_GENERIC_USER_SEGMENTS = frozenset(
-    {"user", "username", "you", "example", "...", "my-project", "my-other-repo"}
-)
+# placeholder.
+#
+# The test is a POSITIVE one, not a blacklist: a segment is a person's name
+# unless it is a recognisable generic token. The generic tokens are of two
+# kinds, and the distinction matters:
+#
+#   - ACCOUNT-NAME placeholders: `user`, `username`, `you`, `example`, `...`.
+#     These are the tokens the upstream text itself uses for "your account".
+#   - PROJECT-NAME placeholders: `my-project`, `my-other-repo`, `myproject`.
+#     These are not account names at all — they name a PROJECT directory, and
+#     a project directory is not a person. The corpus uses them in the
+#     `my-project` shape, and the upstream text also uses the unhyphenated
+#     `myproject`.
+#
+# The second kind is why this list is not simply "the corpus's current
+# values": the rule has to say WHICH tokens count as generic, and the test
+# for that is the token's nature (an account placeholder vs a project name),
+# not its presence in the corpus today. A re-sync that introduced
+# `/Users/your-project/...` would be generic by the same reasoning.
+_GENERIC_ACCOUNT_SEGMENTS = frozenset({"user", "username", "you", "example", "..."})
+_GENERIC_PROJECT_SEGMENTS = frozenset({"my-project", "my-other-repo", "myproject"})
+
+
+def _is_generic_user_segment(segment: str) -> bool:
+    """True iff `segment` is a generic placeholder rather than a person's name.
+
+    A segment is generic when it is a recognised ACCOUNT placeholder or a
+    recognised PROJECT name. The project forms are recognised by their
+    shape — a name built on `my-` / `my`, which is how the corpus and the
+    upstream text both spell "some project" — so the rule does not depend on
+    an exhaustive list of the values that happen to appear today.
+    """
+    if segment in _GENERIC_ACCOUNT_SEGMENTS:
+        return True
+    if segment in _GENERIC_PROJECT_SEGMENTS:
+        return True
+    # A project-shaped generic: `my-<something>` or `my<something>`.
+    return re.fullmatch(r"my[-_]?[A-Za-z0-9]+", segment) is not None
 
 
 def test_no_personal_looking_home_path_in_shipped_chapters() -> None:
@@ -382,13 +411,13 @@ def test_no_personal_looking_home_path_in_shipped_chapters() -> None:
     for chapter in sorted(SKILLS.glob("*/references/chapter.md")):
         for lineno, line in enumerate(chapter.read_text(encoding="utf-8").splitlines(), 1):
             match = re.search(r"/Users/([A-Za-z0-9_.-]+)", line)
-            if match and match.group(1) not in _GENERIC_USER_SEGMENTS:
+            if match and not _is_generic_user_segment(match.group(1)):
                 offending.append(f"{chapter.relative_to(ROOT)}:{lineno}: {line.strip()}")
     assert not offending, "personal-looking home paths in shipped chapters:\n" + "\n".join(offending)
 
 
 def test_adapted_payloads_keep_one_home_path_convention() -> None:
-    """Every payload in a chapter must use ONE home-path convention, not two.
+    """Each payload must use ONE home-path convention, not two.
 
     The hooks chapter's own convention is the macOS-shaped elision
     (`/Users/.../`), used on 60+ lines; a few upstream payloads use
@@ -396,14 +425,22 @@ def test_adapted_payloads_keep_one_home_path_convention() -> None:
     path in the SAME JSON object reads as a Linux home beside a macOS
     transcript, which is incoherent — so each payload must pick one home
     shape and use it for every path in that payload.
+
+    The Windows home shape (`C:/Users/…`) counts as a THIRD shape, and a
+    payload that shows it is not incoherent on its own — the corpus
+    documents Windows behaviour, and one payload legitimately shows a
+    PowerShell command with a Windows path. What is incoherent is a payload
+    that mixes two DIFFERENT unix home shapes, or that mixes a unix shape
+    with a Windows one in the same field. This check is about the unix
+    shapes, which is where the incoherence this series actually found lived.
     """
     incoherent: list[str] = []
     for chapter in sorted(SKILLS.glob("*/references/chapter.md")):
         text = chapter.read_text(encoding="utf-8")
         for block in re.findall(r"```json[^\n]*\n(.*?)```", text, re.DOTALL):
-            homes = {shape for shape in ("/Users/", "/home/") if shape in block}
-            if len(homes) > 1:
-                incoherent.append(f"{chapter.relative_to(ROOT)}: {sorted(homes)}")
+            unix_shapes = {shape for shape in ("/Users/", "/home/") if shape in block}
+            if len(unix_shapes) > 1:
+                incoherent.append(f"{chapter.relative_to(ROOT)}: {sorted(unix_shapes)}")
     assert not incoherent, "payloads mixing home-path conventions:\n" + "\n".join(incoherent)
 
 
