@@ -333,41 +333,78 @@ def test_duplicate_heading_detection(headings: list[str], expected: list[str]) -
     assert _duplicate_headings(headings) == expected
 
 
-# --- CPV-absolute-path adaptation guard -------------------------------------
+# --- adapted-payload guard ---------------------------------------------------
 #
-# The chapters are preserved Anthropic documentation, adapted (see NOTICE). Three
-# sample payloads were adapted away from a CONCRETE home path to a generic one:
-# a home path inside a doc file is a MAJOR CPV finding, and the payloads' `cwd`
-# is by definition absolute, so a concrete `/Users/<name>/…` cannot be both a
-# valid example and a portable one.
+# The chapters are preserved Anthropic documentation, adapted (see NOTICE). One
+# sample payload in the automate-actions chapter shipped a PERSONAL-LOOKING home
+# path — `/Users/sarah/myproject` — inside a JSON sample users read. A name that
+# reads as a real person's home directory must not ship in the plugin's
+# documentation, whatever any validator thinks of it: the plugin is read by
+# people, and "sarah" reads as a person, not as a placeholder.
 #
-# These checks exist because a re-sync of the chapters from Anthropic's upstream
-# would restore the concrete form SILENTLY: nothing else in the suite reads
-# chapter prose, and CPV's own scan is the only thing that would notice — and
-# that scan is currently blocked by upstream issue #243, so it cannot be
-# relied on as the guard. These tests are that guard.
+# The plugin's own property, then: no personal-looking home directory appears in
+# a shipped chapter. That is a property of the PLUGIN and survives any change to
+# any validator. It is deliberately NOT stated as "no shape CPV flags" — that
+# would be the plugin adopting a third-party rule about itself, and it would
+# break the day the rule changes.
+#
+# The guard exists because a re-sync of the chapters from Anthropic's upstream
+# would restore the concrete form SILENTLY. Nothing else in the suite reads
+# chapter prose, and CPV's own scan — the only other thing that would notice —
+# is blocked by upstream issue #243, so it cannot be relied on as the guard.
+#
+# Scope: the two chapters this repository has adapted. The other chapters are
+# not guarded because they carry no personal-looking name — their home paths are
+# the generic `my-project` / `you` / `username` forms, which is the corpus's
+# own convention for a placeholder and says nothing about a real person.
+
+# A user segment that reads as a real person's name, as opposed to a generic
+# placeholder. These are the corpus's own placeholder forms: `user`,
+# `username` and `you` are the generic account names the upstream text uses
+# ("your home directory, such as `/Users/username`"), `example` and `...` are
+# literal placeholders, and `my-project` / `my-other-repo` are generic project
+# names. A segment NOT in this set is a name, and a name in shipped
+# documentation reads as somebody's actual home directory.
+_GENERIC_USER_SEGMENTS = frozenset(
+    {"user", "username", "you", "example", "...", "my-project", "my-other-repo"}
+)
 
 
-def test_no_untouched_concrete_home_path_in_adapted_payloads() -> None:
-    """The adapted payloads must keep a generic home path, not a concrete one.
+def test_no_personal_looking_home_path_in_shipped_chapters() -> None:
+    """No chapter may ship a home path whose user segment reads as a real name.
 
-    A concrete `/Users/<name>/…` in a chapter doc file is a MAJOR CPV finding.
-    This asserts the absence of that shape in the two chapters that were
-    adapted, so an upstream re-sync cannot reintroduce it unnoticed.
+    A path like `/Users/sarah/...` reads to a person as someone's actual home
+    directory. The chapters are adapted documentation, so the fix is to use a
+    generic segment — this asserts the plugin's own property, not a validator's
+    rule.
     """
     offending: list[str] = []
-    for chapter in (
-        SKILLS / "mods-doc-automate-actions-with-hooks/references/chapter.md",
-        SKILLS / "mods-doc-hooks-reference/references/chapter.md",
-    ):
+    for chapter in sorted(SKILLS.glob("*/references/chapter.md")):
         for lineno, line in enumerate(chapter.read_text(encoding="utf-8").splitlines(), 1):
-            # A concrete home path: a user segment that is not a known generic
-            # placeholder ("user", "example", "...") and carries no other
-            # character that would make the path unresolvable anyway.
-            match = re.search(r"/Users/([A-Za-z0-9_-]+)(?:/|\b)", line)
-            if match and match.group(1) not in ("user", "example", "..."):
+            match = re.search(r"/Users/([A-Za-z0-9_.-]+)", line)
+            if match and match.group(1) not in _GENERIC_USER_SEGMENTS:
                 offending.append(f"{chapter.relative_to(ROOT)}:{lineno}: {line.strip()}")
-    assert not offending, "concrete home paths reintroduced in adapted chapters:\n" + "\n".join(offending)
+    assert not offending, "personal-looking home paths in shipped chapters:\n" + "\n".join(offending)
+
+
+def test_adapted_payloads_keep_one_home_path_convention() -> None:
+    """Every payload in a chapter must use ONE home-path convention, not two.
+
+    The hooks chapter's own convention is the macOS-shaped elision
+    (`/Users/.../`), used on 60+ lines; a few upstream payloads use
+    `/home/user/`. Mixing a `/home/user/` cwd with a `/Users/...` transcript
+    path in the SAME JSON object reads as a Linux home beside a macOS
+    transcript, which is incoherent — so each payload must pick one home
+    shape and use it for every path in that payload.
+    """
+    incoherent: list[str] = []
+    for chapter in sorted(SKILLS.glob("*/references/chapter.md")):
+        text = chapter.read_text(encoding="utf-8")
+        for block in re.findall(r"```json[^\n]*\n(.*?)```", text, re.DOTALL):
+            homes = {shape for shape in ("/Users/", "/home/") if shape in block}
+            if len(homes) > 1:
+                incoherent.append(f"{chapter.relative_to(ROOT)}: {sorted(homes)}")
+    assert not incoherent, "payloads mixing home-path conventions:\n" + "\n".join(incoherent)
 
 
 def test_readme_skill_relative_paths_are_qualified() -> None:
@@ -375,8 +412,8 @@ def test_readme_skill_relative_paths_are_qualified() -> None:
 
     `references/chapter.md` and `agents/openai.yaml` are SKILL-relative: they
     exist inside each skill directory, not at the plugin root. Written bare,
-    they read as plugin-root paths that do not resolve, which is what CPV's
-    broken-backtick-path check reports as a MINOR.
+    they read as plugin-root paths that do not resolve — a reader following
+    them lands on a file that is not there.
     """
     text = README.read_text(encoding="utf-8")
     bare = re.findall(r"`(references/chapter\.md|agents/openai\.yaml)`", text)
