@@ -112,12 +112,13 @@ claude plugin validate .
 
 ## Adding or reordering a skill
 
-Three files list the skills, and the plugin's tests require all three to agree. A
+Four artifacts list the skills, and the plugin's tests require them to agree. A
 skill addition is not one edit:
 
 1. `skills/<name>/SKILL.md` — the wrapper, with its `references/chapter.md` and `agents/openai.yaml`.
 2. `README.md` — a row in the Components table above, in heading order (case-insensitive), with the heading column matching the SKILL.md's H1.
-3. `agents/mods-expert-developer-agent.md` — a row in the "Chapter skill index" table, and an entry in the `skills:` frontmatter, at the same position in the same order. The frontmatter's first 32 entries are the ones Claude Code preloads in full, so adding a skill near the top shifts that window; update `PINNED_PRELOAD_SKILLS` in `tests/test_skills_menu.py` to match.
+3. `agents/mods-expert-developer-agent.md` — an entry in the `skills:` frontmatter AND a row in the "Chapter skill index" table, at the same position in the same order.
+4. `PINNED_PRELOAD_SKILLS` in `tests/test_skills_menu.py` — only if the skill lands within the first 32 frontmatter entries. Those 32 are the ones Claude Code preloads in full, so adding a skill at position 30 or earlier pushes another skill out of that window; update the pinned set to match. Read the frontmatter's own diff too, since the pinned set records the membership and not which member was displaced.
 
 Then run the tests:
 

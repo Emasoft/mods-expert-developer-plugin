@@ -60,11 +60,21 @@ PRELOAD_LIMIT = 32
 # agree. This mirror is the only check that catches that, because it records what the
 # window WAS.
 #
-# It is mirrored as a SET, not a sequence: a set survives a reordering of the window,
-# so acknowledging a shift is a one-line edit, while a promotion across the boundary or
+# It is mirrored as a SET, not a sequence, and that reduction is deliberate: the
+# documentation gives the window's INTERNAL order no meaning. It says the first 32
+# distinct names are preloaded; all 32 of them get their full content, so which of
+# them sits at position 5 is not a runtime property. Only the membership is.
+#
+# So a set is the right instrument: it survives a reordering of the window, which
+# acknowledging a change is a one-line edit, while a promotion across the boundary or
 # a demotion out of it still fails. Mirroring the sequence would make every
 # acknowledged change a full re-list of 32 names, since one insertion shifts all the
-# entries after it.
+# entries after it — a cost paid on every routing change to guard a property the
+# documentation does not give.
+#
+# The cost of the set form: a diff of it shows that a member left and another joined,
+# but not which member left. Read the frontmatter's own diff when changing the
+# window, to see who was displaced.
 #
 # To change WHICH skills are preloaded: edit the frontmatter's first 32 entries, then
 # update this set to match. To reorder the frontmatter's TAIL, edit only the
