@@ -388,7 +388,19 @@ def test_duplicate_heading_detection(headings: list[str], expected: list[str]) -
 
 # Generic account placeholders: the tokens the upstream text uses for
 # "your account". A segment NOT in this set is treated as a name.
-_GENERIC_ACCOUNT_SEGMENTS = frozenset({"user", "username", "you", "example", "..."})
+_GENERIC_ACCOUNT_SEGMENTS = frozenset(
+    {
+        "user",
+        "username",
+        "you",
+        "example",
+        "...",
+        # A Windows 8.3 SHORT NAME is a machine-generated abbreviation of a
+        # long path ("LONGNA~1"), not a person's name. The corpus carries
+        # one such example, and the rule judges NAMES, so it is generic.
+        "LONGNA~1",
+    }
+)
 
 # Generic PROJECT names, by exact spelling. These name a directory, not an
 # account. They are listed rather than pattern-matched on purpose: a shape
@@ -410,14 +422,18 @@ _GUARD_EXEMPT_DIRS = ("tests",)
 # recognises one of them is blind to the other two:
 #   macOS    /Users/<segment>
 #   Linux    /home/<segment>
-#   Windows  C:/Users/<segment>
+#   Windows  C:/Users/<segment>  or  C:\Users\<segment>
+#
+# The Windows form appears with either slash direction, so both are
+# matched: a rule about NAMES must not depend on which way the path
+# happens to be written.
 # The judgement of whether a segment is a NAME is the plugin's own and does
 # not depend on the shape; the shapes are what a home path LOOKS like, and
 # the corpus demonstrates all three. The Linux shape additionally keeps
 # upstream's own three `/home/user/` lines honest — `user` is on the
 # generic list, so they are allowed, exactly as the macOS ones are.
 _HOME_PATH = re.compile(
-    r"(?:/Users/|/home/|C:/Users/)([A-Za-z0-9_.-]+)"
+    r"(?:/Users/|/home/|C:[\\/]Users[\\/])([A-Za-z0-9_.~-]+)"
 )
 
 
