@@ -349,19 +349,42 @@ def test_duplicate_heading_detection(headings: list[str], expected: list[str]) -
 # a person, not as a placeholder. This survives any change to any validator;
 # a rule stated as "no shape CPV dislikes" would not.
 #
-# The account-placeholder allowlist is the corpus's own vocabulary for "your
-# account" — the tokens the upstream text itself uses. It is deliberately
-# NOT extended to project-shaped names: "my-project" is a project, but the
-# rule cannot tell a project from a person by shape, and a name like "myra"
-# would slip through a shape test. The plugin does not need that distinction:
-# a re-sync restoring a project-shaped path is caught too, and the fix is
-# the same one value at a time.
+# WHAT THIS RULE ACTUALLY IS: a SHORT LIST OF SPELLINGS KNOWN NOT TO BE
+# NAMES. "Reads as a real name" is a semantic property and is not decidable
+# by a lookup table; the honest form of the rule is "a segment not on this
+# list is treated as a name", and the list is deliberately short enough to
+# read and check. It is NOT extended by shape: "my-project" is a project,
+# but no shape test can tell a project from a person — one that accepts
+# "my-project" also accepts "myra", which is exactly the case the rule
+# exists to catch.
+#
+# The list is the corpus's own vocabulary: the account tokens the upstream
+# text uses for "your account", plus the two project names it uses. A
+# re-sync introducing a new spelling is FLAGGED, and the fix is to decide
+# whether that spelling is a name — a judgement, made once, in one place.
+#
+# The list is NOT extended speculatively. A role account like `admin` or
+# `root` reads as a role rather than as a person, so it would be a
+# reasonable addition — but neither appears in the corpus today, and
+# pre-adding spellings that nothing uses is how a list stops being a
+# judgement and becomes a superstition. The rule is deliberately
+# CONSERVATIVE: anything not on the list is treated as a name, so a
+# re-sync introducing one is flagged and a human decides. The cost of a
+# false positive is one line in one list; the cost of a false negative is
+# shipping somebody's name.
 #
 # The guard exists because a re-sync of the chapters from Anthropic's
 # upstream would restore the adapted form SILENTLY. Nothing else in the
 # suite reads chapter prose, and CPV's own scan — the only other thing that
 # would notice — is blocked by upstream issue #243, so it cannot be relied
 # on as the guard.
+#
+# KNOWN LIMITS, both recorded in DELEGATION.md:
+#   - The file list comes from the git INDEX, so a file that is present but
+#     not yet `git add`ed is invisible to the rule. It is also not shipped
+#     in that state, so the gap closes when it is staged.
+#   - A tracked file that is unreadable (deleted from the working tree, or
+#     binary) is skipped rather than reported.
 
 # Generic account placeholders: the tokens the upstream text uses for
 # "your account". A segment NOT in this set is treated as a name.
@@ -425,11 +448,11 @@ def test_no_tracked_file_contains_a_home_path_that_reads_as_a_person() -> None:
         if any(part in _GUARD_EXEMPT_DIRS for part in Path(rel).parts):
             continue
         path = ROOT / rel
-        if path.suffix.lower() not in {".md", ".py", ".json", ".yaml", ".yml", ".toml", ".sh", ".txt"}:
-            continue
         try:
             text = path.read_text(encoding="utf-8")
         except (OSError, UnicodeDecodeError):
+            # A file that is tracked but unreadable (deleted from the working
+            # tree, or binary) is skipped. Recorded as a known limit.
             continue
         for lineno, line in enumerate(text.splitlines(), 1):
             for match in _HOME_PATH.finditer(line):
