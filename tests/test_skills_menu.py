@@ -35,6 +35,7 @@ and what that costs.
 from __future__ import annotations
 
 import re
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -333,87 +334,110 @@ def test_duplicate_heading_detection(headings: list[str], expected: list[str]) -
     assert _duplicate_headings(headings) == expected
 
 
-# --- adapted-payload guard ---------------------------------------------------
+# --- home-path guard ----------------------------------------------------------
 #
-# The chapters are preserved Anthropic documentation, adapted (see NOTICE). One
-# sample payload in the automate-actions chapter shipped a PERSONAL-LOOKING home
-# path — `/Users/sarah/myproject` — inside a JSON sample users read. A name that
-# reads as a real person's home directory must not ship in the plugin's
-# documentation, whatever any validator thinks of it: the plugin is read by
-# people, and "sarah" reads as a person, not as a placeholder.
+# ONE rule, over the whole tracked tree. It replaces three narrower rules
+# because those missed a failure mode the plugin had already hit twice: a
+# literal home path written into ANY tracked file — a chapter, the ledger,
+# the README, or this very test file's own prose — is a CPV MAJOR finding.
+# The chapters-only scope could not see the ledger; the ledger-only fix
+# could not see this file.
 #
-# The plugin's own property, then: no personal-looking home directory appears in
-# a shipped chapter. That is a property of the PLUGIN and survives any change to
-# any validator. It is deliberately NOT stated as "no shape CPV flags" — that
-# would be the plugin adopting a third-party rule about itself, and it would
-# break the day the rule changes.
+# The property asserted is the PLUGIN'S, not a validator's: no file this
+# plugin ships may contain a home path that reads as a real person's home
+# directory. The plugin is read by people, and a name like "sarah" reads as
+# a person, not as a placeholder. This survives any change to any validator;
+# a rule stated as "no shape CPV dislikes" would not.
 #
-# The guard exists because a re-sync of the chapters from Anthropic's upstream
-# would restore the concrete form SILENTLY. Nothing else in the suite reads
-# chapter prose, and CPV's own scan — the only other thing that would notice —
-# is blocked by upstream issue #243, so it cannot be relied on as the guard.
+# The account-placeholder allowlist is the corpus's own vocabulary for "your
+# account" — the tokens the upstream text itself uses. It is deliberately
+# NOT extended to project-shaped names: "my-project" is a project, but the
+# rule cannot tell a project from a person by shape, and a name like "myra"
+# would slip through a shape test. The plugin does not need that distinction:
+# a re-sync restoring a project-shaped path is caught too, and the fix is
+# the same one value at a time.
 #
-# Scope: the two chapters this repository has adapted. The other chapters are
-# not guarded because they carry no personal-looking name — their home paths are
-# the generic `my-project` / `you` / `username` forms, which is the corpus's
-# own convention for a placeholder and says nothing about a real person.
+# The guard exists because a re-sync of the chapters from Anthropic's
+# upstream would restore the adapted form SILENTLY. Nothing else in the
+# suite reads chapter prose, and CPV's own scan — the only other thing that
+# would notice — is blocked by upstream issue #243, so it cannot be relied
+# on as the guard.
 
-# A user segment that reads as a real person's name, as opposed to a generic
-# placeholder.
-#
-# The test is a POSITIVE one, not a blacklist: a segment is a person's name
-# unless it is a recognisable generic token. The generic tokens are of two
-# kinds, and the distinction matters:
-#
-#   - ACCOUNT-NAME placeholders: `user`, `username`, `you`, `example`, `...`.
-#     These are the tokens the upstream text itself uses for "your account".
-#   - PROJECT-NAME placeholders: `my-project`, `my-other-repo`, `myproject`.
-#     These are not account names at all — they name a PROJECT directory, and
-#     a project directory is not a person. The corpus uses them in the
-#     `my-project` shape, and the upstream text also uses the unhyphenated
-#     `myproject`.
-#
-# The second kind is why this list is not simply "the corpus's current
-# values": the rule has to say WHICH tokens count as generic, and the test
-# for that is the token's nature (an account placeholder vs a project name),
-# not its presence in the corpus today. A re-sync that introduced
-# `/Users/your-project/...` would be generic by the same reasoning.
+# Generic account placeholders: the tokens the upstream text uses for
+# "your account". A segment NOT in this set is treated as a name.
 _GENERIC_ACCOUNT_SEGMENTS = frozenset({"user", "username", "you", "example", "..."})
-_GENERIC_PROJECT_SEGMENTS = frozenset({"my-project", "my-other-repo", "myproject"})
+
+# Generic PROJECT names, by exact spelling. These name a directory, not an
+# account. They are listed rather than pattern-matched on purpose: a shape
+# test ("starts with my") would also accept a personal name that begins
+# with "my", which is precisely the case this guard exists to catch.
+_GENERIC_PROJECT_SEGMENTS = frozenset({"my-project", "my-other-repo"})
+
+# Files whose content is a SPECIMEN rather than documentation the plugin
+# ships. A test file may legitimately NAME the offending values in order to
+# assert they are absent, so the whole `tests/` tree is exempt. The
+# exemption is by DIRECTORY, not by an exact filename, so a future test file
+# inherits it; the price is that a real home path added to the suite would
+# not be caught, which is recorded in DELEGATION.md.
+_GUARD_EXEMPT_DIRS = ("tests",)
+
+# A home path: a user segment under /Users, then anything.
+_HOME_PATH = re.compile(r"/Users/([A-Za-z0-9_.-]+)")
 
 
-def _is_generic_user_segment(segment: str) -> bool:
-    """True iff `segment` is a generic placeholder rather than a person's name.
+def _is_generic_account_segment(segment: str) -> bool:
+    """True iff `segment` is a recognised generic placeholder, not a name.
 
-    A segment is generic when it is a recognised ACCOUNT placeholder or a
-    recognised PROJECT name. The project forms are recognised by their
-    shape — a name built on `my-` / `my`, which is how the corpus and the
-    upstream text both spell "some project" — so the rule does not depend on
-    an exhaustive list of the values that happen to appear today.
+    Two kinds count, and the plugin cares about both:
+
+    - ACCOUNT placeholders: the tokens the upstream text uses for "your
+      account" (`user`, `username`, `you`, `example`, `...`).
+    - PROJECT names: a segment that names a directory rather than an
+      account. The corpus's own upstream values are `my-project` and
+      `my-other-repo`; they are recognised here BY EXACT SPELLING, not by
+      shape, because a shape test would also accept a person's name that
+      happens to start with "my" (`myra`, `myles`). Spelling them out is
+      honest about what the rule can and cannot tell: a project name and a
+      person are different things, and only a person's name is the defect.
     """
     if segment in _GENERIC_ACCOUNT_SEGMENTS:
         return True
-    if segment in _GENERIC_PROJECT_SEGMENTS:
-        return True
-    # A project-shaped generic: `my-<something>` or `my<something>`.
-    return re.fullmatch(r"my[-_]?[A-Za-z0-9]+", segment) is not None
+    return segment in _GENERIC_PROJECT_SEGMENTS
 
 
-def test_no_personal_looking_home_path_in_shipped_chapters() -> None:
-    """No chapter may ship a home path whose user segment reads as a real name.
+def test_no_tracked_file_contains_a_home_path_that_reads_as_a_person() -> None:
+    """No shipped file may contain a home path whose user segment is a NAME.
 
-    A path like `/Users/sarah/...` reads to a person as someone's actual home
-    directory. The chapters are adapted documentation, so the fix is to use a
-    generic segment — this asserts the plugin's own property, not a validator's
-    rule.
+    A path like a macOS home directory under someone's own name reads, to a
+    person, as somebody's actual home directory. The plugin ships these
+    files to users, so that reading is the one that counts — whether or not
+    a validator objects.
+
+    This covers every tracked file, not just the chapters: a literal home
+    path in the ledger or the README is the same defect as one in a chapter,
+    and both were hit in this series.
     """
+    tracked = subprocess.run(
+        ["git", "ls-files"], cwd=ROOT, capture_output=True, text=True, check=True
+    ).stdout.splitlines()
     offending: list[str] = []
-    for chapter in sorted(SKILLS.glob("*/references/chapter.md")):
-        for lineno, line in enumerate(chapter.read_text(encoding="utf-8").splitlines(), 1):
-            match = re.search(r"/Users/([A-Za-z0-9_.-]+)", line)
-            if match and not _is_generic_user_segment(match.group(1)):
-                offending.append(f"{chapter.relative_to(ROOT)}:{lineno}: {line.strip()}")
-    assert not offending, "personal-looking home paths in shipped chapters:\n" + "\n".join(offending)
+    for rel in tracked:
+        if any(part in _GUARD_EXEMPT_DIRS for part in Path(rel).parts):
+            continue
+        path = ROOT / rel
+        if path.suffix.lower() not in {".md", ".py", ".json", ".yaml", ".yml", ".toml", ".sh", ".txt"}:
+            continue
+        try:
+            text = path.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            continue
+        for lineno, line in enumerate(text.splitlines(), 1):
+            for match in _HOME_PATH.finditer(line):
+                segment = match.group(1)
+                if not _is_generic_account_segment(segment):
+                    offending.append(f"{rel}:{lineno}: {line.strip()[:100]}")
+                    break
+    assert not offending, "home paths that read as a person's home:\n" + "\n".join(offending)
 
 
 def test_adapted_payloads_keep_one_home_path_convention() -> None:
@@ -426,12 +450,11 @@ def test_adapted_payloads_keep_one_home_path_convention() -> None:
     transcript, which is incoherent — so each payload must pick one home
     shape and use it for every path in that payload.
 
-    The Windows home shape (`C:/Users/…`) counts as a THIRD shape, and a
+    The Windows home shape (`C:/Users/...`) counts as a THIRD shape, and a
     payload that shows it is not incoherent on its own — the corpus
     documents Windows behaviour, and one payload legitimately shows a
     PowerShell command with a Windows path. What is incoherent is a payload
-    that mixes two DIFFERENT unix home shapes, or that mixes a unix shape
-    with a Windows one in the same field. This check is about the unix
+    that mixes two DIFFERENT unix home shapes. This check is about the unix
     shapes, which is where the incoherence this series actually found lived.
     """
     incoherent: list[str] = []
