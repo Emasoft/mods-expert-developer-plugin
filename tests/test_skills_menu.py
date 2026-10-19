@@ -404,8 +404,21 @@ _GENERIC_PROJECT_SEGMENTS = frozenset({"my-project", "my-other-repo"})
 # not be caught, which is recorded in DELEGATION.md.
 _GUARD_EXEMPT_DIRS = ("tests",)
 
-# A home path: a user segment under /Users, then anything.
-_HOME_PATH = re.compile(r"/Users/([A-Za-z0-9_.-]+)")
+# A home path: a user segment under a home directory, then anything.
+#
+# THREE home shapes, because the corpus uses three and a rule that only
+# recognises one of them is blind to the other two:
+#   macOS    /Users/<segment>
+#   Linux    /home/<segment>
+#   Windows  C:/Users/<segment>
+# The judgement of whether a segment is a NAME is the plugin's own and does
+# not depend on the shape; the shapes are what a home path LOOKS like, and
+# the corpus demonstrates all three. The Linux shape additionally keeps
+# upstream's own three `/home/user/` lines honest — `user` is on the
+# generic list, so they are allowed, exactly as the macOS ones are.
+_HOME_PATH = re.compile(
+    r"(?:/Users/|/home/|C:/Users/)([A-Za-z0-9_.-]+)"
+)
 
 
 def _is_generic_account_segment(segment: str) -> bool:
