@@ -51,9 +51,14 @@ PRELOAD_LIMIT = 32
 
 # A MIRROR of the agent frontmatter's first PRELOAD_LIMIT entries — the skills whose
 # full content is injected into the agent's context. The frontmatter is authoritative;
-# this list only checks it. It exists because the selection is invisible when it
-# changes (a demoted skill's content just stops being injected, and nothing errors),
-# so a change to the window has to be acknowledged here on purpose.
+# this list only checks it.
+#
+# The mirror exists because the preload window is a property of the LIST'S HEAD, and
+# every other check stays green when the head changes: a coordinated edit that adds a
+# skill to the frontmatter, the body index and the README in the same place shifts the
+# window by one, and the frontmatter/body agreement check cannot see it — both copies
+# agree. This mirror is the only check that catches that, because it records what the
+# window WAS.
 #
 # To change WHICH skills are preloaded: edit the frontmatter's first 32 entries, then
 # update this list to match. To reorder the frontmatter's TAIL, edit only the
@@ -178,14 +183,19 @@ DOC_SKILLS = [d.name for d in SKILL_DIRS]
 def test_preload_window_is_exactly_the_pinned_roster() -> None:
     """The first PRELOAD_LIMIT entries are exactly PINNED_PRELOAD_SKILLS.
 
-    The roster is a product decision, so it is pinned owner-side rather than derived.
-    Without this, a skill could be demoted out of the preloaded set — its content no
-    longer injected — by a reordering that no test noticed. Changing the roster means
-    editing PINNED_PRELOAD_SKILLS deliberately.
+    The frontmatter is authoritative; this list records what the window WAS, so a
+    change to it has to be acknowledged. Without the mirror, a coordinated edit — one
+    that adds a skill to the frontmatter, the body index and the README in the same
+    place — shifts the preload window by one and leaves every other check green,
+    because both hand-edited copies of the routing order still agree with each other.
+
+    To change the window deliberately: edit the frontmatter's first 32 entries, then
+    update PINNED_PRELOAD_SKILLS to match.
     """
     listed = _frontmatter_skills()
     assert listed[:PRELOAD_LIMIT] == PINNED_PRELOAD_SKILLS, (
-        "the preloaded roster changed; update PINNED_PRELOAD_SKILLS deliberately if intended"
+        "the preloaded window changed; if that was intended, update PINNED_PRELOAD_SKILLS "
+        "in this file to match the frontmatter's first 32 entries"
     )
 
 
