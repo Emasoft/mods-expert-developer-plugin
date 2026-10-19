@@ -21,11 +21,14 @@ The README is the plugin's public catalogue and ships to users, so its heading
 column and row order are enforced: a stale heading there is a defect a reader sees.
 The order is alphabetical by heading, case-insensitively.
 
-WHICH 32 skills are preloaded is a product decision, so it is pinned here in the
-repo's own owner-pinned-list style (as PINNED_CSPELL_IGNORE_PATHS and
-PINNED_JSCPD_IGNORE are): PINNED_PRELOAD_SKILLS names the set, and the test
-asserts the frontmatter's first 32 entries are exactly it. Changing the preload
-roster is a deliberate edit to that list, not a side effect of reordering.
+WHICH 32 skills are preloaded is a product decision. The frontmatter is where that
+decision lives — the first 32 names of its `skills:` list are the ones Claude Code
+injects in full. This file MIRRORS that window (PINNED_PRELOAD_SKILLS) the way
+PINNED_CSPELL_IGNORE_PATHS mirrors .cspell.json's ignorePaths: the artifact decides,
+the mirror checks. The mirror exists because the selection is otherwise invisible —
+a skill demoted out of the window simply stops having its content injected, and
+nothing errors. So a change to the window must be acknowledged here, deliberately,
+by updating the mirror to match.
 """
 
 from __future__ import annotations
@@ -46,11 +49,15 @@ README = ROOT / "README.md"
 # https://code.claude.com/docs/en/sub-agents ("up to the first 32 distinct names").
 PRELOAD_LIMIT = 32
 
-# The skills whose full content is injected into the agent's context: the first
-# PRELOAD_LIMIT entries of the frontmatter list. Pinned owner-side, in the same style
-# as the cspell/jscpd ignore lists, because the roster is a product decision and must
-# change by editing this list rather than by reordering the frontmatter as a side
-# effect. Reorder the frontmatter's TAIL freely — only the first 32 are pinned here.
+# A MIRROR of the agent frontmatter's first PRELOAD_LIMIT entries — the skills whose
+# full content is injected into the agent's context. The frontmatter is authoritative;
+# this list only checks it. It exists because the selection is invisible when it
+# changes (a demoted skill's content just stops being injected, and nothing errors),
+# so a change to the window has to be acknowledged here on purpose.
+#
+# To change WHICH skills are preloaded: edit the frontmatter's first 32 entries, then
+# update this list to match. To reorder the frontmatter's TAIL, edit only the
+# frontmatter — the tail is not preloaded and is not mirrored here.
 PINNED_PRELOAD_SKILLS = [
     "tldr-code",
     "fastedit",

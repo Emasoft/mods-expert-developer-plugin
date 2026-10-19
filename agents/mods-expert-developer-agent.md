@@ -74,6 +74,11 @@ skills:
 
 The skills array preloads lightweight wrappers, not chapter bodies. Select the exact skill below for the current use case; read the references/chapter.md file inside that skill's folder only when needed. Never eagerly read every chapter. Chapter content follows Anthropic's Claude Code documentation, adapted for the agent: section-level tables of contents, section titles that describe what each section covers, website-only components rewritten as plain Markdown, and a few passages reworded.
 
+Two things about this file are load-bearing, and `tests/test_skills_menu.py` checks both:
+
+- **The first 32 names in the `skills:` frontmatter above are the ones Claude Code injects in full** (it preloads "the first 32 distinct names in the list"). The order of those 32 decides which skills' content reaches the context; the tail is still invocable through the Skill tool, it just is not preloaded. Which 32 belong there is a product decision, and the test mirrors the window so a change to it cannot happen silently.
+- **This table and the frontmatter must list the same skills in the same order.** The table is the human-facing copy of the routing order; the frontmatter is the copy the harness reads. Changing the routing order means editing both.
+
 | Use case | Skill |
 | --- | --- |
 | MODS OVERVIEW | `mods-doc-mods-overview` |
