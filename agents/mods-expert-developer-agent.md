@@ -76,7 +76,7 @@ The skills array preloads lightweight wrappers, not chapter bodies. Select the e
 
 Two things about this file are load-bearing, and `tests/test_skills_menu.py` checks both:
 
-- **The first 32 names in the `skills:` frontmatter above are the ones Claude Code injects in full** (it preloads "the first 32 distinct names in the list"). The tail is still invocable through the Skill tool, it just is not preloaded. If you change the first 32 entries, also update `PINNED_PRELOAD_SKILLS` in `tests/test_skills_menu.py` — a coordinated edit that shifts the window leaves every other check green, so that mirror is the only thing that catches it.
+- **The first 32 names in the `skills:` frontmatter above are the ones Claude Code injects in full** (it preloads "the first 32 distinct names in the list"). The tail is still invocable through the Skill tool, it just is not preloaded. If you change the first 32 entries, also update `PINNED_PRELOAD_SKILLS` in `tests/test_skills_menu.py`.
 - **This table and the frontmatter must list the same skills in the same order.** The table is the human-facing copy of the routing order; the frontmatter is the copy the harness reads. Changing the routing order means editing both.
 
 | Use case | Skill |

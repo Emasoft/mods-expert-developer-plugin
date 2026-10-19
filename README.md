@@ -110,6 +110,21 @@ Give it a task such as creating a new mod, fixing a broken plugin hook, or revie
 claude plugin validate .
 ```
 
+## Adding or reordering a skill
+
+Three files list the skills, and the plugin's tests require all three to agree. A
+skill addition is not one edit:
+
+1. `skills/<name>/SKILL.md` — the wrapper, with its `references/chapter.md` and `agents/openai.yaml`.
+2. `README.md` — a row in the Components table above, in heading order (case-insensitive), with the heading column matching the SKILL.md's H1.
+3. `agents/mods-expert-developer-agent.md` — a row in the "Chapter skill index" table, and an entry in the `skills:` frontmatter, at the same position in the same order. The frontmatter's first 32 entries are the ones Claude Code preloads in full, so adding a skill near the top shifts that window; update `PINNED_PRELOAD_SKILLS` in `tests/test_skills_menu.py` to match.
+
+Then run the tests:
+
+```bash
+uv run --project . pytest -q tests/
+```
+
 ## License
 
 The plugin's own files are licensed under MIT (see LICENSE). The reference chapters are Anthropic documentation and are not covered by MIT; see NOTICE.
