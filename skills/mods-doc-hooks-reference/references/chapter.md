@@ -1423,9 +1423,9 @@ In addition to the [common input fields](https://code.claude.com/docs/en/hooks#c
 {
   "session_id": "abc123",
   "transcript_path": "/Users/.../.claude/projects/.../transcript.jsonl",
-  "cwd": "/Users/my-project",
+  "cwd": "/home/user/my-project",
   "hook_event_name": "InstructionsLoaded",
-  "file_path": "/Users/my-project/CLAUDE.md",
+  "file_path": "/home/user/my-project/CLAUDE.md",
   "memory_type": "Project",
   "load_reason": "session_start"
 }
@@ -1596,7 +1596,7 @@ In addition to the [common input fields](https://code.claude.com/docs/en/hooks#c
 {
   "session_id": "abc123",
   "transcript_path": "/Users/.../.claude/projects/.../transcript.jsonl",
-  "cwd": "/Users/my-project",
+  "cwd": "/home/user/my-project",
   "hook_event_name": "MessageDisplay",
   "turn_id": "0c9e6a2f-7d41-4f4e-9a15-3f4f7c2b8d10",
   "message_id": "5b2a9c8e-1f63-4d8a-b7c4-9e0d2a6f1c3b",
@@ -2950,7 +2950,7 @@ In addition to the [common input fields](https://code.claude.com/docs/en/hooks#c
 ```json theme={null}
 {
   "session_id": "abc123",
-  "transcript_path": "/Users/.../.claude/projects/.../transcript.jsonl",
+  "transcript_path": "/home/user/.claude/projects/.../transcript.jsonl",
   "cwd": "/home/user/my-project/src",
   "hook_event_name": "CwdChanged",
   "old_cwd": "/home/user/my-project",
@@ -3003,10 +3003,10 @@ In addition to the [common input fields](https://code.claude.com/docs/en/hooks#c
 ```json theme={null}
 {
   "session_id": "abc123",
-  "transcript_path": "/Users/.../.claude/projects/.../transcript.jsonl",
-  "cwd": "/Users/my-project",
+  "transcript_path": "/home/user/.claude/projects/.../transcript.jsonl",
+  "cwd": "/home/user/my-project",
   "hook_event_name": "DirectoryAdded",
-  "directory": "/Users/my-other-repo",
+  "directory": "/home/user/my-other-repo",
   "source": "slash_command"
 }
 ```
@@ -3074,9 +3074,9 @@ In addition to the [common input fields](https://code.claude.com/docs/en/hooks#c
 {
   "session_id": "abc123",
   "transcript_path": "/Users/.../.claude/projects/.../transcript.jsonl",
-  "cwd": "/Users/my-project",
+  "cwd": "/home/user/my-project",
   "hook_event_name": "FileChanged",
-  "file_path": "/Users/my-project/.envrc",
+  "file_path": "/home/user/my-project/.envrc",
   "event": "change"
 }
 ```

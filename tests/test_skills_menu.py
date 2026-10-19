@@ -331,3 +331,53 @@ def test_duplicate_heading_detection(headings: list[str], expected: list[str]) -
     pin what happens when it is not.
     """
     assert _duplicate_headings(headings) == expected
+
+
+# --- CPV-absolute-path adaptation guard -------------------------------------
+#
+# The chapters are preserved Anthropic documentation, adapted (see NOTICE). Three
+# sample payloads were adapted away from a CONCRETE home path to a generic one:
+# a home path inside a doc file is a MAJOR CPV finding, and the payloads' `cwd`
+# is by definition absolute, so a concrete `/Users/<name>/…` cannot be both a
+# valid example and a portable one.
+#
+# These checks exist because a re-sync of the chapters from Anthropic's upstream
+# would restore the concrete form SILENTLY: nothing else in the suite reads
+# chapter prose, and CPV's own scan is the only thing that would notice — and
+# that scan is currently blocked by upstream issue #243, so it cannot be
+# relied on as the guard. These tests are that guard.
+
+
+def test_no_untouched_concrete_home_path_in_adapted_payloads() -> None:
+    """The adapted payloads must keep a generic home path, not a concrete one.
+
+    A concrete `/Users/<name>/…` in a chapter doc file is a MAJOR CPV finding.
+    This asserts the absence of that shape in the two chapters that were
+    adapted, so an upstream re-sync cannot reintroduce it unnoticed.
+    """
+    offending: list[str] = []
+    for chapter in (
+        SKILLS / "mods-doc-automate-actions-with-hooks/references/chapter.md",
+        SKILLS / "mods-doc-hooks-reference/references/chapter.md",
+    ):
+        for lineno, line in enumerate(chapter.read_text(encoding="utf-8").splitlines(), 1):
+            # A concrete home path: a user segment that is not a known generic
+            # placeholder ("user", "example", "...") and carries no other
+            # character that would make the path unresolvable anyway.
+            match = re.search(r"/Users/([A-Za-z0-9_-]+)(?:/|\b)", line)
+            if match and match.group(1) not in ("user", "example", "..."):
+                offending.append(f"{chapter.relative_to(ROOT)}:{lineno}: {line.strip()}")
+    assert not offending, "concrete home paths reintroduced in adapted chapters:\n" + "\n".join(offending)
+
+
+def test_readme_skill_relative_paths_are_qualified() -> None:
+    """README paths into a skill directory must be qualified with `skills/<name>/`.
+
+    `references/chapter.md` and `agents/openai.yaml` are SKILL-relative: they
+    exist inside each skill directory, not at the plugin root. Written bare,
+    they read as plugin-root paths that do not resolve, which is what CPV's
+    broken-backtick-path check reports as a MINOR.
+    """
+    text = README.read_text(encoding="utf-8")
+    bare = re.findall(r"`(references/chapter\.md|agents/openai\.yaml)`", text)
+    assert not bare, f"unqualified skill-relative paths in README.md: {sorted(set(bare))}"
