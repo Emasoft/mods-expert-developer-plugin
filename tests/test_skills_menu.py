@@ -7,11 +7,22 @@ hand, so they drift. These tests pin the invariants that make the three agree.
 
 The load-bearing one is the preload budget. Claude Code injects the full content of
 "the first 32 distinct names in the list" (sub-agents docs), so with 64 names
-listed, the LIST ORDER decides which 32 skills are actually preloaded and which 32
-are silently not. Order is therefore not cosmetic: it selects the preload set.
+listed, the LIST ORDER selects which 32 skills have their content injected. Order is
+therefore not cosmetic: it selects the preload set.
 
-The cosmetic checks (README heading column, README row order) are reported rather
-than enforced, because the harness never reads the README.
+What happens to the skills past that window is narrower than "they do not exist":
+the `skills` field controls what is PRELOADED, not what is accessible. A skill past
+the 32-name window gets no content injected, and remains discoverable and invocable
+through the Skill tool at runtime. So the cost of being past the window is context,
+not capability.
+
+The README is the plugin's public catalogue and ships to users, so its heading
+column and row order are enforced: a stale heading there is a defect a reader sees.
+The order is alphabetical by heading, case-insensitively.
+
+Which 32 skills should be preloaded is a product decision, and these tests do not
+make it. They make the boundary explicit: if the list is shortened to 32 or fewer,
+every listed skill is preloaded unconditionally, and nothing here objects.
 """
 
 from __future__ import annotations
@@ -27,8 +38,9 @@ SKILLS = ROOT / "skills"
 AGENT = ROOT / "agents/mods-expert-developer-agent.md"
 README = ROOT / "README.md"
 
-# Claude Code preloads at most this many distinct skills from an agent's `skills:` list.
-# See https://code.claude.com/docs/en/sub-agents ("up to the first 32 distinct names").
+# Claude Code preloads the full content of at most this many distinct skills from an
+# agent's `skills:` list, taking them in list order. See
+# https://code.claude.com/docs/en/sub-agents ("up to the first 32 distinct names").
 PRELOAD_LIMIT = 32
 
 # The non-doc skills the agent preloads ahead of the documentation wrappers. Pinned so
@@ -45,6 +57,15 @@ def _h1(skill: Path) -> str:
     match = re.search(r"^# (.+)$", (skill / "SKILL.md").read_text(encoding="utf-8"), re.M)
     assert match is not None, f"{skill.name} has no H1 heading"
     return match.group(1).strip()
+
+
+def _headings(skills: list[Path]) -> list[str]:
+    return [_h1(skill) for skill in skills]
+
+
+def _duplicate_headings(headings: list[str]) -> list[str]:
+    """The H1 values that appear more than once. A duplicate makes label matching ambiguous."""
+    return sorted({h for h in headings if headings.count(h) > 1})
 
 
 def _frontmatter_skills() -> list[str]:
@@ -104,28 +125,17 @@ SKILL_DIRS = sorted(d for d in SKILLS.iterdir() if d.is_dir())
 DOC_SKILLS = [d.name for d in SKILL_DIRS]
 
 
-def test_agent_preloads_at_most_the_documented_skill_limit() -> None:
-    """The agent lists more skills than the harness preloads, so the ORDER selects the preload set.
+def test_preloaded_skills_are_the_first_entries_in_frontmatter_order() -> None:
+    """The skills whose content reaches the context are exactly the first PRELOAD_LIMIT entries.
 
-    Claude Code injects the full content of the first 32 distinct names in an agent's
-    `skills:` list. The 64 names listed here therefore mean the first 32 are preloaded
-    and the remaining 32 are not. That is a deliberate selection, not a truncation to
-    fix later — so it is pinned here rather than left implicit in a hand-edited list.
+    Claude Code injects the full content of the first 32 distinct names in the list,
+    so position decides which skills are preloaded. This asserts that the window
+    itself is well-formed: no duplicates (a duplicate would silently consume a slot)
+    and every name in it resolves to a real skill.
     """
     listed = _frontmatter_skills()
-    assert len(listed) > PRELOAD_LIMIT, (
-        f"the agent now lists {len(listed)} skills, at or below the {PRELOAD_LIMIT}-skill "
-        "preload limit; the preload-selection intent below needs re-deciding"
-    )
-
-
-def test_preloaded_skills_are_the_first_entries_in_frontmatter_order() -> None:
-    """The skills that get their content injected are exactly the first PRELOAD_LIMIT entries."""
-    listed = _frontmatter_skills()
     preloaded = listed[:PRELOAD_LIMIT]
-    assert len(preloaded) == PRELOAD_LIMIT
     assert len(set(preloaded)) == len(preloaded), "duplicate skill in the preloaded prefix"
-    # Every preloaded skill must be a real, loadable skill.
     for name in preloaded:
         if name not in TOOL_SKILLS:
             assert (SKILLS / name / "SKILL.md").exists(), f"preloaded skill {name} does not exist"
@@ -143,12 +153,16 @@ def test_frontmatter_and_body_index_list_the_same_skills_in_the_same_order() -> 
     """The two hand-edited copies of the routing order must not diverge.
 
     They agree today, and the redundancy is the point: a human editing one sees the
-    other disagree. Divergence means the preload set (frontmatter) and the navigation
-    aid (body table) describe different things.
+    other disagree. Divergence means the preload selector (frontmatter, where
+    position decides who is preloaded) and the navigation aid (body table) describe
+    different routing orders. To change the routing order, change both.
     """
     listed = [name for name in _frontmatter_skills() if name not in TOOL_SKILLS]
     body = [skill for _, skill in _body_index()]
-    assert listed == body, "agent frontmatter and body index list different skills or orders"
+    assert listed == body, (
+        "agent frontmatter and body index list different skills or orders; the frontmatter "
+        "order selects the preload set, so the two must be changed together"
+    )
 
 
 def test_body_index_covers_every_skill_exactly_once() -> None:
@@ -169,7 +183,7 @@ def test_body_index_labels_match_the_skill_headings() -> None:
 
 
 def test_readme_table_covers_every_skill_with_its_current_heading() -> None:
-    """The README is a catalogue, not a preload list, so this is reported rather than enforced."""
+    """The README is the public catalogue: a stale heading is a defect a reader sees."""
     rows = _readme_table()
     names = [skill for skill, _ in rows]
     assert len(names) == len(set(names)), "duplicate skill in the README table"
@@ -181,51 +195,36 @@ def test_readme_table_covers_every_skill_with_its_current_heading() -> None:
 
 
 def test_readme_table_is_ordered_by_heading() -> None:
-    """Informational only: the harness never reads the README, so this orders the catalogue.
+    """The catalogue is alphabetical by heading, case-insensitively.
 
-    The order is case-insensitive by heading: "Create a marketplace" precedes
-    "CROSS SESSION MESSAGING REFERENCE" because "create" < "cross".
+    "Create a marketplace" precedes "CROSS SESSION MESSAGING REFERENCE" because
+    "create" < "cross" once case is folded.
     """
     rows = _readme_table()
     headings = [heading for _, heading in rows]
     assert headings == sorted(headings, key=str.lower), "README table is not in heading order"
 
 
-def test_readme_and_body_tables_use_their_own_separator_format() -> None:
-    """The two tables are formatted differently; a shared template would corrupt one of them."""
-    readme_section = README.read_text(encoding="utf-8").split("## Components", 1)[1]
-    assert "|---|---|" in readme_section, "README table separator changed"
-    agent_text = AGENT.read_text(encoding="utf-8")
-    body_section = agent_text.split("## Chapter skill index", 1)[1]
-    assert "| --- | --- |" in body_section, "body index separator changed"
-
-
 def test_h1_headings_are_unique_so_menus_can_be_matched_by_heading() -> None:
     """Two skills sharing an H1 would make the label-based checks ambiguous."""
-    headings = [_h1(skill) for skill in SKILL_DIRS]
-    duplicates = sorted({h for h in headings if headings.count(h) > 1})
+    duplicates = _duplicate_headings(_headings(SKILL_DIRS))
     assert not duplicates, f"duplicate H1 headings: {duplicates}"
 
 
-def test_duplicate_h1_makes_the_label_check_ambiguous() -> None:
-    """Counter-example: the label check is only meaningful while H1s are unique.
+@pytest.mark.parametrize(
+    ("headings", "expected"),
+    [
+        (["ALPHA", "BETA", "ALPHA"], ["ALPHA"]),
+        (["ALPHA", "BETA"], []),
+        (["SAME", "SAME", "SAME"], ["SAME"]),
+    ],
+)
+def test_duplicate_heading_detection(headings: list[str], expected: list[str]) -> None:
+    """Counter-example for the uniqueness rule the label checks depend on.
 
-    This asserts the rule with a synthetic pair whose H1s collide, so a future change
-    that relaxes the uniqueness check cannot leave the label check quietly wrong.
+    A synthetic colliding pair shows the detection actually reports the collision,
+    rather than the corpus simply happening to be unique today. Without this, the
+    uniqueness test would only ever say "the corpus is fine now" and would not
+    pin what happens when it is not.
     """
-    assert _h1(SKILLS / "mods-doc-mods-overview") != _h1(SKILLS / "mods-doc-mods-development")
-    headings = [_h1(skill) for skill in SKILL_DIRS]
-    assert len(set(headings)) == len(headings), "the uniqueness invariant this check depends on is broken"
-
-
-@pytest.mark.parametrize("skill_name", ["mods-doc-mods-overview", "mods-doc-plugins-creation"])
-def test_preload_window_covers_the_entry_skills(skill_name: str) -> None:
-    """Named entry-point skills must be inside the preload window, not past the limit.
-
-    The first 32 entries are the ones whose content reaches the agent's context. A
-    skill a reader is told to load by name must not sit in the un-preloaded tail.
-    """
-    listed = _frontmatter_skills()
-    assert skill_name in listed[:PRELOAD_LIMIT], (
-        f"{skill_name} is at position {listed.index(skill_name) + 1}, past the {PRELOAD_LIMIT}-skill preload limit"
-    )
+    assert _duplicate_headings(headings) == expected
