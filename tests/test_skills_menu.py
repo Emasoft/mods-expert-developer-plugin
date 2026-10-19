@@ -11,18 +11,21 @@ listed, the LIST ORDER selects which 32 skills have their content injected. Orde
 therefore not cosmetic: it selects the preload set.
 
 What happens to the skills past that window is narrower than "they do not exist":
-the `skills` field controls what is PRELOADED, not what is accessible. A skill past
-the 32-name window gets no content injected, and remains discoverable and invocable
-through the Skill tool at runtime. So the cost of being past the window is context,
-not capability.
+the `skills` field controls what is PRELOADED, not what is accessible — "without
+it, the subagent can still discover and invoke project, user, and plugin skills
+through the Skill tool during execution" (same page). A skill past the 32-name
+window gets no content injected and stays invocable. The cost is context, not
+capability.
 
 The README is the plugin's public catalogue and ships to users, so its heading
 column and row order are enforced: a stale heading there is a defect a reader sees.
 The order is alphabetical by heading, case-insensitively.
 
-Which 32 skills should be preloaded is a product decision, and these tests do not
-make it. They make the boundary explicit: if the list is shortened to 32 or fewer,
-every listed skill is preloaded unconditionally, and nothing here objects.
+WHICH 32 skills are preloaded is a product decision, so it is pinned here in the
+repo's own owner-pinned-list style (as PINNED_CSPELL_IGNORE_PATHS and
+PINNED_JSCPD_IGNORE are): PINNED_PRELOAD_SKILLS names the set, and the test
+asserts the frontmatter's first 32 entries are exactly it. Changing the preload
+roster is a deliberate edit to that list, not a side effect of reordering.
 """
 
 from __future__ import annotations
@@ -42,6 +45,46 @@ README = ROOT / "README.md"
 # agent's `skills:` list, taking them in list order. See
 # https://code.claude.com/docs/en/sub-agents ("up to the first 32 distinct names").
 PRELOAD_LIMIT = 32
+
+# The skills whose full content is injected into the agent's context: the first
+# PRELOAD_LIMIT entries of the frontmatter list. Pinned owner-side, in the same style
+# as the cspell/jscpd ignore lists, because the roster is a product decision and must
+# change by editing this list rather than by reordering the frontmatter as a side
+# effect. Reorder the frontmatter's TAIL freely — only the first 32 are pinned here.
+PINNED_PRELOAD_SKILLS = [
+    "tldr-code",
+    "fastedit",
+    "jgrep",
+    "quicksilver",
+    "mods-doc-mods-overview",
+    "mods-doc-mods-development",
+    "mods-doc-mods-interfaces",
+    "mods-doc-mods-basic-examples",
+    "mods-doc-mods-and-events",
+    "mods-doc-mods-api",
+    "mods-doc-mods-testing",
+    "mods-doc-mods-troubleshooting",
+    "mods-doc-mods-reference",
+    "mods-doc-plugins-creation",
+    "mods-doc-add-components-to-a-plugin",
+    "mods-doc-plugins-depending-on-other-plugins",
+    "mods-doc-test-plugins-with-evals",
+    "mods-doc-publish-a-plugin",
+    "mods-doc-manage-costs-of-a-plugin",
+    "mods-doc-manage-plugins-from-cli",
+    "mods-doc-install-and-manage-plugins",
+    "mods-doc-official-marketplaces",
+    "mods-doc-code-intelligence-components-in-plugins",
+    "mods-doc-plugins-security-and-trust",
+    "mods-doc-create-a-marketplace",
+    "mods-doc-how-to-host-a-marketplace",
+    "mods-doc-plugin-recomendations",
+    "mods-doc-manage-plugins-in-organizations",
+    "mods-doc-manage-mods-for-organizations",
+    "mods-doc-troubleshooting-plugins",
+    "mods-doc-tracing-the-origin-of-a-plugin",
+    "mods-doc-plugin-manifest-reference",
+]
 
 # The non-doc skills the agent preloads ahead of the documentation wrappers. Pinned so
 # that a fifth tool skill is caught and a dropped one is not silently tolerated.
@@ -125,6 +168,20 @@ SKILL_DIRS = sorted(d for d in SKILLS.iterdir() if d.is_dir())
 DOC_SKILLS = [d.name for d in SKILL_DIRS]
 
 
+def test_preload_window_is_exactly_the_pinned_roster() -> None:
+    """The first PRELOAD_LIMIT entries are exactly PINNED_PRELOAD_SKILLS.
+
+    The roster is a product decision, so it is pinned owner-side rather than derived.
+    Without this, a skill could be demoted out of the preloaded set — its content no
+    longer injected — by a reordering that no test noticed. Changing the roster means
+    editing PINNED_PRELOAD_SKILLS deliberately.
+    """
+    listed = _frontmatter_skills()
+    assert listed[:PRELOAD_LIMIT] == PINNED_PRELOAD_SKILLS, (
+        "the preloaded roster changed; update PINNED_PRELOAD_SKILLS deliberately if intended"
+    )
+
+
 def test_preloaded_skills_are_the_first_entries_in_frontmatter_order() -> None:
     """The skills whose content reaches the context are exactly the first PRELOAD_LIMIT entries.
 
@@ -152,10 +209,13 @@ def test_tool_skills_precede_the_documentation_wrappers() -> None:
 def test_frontmatter_and_body_index_list_the_same_skills_in_the_same_order() -> None:
     """The two hand-edited copies of the routing order must not diverge.
 
-    They agree today, and the redundancy is the point: a human editing one sees the
-    other disagree. Divergence means the preload selector (frontmatter, where
-    position decides who is preloaded) and the navigation aid (body table) describe
-    different routing orders. To change the routing order, change both.
+    PRECONDITION for this check, stated so its cost is not a surprise: the body index
+    is the human-facing copy of the routing order, and the frontmatter is the copy the
+    harness reads. Changing the routing order therefore means editing BOTH. This test
+    exists to catch a one-sided edit — the case where the preload set and the
+    navigation aid end up describing different orders. A one-sided edit that only
+    touches the body table for readability will fail here, and the fix is to bring the
+    frontmatter with it, not to relax the check.
     """
     listed = [name for name in _frontmatter_skills() if name not in TOOL_SKILLS]
     body = [skill for _, skill in _body_index()]
