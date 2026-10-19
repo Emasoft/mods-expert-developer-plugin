@@ -404,6 +404,20 @@ _GENERIC_PROJECT_SEGMENTS = frozenset({"my-project", "my-other-repo"})
 # not be caught, which is recorded in DELEGATION.md.
 _GUARD_EXEMPT_DIRS = ("tests",)
 
+# Files that are NOT documentation a person reads: a lockfile, an ignore
+# list, a version pin, a git hook. The rule's justification is that the
+# plugin ships these files to people and a name in prose reads as a person
+# — that justification does not reach a lockfile or a hook script, so
+# scanning them would enforce a rule whose rationale is absent. A path
+# segment in a machine artefact is a machine's business, and CPV's own
+# absolute-path rule already covers the case that matters there.
+_GUARD_NON_DOCUMENTATION = {
+    ".gitignore",
+    ".python-version",
+    "uv.lock",
+    "git-hooks/pre-push",
+}
+
 # A home path: a user segment under /Users, then anything.
 _HOME_PATH = re.compile(r"/Users/([A-Za-z0-9_.-]+)")
 
@@ -429,16 +443,23 @@ def _is_generic_account_segment(segment: str) -> bool:
 
 
 def test_no_tracked_file_contains_a_home_path_that_reads_as_a_person() -> None:
-    """No shipped file may contain a home path whose user segment is a NAME.
+    """No shipped DOCUMENT may contain a home path whose segment is a NAME.
 
-    A path like a macOS home directory under someone's own name reads, to a
-    person, as somebody's actual home directory. The plugin ships these
-    files to users, so that reading is the one that counts — whether or not
-    a validator objects.
+    The rule this test enforces, exactly: a path segment under /Users that
+    is NOT on the known-not-a-name list is treated as a name. A path under
+    somebody's own name reads, to a person, as somebody's actual home
+    directory; the plugin ships these files to users, so that reading is the
+    one that counts — whether or not a validator objects.
 
-    This covers every tracked file, not just the chapters: a literal home
-    path in the ledger or the README is the same defect as one in a chapter,
-    and both were hit in this series.
+    Two boundaries, both deliberate:
+      - SCOPE is the shipped documentation (chapters, README, ledger,
+        NOTICE, LICENSE). Machine artefacts — a lockfile, an ignore list, a
+        version pin, a git hook — are excluded: a path segment in one of
+        those is a machine's business, and the justification above does not
+        reach them.
+      - COVERAGE is every readable tracked file in that scope, not an
+        extension allowlist. An earlier version skipped NOTICE and LICENSE,
+        which the plugin ships, and both were hit in this series.
     """
     tracked = subprocess.run(
         ["git", "ls-files"], cwd=ROOT, capture_output=True, text=True, check=True
@@ -446,6 +467,8 @@ def test_no_tracked_file_contains_a_home_path_that_reads_as_a_person() -> None:
     offending: list[str] = []
     for rel in tracked:
         if any(part in _GUARD_EXEMPT_DIRS for part in Path(rel).parts):
+            continue
+        if rel in _GUARD_NON_DOCUMENTATION:
             continue
         path = ROOT / rel
         try:
