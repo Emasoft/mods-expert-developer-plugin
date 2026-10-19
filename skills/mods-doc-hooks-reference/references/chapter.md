@@ -2951,10 +2951,10 @@ In addition to the [common input fields](https://code.claude.com/docs/en/hooks#c
 {
   "session_id": "abc123",
   "transcript_path": "/Users/.../.claude/projects/.../transcript.jsonl",
-  "cwd": "/Users/my-project/src",
+  "cwd": "/Users/.../my-project/src",
   "hook_event_name": "CwdChanged",
-  "old_cwd": "/Users/my-project",
-  "new_cwd": "/Users/my-project/src"
+  "old_cwd": "/Users/.../my-project",
+  "new_cwd": "/Users/.../my-project/src"
 }
 ```
 
