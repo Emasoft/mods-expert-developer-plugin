@@ -60,17 +60,22 @@ PRELOAD_LIMIT = 32
 # agree. This mirror is the only check that catches that, because it records what the
 # window WAS.
 #
-# It is mirrored as a SET, not a sequence, and that reduction is deliberate: the
-# documentation gives the window's INTERNAL order no meaning. It says the first 32
-# distinct names are preloaded; all 32 of them get their full content, so which of
-# them sits at position 5 is not a runtime property. Only the membership is.
+# It is mirrored as a SET, not a sequence, and that reduction is deliberate. The
+# documentation does not give order WITHIN the window any meaning: it says the first
+# 32 distinct names are preloaded, and all 32 of them get their full content, so the
+# membership is the whole of what it specifies. That is an argument from silence, not
+# a documented guarantee: if a future Claude Code release makes order within the
+# window meaningful (a most-relevant-first preload policy, or a context budget that
+# trims by position), this mirror would silently stop protecting the property it
+# guards, and nothing in the repo would flag it. Re-check the docs if the harness
+# changes.
 #
-# So a set is the right instrument: it survives a reordering of the window, which
-# acknowledging a change is a one-line edit, while a promotion across the boundary or
-# a demotion out of it still fails. Mirroring the sequence would make every
-# acknowledged change a full re-list of 32 names, since one insertion shifts all the
-# entries after it — a cost paid on every routing change to guard a property the
-# documentation does not give.
+# So a set is the right instrument for what is specified: it survives a reordering
+# of the window, so acknowledging a change is a one-line edit, while a promotion
+# across the boundary or a demotion out of it still fails. Mirroring the sequence
+# would make every acknowledged change a full re-list of 32 names, since one
+# insertion shifts all the entries after it — a cost paid on every routing change to
+# guard a property the documentation does not give.
 #
 # The cost of the set form: a diff of it shows that a member left and another joined,
 # but not which member left. Read the frontmatter's own diff when changing the
