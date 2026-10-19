@@ -25,10 +25,11 @@ WHICH 32 skills are preloaded is a product decision. The frontmatter is where th
 decision lives — the first 32 names of its `skills:` list are the ones Claude Code
 injects in full. This file MIRRORS that window (PINNED_PRELOAD_SKILLS) the way
 PINNED_CSPELL_IGNORE_PATHS mirrors .cspell.json's ignorePaths: the artifact decides,
-the mirror checks. The mirror exists because the selection is otherwise invisible —
-a skill demoted out of the window simply stops having its content injected, and
-nothing errors. So a change to the window must be acknowledged here, deliberately,
-by updating the mirror to match.
+the mirror checks. The mirror exists because a coordinated edit that shifts the window
+leaves every other check green — both hand-edited copies of the routing order still
+agree with each other — so the mirror is the only check that sees the window move.
+See the comment on PINNED_PRELOAD_SKILLS for why it records membership and not order,
+and what that costs.
 """
 
 from __future__ import annotations

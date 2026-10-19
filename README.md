@@ -118,7 +118,7 @@ between them. A skill addition is not one edit:
 1. `skills/<name>/SKILL.md` — the wrapper, with its `references/chapter.md` and `agents/openai.yaml`.
 2. `README.md` — a row in the Components table above. The table must cover every skill exactly once, its heading column must match each SKILL.md's H1, and it is ordered by heading (case-insensitive) — deliberately NOT the same order as the frontmatter.
 3. `agents/mods-expert-developer-agent.md` — an entry in the `skills:` frontmatter AND a row in the "Chapter skill index" table, at the same position in the same order, so the two copies of the routing order agree. The body table must cover every skill exactly once, and its label column must match each SKILL.md's H1.
-4. `PINNED_PRELOAD_SKILLS` in `tests/test_skills_menu.py` — the first 32 frontmatter entries, which are the ones Claude Code preloads in full. Only the window is mirrored, not the tail: adding a skill at position 30 or earlier pushes another skill out of that window, and the pinned set must be updated to match. Read the frontmatter's own diff too, since the pinned set records the membership and not which member was displaced.
+4. `PINNED_PRELOAD_SKILLS` in `tests/test_skills_menu.py` — the set of skills occupying the first 32 frontmatter entries, which are the ones Claude Code preloads in full. It is mirrored as a set, not a list: reordering within the window does not change it, but adding a skill at position 30 or earlier pushes another skill out, and the set must be updated to match. Read the frontmatter's own diff too, since the set records the membership and not which member was displaced. The four tool skills occupy the first four entries, so they are always inside the window.
 
 Then run the tests:
 
