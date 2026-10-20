@@ -85,7 +85,7 @@ alternation over those phrasings was run against the same corpus, and it hit 10 
 | file | what the hit is |
 |---|---|
 | `LICENSE` | "AS IS" — the standard MIT warranty disclaimer |
-| `CHANGELOG.md` | "verbatim" — the release note's own claim about the bundle (see below) |
+| `CHANGELOG.md` | "verbatim" — the release note's own claim about the bundle (see below). This hit is on the ORIGINAL wording, re-verified after the hand-edit was reverted; a run made while the correction was in place would have hit the correction text instead. |
 | `git-hooks/pre-push` | "Do NOT edit by hand" — about a GENERATED file, not the chapters |
 | `scripts/publish.py` | "as-is" / "authoritative" / "verbatim" — about a build step and a shipped artefact |
 | `tests/test_skills_menu.py` | "authoritative" — about skill frontmatter |
@@ -109,7 +109,19 @@ publish. Put release prose in the commit messages." A hand-edit to the 0.1.0 ent
 and with it the one correction in this series that bears on the owner's ruling. The fix belongs in a conventional commit message,
 which git-cliff renders into the next entry; `cliff.toml`'s `body` template uses `commit.message`, so a `fix:` commit carrying the
 correction is what reaches the CHANGELOG. **Until such a commit is released, the false word is still in `CHANGELOG.md:20`, and that is
-stated here rather than left for a reader to discover.** **There is no CLAUDE.md and no PRRD.md in this repository** — the project's conventions
+stated here rather than left for a reader to discover.**
+
+**WHAT THE NEXT CHANGELOG WILL SAY — VERIFIED, not predicted.** The pipeline renders each conventional commit's subject into the
+next entry, so the two commits carrying this correction will appear under "Bug Fixes" as:
+
+    - **docs:** The chapters are adapted, not verbatim — the release note said otherwise (cb5a1d8)
+    - **docs:** Revert the CHANGELOG hand-edit — that file is generated (9404d9e)
+
+That first bullet carries the corrected FACT — the chapters are adapted, not verbatim — which is what a reader of the next CHANGELOG
+needs. The 0.1.0 bullet itself is NOT replaced by that process: it is regenerated from the same commit log, and the commit that
+produced it still says "verbatim". So the next CHANGELOG will contain the correction and the uncorrected original in the same file.
+**That is a property of the tool, and it is the strongest argument for reading NOTICE rather than the release notes**; it is stated
+here so no one mistakes the next CHANGELOG for a corrected record. **There is no CLAUDE.md and no PRRD.md in this repository** — the project's conventions
 elsewhere assume a PRRD, and its absence here is itself part of the finding. So the premise is HALF-stated, not absent: the practice of
 preservation is declared, the rule for dangerous content is not, and the rule for dangerous content is exactly what is under review. A
 practice is not a grant of authority over the question. **The silence may also mean the question has simply never been put** — a READING, not a fact about the repository: the owner may hold the policy in their head rather than in a file, which is why the rule is asked rather than derived. It is offered as a possible explanation, not as the explanation.
