@@ -84,12 +84,11 @@ the list above says which hypotheses they left open.
 
 **THE REASSURING CASE, reduced to a reference to the list above.** On the FIRST release — the one with no pre-existing tag to label
 from — the render labels the window from the SUPPLIED tag, which is what case (a) shows: the top heading is the supplied version. **THAT IS
-WHAT CASE (a) SHOWS: THE TOP HEADING TAKES THE SUPPLIED TAG'S VERSION. It is a fact about the RENDER'S OUTPUT.** Separately, and about
-the PIPELINE'S INPUT rather than the render's output: **in the real pipeline the supplied tag IS the computed version — v0.1.1, derived
-in TRDD-XV6QOEK1 — so the SUPPLIED TAG and the COMPUTED VERSION ARE THE SAME STRING BY CONSTRUCTION.** **Those are two different objects
-— a tag's version string and a heading's version string — and the card does not assert that the heading takes the computed one; case (d)
-shows the heading taking the EXISTING tag's version where one sat at the commit the render labels.** In the experiment the supplied tag was
-the PROBE VALUE v0.9.9, chosen to stand out from the computed 0.1.1, which is why case (a) shows the heading taking v0.9.9. **"Shows", not
+**AND ONE FACT ABOUT THE PIPELINE, WHICH IS NOT THIS CARD'S AND IS NOT RESTATED HERE: in the real pipeline the supplied tag IS the
+computed version — v0.1.1, derived in TRDD-XV6QOEK1, WHICH OWNS THAT DERIVATION.** **THAT CARD IS WHERE THE FACT LIVES; THIS CARD
+NEEDS ONLY THAT THE SUPPLIED TAG AND THE COMPUTED VERSION ARE THE SAME STRING, AND IT SAYS WHAT THE TABLE SHOWS: case (d) shows the
+heading taking the EXISTING tag's version where one sat at the commit the render labels.** In the experiment the supplied tag was the
+PROBE VALUE v0.9.9, chosen to stand out from the computed 0.1.1, which is why case (a) shows the heading taking v0.9.9.
 "confirms": the experiment cannot separate that from the most-recent reading or from a version-matching reading, and the inventory below
 says so.** Once a tag exists, whether the label and the version agree again depends on which of the UNTESTED READINGS above governs —
 and the cases do not say. **"THE MOST RECENT TAG" IS ONE OF THOSE UNTESTED READINGS, SO THIS CARD DOES NOT ASSERT THE AGREEMENT.** The
