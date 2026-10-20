@@ -53,7 +53,7 @@ itself is worth nothing, so the script's checks are separated by where their bas
 | each per-rule block's widest figures, AND ITS EXISTENCE | the table's own re-measured values, and the scan's rule set | yes (the block is compared against the catalogue, not against a literal; a rule whose block is DELETED is caught, and so is a rule whose HEADING is repeated — a duplicate is not a copy the reader can ignore, because whichever one they read is the one they will believe) |
 | the bucket-A (site, rule) pairs | the SIBLING SPEC `cpv-nit-bucketA-sites.md`, a different committed file | yes |
 | the total (rule, site) set | the VALIDATOR'S OWN `[NIT]` output | yes |
-| the SET OF RULES, in BOTH halves of this file | the same validator output — the rules the scanner fired. The per-rule PROSE blocks and the per-site TABLES are two separate artefacts, and each is compared, and their counts are compared with each other | yes |
+| the SET OF RULES, in BOTH halves of this file | the same validator output — the rules the scanner fired. The per-rule PROSE section and the per-site TABLES are two separate artefacts, and each is compared against that rule set | yes |
 
 The distinction matters because an earlier version of this script held its expected row, block and site counts as
 LITERALS BESIDE THE TABLE, which made the coverage assertion circular: deleting one rule's table and lowering the
@@ -406,6 +406,10 @@ for rid, body in RULE_TABLES.items():
     for chapter, lineno, span, gap, stance in re.findall(r'\| `([a-z0-9-]+)` line (\d+) \| (\d+) \| (\d+) \| ([A-Z]+) \|', body):
         my_stance.setdefault(('mods-doc-' + chapter, lineno), set()).add(stance)
 for site in sorted(sib_stance):
+    # A BACKSTOP, not the primary check: a sibling site with no row here is
+    # already a difference in the (site, rule) pairs, compared above, so this
+    # branch is reached only if the pair comparison passed and the stance set
+    # still disagrees.
     if site not in my_stance:
         print('EXTERNAL ERROR: {0} {1} has a stance in the sibling but no row here.'.format(site[0], site[1]))
         print('  WHAT YOU SEE IS NOT A PASS.')
@@ -495,12 +499,26 @@ print('EXTERNAL: the (rule, site) set matches the validator output ({0} pairs).'
 # The rule SET as well as the pairs, and it is checked against BOTH halves of this
 # file: the per-rule PROSE blocks and the per-site TABLES are two separate
 # artefacts, and a rule's analysis can be deleted while its table survives. So the
-# scan's rules must equal the prose blocks' rules AND the tables' rules, and the
-# two counts must equal each other. Without the second half, deleting a rule's
-# whole analysis passed clean while the output printed two disagreeing counts.
+# scan's rules must equal the prose half's rules AND the tables' rules. Without
+# the second half, deleting a rule's whole analysis passed clean while the
+# output printed two disagreeing counts.
 scan_rules = {r for r, _, _ in nit}
-prose_rules = set(blocks)          # the per-rule adjudication blocks
+# The prose half's rule set is taken from its HEADINGS, not from the blocks
+# that parsed. A block whose figures lines were removed parses to nothing, so a
+# set built from the parsed blocks would not see that the rule had lost its
+# analysis at all - the comparison would be blind to exactly that malformation.
+# The headings say which rules are ANALYSED; the blocks say what each one
+# measured. Both are needed, and a rule with a heading but no block is caught.
+prose_rules = set(_prose_headings)
 table_rules = set(RULE_TABLES)     # the per-site tables
+missing_analysis = sorted(prose_rules - set(blocks))
+if missing_analysis:
+    print('EXTERNAL ERROR: {0} rule(s) have a per-rule prose heading but no measured'.format(len(missing_analysis)))
+    print('  block: {0}.'.format(missing_analysis))
+    print('  A heading without its figures is an analysis that says nothing, and')
+    print('  a reader cannot tell it from a rule that was never analysed.')
+    print('  WHAT YOU SEE IS NOT A PASS.')
+    raise SystemExit(1)
 for label, mine in (('per-rule prose blocks', prose_rules), ('per-site tables', table_rules)):
     if scan_rules != mine:
         print('EXTERNAL ERROR: the set of rules in the {0} differs from the validator\'s own.'.format(label))
@@ -508,10 +526,11 @@ for label, mine in (('per-rule prose blocks', prose_rules), ('per-site tables', 
         print('  only in this file: {0}'.format(sorted(mine - scan_rules)))
         print('  WHAT YOU SEE IS NOT A PASS.')
         raise SystemExit(1)
-# The two counts need no separate comparison: each half is compared with the
-# scan's rule set above, and a rule present in one half and absent from the
-# other is caught by whichever half it is missing from. A separate count check
-# would restate that, so it is not here.
+# A separate count comparison is not needed: each half is compared with the
+# scan's rule set above, so a rule present in one half and absent from the
+# other is caught by whichever half it is missing from. The MALFORMED-block case
+# - a heading with its figures missing - is covered by the check above, which
+# compares the headings against the blocks.
 print('EXTERNAL: the rule set matches the validator output ({0} rules), and both halves of this file ({0} prose blocks and {0} per-site tables) carry exactly those rules.'.format(len(scan_rules)))
 if found:
     print('{0} DISAGREEMENT(S) ABOVE. The file is not self-consistent as it stands.'.format(len(found)))

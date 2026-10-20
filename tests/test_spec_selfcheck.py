@@ -169,6 +169,8 @@ PERTURBATIONS: list[tuple[str, str, str]] = [
     ("empty the per-site table section", "empty_table_section", "COVERAGE ERROR"),
     ("append to a chapter that holds no cited line", "append_to_chapter", "the chapters have changed"),
     ("duplicate a per-site table", "duplicate_site_table", "a rule id was read more than once"),
+    ("delete a row that is not a bucket-A site", "delete_non_bucket_row", "(rule, site) set differs from the validator"),
+    ("strip a prose block's figures lines", "strip_block_figures", "per-rule prose heading but no measured"),
 ]
 
 def _mutate(sandbox: Path, kind: str) -> None:
@@ -192,6 +194,28 @@ def _mutate(sandbox: Path, kind: str) -> None:
         block = _prose_block(text, "SUPPLY_CHAIN")
         forged = block.replace("**widest token gap:** 73 characters", "**widest token gap:** 999 characters")
         text = text.replace(block, forged + block if kind.endswith("first") else block + forged, 1)
+    elif kind == "strip_block_figures":
+        # The rule's heading survives, its figures do not. The block then parses
+        # to nothing, so a rule set built from the PARSED BLOCKS would not see
+        # that the analysis had been emptied.
+        i = text.index("### `SUPPLY_CHAIN`")
+        j = text.index("### `", i + 10)
+        block = text[i:j]
+        stripped = "\n".join(
+            line for line in block.split("\n") if not line.startswith("- **widest")
+        )
+        text = text[:i] + stripped + text[j:]
+    elif kind == "delete_non_bucket_row":
+        # A row at a site the sibling spec does NOT carry. The bucket-A
+        # comparison cannot see it, the rule set is unchanged, and every row
+        # still measures correctly - so the TOTAL comparison against the
+        # validator's own output is the only thing that can catch it.
+        line = next(
+            candidate
+            for candidate in text.split("\n")
+            if candidate.startswith("| `status-line-customization` line 598 |")
+        )
+        text = text.replace(line + "\n", "", 1)
     elif kind == "duplicate_site_table":
         s = _table_section_start(text)
         i = text.index("### `SHELL_EXEC`", s)
@@ -304,6 +328,79 @@ def test_a_line_whose_raw_and_collapsed_forms_match_different_text_is_refused(
     code, output = _run(sandbox, capture)
     assert code != 0, "the script certified a document whose raw and collapsed forms disagree"
     assert "match DIFFERENT text" in output, output
+
+def test_a_sibling_site_with_no_row_here_is_refused(
+    sandbox: Path, pristine: tuple[str, str, str]
+) -> None:
+    """A bucket-A site the sibling carries and this file does not must fail.
+
+    The sibling is the OUTSIDE baseline: it was adjudicated independently, so a
+    site it names that this file's table has no row for is a missing row, not a
+    disagreement to be smoothed over.
+    """
+    _spec, _sibling, capture = pristine
+    assert capture, "no validator capture matching the spec's own table was found"
+    sibling = sandbox / SIBLING_REL
+    sibling.write_text(
+        sibling.read_text(encoding="utf-8")
+        + "- **mods-doc-cc-permissions-modes** line 999 — rule: SUPPLY_CHAIN — **NAMES**\n",
+        encoding="utf-8",
+    )
+    code, output = _run(sandbox, capture)
+    assert code != 0, "the script certified a document missing a site the sibling names"
+    assert "bucket-A (site, rule) pairs differ" in output, output
+
+def test_a_missing_catalogue_is_refused(sandbox: Path, pristine: tuple[str, str, str]) -> None:
+    """Without the CPV catalogue there is nothing to measure against.
+
+    The script measures every row against the INSTALLED catalogue, so a machine
+    without it cannot certify anything - and must say that, rather than dying
+    on an empty glob.
+    """
+    _spec, _sibling, capture = pristine
+    assert capture, "no validator capture matching the spec's own table was found"
+    empty_home = sandbox / "_empty_home"
+    empty_home.mkdir(exist_ok=True)
+    script = _extract_script((sandbox / SPEC_REL).read_text(encoding="utf-8"))
+    script_path = sandbox / "_script.py"
+    script_path.write_text(script, encoding="utf-8")
+    import os
+
+    env = dict(os.environ)
+    env["HOME"] = str(empty_home)
+    env["CPV_SCAN_OUTPUT"] = str(sandbox / "_scan.txt")
+    (sandbox / "_scan.txt").write_text(capture, encoding="utf-8")
+    result = subprocess.run(
+        [sys.executable, "-I", str(script_path)],
+        cwd=str(sandbox),
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+    assert result.returncode != 0, "the script certified the document with no catalogue to measure against"
+    assert "catalogue was not found" in result.stdout + result.stderr, result.stdout
+
+def test_a_missing_sibling_spec_is_refused(sandbox: Path, pristine: tuple[str, str, str]) -> None:
+    """The sibling spec is the bucket-A baseline; without it there is no baseline."""
+    _spec, _sibling, capture = pristine
+    assert capture, "no validator capture matching the spec's own table was found"
+    (sandbox / SIBLING_REL).unlink()
+    code, output = _run(sandbox, capture)
+    assert code != 0, "the script certified the document with no sibling spec to check against"
+    assert "sibling spec is missing" in output, output
+
+def test_an_unreadable_sibling_spec_is_refused(sandbox: Path, pristine: tuple[str, str, str]) -> None:
+    """A sibling spec whose format changed must fail, not read as an empty set.
+
+    An empty read would mean "no bucket-A sites", which would let a truncated
+    table pass - the format change has to be visible.
+    """
+    _spec, _sibling, capture = pristine
+    assert capture, "no validator capture matching the spec's own table was found"
+    (sandbox / SIBLING_REL).write_text("# the format changed\n", encoding="utf-8")
+    code, output = _run(sandbox, capture)
+    assert code != 0, "the script certified the document against an unreadable sibling spec"
+    assert "no bucket-A sites were read" in output, output
 
 def test_an_absent_capture_is_refused(sandbox: Path, pristine: tuple[str, str, str]) -> None:
     """The total baseline is required: without a capture the script must refuse."""
