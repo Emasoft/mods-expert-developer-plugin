@@ -19,11 +19,15 @@ approval-datetime: 2026-10-20T03:15:02+0200
 
 # The publish pipeline regenerates CHANGELOG.md and loses the 0.1.0 section on a tagless repository
 
-MEASURED, NOT HYPOTHETICAL, AND THE FRAMING MATTERS MORE THAN THE MEASUREMENT. **WHICH FINDING THIS CARD IS ABOUT: the title names the FORMAT MIGRATION — the next publish replaces a hand-authored
+MEASURED, NOT HYPOTHETICAL, AND THE FRAMING MATTERS MORE THAN THE MEASUREMENT. **EVERY MEASUREMENT IN THIS CARD IS OF THE
+PRE-TAG, NO-REMOTE STATE** — a repository with no git remote and no tags — and that is the state BEFORE the action the card describes.
+Creating the first release tag and publishing it changes both the tag set and (if the repository is given a remote) the version
+baseline, so the render measured here is the render BEFORE, not the render after. **WHICH FINDING THIS CARD IS ABOUT: the title names the FORMAT MIGRATION — the next publish replaces a hand-authored
 CHANGELOG.md with a cliff-generated one, and every hand-written passage in it is lost. THAT is the finding the card is about, and it
-is the one the owner must act on. The version-label and section-structure material further down is a SECOND, SEPARATE finding,
-measured in its own right, and it is recorded here as a QUESTION FOR THE OWNER rather than a severity judgement: a pre-existing tag
-changes how the render is SECTIONED, and in one measured case it also changes the top heading's version. **This card does NOT classify
+is the one the owner must act on. The version-label and section-structure material was a SECOND, SEPARATE finding and has now been
+SPLIT OUT INTO ITS OWN CARD, TRDD-XY45DGD4, because it is a different subject and because eleven rounds of review had grown it inside
+a card whose title names something else. This card keeps the format migration; the other card keeps the sectioning and the heading
+label, and states the owner's question without classifying its significance. **This card does NOT classify
 how much that matters.** An earlier draft of this card called that material "an ASIDE ... which the card itself calls cosmetic", and
 that label is WITHDRAWN: it is a severity judgement the plugin has no remit to make, and it is the same class of move the series
 retracted in the other direction when it called the false CHANGELOG word "a documentation defect rather than a policy question in
@@ -52,13 +56,13 @@ WHAT TAGGING WOULD ACTUALLY DO — MEASURED, not assumed. A card that says "tag 
 only variable is where the tag sits. The earlier version of this table was measured on clones at DIFFERENT commits and its bullet
 counts varied (87, 87, 87, 86, 89) for that reason alone; those numbers are WITHDRAWN and the table below replaces them.
 
-| case | tag position | supplied `--tag` | top heading | release sections | bullets | cliff's "already a tag" warning |
-|---|---|---|---|---|---|---|
-| (a) | no tag at all | v0.9.9 | `## [0.9.9]` | 1 | 90 | (none) |
-| (b) | root commit | v0.9.9 | `## [0.9.9]` | 2 | 90 | (none) |
-| (c) | an intermediate commit (82c693d) | v0.9.9 | `## [0.9.9]` | 2 | 90 | (none) |
-| (d) | the commit being released (HEAD) | v0.9.9 | `## [0.0.1]` | 1 | 90 | `There is already a tag (v0.0.1)` |
-| (e) | a commit on a SEPARATE BRANCH (`side`, at 82c693d), with the released commit on `main` | v0.9.9 | `## [0.9.9]` | 2 | 90 | (none) |
+| case | tag position | supplied `--tag` | top heading | top bullets | second section | 2nd bullets | cliff's "already a tag" warning |
+|---|---|---|---|---|---|---|---|
+| (a) | no tag at all | v0.9.9 | `## [0.9.9]` | 90 | (none) | 0 | (none) |
+| (b) | root commit (2026-10-15) | v0.9.9 | `## [0.9.9]` | 89 | `## [0.0.1]` — 2026-10-15 | 1 | (none) |
+| (c) | 82c693d (2026-10-20), an ancestor of HEAD | v0.9.9 | `## [0.9.9]` | 6 | `## [0.0.1]` — 2026-10-20 | 84 | (none) |
+| (d) | HEAD, the commit being released | v0.9.9 | `## [0.0.1]` | 90 | (none) | 0 | `There is already a tag (v0.0.1)` |
+| (e) | 82c693d on a SEPARATE BRANCH `side` | v0.9.9 | `## [0.9.9]` | 6 | `## [0.0.1]` — 2026-10-20 | 84 | (none) |
 
 **THE BULLET COUNT IS UNIFORM AT 90 IN EVERY CASE, AND THE ROOT COMMIT IS IN EVERY CASE** — so the tag does not change the CONTENT
 rendered: the same 90 commits, the whole history, in all five cases. That was the claim an earlier draft of this card supported with a
@@ -66,17 +70,39 @@ one-bullet difference; the difference was an artefact of the clones sitting at d
 count, which is the correct evidence for it.
 
 **BUT A DIFF BETWEEN THE RENDERED FILES SHOWS THAT "ONLY THE HEADING STRING DIFFERS" IS FALSE, AND WHAT DIFFERS IS MORE INTERESTING.**
-The observable that the bullet count was blind to is the SECTION STRUCTURE. `diff` of case (a) against each of the others gives:
+The observable the uniform bullet count was blind to is the SECTION STRUCTURE. **THE MECHANISM, AS MEASURED: a pre-existing tag OPENS A
+SECTION for the commits up to and including the tagged commit, dated by THE TAGGED COMMIT'S OWN COMMIT DATE; the commits AFTER the tag
+stay in the top section, dated today, under the SUPPLIED version.** So:
 
-- (a) vs (d): the ONLY difference is the top heading line — "## [0.9.9] - 2026-10-20" against "## [0.0.1] - 2026-10-20". One line.
-- (a) vs (b): the root commit's bullet MOVES. It is no longer under the top heading; it gains its own section, "## [0.0.1] - 2026-10-15", carrying the tagged commit under it.
-- (a) vs (c): the same shape — a second section for the tag, dated 2026-10-15, holding the commits up to the tag.
-- (a) vs (e): the same shape again, for the tag on the other branch.
+- (b), tag at the root commit: the root commit's bullet moves DOWN into its own section, dated 2026-10-15, which is the root commit's own
+  date. The top section keeps the other 89.
+- (c), tag at 82c693d: the second section holds 84 bullets and is dated 2026-10-20, which is 82c693d's own commit date. The top section
+  keeps the 6 commits after 82c693d.
+- (d), tag at the commit being released: there is nothing after the tag, so there is NO second section, and the top heading carries the
+  EXISTING tag's version (0.0.1) rather than the supplied one — with all 90 bullets under it.
+- (e), tag on another branch at 82c693d: NUMERICALLY IDENTICAL TO (c) — 6 top bullets, 84 in a second section dated 2026-10-20. **CASE (e)
+  THEREFORE TESTED NOTHING NEW**, because 82c693d is an ancestor of HEAD either way, so placing the tag on a branch that `main` also
+  contains does not change what cliff sees. An earlier draft of this card described case (e) as moving the ROOT commit into a section
+  dated 2026-10-15, which is the (b) mechanism and does not apply to it; that description is corrected here.
 
-**SO THE ACCURATE STATEMENT IS THIS: the tag does not change WHAT IS RENDERED — every case carries the same 90 commits — but it DOES
-change how the render is SECTIONED, and it changes the top heading's version in exactly one case.** Section counts: (a) 1, (b) 2, (c) 2, (d) 1, (e) 2. Case (d) is the one case with a single section, and it is the one case whose top heading carries the EXISTING tag's version rather than the supplied one. In every other case the supplied tag labels the top section and the pre-existing tag gets its own section below.
+**THE THREE FACTS, WHICH THE PREVIOUS SENTENCE CONFLATED INTO ONE.** (1) The same 90 commits appear in every case — the tag changes
+neither which commits are rendered nor their count. (2) The RELEASE-SECTION COUNT varies: 1, 2, 2, 1, 2 — the top section holds 90, 89, 6,
+90 and 6 bullets respectively. (3) The top heading's VERSION varies in exactly one case, (d), and only there. **An earlier draft of this
+card said "the tag does not change WHAT IS RENDERED" and then qualified it in the next clause; that sentence was self-contradictory and
+is withdrawn, because the sectioning IS part of what is rendered and the diff proves the rendered file differs in three of the five
+cases.**
 
-**THE OBSERVABLE THAT WAS MISSING: WHICH TAG CLIFF LOCATED.** Cliff's own warning is the direct observable of the variable under test, and it appears in exactly one case: (d) printed "There is already a tag (v0.0.1)". Cases (a), (b), (c) and (e) printed no such warning. That is a sharper discriminator than the bullet count, and it is now a column in the table below.
+**THE OBSERVABLE THAT WAS MISSING: WHICH TAG CLIFF LOCATED.** Cliff's own warning is the direct observable of the variable under test, and it appears in exactly ONE case: (d) printed "There is already a tag (v0.0.1)". Cases (a), (b), (c) and (e) printed no such warning. That is a sharper discriminator than the bullet count, and it is now a column in the table.
+
+**AND THIS COLUMN BEARS ON A CONDITION THE CARD WITHDREW TWO COMMITS AGO, so the two must be reconciled rather than left side by side.**
+The card had withdrawn the necessary condition "the mismatch appears only when a tag sits ON the commit being released", because the cases
+did not isolate it. The warning column is the datum that comes closest to isolating it: cliff prints "There is already a tag" in exactly
+the one case where the tag sits on the commit being released, and in no other. **WHAT THIS SUPPORTS: cliff reports a pre-existing tag only
+when that tag is on the commit it is labelling.** **WHAT IT DOES NOT ESTABLISH: WHY** — it may report only for a tag on the labelled
+commit, or only when the existing tag's VERSION differs from the supplied one (case (d)'s existing tag is 0.0.1 against a supplied
+0.9.9, and every other case's tag version differs too, so the measurement does not separate the two). The withdrawn condition is
+therefore not reinstated; it is NARROWED to a question the warning raises and does not answer, and that question is recorded here as
+open rather than as a conclusion.
 
 **THE CONSTRUCTION OF CASE (e), so it can be reproduced**: a branch `side` is created at 82c693d, the tag is placed on `side`, and the
 released commit stays on `main`. Case (c) places the tag on 82c693d while `main` stays checked out; case (d) places it on the released
