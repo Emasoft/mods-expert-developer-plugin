@@ -17,6 +17,13 @@ every change.
     python3 scripts/measure_guard_coverage.py --detail   # per guard
 
 It works in a sandbox under /tmp and never touches the working tree.
+
+It lives in `scripts/` because CPV rejects a non-standard root directory: a
+`tools/` directory raised MAJOR=1 ("Non-standard directory 'tools/' - not part
+of the plugin spec and not recognised by CPV"), and `scripts_dev/` is
+gitignored, which made the first version of this tool unreachable from the
+repository. `scripts/` is the standard directory, and the file is not part of
+the plugin's declared components.
 """
 
 from __future__ import annotations
@@ -35,23 +42,19 @@ SIBLING_REL = "design/specs/specs/cpv-nit-bucketA-sites.md"
 SUITE_REL = "tests/test_spec_selfcheck.py"
 SCRIPT_RE = re.compile(r"```python\n(.*?)```", re.S)
 
-NOT_GUARDS = ("if m:", "if rid not in sib_rules:")
-
-
 def guard_indices(script: str) -> list[int]:
-    lines = script.split("\n")
-    indices = []
-    for index, line in enumerate(lines):
-        stripped = line.strip()
-        if not (stripped.startswith("if ") and stripped.endswith(":")):
-            continue
-        if "raise SystemExit" not in "\n".join(lines[index + 1 : index + 11]):
-            continue
-        if any(stripped.startswith(name) for name in NOT_GUARDS):
-            continue
-        indices.append(index)
-    return indices
+    """The lines of the script's guard conditions.
 
+    The scan itself lives in `tests/test_spec_selfcheck_coverage.py`, so the
+    script and the routine check that guards the ledger CANNOT disagree about
+    what a guard is. That module is imported, not copied: a second
+    implementation of the same rule is exactly the drift this work exists to
+    remove, and the plugin's own copy-paste gate is right to flag it.
+    """
+    sys.path.insert(0, str(ROOT / "tests"))
+    from test_spec_selfcheck_coverage import guard_conditions, is_guard  # noqa: E402
+
+    return [index for index, condition in guard_conditions(script) if is_guard(condition)]
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
@@ -111,8 +114,20 @@ def main() -> int:
         len(guards), len(guards) - len(uncovered), len(uncovered)))
     for condition in uncovered:
         print("  uncovered: {0}".format(condition))
+    # The result is written where the routine test can read it, so the
+    # ledger's covered count is checked against the measurement rather than
+    # restated. reports_dev/ is gitignored, so the report is a local artefact
+    # and never a tracked file.
+    report = ROOT / "reports_dev" / "guard-coverage.txt"
+    report.parent.mkdir(parents=True, exist_ok=True)
+    report.write_text(
+        "GUARD COVERAGE: {0} guards, {1} covered, {2} uncovered\n".format(
+            len(guards), len(guards) - len(uncovered), len(uncovered)
+        )
+        + "".join("uncovered: {0}\n".format(c) for c in uncovered),
+        encoding="utf-8",
+    )
     return 0
-
 
 if __name__ == "__main__":
     raise SystemExit(main())
