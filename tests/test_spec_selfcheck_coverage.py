@@ -354,8 +354,26 @@ def test_the_covered_count_ban_has_the_properties_its_comment_claims() -> None:
     blocks = SCRIPT_RE.findall(spec)
     script = blocks[len(blocks) - 1]  # the last embedded python block
     _raw, total = guard_count(script)
-    spelled_total = SPELLED_COUNTS[total]
+    # The total cannot be below two while the script still has the two
+    # named exclusions, and the sibling test checks that - but the
+    # property test says so itself, because a total of zero would make
+    # `total - 1` index the list from the END, giving a wrong value
+    # rather than an error.
+    assert total >= 2, (
+        "the embedded script has {0} guard conditions, which cannot be "
+        "right while it still has the two named exclusions. The count "
+        "below this test is derived from the script, and the sentences "
+        "are built from a count one less than it, so it needs at least "
+        "two.".format(total)
+    )
     one_less = total - 1
+    # Above twenty the function matches the denominator as a NUMERAL
+    # only, and this test uses the same rule, so it does not raise where
+    # the code under test degrades.
+    if total < len(SPELLED_COUNTS):
+        spelled_total = SPELLED_COUNTS[total]
+    else:
+        spelled_total = str(total)
     pattern = re.compile(covered_figure_re(total), re.IGNORECASE)
 
     def matches(sentence: str) -> bool:
@@ -407,7 +425,9 @@ def test_the_covered_count_ban_has_the_properties_its_comment_claims() -> None:
     # parentheses and square brackets - the comment names exactly these,
     # and each one really does end the window.
     for separator in (",", ";", ":", ".", "(", ")", "[", "]"):
-        sentence = "18 of the 19 GUARD CONDITIONS{0} covered by a test".format(separator)
+        sentence = "{0} of the {1} GUARD CONDITIONS{2} covered by a test".format(
+            one_less, total, separator
+        )
         assert not matches(sentence), (
             "the window crossed a {0!r}, which the comment says it does not: {1}".format(
                 separator, sentence
@@ -448,7 +468,9 @@ def test_the_covered_count_ban_has_the_properties_its_comment_claims() -> None:
     assert past.search("18 of the 25 are covered by a test"), (
         "above twenty the subject-less ratio form stopped matching"
     )
-    assert not past.search("18 of the 19 are covered by a test"), (
+    assert not past.search(
+        "{0} of the {1} are covered by a test".format(one_less, total)
+    ), (
         "above twenty the ratio form stopped binding its denominator to the guard total"
     )
     assert not past.search("18 of the 72 are covered by a test"), (
