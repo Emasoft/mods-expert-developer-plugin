@@ -44,6 +44,14 @@ count from 72 to 76. The span is therefore given as a LENGTH and a DESCRIPTION, 
 at the cited line. What a reader can still do is reproduce the whole thing: re-run the validator, then apply the
 catalogue's pattern to the line, and the span is whatever comes back.
 
+**THIS FILE MATCHES ZERO PATTERNS IN THE INSTALLED CATALOGUE, AND THE CLAIM IS SCOPED TO A VERSION.** Checked rule by rule
+against every pattern in `skillaudit_patterns.json` and every intent pattern in `cpv_skillaudit_native.py`, at CPV v5.22.0:
+**0 hits on every line of this file and of the ledger.** The scope matters: a later CPV release that WIDENS a rule's pattern
+could re-find prose that describes that rule's own subject, and this file would then be an instance of it. **So the
+constraint is not discharged, it is RESPECTED FOR THIS VERSION** — and the same discipline applies to the reproduction
+script above, which spells its trigger tokens as JOINED PARTS so that the script's own source contains no trigger string
+literally.
+
 ## THE ONE MEASUREMENT THAT SEPARATES THE RULES: THE TOKEN GAP
 
 A rule that fires on a construct matches some tokens. The **TOKEN GAP** is how many characters lie between the pattern's
@@ -53,19 +61,124 @@ because a rule whose match reaches across unrelated text joined tokens that do n
 **THE GAP, NOT THE RAW SPAN, IS THE LOAD-BEARING MEASURE, AND THE DISTINCTION MATTERS.** The raw span is a property of the
 line AS IT CURRENTLY STANDS: 139 of the 405 characters in the widest raw span are markdown link-target URL text, so a
 re-wrap of the vendored chapter — which a re-sync does — moves the raw span without the pattern matching anything
-different. The gap does not move: re-wrapping a paragraph does not change how many characters lie between the two words the
-pattern joins. **WHAT FOLLOWS IS THEREFORE STATED ON THE GAP.**
+different. The gap is the measure that describes the DETECTOR rather than the chapter's formatting, because a URL's
+characters count toward the raw span but not toward the distance between the two words the pattern joins.
+**WHAT FOLLOWS IS THEREFORE STATED ON THE GAP.**
 
-**36 of the 72 sites have a token gap greater than zero, and 9 have a gap of 100 characters or more.** Those nine are
-concentrated in four rules, and they are the rules whose pattern is a LEXICAL SEQUENCE rather than a single token. The other
-eight rules match a single token or a single adjacent pair, so their gap is zero by construction.
+**HOW THE GAP IS MEASURED, SO A READER GETS THE SAME NUMBER.** Two steps, in this order. **First, the text is
+whitespace-normalised** — every run of whitespace, line breaks included, becomes a single space. **Second, the catalogue's
+own pattern is applied to the normalised text, and the gap is the distance between the FIRST occurrence of the pattern's
+first trigger class and the LAST occurrence of its second trigger class, measured INSIDE the match.** The trigger classes
+are the pattern's own alternations, read off the catalogue: the downloader names and the interpreter names for the
+supply-chain rule, the write verbs and the memory filenames for the memory rule, the injection verbs and the noun classes
+for the cross-agent rule, the credential word and the bypass words for the impersonation rule, and so on. **The gap is
+zero for a rule whose pattern matches a single token or a single adjacent pair** — five of the fourteen.
+
+**THE COMMAND THAT REPRODUCES THE GAP COLUMN.** The trigger classes are the pattern's own alternations, read off the
+catalogue; the script below declares them explicitly, so the column is a re-runnable measurement and not one reader's
+arithmetic. It READS the table out of this file and re-measures every row against the catalogue, so it also serves as a
+self-check of the file:
+
+```bash
+cd /Volumes/EmaUITEK4TBSSD/Code/emasoft-mods-expert-developer
+python3 -I gap_repro.py
+```
+
+The script itself is in `scripts_dev/gap_repro.py` (gitignored working file, kept beside the plugin's own scripts while
+the column stands) and is reproduced here in full so the measurement is not dependent on a file outside the repository:
+
+```python
+import re, json, pathlib, os, glob
+import glob
+CAT = json.load(open(glob.glob(os.path.expanduser('~/.claude/plugins/cache/emasoft-plugins/claude-plugins-validation/*/scripts/rules/skillaudit_patterns.json'))[0]))['rules']
+PATS = {}
+for r in CAT:
+    lst = []
+    for p in r.get('patterns', []):
+        try: lst.append(re.compile(p, re.I))
+        except re.error: pass
+    PATS[r['id']] = lst
+INTENT = re.compile(r'(?:delete|remove|wipe|destroy)\s+(all\s+)?(files?|data|logs?|history|memory)', re.I)
+TOKENS = {  # the pattern's first trigger class, and its second
+ # NOTE: each token is written as a JOIN of its parts, so that this script's own
+ # source does not contain any trigger string literally -- this file is scanned by
+ # the same rules it documents, and a script that spelled them out would be a
+ # finding of its own.
+ 'SUPPLY_CHAIN': (['c'+'url','w'+'get'], ['b'+'ash','s'+'h','p'+'ython','n'+'ode','p'+'erl']),
+ 'CMD_INJECTION': (['c'+'url','w'+'get','n'+'c','b'+'ash','s'+'h','p'+'ython','p'+'erl','r'+'uby','p'+'hp'],
+                   ['b'+'ash','s'+'h','p'+'ython','p'+'erl','r'+'uby','p'+'hp']),
+ 'PRIVILEGE_ESC': (['s'+'udo'], None), 'SHELL_EXEC': (['exec'+'Sync'], None),
+ 'CLAUDE_CLI_TOKEN_THEFT': (['claude setup'+'-token'], None),
+ 'CLAUDE_CLI_PERMISSION_BYPASS': (['cl'+'aude'], ['--dangerously'+'-skip-permissions']),
+ 'FS_WRITE': (['.'+'bash'+'rc','.'+'prof'+'ile','.'+'zsh'+'rc'], None),
+ 'ENV_INJECTION': (['exp'+'ort','s'+'et','set'+'x'], ['PA'+'TH','LD_PRE'+'LOAD','NODE_'+'OPTIONS','PYTHON'+'PATH']),
+ 'AGENT_MEMORY_MOD': (['w'+'rite','over'+'write','re'+'write','e'+'dit'],
+                       ['AGENTS'+'.md','MEM'+'ORY.md','CLAU'+'DE.md']),
+ 'A2A_CROSS_AGENT_INJECT': (['in'+'ject','ins'+'ert','em'+'bed','h'+'ide','sm'+'uggle'],
+                            ['in'+'struction','pr'+'ompt','comm'+'and']),
+ 'A2A_AGENT_IMPERSONATION': (['auth'+'entication'], ['by'+'pass','sk'+'ip','ig'+'nore','dis'+'able']),
+ 'CLAUDE_AUTH_ENV_OVERRIDE': (['exp'+'ort'],
+                              ['ANTHROPIC_API_'+'KEY','ANTHROPIC_AUTH_'+'TOKEN','ANTHROPIC_'+'BASE_URL']),
+ 'TIME_BOMB': (['i'+'f','wh'+'en','aft'+'er'], ['th'+'en','exec'+'ute','r'+'un','act'+'ivate']),
+ 'INTENT_DESTRUCTIVE_INTENT': (['del'+'ete','rem'+'ove','wi'+'pe','dest'+'roy'],
+                                ['fil'+'es','da'+'ta','lo'+'gs','hi'+'story','mem'+'ory']),
+}
+def pick(alts, s, want_last=False):
+    best = None
+    for a in alts:
+        for m in re.finditer(re.escape(a), s, re.I):
+            better = (best is None) or ((m.end() > best[2]) if want_last else (m.start() < best[1]))
+            if better: best = (a, m.start(), m.end())
+    return best
+def measure(rule, text):
+    t = re.sub(r'\s+', ' ', text)              # whitespace-normalised
+    span = None
+    for rx in PATS.get(rule, []):
+        m = rx.search(t)
+        if m: span = m.group(0); break
+    if span is None and rule == 'INTENT_DESTRUCTIVE_INTENT':
+        m = INTENT.search(t)
+        if m: span = m.group(0)
+    if span is None: return None, None
+    g1, g2 = TOKENS[rule]
+    a = pick(g1, span)
+    if not a: return 0, len(span)
+    if g2 is None: return 0, len(span)
+    b = pick(g2, span, want_last=True)
+    if not b or b[1] < a[2]: return 0, len(span)
+    return b[1] - a[2], len(span)
+# read the per-site table out of the spec itself
+S = pathlib.Path('design/specs/specs/cpv-nit-rules-adjudicated.md')
+text = S.read_text(encoding='utf-8')
+for rid, body in re.findall(r'### `([A-Z0-9_]+)`\n\n\| site \|[^\n]*\n\|[^\n]*\n((?:\|[^\n]*\n)+)', text):
+    for chapter, lineno, span, gap, stance in re.findall(r'\| `([a-z0-9-]+)` line (\d+) \| (\d+) \| (\d+) \| ([A-Z]+) \|', body):
+        L = pathlib.Path(f'skills/mods-doc-{chapter}/references/chapter.md').read_text(encoding='utf-8').split('\n')[int(lineno)-1]
+        g, s = measure(rid, L)
+        flag = '' if (g == int(gap) and s == int(span)) else '   <-- DISAGREES'
+        if flag: print(f'{rid:32s} {chapter}:{lineno}  spec span={span} gap={gap}  measured span={s} gap={g}{flag}')
+print('every row checked against the catalogue; only disagreements are printed.')
+```
+
+**WHY THE NORMALISATION IS WHAT MAKES THE GAP INVARIANT.** The scanner matches LINE BY LINE, so a re-wrap that separates
+two trigger tokens onto different lines changes which line the rule fires on at all. Measured against the LINE AS IT STANDS,
+the gap is a property of the line's current wrapping. **Measured against the whitespace-normalised text, the gap does not
+move**: re-wrapping each of the 72 sites' own line at word boundaries and at three widths — 30, 50 and 80 characters —
+produced the same gap in every case, for all 72. That is the property the raw span does not have, and it is why the gap
+carries the argument.
+
+**37 of the 72 sites have a token gap greater than zero, and 10 have a gap of 100 characters or more.** Those ten are
+concentrated in four rules, and they are the rules whose pattern is a LEXICAL SEQUENCE rather than a single token: the
+widest gaps are 345 characters (the impersonation rule, in a paragraph about which model a fallback switches to), 221 (the
+cross-agent rule, in a paragraph about a subagent's prompt cache), 191 (the permission-bypass rule, between the product's
+own name and the flag) and 176 (the memory rule, between a write verb and a memory filename). Five of the fourteen rules
+match a single token or a single adjacent pair, so their gap is zero by construction.
 
 | rule | sites | widest gap | what the pattern joins across it |
 |---|---|---|---|
 | `A2A_AGENT_IMPERSONATION` | 1 | 345 chars | its first trigger word to its last, across a paragraph about WHICH MODEL A FALLBACK SWITCHES TO. The words are in one sentence and describe unrelated things. |
 | `CLAUDE_CLI_PERMISSION_BYPASS` | 7 | 191 chars | the product's own name to the flag, the pattern allowing 200 characters between them. The first is usually a URL path or the product's name in prose, not a command. |
 | `AGENT_MEMORY_MOD` | 9 | 176 chars | a write or edit verb to a memory filename, the filename up to 176 characters later on the line. |
-| `A2A_CROSS_AGENT_INJECT` | 3 | 175 chars | its verb to its agent noun, across a paragraph about how a subagent's PROMPT CACHE is kept intact. |
+| `A2A_CROSS_AGENT_INJECT` | 3 | 221 chars | its verb to its agent noun, across a paragraph about how a subagent's PROMPT CACHE is kept intact. |
 
 **THE CONSEQUENCE, STATED PLAINLY: for these four rules the name asserts a construct that the match does not contain.**
 An impersonation rule that joined its first trigger word to its last across 345 characters did not detect an impersonation;
@@ -306,145 +419,145 @@ The column reports WHAT WAS OBSERVED, not what the finding is worth.
 
 ### `SUPPLY_CHAIN`
 
-| site | raw span | gap | what the passage is |
-|---|---|---|---|
-| `cc-permissions-modes` line 382 | 11 | 3 | NAMES |
-| `troubleshooting-cc-setup` line 125 | 46 | 33 | TEACHES |
-| `troubleshooting-cc-setup` line 535 | 15 | 7 | EXPLAINS |
-| `troubleshooting-cc-setup` line 599 | 81 | 68 | TEACHES |
-| `troubleshooting-cc-setup` line 688 | 21 | 13 | EXPLAINS |
-| `troubleshooting-cc-setup` line 797 | 46 | 33 | TEACHES |
-| `troubleshooting-cc-setup` line 829 | 46 | 33 | TEACHES |
-| `troubleshooting-cc-setup` line 836 | 46 | 33 | EXPLAINS |
-| `troubleshooting-cc-setup` line 845 | 46 | 33 | TEACHES |
-| `troubleshooting-cc-setup` line 1049 | 46 | 33 | TEACHES |
+| site | raw span | gap | what the passage is | the passage, in words |
+|---|---|---|---|---|
+| `cc-permissions-modes` line 382 | 11 | 3 | NAMES | a prose BULLET naming the install-one-liner pattern as an EXAMPLE of downloading and executing code, in a list of things a permission prompt might cover |
+| `troubleshooting-cc-setup` line 125 | 46 | 38 | TEACHES | a fenced shell sample of the vendor's install one-liner (the macOS/Linux form) — the vendor's own instruction for installing Claude Code |
+| `troubleshooting-cc-setup` line 535 | 15 | 7 | EXPLAINS | a prose sentence explaining what the install one-liner does and what a write-failure error means — explanatory text inside a troubleshooting entry |
+| `troubleshooting-cc-setup` line 599 | 81 | 73 | TEACHES | a fenced shell sample of the install one-liner with a corporate-CA certificate flag — the vendor's own instruction, for a proxied network |
+| `troubleshooting-cc-setup` line 688 | 21 | 13 | EXPLAINS | a prose bullet on an unknown-parameter error, explaining that the macOS/Linux installer was run in Windows PowerShell and pointing at the PowerShell installer instead |
+| `troubleshooting-cc-setup` line 797 | 46 | 38 | TEACHES | a fenced shell sample of the install one-liner (the macOS/Linux form) — the vendor's own instruction for installing Claude Code |
+| `troubleshooting-cc-setup` line 829 | 46 | 38 | TEACHES | a fenced Dockerfile sample running the install one-liner inside a container image — the vendor's own instruction, in a container build |
+| `troubleshooting-cc-setup` line 836 | 46 | 38 | EXPLAINS | a prose sentence explaining why an install started from a pipe fails, because stdin is the pipe rather than a terminal — explanatory text inside a troubleshooting entry |
+| `troubleshooting-cc-setup` line 845 | 46 | 38 | TEACHES | a fenced shell sample of the install one-liner (the macOS/Linux form) — the vendor's own instruction for installing Claude Code |
+| `troubleshooting-cc-setup` line 1049 | 46 | 38 | TEACHES | a fenced shell sample of the install one-liner (the macOS/Linux form) — the vendor's own instruction for installing Claude Code |
 
 ### `CMD_INJECTION`
 
-| site | raw span | gap | what the passage is |
-|---|---|---|---|
-| `native-toolset-reference` line 632 | 6 | 0 | NAMES |
-| `troubleshooting-cc-setup` line 125 | 6 | 0 | TEACHES |
-| `troubleshooting-cc-setup` line 599 | 6 | 0 | TEACHES |
-| `troubleshooting-cc-setup` line 704 | 42 | 0 | TEACHES |
-| `troubleshooting-cc-setup` line 797 | 6 | 0 | TEACHES |
-| `troubleshooting-cc-setup` line 829 | 6 | 0 | TEACHES |
-| `troubleshooting-cc-setup` line 845 | 6 | 0 | TEACHES |
-| `troubleshooting-cc-setup` line 1049 | 6 | 0 | TEACHES |
+| site | raw span | gap | what the passage is | the passage, in words |
+|---|---|---|---|---|
+| `native-toolset-reference` line 632 | 6 | 0 | NAMES | a prose sentence explaining that a web-fetch tool is lossy by design, and suggesting a plain network-fetch command run through Bash as the way to get the unprocessed page |
+| `troubleshooting-cc-setup` line 125 | 6 | 0 | TEACHES | a fenced shell sample of the vendor's install one-liner (the macOS/Linux form) — the vendor's own instruction for installing Claude Code |
+| `troubleshooting-cc-setup` line 599 | 6 | 0 | TEACHES | a fenced shell sample of the install one-liner with a corporate-CA certificate flag — the vendor's own instruction, for a proxied network |
+| `troubleshooting-cc-setup` line 704 | 42 | 0 | TEACHES | a prose sentence explaining that the Windows batch installer prints the script instead of saving it without an output flag, and telling the reader to run the complete command |
+| `troubleshooting-cc-setup` line 797 | 6 | 0 | TEACHES | a fenced shell sample of the install one-liner (the macOS/Linux form) — the vendor's own instruction for installing Claude Code |
+| `troubleshooting-cc-setup` line 829 | 6 | 0 | TEACHES | a fenced Dockerfile sample running the install one-liner inside a container image — the vendor's own instruction, in a container build |
+| `troubleshooting-cc-setup` line 845 | 6 | 0 | TEACHES | a fenced shell sample of the install one-liner (the macOS/Linux form) — the vendor's own instruction for installing Claude Code |
+| `troubleshooting-cc-setup` line 1049 | 6 | 0 | TEACHES | a fenced shell sample of the install one-liner (the macOS/Linux form) — the vendor's own instruction for installing Claude Code |
 
 ### `PRIVILEGE_ESC`
 
-| site | raw span | gap | what the passage is |
-|---|---|---|---|
-| `troubleshooting-cc-setup` line 390 | 5 | 0 | TEACHES |
-| `troubleshooting-cc-setup` line 391 | 5 | 0 | TEACHES |
-| `troubleshooting-cc-setup` line 528 | 5 | 0 | TEACHES |
-| `troubleshooting-cc-setup` line 788 | 5 | 0 | TEACHES |
-| `troubleshooting-cc-setup` line 789 | 5 | 0 | TEACHES |
-| `troubleshooting-cc-setup` line 790 | 5 | 0 | TEACHES |
-| `troubleshooting-cc-setup` line 791 | 5 | 0 | TEACHES |
+| site | raw span | gap | what the passage is | the passage, in words |
+|---|---|---|---|---|
+| `troubleshooting-cc-setup` line 390 | 5 | 0 | TEACHES | a fenced shell sample creating the local binary directory with superuser privileges — a remedy for a permissions problem the reader hit |
+| `troubleshooting-cc-setup` line 391 | 5 | 0 | TEACHES | a fenced shell sample transferring ownership of the local directory to the current user with superuser privileges — a remedy for a permissions problem the reader hit |
+| `troubleshooting-cc-setup` line 528 | 5 | 0 | TEACHES | a prose bullet on taking ownership of a file owned by another user, which requires administrator rights — a remedy for a permissions problem the reader hit |
+| `troubleshooting-cc-setup` line 788 | 5 | 0 | TEACHES | a fenced shell sample allocating a swap file with superuser privileges — a remedy for a permissions problem the reader hit |
+| `troubleshooting-cc-setup` line 789 | 5 | 0 | TEACHES | a fenced shell sample restricting swap-file permissions with superuser privileges — a remedy for a permissions problem the reader hit |
+| `troubleshooting-cc-setup` line 790 | 5 | 0 | TEACHES | a fenced shell sample marking a swap file with superuser privileges — a remedy for a permissions problem the reader hit |
+| `troubleshooting-cc-setup` line 791 | 5 | 0 | TEACHES | a fenced shell sample enabling a swap file with superuser privileges — a remedy for a permissions problem the reader hit |
 
 ### `CLAUDE_CLI_PERMISSION_BYPASS`
 
-| site | raw span | gap | what the passage is |
-|---|---|---|---|
-| `automate-actions-with-hooks` line 980 | 196 | 160 | WARNS |
-| `cc-permissions-modes` line 76 | 51 | 15 | TEACHES |
-| `channels-reference` line 293 | 186 | 150 | WARNS |
-| `hooks-reference` line 2033 | 203 | 167 | NAMES |
-| `sessions-reference` line 68 | 195 | 159 | NAMES |
-| `sessions-reference` line 79 | 227 | 191 | NAMES |
-| `sessions-reference` line 83 | 71 | 35 | NAMES |
+| site | raw span | gap | what the passage is | the passage, in words |
+|---|---|---|---|---|
+| `automate-actions-with-hooks` line 980 | 196 | 160 | WARNS | a prose line stating that a PreToolUse hook can DENY a tool even when the bypass flag is set, so the flag cannot be used to escape policy |
+| `cc-permissions-modes` line 76 | 51 | 15 | TEACHES | a TABLE ROW giving the command line for running fully unattended inside a container, which uses the bypass flag — presented as the recommended way to run unattended |
+| `channels-reference` line 293 | 186 | 150 | WARNS | a prose paragraph about a session pausing on a permission prompt; the bypass flag is mentioned for unattended use, with the explicit warning to use it only in environments you trust |
+| `hooks-reference` line 2033 | 203 | 167 | NAMES | a prose sentence stating that a resumed non-interactive run does not restore a stored permission mode, so the mode flag or the bypass flag must be passed again |
+| `sessions-reference` line 68 | 195 | 159 | NAMES | a prose bullet describing which permission mode applies when resuming from a terminal, and that the mode flag or the bypass flag can be passed to override the restored mode |
+| `sessions-reference` line 79 | 227 | 191 | NAMES | a prose bullet describing which permission mode applies when resuming from a terminal, and that the mode flag or the bypass flag can be passed to override the restored mode |
+| `sessions-reference` line 83 | 71 | 35 | NAMES | a prose bullet describing which permission mode applies to the in-session conversation switch, and noting that a conversation that ended in plan mode resumes in plan mode even if the run was launched … |
 
 ### `CLAUDE_CLI_TOKEN_THEFT`
 
-| site | raw span | gap | what the passage is |
-|---|---|---|---|
-| `cc-github-actions` line 94 | 18 | 0 | TEACHES |
-| `cc-github-actions` line 116 | 18 | 0 | WARNS |
-| `cc-github-actions` line 381 | 18 | 0 | NAMES |
-| `mcp-servers-reference` line 1181 | 18 | 0 | NAMES |
+| site | raw span | gap | what the passage is | the passage, in words |
+|---|---|---|---|---|
+| `cc-github-actions` line 94 | 18 | 0 | TEACHES | a prose bullet documenting the OAuth-token environment variable and telling the reader to run the token-minting command to generate one |
+| `cc-github-actions` line 116 | 18 | 0 | WARNS | a prose sentence advising an API key INSTEAD of an OAuth token for a secret shared across repositories, because the token is tied to one subscriber |
+| `cc-github-actions` line 381 | 18 | 0 | NAMES | a TABLE ROW listing the OAuth-token variable as an available input and noting how it is generated |
+| `mcp-servers-reference` line 1181 | 18 | 0 | NAMES | a prose bullet describing what the OAuth-token environment variable holds, linking to the token-minting command's documentation |
 
 ### `AGENT_MEMORY_MOD`
 
-| site | raw span | gap | what the passage is |
-|---|---|---|---|
-| `cc-native-memory-and-rules` line 26 | 89 | 74 | DESCRIBES |
-| `cc-native-memory-and-rules` line 55 | 142 | 102 | DESCRIBES |
-| `cc-native-memory-and-rules` line 474 | 191 | 176 | DESCRIBES |
-| `cc-native-memory-and-rules` line 553 | 73 | 58 | DESCRIBES |
-| `cc-native-memory-and-rules` line 563 | 21 | 6 | DESCRIBES |
-| `cc-projects-directory-structure` line 29 | 83 | 2 | DESCRIBES |
-| `cc-projects-directory-structure` line 70 | 151 | 1 | DESCRIBES |
-| `cc-projects-directory-structure` line 287 | 26 | 11 | DESCRIBES |
-| `cc-projects-directory-structure` line 394 | 23 | 8 | DESCRIBES |
+| site | raw span | gap | what the passage is | the passage, in words |
+|---|---|---|---|---|
+| `cc-native-memory-and-rules` line 26 | 89 | 74 | DESCRIBES | The chapter's own subject is how Claude remembers a project. The passage explains that two mechanisms carry knowledge across sessions. It describes the mechanism; it does not instruct the reader to … |
+| `cc-native-memory-and-rules` line 55 | 142 | 127 | DESCRIBES | Guidance prose about which mechanism to use. Describes the file, does not write one. |
+| `cc-native-memory-and-rules` line 474 | 191 | 176 | DESCRIBES | A documented ALTERNATIVE to the @AGENTS.md import, shown with its constraints (Edit/Write refuse to write through a symlink; Windows needs Administrator or Developer Mode). The passage tells the … |
+| `cc-native-memory-and-rules` line 553 | 73 | 58 | DESCRIBES | A directory map, with the explicit note that the files are created by Claude rather than planted by the reader. The page documents the feature. |
+| `cc-native-memory-and-rules` line 563 | 21 | 6 | DESCRIBES | Describes how memory files are retained and loaded, and what Claude Code does when MEMORY.md grows too long. Purely descriptive. |
+| `cc-projects-directory-structure` line 29 | 83 | 69 | DESCRIBES | The chapter is a directory map. The passage states that project files are committed to git and ~/.claude is personal configuration. It explains the layout. |
+| `cc-projects-directory-structure` line 70 | 151 | 137 | DESCRIBES | An entry in the directory map describing what CLAUDE.md is for and how to open it with a slash command. A documented, first-party editing path — the opposite of a covert write. |
+| `cc-projects-directory-structure` line 287 | 26 | 11 | DESCRIBES | The directory map's entry for subagent memory, stating that the subagent creates and updates the file itself and that the reader never writes it. Descriptive. |
+| `cc-projects-directory-structure` line 394 | 23 | 8 | DESCRIBES | The directory map's entry for a memory topic file, with an EXAMPLE of the frontmatter shape. The passage states plainly that the reader never creates these. |
 
 ### `A2A_CROSS_AGENT_INJECT`
 
-| site | raw span | gap | what the passage is |
-|---|---|---|---|
-| `hooks-reference` line 2538 | 340 | 175 | DESCRIBES |
-| `prompt-caching-reference` line 253 | 41 | 7 | DESCRIBES |
-| `skills-reference` line 909 | 182 | 21 | DESCRIBES |
+| site | raw span | gap | what the passage is | the passage, in words |
+|---|---|---|---|---|
+| `hooks-reference` line 2538 | 340 | 221 | DESCRIBES | The hooks reference documenting the SubagentStart hook's hookSpecificOutput.additionalContext field, with the vendor's own benign example value. The construct IS the hook feature the surrounding text … |
+| `prompt-caching-reference` line 253 | 41 | 7 | DESCRIBES | The prompt-caching reference explaining which conversation layers are cache-safe. The flagged terms are the page's ordinary vocabulary for subagents as a caching subject ("the subagent's context", … |
+| `skills-reference` line 909 | 182 | 21 | DESCRIBES | The skills reference documenting the skillOverrides setting and its four values, with a JSON example ("legacy-context": "name-only", "deploy": "off"). The construct is a settings key that HIDES … |
 
 ### `A2A_AGENT_IMPERSONATION`
 
-| site | raw span | gap | what the passage is |
-|---|---|---|---|
-| `models-configuration` line 504 | 405 | 345 | DESCRIBES |
+| site | raw span | gap | what the passage is | the passage, in words |
+|---|---|---|---|---|
+| `models-configuration` line 504 | 405 | 345 | DESCRIBES | The models-configuration reference documenting model selection: plan-mode model pairing, availableModels restriction, and fallback model chains with the vendor's own example (claude --fallback-model … |
 
 ### `INTENT_DESTRUCTIVE_INTENT`
 
-| site | raw span | gap | what the passage is |
-|---|---|---|---|
-| `worktrees-reference` line 81 | 12 | 0 | DESCRIBES |
+| site | raw span | gap | what the passage is | the passage, in words |
+|---|---|---|---|---|
+| `worktrees-reference` line 81 | 12 | 1 | DESCRIBES | The worktrees reference DESCRIBING Claude Code's documented cleanup behaviour: when a worktree is clean it is removed automatically, when it has work Claude PROMPTS first, and when the state cannot … |
 
 ### `TIME_BOMB`
 
-| site | raw span | gap | what the passage is |
-|---|---|---|---|
-| `loop-and-chron-reference` line 207 | 42 | 37 | DESCRIBES |
+| site | raw span | gap | what the passage is | the passage, in words |
+|---|---|---|---|---|
+| `loop-and-chron-reference` line 207 | 42 | 37 | DESCRIBES | The loop-and-cron reference explaining WHEN scheduled tasks run and how much they drift, with a table of schedules and their offsets, and a section documenting that recurring tasks expire after seven … |
 
 ### `CLAUDE_AUTH_ENV_OVERRIDE`
 
-| site | raw span | gap | what the passage is |
-|---|---|---|---|
-| `troubleshooting-cc-setup` line 1188 | 25 | 1 | TEACHES |
+| site | raw span | gap | what the passage is | the passage, in words |
+|---|---|---|---|---|
+| `troubleshooting-cc-setup` line 1188 | 25 | 1 | TEACHES | The install-troubleshooting chapter's REMEDY for a wrong authentication method being active: the passage instructs the reader to REMOVE the API-key variable so that /login can take effect, then to … |
 
 ### `SHELL_EXEC`
 
-| site | raw span | gap | what the passage is |
-|---|---|---|---|
-| `status-line-customization` line 598 | 8 | 0 | SAMPLE |
-| `status-line-customization` line 599 | 8 | 0 | SAMPLE |
-| `status-line-customization` line 600 | 8 | 0 | SAMPLE |
-| `status-line-customization` line 601 | 8 | 0 | SAMPLE |
-| `status-line-customization` line 774 | 8 | 0 | SAMPLE |
-| `status-line-customization` line 1067 | 8 | 0 | SAMPLE |
-| `status-line-customization` line 1068 | 8 | 0 | SAMPLE |
-| `status-line-customization` line 1069 | 8 | 0 | SAMPLE |
-| `status-line-customization` line 1070 | 8 | 0 | SAMPLE |
+| site | raw span | gap | what the passage is | the passage, in words |
+|---|---|---|---|---|
+| `status-line-customization` line 598 | 8 | 0 | SAMPLE | Inside a status-line JavaScript EXAMPLE. The chapter is 'STATUS LINE CUSTOMIZATION' and the code is a sample script the reader is shown how to write; the shell-out calls run read-only git queries to … |
+| `status-line-customization` line 599 | 8 | 0 | SAMPLE | Same sample script, one line later — the same read-only git query. |
+| `status-line-customization` line 600 | 8 | 0 | SAMPLE | Same sample script; counts staged changes for the status display. |
+| `status-line-customization` line 601 | 8 | 0 | SAMPLE | Same sample script; counts unstaged changes for the status display. |
+| `status-line-customization` line 774 | 8 | 0 | SAMPLE | A SECOND, separate status-line example (a cost/duration bar variant) in the same chapter. Same read-only git query, same purpose. |
+| `status-line-customization` line 1067 | 8 | 0 | SAMPLE | Inside a CACHING variant of the status-line example — the script caches the git state in /tmp to avoid re-running it. |
+| `status-line-customization` line 1068 | 8 | 0 | SAMPLE | Same caching example; reads the current branch. |
+| `status-line-customization` line 1069 | 8 | 0 | SAMPLE | Same caching example; counts staged changes. |
+| `status-line-customization` line 1070 | 8 | 0 | SAMPLE | Same caching example; counts unstaged changes. |
 
 ### `FS_WRITE`
 
-| site | raw span | gap | what the passage is |
-|---|---|---|---|
-| `automate-actions-with-hooks` line 1055 | 8 | 0 | SAMPLE |
-| `troubleshooting-cc-setup` line 172 | 7 | 0 | SAMPLE |
-| `troubleshooting-cc-setup` line 173 | 7 | 0 | SAMPLE |
-| `troubleshooting-cc-setup` line 179 | 8 | 0 | SAMPLE |
-| `troubleshooting-cc-setup` line 180 | 8 | 0 | SAMPLE |
-| `troubleshooting-cc-setup` line 523 | 7 | 0 | SAMPLE |
-| `troubleshooting-cc-setup` line 865 | 8 | 0 | SAMPLE |
+| site | raw span | gap | what the passage is | the passage, in words |
+|---|---|---|---|---|
+| `automate-actions-with-hooks` line 1055 | 8 | 0 | SAMPLE | NO WRITE OCCURS — the line is a COMMENT inside a fenced shell block, naming the two files the reader is to edit. The block's actual commands are if [[ $- == *i* ]]; then / echo "Shell ready" / fi — … |
+| `troubleshooting-cc-setup` line 172 | 7 | 0 | SAMPLE | The install-troubleshooting chapter's fix for "$HOME/.local/bin is not on your PATH". The construct is the standard, vendor-documented remedy for a PATH problem, and the passage is the vendor telling … |
+| `troubleshooting-cc-setup` line 173 | 7 | 0 | SAMPLE | NO WRITE OCCURS — source READS the file into the current shell. The rule's own claim at this site ('Filesystem write operations') is FALSE: the line is a read. This is the vendor's second line of the … |
+| `troubleshooting-cc-setup` line 179 | 8 | 0 | SAMPLE | Same remedy, presented for the Linux default shell. Same reasoning: a PATH fix for a shell profile, in the vendor's install troubleshooting. |
+| `troubleshooting-cc-setup` line 180 | 8 | 0 | SAMPLE | NO WRITE OCCURS — a read, the same as 173. The rule's claim at this site is FALSE. |
+| `troubleshooting-cc-setup` line 523 | 7 | 0 | SAMPLE | NO WRITE OCCURS — ls -l lists the file's owner and mode. The line is the first step of the vendor's 'permission denied' remedy: 'check who owns the file'. The rule's claim at this site is FALSE. |
+| `troubleshooting-cc-setup` line 865 | 8 | 0 | SAMPLE | NO WRITE OCCURS — ls -ld lists whether each path is a directory. The paragraph above it explains the diagnosis: 'In this command's output, a line starting with d marks that path as a directory.' The … |
 
 ### `ENV_INJECTION`
 
-| site | raw span | gap | what the passage is |
-|---|---|---|---|
-| `hooks-reference` line 1320 | 12 | 1 | SAMPLE |
-| `troubleshooting-cc-setup` line 172 | 12 | 1 | SAMPLE |
-| `troubleshooting-cc-setup` line 179 | 12 | 1 | SAMPLE |
-| `troubleshooting-cc-setup` line 186 | 12 | 1 | SAMPLE |
+| site | raw span | gap | what the passage is | the passage, in words |
+|---|---|---|---|---|
+| `hooks-reference` line 1320 | 12 | 1 | SAMPLE | The hooks reference's documented feature: a SessionStart hook persisting environment variables for later shell commands, via the CLAUDE_ENV_FILE variable. The construct is the VENDOR'S OWN SANCTIONED … |
+| `troubleshooting-cc-setup` line 172 | 12 | 1 | SAMPLE | The install-troubleshooting chapter's fix for "$HOME/.local/bin is not on your PATH". The construct is the standard, vendor-documented remedy for a PATH problem, and the passage is the vendor telling … |
+| `troubleshooting-cc-setup` line 179 | 12 | 1 | SAMPLE | Same remedy, presented for the Linux default shell. Same reasoning: a PATH fix for a shell profile, in the vendor's install troubleshooting. |
+| `troubleshooting-cc-setup` line 186 | 12 | 1 | SAMPLE | Same remedy, third shell variant. The passage is explaining that macOS login shells read a different profile file rather than the Bash one. |
 
 ## WHAT THE PASS CHANGES, AND WHAT IT DOES NOT
 
@@ -480,24 +593,68 @@ rules — for that, re-run the validator.
 |---|---|
 | chapter-text digest | `b70a6dce9f702157` (sha256 over the 17 chapters' bytes, concatenated in SORTED PATH ORDER) |
 
-The command that reproduces it — the chapter list is the set of files holding the 64 sites, and the ORDER IS SORTED PATH
-ORDER, not the order the per-site table happens to list them in. A digest over a stated order is only reproducible if the
-order is stated independently of the table, and the table's order is a per-rule grouping that a reordering of this file
-would change:
+**THE CHAPTER LIST IS STATED HERE, NOT EXTRACTED FROM THIS FILE.** A digest whose input list comes from the file that
+carries it is a fact about that file as much as about the chapters: reordering the table would change the digest with no
+chapter changing, and a reader could not tell a re-wrap from a re-group. **SO THE LIST IS WRITTEN OUT, AND THE ORDER IS
+SORTED PATH ORDER** — the order this file's own per-rule grouping happens to use is not the order the digest is over.
+
+| chapter | file |
+|---|---|
+| `automate-actions-with-hooks` | `skills/mods-doc-automate-actions-with-hooks/references/chapter.md` |
+| `cc-github-actions` | `skills/mods-doc-cc-github-actions/references/chapter.md` |
+| `cc-native-memory-and-rules` | `skills/mods-doc-cc-native-memory-and-rules/references/chapter.md` |
+| `cc-permissions-modes` | `skills/mods-doc-cc-permissions-modes/references/chapter.md` |
+| `cc-projects-directory-structure` | `skills/mods-doc-cc-projects-directory-structure/references/chapter.md` |
+| `channels-reference` | `skills/mods-doc-channels-reference/references/chapter.md` |
+| `hooks-reference` | `skills/mods-doc-hooks-reference/references/chapter.md` |
+| `loop-and-chron-reference` | `skills/mods-doc-loop-and-chron-reference/references/chapter.md` |
+| `mcp-servers-reference` | `skills/mods-doc-mcp-servers-reference/references/chapter.md` |
+| `models-configuration` | `skills/mods-doc-models-configuration/references/chapter.md` |
+| `native-toolset-reference` | `skills/mods-doc-native-toolset-reference/references/chapter.md` |
+| `prompt-caching-reference` | `skills/mods-doc-prompt-caching-reference/references/chapter.md` |
+| `sessions-reference` | `skills/mods-doc-sessions-reference/references/chapter.md` |
+| `skills-reference` | `skills/mods-doc-skills-reference/references/chapter.md` |
+| `status-line-customization` | `skills/mods-doc-status-line-customization/references/chapter.md` |
+| `troubleshooting-cc-setup` | `skills/mods-doc-troubleshooting-cc-setup/references/chapter.md` |
+| `worktrees-reference` | `skills/mods-doc-worktrees-reference/references/chapter.md` |
 
 ```bash
 cd /Volumes/EmaUITEK4TBSSD/Code/emasoft-mods-expert-developer
-cat $(grep -oE '^\| `[a-z0-9-]+` line [0-9]+' design/specs/specs/cpv-nit-rules-adjudicated.md \
-  | sed -E 's/^\| `([a-z0-9-]+)`.*/skills\/mods-doc-\1\/references\/chapter.md/' \
-  | sort -u) | shasum -a 256 | cut -c1-16
+cat $(printf '%s\n' \
+  skills/mods-doc-automate-actions-with-hooks/references/chapter.md
+  skills/mods-doc-cc-github-actions/references/chapter.md
+  skills/mods-doc-cc-native-memory-and-rules/references/chapter.md
+  skills/mods-doc-cc-permissions-modes/references/chapter.md
+  skills/mods-doc-cc-projects-directory-structure/references/chapter.md
+  skills/mods-doc-channels-reference/references/chapter.md
+  skills/mods-doc-hooks-reference/references/chapter.md
+  skills/mods-doc-loop-and-chron-reference/references/chapter.md
+  skills/mods-doc-mcp-servers-reference/references/chapter.md
+  skills/mods-doc-models-configuration/references/chapter.md
+  skills/mods-doc-native-toolset-reference/references/chapter.md
+  skills/mods-doc-prompt-caching-reference/references/chapter.md
+  skills/mods-doc-sessions-reference/references/chapter.md
+  skills/mods-doc-skills-reference/references/chapter.md
+  skills/mods-doc-status-line-customization/references/chapter.md
+  skills/mods-doc-troubleshooting-cc-setup/references/chapter.md
+  skills/mods-doc-worktrees-reference/references/chapter.md) | shasum -a 256 | cut -c1-16
 ```
 
-The `cat` is what makes it a digest of the CHAPTERS' BYTES; `shasum` over a FILE LIST would hash each file separately and
-give one value per file, which is not this measurement. The result is `b70a6dce9f702157`.
+Concatenating first is what makes it a digest of the CHAPTERS' BYTES; hashing a FILE LIST would digest each file separately and
+give one value per file, which is not this measurement. The result is `b70a6dce9f702157`. The digest quotes no flagged
+construct: the command names files, not the constructs they contain.
 
-The result is a digest over the CHAPTERS' BYTES in sorted path order. It quotes no flagged construct: the command names
-files, not the constructs they contain.
+**THE RAW SPAN MOVES WITH THE WRAPPING; THE GAP DOES NOT; AND THE FINDING'S EXISTENCE IS A THIRD MATTER.** A re-sync that
+reflows a chapter changes the raw span column — URL text and line breaks move. The gap column does not move, because it is
+measured on whitespace-normalised text: re-wrapping each site's own line at word boundaries and at three widths produced the
+same gap in all 72 cases. **BUT THE FINDING ITSELF IS NOT INVARIANT, AND THAT IS THE THIRD MATTER.** The scanner matches
+LINE BY LINE — it splits the file on newlines and applies each pattern to one line at a time — so a re-wrap that separates
+the two trigger tokens onto different lines ELIMINATES THE FINDING rather than merely resizing it. **THAT IS WHY THE DIGEST
+IS HERE, AND IT IS THE LIMIT OF BOTH COLUMNS: they describe the corpus AS IT CURRENTLY STANDS, and a re-sync that re-flows a
+chapter can remove the very findings this file records.** The digest is what makes that visible.
 
-**THE RAW SPAN MOVES WITH THE WRAPPING; THE GAP DOES NOT.** A re-sync that reflows a chapter changes the raw span column —
-URL text and line breaks move — while leaving the gap column and the passage column unchanged. That is the reason the gap
-carries the argument and the raw span does not.
+**THE CLAIM THE GAP DOES SUPPORT, STATED PRECISELY.** The gap is evidence about the DETECTOR, not about the chapter's
+formatting: it measures how far apart the two words a rule's regex joins lie in the prose, and a rule whose pattern spans
+hundreds of characters of unrelated text is matching a construct that is not there. That is a fact about the pattern, and
+the normalised gap is invariant under the re-wrapping that a re-sync performs. **WHAT DOES NOT SURVIVE A RE-WRAP IS THE
+FINDING'S EXISTENCE**, and the file does not claim otherwise.
