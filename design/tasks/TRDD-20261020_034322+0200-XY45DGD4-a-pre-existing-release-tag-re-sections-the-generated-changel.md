@@ -41,10 +41,11 @@ THE THREE MEASURED FACTS: (1) the same 90 commits appear in every case — the t
 count; (2) the release-section COUNT varies 1, 2, 2, 1, 2, and the top section holds 90, 89, 6, 90 and 6 bullets, each row's two counts
 summing to 90, which is how the table reproduces; (3) the top heading's VERSION varies in exactly one case, (d), and only there.
 
-**THE LABEL-SELECTION OBSERVATION — WHAT WAS SEEN, NOT THE RULE THAT GOVERNS IT.** In every case where the pre-existing tag was NOT at
-the labelled commit, the SUPPLIED tag was used; in the one case where it was, the EXISTING tag was used. **THAT IS WHAT WAS OBSERVED. IT
-IS NOT THE RULE THAT GOVERNS, AND THIS CARD DOES NOT CLAIM TO KNOW WHAT GOVERNS.** The readings the cases do not separate are enumerated
-ONCE, in the next section; the paragraphs after it refer there rather than restating it.
+**THE LABEL-SELECTION OBSERVATION — WHAT WAS SEEN, NOT THE RULE THAT GOVERNS IT.** In every case where the pre-existing tag was
+NOT at the commit the RENDER LABELS — THE EXPERIMENT'S SENSE OF THE SHORTHAND, and the whole of the evidence is experimental — the
+SUPPLIED tag was used; in the one case where it was, the EXISTING tag was used. **IN THE REAL PIPELINE'S SENSE OF THE SAME SHORTHAND
+THIS SENTENCE WOULD BE THE POSITION-READING, WHICH THE INVENTORY BELOW SAYS THE CASES DO NOT ESTABLISH — SO IT IS STATED ONLY IN THE
+EXPERIMENT'S SENSE, AND THE INVENTORY IS WHAT A READER WHO WANTS THE RULE SHOULD READ.**
 
 **THE FRAME, STATED ONCE, BECAUSE IT DECIDES HOW THE ITEMS BELOW ARE WORDED.** The question is WHICH PRE-EXISTING TAG, IF ANY, CLIFF
 PREFERS TO THE SUPPLIED ONE, and every candidate rule is a rule about the RELATIONSHIP between a pre-existing tag and the supplied one.
@@ -81,15 +82,18 @@ and the rule space beyond them is not enumerated here.
 *WHAT A RE-RUN MUST VARY: a second tag at a different position, or with a different version.* The table above says which cases were run;
 the list above says which hypotheses they left open.
 
-**THE REASSURING CASE, reduced to a reference to the list above.** On the FIRST release — the one with no pre-existing tag — the render labels
-the window from the SUPPLIED tag, which is what case (a) shows: the top heading is the supplied version. **IN THE REAL PIPELINE THE
-SUPPLIED TAG IS THE COMPUTED VERSION — v0.1.1, derived in TRDD-XV6QOEK1 — so the two agree BY CONSTRUCTION**; in the experiment the
-supplied tag was the PROBE VALUE v0.9.9, chosen to stand out from the computed 0.1.1, and case (a) SHOWS the top heading taking the
-supplied version rather than the computed one. **"Shows", not "confirms": the experiment cannot separate that from the most-recent reading
-or from a version-matching reading, and the inventory below says so.** Once a tag exists,
-whether the label and the version agree again depends on which of the UNTESTED READINGS above governs — and the cases do not say.
-**"THE MOST RECENT TAG" IS ONE OF THOSE UNTESTED READINGS, SO THIS CARD DOES NOT ASSERT THE AGREEMENT.** The reassuring case is one of the
-four measured cases; it is not a claim about ordinary releases.
+**THE REASSURING CASE, reduced to a reference to the list above.** On the FIRST release — the one with no pre-existing tag to label
+from — the render labels the window from the SUPPLIED tag, which is what case (a) shows: the top heading is the supplied version. **THAT IS
+WHAT CASE (a) SHOWS: THE TOP HEADING TAKES THE SUPPLIED TAG'S VERSION. It is a fact about the RENDER'S OUTPUT.** Separately, and about
+the PIPELINE'S INPUT rather than the render's output: **in the real pipeline the supplied tag IS the computed version — v0.1.1, derived
+in TRDD-XV6QOEK1 — so the SUPPLIED TAG and the COMPUTED VERSION ARE THE SAME STRING BY CONSTRUCTION.** **Those are two different objects
+— a tag's version string and a heading's version string — and the card does not assert that the heading takes the computed one; case (d)
+shows the heading taking the EXISTING tag's version where one sat at the commit the render labels.** In the experiment the supplied tag was
+the PROBE VALUE v0.9.9, chosen to stand out from the computed 0.1.1, which is why case (a) shows the heading taking v0.9.9. **"Shows", not
+"confirms": the experiment cannot separate that from the most-recent reading or from a version-matching reading, and the inventory below
+says so.** Once a tag exists, whether the label and the version agree again depends on which of the UNTESTED READINGS above governs —
+and the cases do not say. **"THE MOST RECENT TAG" IS ONE OF THOSE UNTESTED READINGS, SO THIS CARD DOES NOT ASSERT THE AGREEMENT.** The
+reassuring case is one of the four measured cases; it is not a claim about ordinary releases.
 
 **AND WHY THAT DOES NOT CONFLICT WITH CASE (d): THE SOURCE OF THE LABEL, NOT A TIMELINE.** The five cases are five CONFIGURATIONS OF ONE
 HISTORY at one pinned commit, not a sequence of releases; all five render the same 90 commits at the same commit. The first-release
