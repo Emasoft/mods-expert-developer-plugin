@@ -56,6 +56,25 @@ SCRIPT_RE = re.compile(r"```python\n(.*?)```", re.S)
 # spec's set. Excluding these by name is what makes the count re-derivable.
 NOT_GUARDS = ("if m:", "if rid not in sib_rules:")
 
+# The shapes a covered-count figure can take in the guard-coverage passage.
+# It is scoped to the GUARD-COUNT language on purpose: the passage is allowed
+# to name corpus figures, and "the 72 sites are covered by the scan" is a
+# legitimate sentence about the corpus, not a claim about how many of the
+# script's guards have a test behind them. The alternative - any digit
+# followed by "covered" - fires on that, and would be a false positive that
+# a future editor would resolve by deleting the check.
+#
+# It matches case-insensitively, because the passage capitalises emphasised
+# words, and a check an editor can defeat by capitalisation is a check that
+# will be defeated. A spelled-out count is not matched: the figures this
+# series removed were digits, and a spelled count is a different claim.
+COVERED_FIGURE_RE = (
+    r"\d+ of the \d+ GUARD CONDITIONS"
+    r"|\d+ of the \d+ (?:GUARD )?CONDITIONS are covered"
+    r"|\d+ (?:of the \d+ )?(?:are |is )?covered by a test"
+    r"|\d+ (?:are |is )?covered\b"
+)
+
 
 def guard_conditions(script: str) -> list[tuple[int, str]]:
     """Every refusing condition in the script, with the line it is on.
@@ -146,7 +165,7 @@ def test_the_ledger_states_this_scripts_guard_count() -> None:
     # figures of the form "N of the M" - the corpus counts, which are the
     # SPEC's to state and the script's to check row by row.
     passage = _guard_coverage_bullet(ledger)
-    covered_figures = re.findall(r"\d+ of the \d+ GUARD CONDITIONS|\d+ (?:are )?covered", passage)
+    covered_figures = re.findall(COVERED_FIGURE_RE, passage)
     assert not covered_figures, (
         "the guard-coverage passage states a covered-count figure {0}, and the "
         "covered count is the one figure no routine check can enforce - its "
