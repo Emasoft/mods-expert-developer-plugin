@@ -52,7 +52,15 @@ def guard_indices(script: str) -> list[int]:
     remove, and the plugin's own copy-paste gate is right to flag it.
     """
     sys.path.insert(0, str(ROOT / "tests"))
-    from test_spec_selfcheck_coverage import guard_conditions, is_guard  # noqa: E402
+    try:
+        from test_spec_selfcheck_coverage import guard_conditions, is_guard  # noqa: E402
+    except ImportError as exc:  # pragma: no cover - the tree is always complete here
+        raise SystemExit(
+            "The shared guard scanner is missing: {0} does not hold "
+            "test_spec_selfcheck_coverage.py. The scanner lives there so this "
+            "tool and the routine test cannot disagree about what a guard is, "
+            "so this tool cannot run without it.".format(ROOT / "tests")
+        ) from exc
 
     return [index for index, condition in guard_conditions(script) if is_guard(condition)]
 
@@ -114,19 +122,6 @@ def main() -> int:
         len(guards), len(guards) - len(uncovered), len(uncovered)))
     for condition in uncovered:
         print("  uncovered: {0}".format(condition))
-    # The result is written where the routine test can read it, so the
-    # ledger's covered count is checked against the measurement rather than
-    # restated. reports_dev/ is gitignored, so the report is a local artefact
-    # and never a tracked file.
-    report = ROOT / "reports_dev" / "guard-coverage.txt"
-    report.parent.mkdir(parents=True, exist_ok=True)
-    report.write_text(
-        "GUARD COVERAGE: {0} guards, {1} covered, {2} uncovered\n".format(
-            len(guards), len(guards) - len(uncovered), len(uncovered)
-        )
-        + "".join("uncovered: {0}\n".format(c) for c in uncovered),
-        encoding="utf-8",
-    )
     return 0
 
 if __name__ == "__main__":
