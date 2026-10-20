@@ -1,10 +1,10 @@
 ---
 trdd-id: BDQ9GY12
 title: Which 32 of the 64 listed skills get their content preloaded
-column: proposal
-status: proposed
+column: complete
+status: archived
 created: 2026-10-20T13:05:21+0200
-updated: 2026-10-20T13:05:21+0200
+updated: 2026-10-20T13:53:31+0200
 current-owner: user
 created-by: user
 task-type: feature
@@ -28,3 +28,10 @@ WHAT THIS IS NOT. It is not the same decision as the bucket-A editorial question
 HOW TO DECIDE, IF A FRAME HELPS. The trade is context budget against the cost of an agent having to load a reference on demand: a skill the agent cannot see may never be consulted, and a skill that is always in view costs every session. The 32 skills that reference OTHER skills' content (the hooks reference and the skills reference) are the ones most likely to be useful without being read, because they are indexes - but that is an argument, not a measurement, and the corpus's own usage would be the thing to measure.
 
 ## Approval log
+- 2026-10-20 — OWNER RULED: let the agent decide which skill to load. The skills-menu exists for that, so the preload roster is not a product call; it follows from the routing design. The implementation is TRDD-CO536FX9.
+- 2026-10-20T13:53:31+0200 — COMPLETE by user. Owner ruled on 2026-10-20: the agent loads the skill it wants on demand, and the skills-menu exists for that. The preload roster is a consequence of the routing design, implemented in TRDD-CO536FX9..
+
+## Acceptance
+
+- [x] The owner's ruling is recorded: the agent decides which skill to load, and the skills-menu is the routing aid that carries that choice.
+- [x] The ruling is NOT a preload-roster decision: the roster follows the routing design, so the implementation is TRDD-CO536FX9 and this card records the decision it implements.

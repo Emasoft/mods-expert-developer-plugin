@@ -1,10 +1,10 @@
 ---
 trdd-id: 8BXXNOPQ
-title: Eleven commits of the guard-coverage series cite TRDD-XV6QOEK1, which is a different card
+title: Twelve commits of the guard-coverage series cite TRDD-XV6QOEK1, which is a different card
 column: todo
 status: tasked
 created: 2026-10-20T13:04:52+0200
-updated: 2026-10-20T13:04:52+0200
+updated: 2026-10-20T13:55:13+0200
 current-owner: user
 created-by: user
 task-type: docs
@@ -36,3 +36,15 @@ THE LESSON, WHICH IS THE PART WORTH KEEPING. Twenty-four adversarial review roun
 ## Approval log
 
 - 2026-10-20T13:04:52+0200 — MANDATE issued by user (min-approval-requirement: none). Pre-approved: issuer authority >= required approver. No approval request was sent.
+- 2026-10-20 — OWNER RULED (a): leave the commit subjects as they are. The note and PRHYQEVK's implementation-commits make both directions resolvable; no history rewrite.
+
+## Acceptance
+
+- [x] The count is DERIVED, not remembered: the series window d1c4cd0..040ea53 holds 22 commits, and exactly 12 of them carry the wrong citation - the other 10 predate the mis-citation's introduction and carry no TRDD id at all.
+- [x] The card's title and its body state the same number, and that number is the derived one: twelve.
+- [x] The owner ruled option (a) on 2026-10-20: the commit subjects are left as they are, and this note plus PRHYQEVK's implementation-commits make both directions resolvable. No history rewrite.
+
+## The complete series, derived - because PRHYQEVK's list is short by ten
+
+THE SERIES IS 22 COMMITS, NOT 12, AND THE COUNT IS DERIVED FROM THE ARTIFACTS THE SERIES TOUCHED - not remembered. The window d1c4cd0..040ea53 holds 22 commits; each one touches tests/test_spec_selfcheck_coverage.py, scripts/measure_guard_coverage.py, or line 87 of DELEGATION.md (the guard-coverage passage). Of the 22, exactly 12 carry the wrong (TRDD-XV6QOEK1) citation; the other 10 predate its introduction and carry no TRDD id at all - so 12 is the count of the MIS-CITATION, and 22 is the count of the SERIES.
+THE FULL LIST, in series order: d1c4cd0, 6705842, 0f4f707, 12446de, 5362f6c, eae55ed, 0e88651, 5f1f8e5, ec3f3d4, 41e833f, 0464a58, d731e2e, 36a441e, a3c71df, 073c46d, 705c26f, 089ae10, 01ef8e4, 168175f, d9a2075, 6c76e6a, 040ea53. PRHYQEVK's implementation-commits names the last TWELVE of these and omits the first TEN, which include d1c4cd0 (the commit that derived the figure and created the series) and 12446de (the commit that removed the covered count - the series' origin and its central figure). A future bug in the covered-count logic would be traced to a commit the card does not name, which is the SAME broken chain this card exists to record, one level up.

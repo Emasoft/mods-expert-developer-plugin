@@ -4,7 +4,7 @@ title: The agent loads chapter skills at runtime instead of preloading 28 of the
 column: todo
 status: tasked
 created: 2026-10-20T13:38:55+0200
-updated: 2026-10-20T13:38:55+0200
+updated: 2026-10-20T13:55:42+0200
 current-owner: user
 created-by: user
 task-type: feature
@@ -40,3 +40,7 @@ WHAT THIS DOES NOT CHANGE. The chapters still ship, still are reachable, and sti
 ## Approval log
 
 - 2026-10-20T13:38:55+0200 — MANDATE issued by user (min-approval-requirement: none). Pre-approved: issuer authority >= required approver. No approval request was sent.
+
+## A CORRECTION TO THE CLOSED DECISION CARD, recorded here because that card is archived
+
+TRDD-BDQ9GY12, the closed decision card, says 'tests/test_spec_selfcheck_coverage.py and the plugin's own structure checks assert that the preloaded set is exactly the first N in the curated order'. THAT ATTRIBUTION IS WRONG: tests/test_spec_selfcheck_coverage.py contains no preload logic at all - its contents are spelled_or_numeral, covered_figure_re, guard_conditions, is_guard and guard_count, and its two tests are the guard-count test and the covered-count property test. THE PRELOAD-WINDOW CHECK LIVES IN tests/test_skills_menu.py, in test_preload_window_is_exactly_the_pinned_roster, test_preloaded_skills_are_the_first_entries_in_frontmatter_order, test_tool_skills_precede_the_documentation_wrappers, and test_frontmatter_and_body_index_list_the_same_skills_in_the_same_order. BDQ9GY12 is archived and therefore immutable, so the correction is recorded here, on the card that implements the decision it fed. A card that names the wrong file for a check is the same class of defect as the mis-citation this series already has one card about (TRDD-8BXXNOPQ), so it is worth naming rather than leaving in place.

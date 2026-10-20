@@ -1,10 +1,10 @@
 ---
 trdd-id: FM80HTRT
 title: Does the plugin ship Anthropic's install one-liner, the permission-bypass flag, the long-lived-token command and the superuser examples, as Anthropic's own documentation shows them
-column: proposal
-status: proposed
+column: complete
+status: archived
 created: 2026-10-20T13:05:08+0200
-updated: 2026-10-20T13:05:08+0200
+updated: 2026-10-20T13:52:43+0200
 current-owner: user
 created-by: user
 task-type: feature
@@ -28,3 +28,12 @@ A DEFENSIBLE ANSWER IS YES. They are Anthropic's official instructions, and remo
 WHAT IS NOT AT STAKE. The measurement establishes that the detections are not false positives about the TEXT: the rules are reading a real install-one-liner, a real superuser example, a real permission-bypass flag. What the owner decides is whether the plugin should carry them, not whether they are there. The three reworded lines in the plugin's own text - the only lines of the 72 the plugin can change alone - are already assigned and are not part of this decision.
 
 ## Approval log
+- 2026-10-20 — OWNER RULED YES: the plugin ships Anthropic's install one-liner, the permission-bypass flag, the long-lived-token minting command and the superuser examples, as Anthropic's own documentation shows them. The 36 bucket-A findings are dispositioned accordingly, and the consent registry records that ruling per site.
+- 2026-10-20T13:52:43+0200 — COMPLETE by user. Owner ruled YES on 2026-10-20: the plugin ships Anthropic's instructions as Anthropic documents them. The 36 bucket-A findings are dispositioned, and the consent registry records the ruling per site..
+
+## Acceptance
+
+- [x] The owner's ruling is recorded on the card: YES - the plugin ships Anthropic's install one-liner, the permission-bypass flag, the long-lived-token minting command and the superuser examples, as Anthropic's own documentation shows them.
+- [x] The 36 bucket-A findings are dispositioned as shipped-by-ruling rather than as false positives: the consent registry records the ruling, per site, as the reason on each entry.
+- [x] No site is executed by the plugin: the finding is about what the chapters TEACH, and the chapters are preserved text, not plugin code.
+- [x] The three reworded lines in the plugin's own text remain assigned to the plugin alone, and are not part of this decision.
