@@ -57,23 +57,52 @@ SCRIPT_RE = re.compile(r"```python\n(.*?)```", re.S)
 NOT_GUARDS = ("if m:", "if rid not in sib_rules:")
 
 # The shapes a covered-count figure can take in the guard-coverage passage.
+#
 # It is scoped to the GUARD-COUNT language on purpose: the passage is allowed
 # to name corpus figures, and "the 72 sites are covered by the scan" is a
 # legitimate sentence about the corpus, not a claim about how many of the
-# script's guards have a test behind them. The alternative - any digit
+# script's guards have a test behind them. The alternative - any count
 # followed by "covered" - fires on that, and would be a false positive that
 # a future editor would resolve by deleting the check.
 #
 # It matches case-insensitively, because the passage capitalises emphasised
 # words, and a check an editor can defeat by capitalisation is a check that
-# will be defeated. A spelled-out count is not matched: the figures this
-# series removed were digits, and a spelled count is a different claim.
-COVERED_FIGURE_RE = (
-    r"\d+ of the \d+ GUARD CONDITIONS"
-    r"|\d+ of the \d+ (?:GUARD )?CONDITIONS are covered"
-    r"|\d+ (?:of the \d+ )?(?:are |is )?covered by a test"
-    r"|\d+ (?:are |is )?covered\b"
-)
+# will be defeated.
+#
+# A SPELLED-OUT count is matched, because this series has already learned
+# that a figure removed in digits returns in words: "ten" survived the
+# removal of "10" in this very passage. The spelled counts are bounded to
+# one..twenty, which covers every count in play here (the script has fewer
+# than twenty guards) - a larger spelled count would not be caught, and
+# that bound is stated here rather than left for a reader to discover.
+#
+# The pattern is a LEXICAL BAN on the covered-count shapes, not a semantic
+# test: it binds a count to the word "guard"/"condition" and then to
+# "covered", and it will not fire on a sentence that never mentions the
+# guards. That is why the DENOMINATOR of a ratio form is bound to the
+# guard total the code itself derives - "18 of the 19" is a claim about
+# the guards, "37 of the 72" is a claim about the corpus, and the pattern
+# tells them apart by the number, not by the words around it.
+def covered_figure_re(guard_total: int) -> str:
+    """The pattern that finds a covered-count figure in the passage.
+
+    The guard total is an ARGUMENT, not a literal: it is the count the
+    script's own refusing conditions yield, so the ratio form is bound to
+    the code's figure rather than to a number restated in this file.
+    """
+    spelled = (
+        "zero one two three four five six seven eight nine ten eleven "
+        "twelve thirteen fourteen fifteen sixteen seventeen eighteen "
+        "nineteen twenty"
+    ).split()
+    count = r"\d+|" + "|".join(spelled)
+    total = f"{guard_total}|{spelled[guard_total]}"
+    ratio = rf"\b(?:{count})\s+of\s+(?:the\s+)?(?:{total})\b"
+    noun = (
+        rf"\b(?:{count})\b(?:\s+of\s+(?:the\s+)?\b(?:{count})\b)?"
+        rf"[^.]{{0,50}}?\b(?:guard\s+)?(?:conditions?|guards?)\b"
+    )
+    return rf"(?:{ratio}|{noun})[^.]{{0,70}}?\bcovered\b"
 
 
 def guard_conditions(script: str) -> list[tuple[int, str]]:
@@ -165,7 +194,7 @@ def test_the_ledger_states_this_scripts_guard_count() -> None:
     # figures of the form "N of the M" - the corpus counts, which are the
     # SPEC's to state and the script's to check row by row.
     passage = _guard_coverage_bullet(ledger)
-    covered_figures = re.findall(COVERED_FIGURE_RE, passage)
+    covered_figures = re.findall(covered_figure_re(guards), passage, re.IGNORECASE)
     assert not covered_figures, (
         "the guard-coverage passage states a covered-count figure {0}, and the "
         "covered count is the one figure no routine check can enforce - its "
