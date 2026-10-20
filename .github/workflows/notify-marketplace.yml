@@ -45,6 +45,18 @@ jobs:
     env:
       HAS_MARKETPLACE_PAT: ${{ secrets.MARKETPLACE_PAT != '' }}
     steps:
+      # The plugin's own manifest is read from the workspace below, so the
+      # repository has to be checked out first. Without this step the
+      # "Get plugin info" step finds no .claude-plugin/plugin.json and the
+      # workflow fails on its FIRST run with a misleading "not found" error
+      # that reads like a missing file rather than a missing checkout.
+      # Pinned to a full commit SHA, and `persist-credentials: false` so the
+      # checkout token is not written to .git/config (zizmor `artipacked`,
+      # issue #151) — the same form ci.yml and release.yml use.
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+
       - name: Check marketplace secret
         # Always runs. When the PAT is missing, emit a friendly notice and let
         # the gated steps below skip — the job still ends green. When present,
