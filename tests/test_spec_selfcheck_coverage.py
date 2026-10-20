@@ -124,6 +124,21 @@ SPELLED_COUNTS = (
 # "e.g.", or a "chapter.md:586") is not caught. The passage's own
 # register uses colons freely, so a count written after one is not
 # caught either, and that is the bound's cost.
+def spelled_or_numeral(count: int) -> str:
+    """How a count is written in the pattern: spelled if it is known, else numerals.
+
+    ONE owner for the rule, read by the pattern and by the test that
+    pins the pattern's behaviour. The two used to decide this
+    independently - the pattern by `guard_total < len(spelled)`, the
+    test by the same comparison written again - and a future edit to
+    the range would have left the test asserting sentences the pattern
+    no longer matched.
+    """
+    if count < len(SPELLED_COUNTS):
+        return SPELLED_COUNTS[count]
+    return str(count)
+
+
 def covered_figure_re(guard_total: int) -> str:
     """The pattern that finds a covered-count figure in the passage.
 
@@ -139,10 +154,7 @@ def covered_figure_re(guard_total: int) -> str:
     """
     spelled = SPELLED_COUNTS
     count = r"\d+|" + "|".join(spelled)
-    if guard_total < len(spelled):
-        total = f"{guard_total}|{spelled[guard_total]}"
-    else:
-        total = str(guard_total)
+    total = f"{guard_total}|{spelled_or_numeral(guard_total)}"
     ratio = rf"\b(?:{count})\s+of\s+(?:the\s+)?(?:{total})\b"
     clause = r"[^,;:.()\[\]]"
     noun = (
@@ -354,26 +366,22 @@ def test_the_covered_count_ban_has_the_properties_its_comment_claims() -> None:
     blocks = SCRIPT_RE.findall(spec)
     script = blocks[len(blocks) - 1]  # the last embedded python block
     _raw, total = guard_count(script)
-    # The total cannot be below two while the script still has the two
-    # named exclusions, and the sibling test checks that - but the
-    # property test says so itself, because a total of zero would make
-    # `total - 1` index the list from the END, giving a wrong value
-    # rather than an error.
+    # The sentences below are built from a count one less than the
+    # total, so the total needs at least two: a total of zero or one
+    # would make that count index the spelled list from the END, giving
+    # a wrong value rather than an error.
     assert total >= 2, (
-        "the embedded script has {0} guard conditions, which cannot be "
-        "right while it still has the two named exclusions. The count "
-        "below this test is derived from the script, and the sentences "
-        "are built from a count one less than it, so it needs at least "
-        "two.".format(total)
+        "the embedded script has {0} guard conditions. The sentences in "
+        "this test are built from a count one less than the total, so "
+        "the total needs at least two - a total of zero or one would "
+        "make that count index the spelled list from the END, giving a "
+        "wrong value rather than an error.".format(total)
     )
     one_less = total - 1
     # Above twenty the function matches the denominator as a NUMERAL
     # only, and this test uses the same rule, so it does not raise where
     # the code under test degrades.
-    if total < len(SPELLED_COUNTS):
-        spelled_total = SPELLED_COUNTS[total]
-    else:
-        spelled_total = str(total)
+    spelled_total = spelled_or_numeral(total)
     pattern = re.compile(covered_figure_re(total), re.IGNORECASE)
 
     def matches(sentence: str) -> bool:
@@ -436,7 +444,11 @@ def test_the_covered_count_ban_has_the_properties_its_comment_claims() -> None:
 
     # The windows DO cross a DASH: a dash is an aside, not a clause
     # boundary, so a figure separated from "covered" by one is caught.
-    assert matches("18 of the 19 GUARD CONDITIONS - the count - are covered by a test"), (
+    assert matches(
+        "{0} of the {1} GUARD CONDITIONS - the count - are covered by a test".format(
+            one_less, total
+        )
+    ), (
         "the window stopped at a dash, which the comment says it does not"
     )
 
