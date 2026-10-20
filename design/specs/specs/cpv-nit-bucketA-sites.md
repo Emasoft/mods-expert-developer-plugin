@@ -7,23 +7,38 @@ This is the list backing the editorial question in `DELEGATION.md`: **does this 
 documentation, the vendor's install one-liner, the permission-bypass CLI flag, the long-lived-token minting command, and the
 superuser examples?**
 
+**Each site carries a STANCE, because that is what the ruling turns on.** Whether a passage TEACHES a thing, merely NAMES it, WARNS
+against it, or merely EXPLAINS it is a different question from whether the passage mentions it, and a summary that flattens those
+together cannot answer the question. Read the STANCE column, not just the description.
+
 **The passages are deliberately NOT quoted.** A tracked file that quotes these commands is itself read by the skillaudit rules as
 an invocation, so quoting them would make this file a new instance of the very finding it documents. The same thing happened to the
 ledger during this series: writing the flagged command names into it took the finding count from 72 to 76. Each site is described
 in words instead, and the passage is at the cited line.
 
-## The contents these 30 sites reduce to
+## The contents, and the decision each one implies
 
-The owner rules on a CATEGORY, not on 30 sites. The 30 sites reduce to the contents below, and every site is listed under its
-content. The count on each is the number of SITES, not the number of findings. One site is in none of the four and is listed separately: a rule matched a fetch command mentioned in passing, with no dangerous instruction behind it.
+The owner rules on a DECISION, not on 30 sites. The 30 sites reduce to the contents below; each content carries the decision it
+implies, so the ruling can be made from this file alone. The count is the number of SITES, not of findings.
 
-| content | sites |
-|---|---|
-| the vendor's install one-liner | 11 |
-| the permission-bypass flag | 7 |
-| the superuser examples | 7 |
-| the token-minting command | 4 |
-| **total** | **30** |
+| content | sites | the decision it implies |
+|---|---|---|
+| the vendor's install one-liner | 11 | The plugin ships the vendor's OWN install command, in the chapter that documents installing Claude Code and in the chapter that troubleshoots installing it. The decision is whether preserving the vendor's own installer is within this plugin's remit — the passages that merely explain what it does are the same decision in weaker form. |
+| the permission-bypass flag | 7 | The plugin mentions the permission-bypass flag in three different registers: recommended (running unattended in a container), warned against (use only in environments you trust), and named as an option to override a restored mode. The decision is whether a chapter that mentions the flag at all is within remit, or only one that recommends it. |
+| the superuser examples | 7 | Every one of these is a REMEDY in a troubleshooting chapter: a superuser command the reader needs to fix a permissions problem they already hit, not an instruction to escalate privilege. The decision is whether teaching a superuser remedy falls within remit. |
+| the token-minting command | 4 | The plugin documents the token-minting command once as something to run, once to advise against (use an API key instead for a shared secret), and twice as a reference. The decision is whether documenting the command is within remit. |
+| not one of the four | 1 | This site is EVIDENCE for the upstream discriminator, not an outlier to exclude: a dangerous-instruction rule fired on a pipe character in a sentence that carries no dangerous instruction at all. It is the cleanest demonstration in the set that the rule matches a CHARACTER rather than a danger, and it should be quoted as such in the upstream request. |
+| **total** | **30** | |
+
+## The stance tally
+
+| content | TEACHES | NAMES | WARNS | EXPLAINS |
+|---|---|---|---|---|
+| the vendor's install one-liner | 7 | 1 | 0 | 3 |
+| the permission-bypass flag | 1 | 4 | 2 | 0 |
+| the superuser examples | 7 | 0 | 0 | 0 |
+| the token-minting command | 1 | 2 | 1 | 0 |
+| not one of the four | 0 | 1 | 0 | 0 |
 
 ## Provenance
 
@@ -35,109 +50,110 @@ content. The count on each is the number of SITES, not the number of findings. O
 
 **The digest, not a commit id, is what detects staleness.** The line numbers are tied to the chapter text, and a re-sync changes
 the text without changing this file. Recompute the digest over the same 9 chapters; if it differs, the line numbers here no longer
-point at the passages described. A commit id could not detect that, because the file and the chapters would both have moved on
+point at the passages described. A commit id could not detect that, because the file and the chapters would both have moved on.
+It does not detect a change in the other 51 chapters, nor a change in the scanner's rules — for that, re-run the validator.
 
 ## The 30 sites, by content
 
 ### the vendor's install one-liner  (11 sites)
 
-- **mods-doc-cc-permissions-modes** line 382 — rule: SUPPLY_CHAIN
-  - a prose BULLET listing 'downloading and executing code' as a use case, naming the install one-liner pattern as the example
+- **mods-doc-cc-permissions-modes** line 382 — rule: SUPPLY_CHAIN — **NAMES**
+  - a prose BULLET naming the install-one-liner pattern as an EXAMPLE of downloading and executing code, in a list of things a permission prompt might cover
 
-- **mods-doc-troubleshooting-cc-setup** line 125 — rule: CMD_INJECTION, SUPPLY_CHAIN
-  - a fenced shell sample of the vendor's install one-liner (the macOS/Linux form)
+- **mods-doc-troubleshooting-cc-setup** line 125 — rule: CMD_INJECTION, SUPPLY_CHAIN — **TEACHES**
+  - a fenced shell sample of the vendor's install one-liner (the macOS/Linux form) — the vendor's own instruction for installing Claude Code
 
-- **mods-doc-troubleshooting-cc-setup** line 535 — rule: SUPPLY_CHAIN
-  - a prose sentence explaining what the install one-liner does and what a write-failure error means
+- **mods-doc-troubleshooting-cc-setup** line 535 — rule: SUPPLY_CHAIN — **EXPLAINS**
+  - a prose sentence explaining what the install one-liner does and what a write-failure error means — explanatory text inside a troubleshooting entry
 
-- **mods-doc-troubleshooting-cc-setup** line 599 — rule: CMD_INJECTION, SUPPLY_CHAIN
-  - a fenced shell sample of the install one-liner with a corporate-CA certificate flag
+- **mods-doc-troubleshooting-cc-setup** line 599 — rule: CMD_INJECTION, SUPPLY_CHAIN — **TEACHES**
+  - a fenced shell sample of the install one-liner with a corporate-CA certificate flag — the vendor's own instruction, for a proxied network
 
-- **mods-doc-troubleshooting-cc-setup** line 688 — rule: SUPPLY_CHAIN
-  - a prose bullet on an unknown-parameter error, explaining that the macOS/Linux installer was run in Windows PowerShell
+- **mods-doc-troubleshooting-cc-setup** line 688 — rule: SUPPLY_CHAIN — **EXPLAINS**
+  - a prose bullet on an unknown-parameter error, explaining that the macOS/Linux installer was run in Windows PowerShell and pointing at the PowerShell installer instead
 
-- **mods-doc-troubleshooting-cc-setup** line 704 — rule: CMD_INJECTION
-  - a prose sentence explaining that the Windows batch installer prints the script instead of saving it without an output flag
+- **mods-doc-troubleshooting-cc-setup** line 704 — rule: CMD_INJECTION — **TEACHES**
+  - a prose sentence explaining that the Windows batch installer prints the script instead of saving it without an output flag, and telling the reader to run the complete command
 
-- **mods-doc-troubleshooting-cc-setup** line 797 — rule: CMD_INJECTION, SUPPLY_CHAIN
-  - a fenced shell sample of the install one-liner (the macOS/Linux form)
+- **mods-doc-troubleshooting-cc-setup** line 797 — rule: CMD_INJECTION, SUPPLY_CHAIN — **TEACHES**
+  - a fenced shell sample of the install one-liner (the macOS/Linux form) — the vendor's own instruction for installing Claude Code
 
-- **mods-doc-troubleshooting-cc-setup** line 829 — rule: CMD_INJECTION, SUPPLY_CHAIN
-  - a fenced Dockerfile sample running the install one-liner inside a container image
+- **mods-doc-troubleshooting-cc-setup** line 829 — rule: CMD_INJECTION, SUPPLY_CHAIN — **TEACHES**
+  - a fenced Dockerfile sample running the install one-liner inside a container image — the vendor's own instruction, in a container build
 
-- **mods-doc-troubleshooting-cc-setup** line 836 — rule: SUPPLY_CHAIN
-  - a prose sentence about server-managed settings needing security approval, in a section on the install one-liner
+- **mods-doc-troubleshooting-cc-setup** line 836 — rule: SUPPLY_CHAIN — **EXPLAINS**
+  - a prose sentence explaining why an install started from a pipe fails, because stdin is the pipe rather than a terminal — explanatory text inside a troubleshooting entry
 
-- **mods-doc-troubleshooting-cc-setup** line 845 — rule: CMD_INJECTION, SUPPLY_CHAIN
-  - a fenced shell sample of the install one-liner (the macOS/Linux form)
+- **mods-doc-troubleshooting-cc-setup** line 845 — rule: CMD_INJECTION, SUPPLY_CHAIN — **TEACHES**
+  - a fenced shell sample of the install one-liner (the macOS/Linux form) — the vendor's own instruction for installing Claude Code
 
-- **mods-doc-troubleshooting-cc-setup** line 1049 — rule: CMD_INJECTION, SUPPLY_CHAIN
-  - a fenced shell sample of the install one-liner (the macOS/Linux form)
+- **mods-doc-troubleshooting-cc-setup** line 1049 — rule: CMD_INJECTION, SUPPLY_CHAIN — **TEACHES**
+  - a fenced shell sample of the install one-liner (the macOS/Linux form) — the vendor's own instruction for installing Claude Code
 
 ### the permission-bypass flag  (7 sites)
 
-- **mods-doc-automate-actions-with-hooks** line 980 — rule: CLAUDE_CLI_PERMISSION_BYPASS
-  - a prose line explaining that PreToolUse hooks fire BEFORE any permission-mode check, so a hook can grant a permission a mode would not
+- **mods-doc-automate-actions-with-hooks** line 980 — rule: CLAUDE_CLI_PERMISSION_BYPASS — **WARNS**
+  - a prose line stating that a PreToolUse hook can DENY a tool even when the bypass flag is set, so the flag cannot be used to escape policy
 
-- **mods-doc-cc-permissions-modes** line 76 — rule: CLAUDE_CLI_PERMISSION_BYPASS
-  - a TABLE ROW giving the command line for running fully unattended inside a container, which includes the permission-bypass flag
+- **mods-doc-cc-permissions-modes** line 76 — rule: CLAUDE_CLI_PERMISSION_BYPASS — **TEACHES**
+  - a TABLE ROW giving the command line for running fully unattended inside a container, which uses the bypass flag — presented as the recommended way to run unattended
 
-- **mods-doc-channels-reference** line 293 — rule: CLAUDE_CLI_PERMISSION_BYPASS
-  - a prose paragraph about a session pausing on a permission prompt, and the flag that bypasses most prompts, with the warning to use it only in trusted environments
+- **mods-doc-channels-reference** line 293 — rule: CLAUDE_CLI_PERMISSION_BYPASS — **WARNS**
+  - a prose paragraph about a session pausing on a permission prompt; the bypass flag is mentioned for unattended use, with the explicit warning to use it only in environments you trust
 
-- **mods-doc-hooks-reference** line 2033 — rule: CLAUDE_CLI_PERMISSION_BYPASS
-  - a prose sentence stating that a resumed non-interactive run does NOT restore a stored permission mode, so the bypass flag must be passed again
+- **mods-doc-hooks-reference** line 2033 — rule: CLAUDE_CLI_PERMISSION_BYPASS — **NAMES**
+  - a prose sentence stating that a resumed non-interactive run does not restore a stored permission mode, so the mode flag or the bypass flag must be passed again
 
-- **mods-doc-sessions-reference** line 68 — rule: CLAUDE_CLI_PERMISSION_BYPASS
-  - a prose bullet describing which permission mode applies when resuming from a terminal with a session-continuation command
+- **mods-doc-sessions-reference** line 68 — rule: CLAUDE_CLI_PERMISSION_BYPASS — **NAMES**
+  - a prose bullet describing which permission mode applies when resuming from a terminal, and that the mode flag or the bypass flag can be passed to override the restored mode
 
-- **mods-doc-sessions-reference** line 79 — rule: CLAUDE_CLI_PERMISSION_BYPASS
-  - a prose bullet describing which permission mode applies when resuming from a terminal, and that the session's stored mode is restored
+- **mods-doc-sessions-reference** line 79 — rule: CLAUDE_CLI_PERMISSION_BYPASS — **NAMES**
+  - a prose bullet describing which permission mode applies when resuming from a terminal, and that the mode flag or the bypass flag can be passed to override the restored mode
 
-- **mods-doc-sessions-reference** line 83 — rule: CLAUDE_CLI_PERMISSION_BYPASS
-  - a prose bullet describing which permission mode applies to the in-session conversation switch command
+- **mods-doc-sessions-reference** line 83 — rule: CLAUDE_CLI_PERMISSION_BYPASS — **NAMES**
+  - a prose bullet describing which permission mode applies to the in-session conversation switch, and noting that a conversation that ended in plan mode resumes in plan mode even if the run was launched with the bypass flag
 
 ### the superuser examples  (7 sites)
 
-- **mods-doc-troubleshooting-cc-setup** line 390 — rule: PRIVILEGE_ESC
-  - a fenced shell sample creating the local binary directory with superuser privileges
+- **mods-doc-troubleshooting-cc-setup** line 390 — rule: PRIVILEGE_ESC — **TEACHES**
+  - a fenced shell sample creating the local binary directory with superuser privileges — a remedy for a permissions problem the reader hit
 
-- **mods-doc-troubleshooting-cc-setup** line 391 — rule: PRIVILEGE_ESC
-  - a fenced shell sample transferring ownership of the local directory to the current user with superuser privileges
+- **mods-doc-troubleshooting-cc-setup** line 391 — rule: PRIVILEGE_ESC — **TEACHES**
+  - a fenced shell sample transferring ownership of the local directory to the current user with superuser privileges — a remedy for a permissions problem the reader hit
 
-- **mods-doc-troubleshooting-cc-setup** line 528 — rule: PRIVILEGE_ESC
-  - a prose bullet on taking ownership of a file owned by another user, which requires administrator rights
+- **mods-doc-troubleshooting-cc-setup** line 528 — rule: PRIVILEGE_ESC — **TEACHES**
+  - a prose bullet on taking ownership of a file owned by another user, which requires administrator rights — a remedy for a permissions problem the reader hit
 
-- **mods-doc-troubleshooting-cc-setup** line 788 — rule: PRIVILEGE_ESC
-  - a fenced shell sample allocating a swap file with superuser privileges
+- **mods-doc-troubleshooting-cc-setup** line 788 — rule: PRIVILEGE_ESC — **TEACHES**
+  - a fenced shell sample allocating a swap file with superuser privileges — a remedy for a permissions problem the reader hit
 
-- **mods-doc-troubleshooting-cc-setup** line 789 — rule: PRIVILEGE_ESC
-  - a fenced shell sample restricting swap-file permissions with superuser privileges
+- **mods-doc-troubleshooting-cc-setup** line 789 — rule: PRIVILEGE_ESC — **TEACHES**
+  - a fenced shell sample restricting swap-file permissions with superuser privileges — a remedy for a permissions problem the reader hit
 
-- **mods-doc-troubleshooting-cc-setup** line 790 — rule: PRIVILEGE_ESC
-  - a fenced shell sample marking a swap file with superuser privileges
+- **mods-doc-troubleshooting-cc-setup** line 790 — rule: PRIVILEGE_ESC — **TEACHES**
+  - a fenced shell sample marking a swap file with superuser privileges — a remedy for a permissions problem the reader hit
 
-- **mods-doc-troubleshooting-cc-setup** line 791 — rule: PRIVILEGE_ESC
-  - a fenced shell sample enabling a swap file with superuser privileges
+- **mods-doc-troubleshooting-cc-setup** line 791 — rule: PRIVILEGE_ESC — **TEACHES**
+  - a fenced shell sample enabling a swap file with superuser privileges — a remedy for a permissions problem the reader hit
 
 ### the token-minting command  (4 sites)
 
-- **mods-doc-cc-github-actions** line 94 — rule: CLAUDE_CLI_TOKEN_THEFT
-  - a prose bullet describing the OAuth-token environment variable and how to generate one with the token-minting command
+- **mods-doc-cc-github-actions** line 94 — rule: CLAUDE_CLI_TOKEN_THEFT — **TEACHES**
+  - a prose bullet documenting the OAuth-token environment variable and telling the reader to run the token-minting command to generate one
 
-- **mods-doc-cc-github-actions** line 116 — rule: CLAUDE_CLI_TOKEN_THEFT
-  - a prose sentence advising an API key instead of an OAuth token for a secret shared across repositories, because an OAuth token is scoped to one account
+- **mods-doc-cc-github-actions** line 116 — rule: CLAUDE_CLI_TOKEN_THEFT — **WARNS**
+  - a prose sentence advising an API key INSTEAD of an OAuth token for a secret shared across repositories, because the token is tied to one subscriber
 
-- **mods-doc-cc-github-actions** line 381 — rule: CLAUDE_CLI_TOKEN_THEFT
-  - a TABLE ROW listing the OAuth-token variable, noting it is generated with the token-minting command
+- **mods-doc-cc-github-actions** line 381 — rule: CLAUDE_CLI_TOKEN_THEFT — **NAMES**
+  - a TABLE ROW listing the OAuth-token variable as an available input and noting how it is generated
 
-- **mods-doc-mcp-servers-reference** line 1181 — rule: CLAUDE_CLI_TOKEN_THEFT
+- **mods-doc-mcp-servers-reference** line 1181 — rule: CLAUDE_CLI_TOKEN_THEFT — **NAMES**
   - a prose bullet describing what the OAuth-token environment variable holds, linking to the token-minting command's documentation
 
-### not one of the four contents  (1 site)
+### not one of the four  (1 sites)
 
-- **mods-doc-native-toolset-reference** line 632 — rule: CMD_INJECTION
-  - a prose sentence explaining that a web-fetch tool is lossy by design, and suggesting a plain network-fetch command via Bash as the way to get the unprocessed page. It is NOT one of the four contents the owner is ruling on: the rule matched a fetch command mentioned in passing, and there is no dangerous instruction here.
+- **mods-doc-native-toolset-reference** line 632 — rule: CMD_INJECTION — **NAMES**
+  - a prose sentence explaining that a web-fetch tool is lossy by design, and suggesting a plain network-fetch command run through Bash as the way to get the unprocessed page
 
 ## Summary by chapter
 
