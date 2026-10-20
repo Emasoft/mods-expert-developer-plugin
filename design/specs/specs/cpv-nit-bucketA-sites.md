@@ -22,21 +22,37 @@ an invocation, so quoting them would make this file a new instance of the very f
 ledger during this series: writing the flagged command names into it took the finding count from 72 to 76. Each site is described
 in words instead, and the passage is at the cited line.
 
+## THE PLUGIN'S RECOMMENDATION — one line, and it is the plugin's POSITION, not a fact
+
+**YES — this plugin should ship these instructions as they appear in Anthropic's own documentation.** They are Anthropic's official
+instructions, in chapters whose subject IS the vendor's own product, and a plugin whose stated purpose is to preserve Claude Code's
+documentation has no coherent reason to redact them while claiming to be that documentation. The three superuser examples are remedies
+for problems the reader already hit; the permission-bypass flag appears once as a recommendation with a non-root caveat, twice with a
+warning, and four times as a mode override; the token-minting command is documented once to run and once to advise against it.
+
+**This is the plugin's position, and it is offered for the owner to accept, amend or reject — it is not a finding, and nothing in the
+evidence above depends on it.** The owner may answer no, in which case a substantial part of bucket A becomes locally fixable by
+redaction and the ledger's disposition changes; the owner may answer yes, in which case bucket A joins the upstream-discriminator
+request and the other 36 findings do not follow. What follows from an answer of no, and what follows from an answer of yes, are
+recorded in `DELEGATION.md`.
+
 ## The contents, and the decision each one implies
 
 The owner rules on a DECISION, not on 30 sites. The 30 sites reduce to the contents below; each content carries the decision it
 implies, so the ruling can be made from this file alone. The count is the number of SITES, not of findings.
 
-**The "procedure or instruction" column is the distinction the ruling actually turns on**: does the plugin document a PROCEDURE the
-reader runs to accomplish an ordinary goal (installing Claude Code, fixing an install that failed, resuming a session), or does it
-instruct the reader to do something dangerous FOR ITS OWN SAKE? A count of stances cannot supply that; a per-content reading can. The
-column is a reading, not a measurement. It is also why the tally of stances should not be read as a count of endorsed practices.
+**The "procedure or instruction" column is the distinction the ruling actually turns on.** THE CRITERION, in one sentence: a passage
+is a PROCEDURE if the reader would run it to accomplish an ordinary goal, and an INSTRUCTION if the reader would run it to do something
+dangerous for its own sake. The column is a reading, not a measurement, and it is applied per group — so a group label can be a
+summary of sites whose individual stances differ, and the per-site stances below are the finer grain. Where they differ, the per-site
+stance describes the LINE and the group label describes the GROUP; the ruling turns on the group, the detail on the line. It is also
+why the tally of stances should not be read as a count of endorsed practices.
 
 | content | sites | procedure or instruction | the decision it implies |
 |---|---|---|---|
-| the vendor's install one-liner | 11 | PROCEDURE — the reader's route to installing Claude Code, shown in several forms (the plain command, a corporate-proxy variant, a container build). One instruction, several shapes; 11 sites are not 11 teachings. | The plugin ships the vendor's OWN install command, in the chapter that documents installing Claude Code and in the chapter that troubleshoots installing it. The decision is whether preserving the vendor's own installer is within this plugin's remit — the passages that merely explain what it does are the same decision in weaker form. |
+| the vendor's install one-liner | 11 | PROCEDURE for the 7 that show the command (the reader's route to installing Claude Code, in several shapes — the plain command, a corporate-proxy variant, a container build; 7 sites are not 7 teachings); 3 of the 11 merely EXPLAIN the command and 1 merely NAMES the pattern, so the group label is a summary, not a description of every line. | The plugin ships the vendor's OWN install command, in the chapter that documents installing Claude Code and in the chapter that troubleshoots installing it. The decision is whether preserving the vendor's own installer is within this plugin's remit — the passages that merely explain what it does are the same decision in weaker form. |
 | the permission-bypass flag | 7 | MIXED — one passage RECOMMENDS it (running unattended in a container), two WARN against it (use only in trusted environments), four merely NAME it as a mode override. Only the first is an instruction for its own sake. | The plugin mentions the permission-bypass flag in three different registers: recommended (running unattended in a container), warned against (use only in environments you trust), and named as an option to override a restored mode. The decision is whether a chapter that mentions the flag at all is within remit, or only one that recommends it. |
-| the superuser examples | 7 | PROCEDURE — every one is a remedy in a troubleshooting chapter: a superuser command the reader needs to fix a permissions problem they already hit. None instructs privilege escalation for its own sake. | Every one of these is a REMEDY in a troubleshooting chapter: a superuser command the reader needs to fix a permissions problem they already hit, not an instruction to escalate privilege. The decision is whether teaching a superuser remedy falls within remit. |
+| the superuser examples | 7 | PROCEDURE — every one is a remedy in a troubleshooting chapter: a superuser command the reader needs for a problem they already hit (a local-bin directory they cannot write, a file owned by another user, or a swap file that needs superuser to create). None instructs privilege escalation for its own sake. | Every one of these is a REMEDY in a troubleshooting chapter: a superuser command the reader needs to fix a permissions problem they already hit, not an instruction to escalate privilege. The decision is whether teaching a superuser remedy falls within remit. |
 | the token-minting command | 4 | PROCEDURE — documenting how to authenticate, with one passage advising AGAINST the token for a shared secret. It is how a reader authenticates, not an instruction to mint a token for its own sake. | The plugin documents the token-minting command once as something to run, once to advise against (use an API key instead for a shared secret), and twice as a reference. The decision is whether documenting the command is within remit. |
 | not one of the four | 1 | NEITHER — a plain network-fetch command mentioned in passing, with no dangerous instruction behind it. | This site is EVIDENCE for the upstream discriminator, not an outlier to exclude: a dangerous-instruction rule fired on a pipe character in a sentence that carries no dangerous instruction at all. It is the cleanest demonstration in the set that the rule matches a CHARACTER rather than a danger, and it should be quoted as such in the upstream request. |
 | **total** | **30** | | |
