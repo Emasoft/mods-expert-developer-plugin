@@ -1,10 +1,10 @@
 ---
 trdd-id: LVED6ZUU
-title: The mis-citation card's own decision was never put to the owner, and the archived card records a ruling that was not given
+title: The mis-citation card's decision was never put to the owner - the owner is asked to rule on (a), (b) or (c)
 column: proposal
 status: proposed
 created: 2026-10-20T14:04:30+0200
-updated: 2026-10-20T14:20:21+0200
+updated: 2026-10-20T14:26:40+0200
 current-owner: user
 created-by: user
 task-type: docs
