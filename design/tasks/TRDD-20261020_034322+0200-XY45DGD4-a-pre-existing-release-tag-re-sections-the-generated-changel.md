@@ -36,21 +36,28 @@ THE MECHANISM: a pre-existing tag OPENS A SECTION for the commits up to and incl
 THE THREE MEASURED FACTS: (1) the same 90 commits appear in every case — the tag changes neither which commits are rendered nor their count; (2) the RELEASE-SECTION COUNT varies 1, 2, 2, 1, 2, and the top section holds 90, 89, 6, 90 and 6 bullets; (3) the top heading's VERSION varies in exactly one case, (d), and only there. Case (e) is numerically IDENTICAL to (c) and therefore tested nothing new, because 82c693d is an ancestor of HEAD either way.
 
 **THE LABELLING BEHAVIOUR, AS MEASURED — AND THE RETRACTION THAT TRAVELS WITH IT, so this card does not contain a claim its own table
-refutes.** What the four cases show: IN EVERY CASE WHERE THE TAG WAS NOT ON THE COMMIT BEING RELEASED, THE SUPPLIED TAG WAS USED; IN
-THE ONE CASE WHERE IT WAS, THE EXISTING TAG WAS USED. **THE RULES THE MEASUREMENT LEAVES OPEN ARE SEVERAL — "a tag on the released
-commit", "a tag on HEAD", "the nearest tag", "the highest-version tag" — and the cases are consistent with all of them.** An earlier
-draft of the series stated this as "cliff labels the window from a tag that ALREADY EXISTS on the commit it is labelling, and falls back
-to the supplied --tag ONLY WHEN NONE DOES" — and THAT IS WITHDRAWN, because it asserts a rule about tag EXISTENCE that the cases
-contradict twice over: cases (b) and (c) each HAVE a tag and still used the supplied one. The withdrawal travels with the rule, so a
-reader does not have to go looking for it.
+refutes.** What the four cases show, AS AN OBSERVATION AND NOT AS THE MECHANISM: IN EVERY CASE WHERE THE TAG WAS NOT ON THE COMMIT BEING
+RELEASED, THE SUPPLIED TAG WAS USED; IN THE ONE CASE WHERE IT WAS, THE EXISTING TAG WAS USED. **THAT IS WHAT WAS OBSERVED, NOT THE RULE
+THAT GOVERNS IT. THE RULES THIS MEASUREMENT LEAVES OPEN ARE SEVERAL, AND THE "TAG ON THE RELEASED COMMIT" READING IS ONE OF THEM, NOT
+THE ESTABLISHED ONE** — the cases are equally consistent with "a tag on HEAD" (case (d) IS HEAD in that run) and with "the
+highest-version tag", and this card's own warning-column paragraph is where that limit is stated in the file's own voice. **"THE NEAREST
+TAG" IS EXCLUDED, by cases (b) and (c): a nearest-tag rule would have selected the root in (b) and the ancestor in (c), and in both the
+SUPPLIED tag was used.** So the rules still open are the position-based ones and the version-based one, and the choice among them is
+what this measurement does not settle. An earlier draft of the series stated the behaviour as "cliff labels the window from a tag that
+ALREADY EXISTS on the commit it is labelling, and falls back to the supplied --tag ONLY WHEN NONE DOES" — and THAT IS WITHDRAWN, because
+it asserts a rule about tag EXISTENCE that the cases are INCONSISTENT WITH twice over: cases (b) and (c) each HAVE a tag and still used
+the supplied one. The withdrawal travels with the rule, so a reader does not have to go looking for it.
 
 **THE REASSURING CASE, and one clause connecting it to the case that disagrees.** On the FIRST release — the one with no pre-existing tag
 to label from — the render labels the window from the SUPPLIED tag, which is built from the version the pipeline computed, so the two
 agree BY CONSTRUCTION. Once a tag exists, the computed version is derived FROM a tag and the label is taken FROM a tag — so they agree
 again IN THE ORDINARY CASE, WHERE THE RELEASE TAG IS ALSO THE MOST RECENT TAG. That uniqueness is not guaranteed: a stale tag sitting
 on the released commit alongside a newer tag elsewhere would put the label and the version on DIFFERENT tags, and they would disagree.
-**That is case (d) — the one case where the label visibly disagrees — and it is a LATER release than the first, so the two statements are
-about different releases and do not conflict.** Case (d) is also the narrow case the owner's question is about.
+**AND HERE IS WHY THAT DOES NOT CONFLICT WITH CASE (d) — the one case where the label visibly disagrees. THE REASON IS THE SOURCE OF THE
+LABEL, NOT A TIMELINE. The five cases are five CONFIGURATIONS OF ONE HISTORY at one pinned commit, not a sequence of releases; all five
+render the same 90 commits at the same commit.** The first-release statement is about a label taken from the SUPPLIED tag, which is built
+from the version the pipeline computed. Case (d) is about a label taken from an EXISTING TAG ON THE RELEASED COMMIT. Those are different
+SOURCES of the label, so the two statements never meet. Case (d) is also the narrow case the owner's question is about.
 
 THE OPEN QUESTION, which is the owner's and not the plugin's: SHOULD A PRE-EXISTING TAG BE ALLOWED TO RE-SECTION THE CHANGELOG, AND TO RELABEL ITS TOP HEADING? The plugin states the measurement and does not classify its significance.
 
