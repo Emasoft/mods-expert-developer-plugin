@@ -407,10 +407,16 @@ for rid, body in RULE_TABLES.items():
     for chapter, lineno, span, gap, stance in re.findall(r'\| `([a-z0-9-]+)` line (\d+) \| (\d+) \| (\d+) \| ([A-Z]+) \|', body):
         my_stance.setdefault(('mods-doc-' + chapter, lineno), set()).add(stance)
 for site in sorted(sib_stance):
-    # A BACKSTOP, not the primary check: a sibling site with no row here is
-    # already a difference in the (site, rule) pairs, compared above, so this
-    # branch is reached only if the pair comparison passed and the stance set
-    # still disagrees.
+    # A BACKSTOP, and UNREACHABLE while the pair comparison above runs first.
+    # This file's rows feed BOTH my_pairs and my_stance, and every site of
+    # my_pairs is also a site of my_stance, so a site missing from my_stance
+    # is missing from my_pairs too - and a sibling site is always in
+    # sib_pairs, so the pair comparison refuses before this branch can be
+    # reached (measured: removing a sibling site's row here makes the PAIR
+    # comparison refuse, not this one). It is kept as a defensive assertion
+    # against a future change to the row parsing, and it is why the guard
+    # measurement reports one branch uncovered: a branch nothing can reach
+    # has no test behind it.
     if site not in my_stance:
         print('EXTERNAL ERROR: {0} {1} has a stance in the sibling but no row here.'.format(site[0], site[1]))
         print('  WHAT YOU SEE IS NOT A PASS.')
