@@ -50,10 +50,10 @@ itself is worth nothing, so the script's checks are separated by where their bas
 | check | baseline | independent of this file? |
 |---|---|---|
 | each row's raw span and token gap | the installed CPV catalogue, applied to the cited line | yes |
-| each per-rule block's widest figures | the table's own re-measured values | yes (the block is compared against the catalogue, not against a literal) |
+| each per-rule block's widest figures, AND ITS EXISTENCE | the table's own re-measured values, and the scan's rule set | yes (the block is compared against the catalogue, not against a literal, and a rule whose block is deleted is caught) |
 | the bucket-A (site, rule) pairs | the SIBLING SPEC `cpv-nit-bucketA-sites.md`, a different committed file | yes |
 | the total (rule, site) set | the VALIDATOR'S OWN `[NIT]` output | yes |
-| the SET OF RULES the file tabulates | the same validator output — the rules the scanner fired | yes |
+| the SET OF RULES, in BOTH halves of this file | the same validator output — the rules the scanner fired. The per-rule PROSE blocks and the per-site TABLES are two separate artefacts, and each is compared, and their counts are compared with each other | yes |
 
 The distinction matters because an earlier version of this script held its expected row, block and site counts as
 LITERALS BESIDE THE TABLE, which made the coverage assertion circular: deleting one rule's table and lowering the
@@ -61,16 +61,30 @@ count to match produced a clean run. The counts are no longer asserted from this
 the strongest of the external checks because the sibling spec was adjudicated independently and covers 36 of the 72
 findings; the validator-output check covers all 72 and, with it, the set of rules.
 
+**THE SCAN IS A RECORDED OBSERVATION, NOT AN AUTHORITY — AND WHAT THAT LIMITS.** The capture is a file on disk
+that whoever ran the scan could edit, so the check certifies INTERNAL CONSISTENCY between this table and that capture,
+not the truth of the capture: a capture forged to match a truncated table would agree with it. What the sibling-spec
+check does not have this weakness — that check reads a TRACKED, COMMITTED file, so a forgery there is visible in the
+diff. The scan's authority is what a fresh run of the validator gives it, and the way to get that authority is to
+re-run the scan rather than to trust the capture.
+
 **THE VALIDATOR OUTPUT IS A REQUIRED INPUT, NOT AN OPTIONAL ONE.** Without a captured scan the script cannot say
-whether the table matches the scanner's own findings, so an absent scan is a FAILURE, not a skipped check — and a scan
-that is OLDER than the chapters it describes is a FAILURE too, because a stale capture proves nothing about the tree
-as it stands. A scan that is read but yields no recognisable finding line is also a failure: that is a change in the
-validator's OUTPUT FORMAT, and treating it as an empty result would let a truncated table pass. The path is a default
-that `CPV_SCAN_OUTPUT` overrides, and the file's own strict run is what produces it.
+whether the table matches the scanner's own findings, so an absent scan is a FAILURE, not a skipped check. A scan that
+is read but yields no recognisable finding line is also a failure: that is a change in the validator's OUTPUT FORMAT,
+and treating it as an empty result would let a truncated table pass. The path is a default that `CPV_SCAN_OUTPUT`
+overrides, and the file's own strict run is what produces it.
+
+**WHETHER THE CORPUS HAS MOVED IS DECIDED BY CONTENT, NOT BY TIMESTAMP.** A capture's mtime says when it was written,
+and a fresh checkout writes every file at checkout time — so a timestamp comparison fails on a perfectly current tree,
+which is what an earlier version of this script did. The check is instead the chapter-text digest this file already
+carries, recomputed over the seventeen chapters that hold the sites: a re-sync that re-wraps a chapter changes the
+digest, and every line number in this file moves with it, so the capture is stale and the check fails. A timestamp
+comparison could not tell a re-wrap from a checkout.
 
 **WHAT IS NOT CHECKED FROM OUTSIDE THIS FILE, STATED PLAINLY.** The bucket-A comparison covers the SIBLING SPEC's
-rule names and the pair count, but not the STANCE each site carries in the sibling (`TEACHES`, `NAMES`, `WARNS`,
-`EXPLAINS`) — the sibling records that in a different shape, and this file's table column is not compared against it.
+rule names, the pair count, and the STANCE each site carries in the sibling (`TEACHES`, `NAMES`, `WARNS`,
+`EXPLAINS`) — the sibling records one stance per SITE and this file records one per (site, rule) row, so a site
+carrying two rules must carry the same stance on both rows, and the script checks that they agree.
 And the number of rules the CATALOGUE holds for these chapters is not what this file tabulates: applying the
 catalogue's own patterns to the seventeen chapters that hold the sites yields **twenty-six rules over 209 sites and
 224 (rule, site) pairs**, of which the scanner's own suppression reports fourteen over 72 — the two numbers measure
@@ -125,7 +139,12 @@ python3 -I <extracted>.py
 It is reproduced here in full so the measurement is not dependent on a file outside the repository:
 
 ```python
-import re, json, pathlib, os, glob
+import re, json, pathlib, os, glob, hashlib
+# The chapter-text digest this file records. It is a fact ABOUT this file's
+# corpus, stated in its prose and reproduced here so the check below is runnable.
+# A coordinated edit of the digest and the chapters would pass this one check -
+# which is why the scan comparison, and not this digest, is the total baseline.
+EXPECTED_DIGEST = 'b70a6dce9f702157'
 import glob
 CAT = json.load(open(glob.glob(os.path.expanduser('~/.claude/plugins/cache/emasoft-plugins/claude-plugins-validation/*/scripts/rules/skillaudit_patterns.json'))[0]))['rules']
 PATS = {}
@@ -290,8 +309,15 @@ if not sib.exists():
     raise SystemExit(1)
 sib_text = sib.read_text(encoding='utf-8')
 sib_map = {}
-for m in re.finditer(r'- \*\*(mods-doc-[a-z0-9-]+)\*\* line (\d+) — rule: ([A-Z0-9_, ]+?) — ', sib_text):
-    sib_map.setdefault((m.group(1), m.group(2)), set()).update(x.strip() for x in m.group(3).split(','))
+# The sibling's per-site bullet carries the rule names AND the stance the sibling
+# adjudicated for that site, so the stance is compared too — the sibling records it
+# in a different shape, but not one that cannot be read.
+sib_stance = {}
+for m in re.finditer(r'- \*\*(mods-doc-[a-z0-9-]+)\*\* line (\d+) — rule: ([A-Z0-9_, ]+?) — \*\*([A-Z]+)\*\*', sib_text):
+    for r in m.group(3).split(','):
+        sib_map.setdefault((m.group(1), m.group(2)), set()).add(r.strip())
+    # The sibling records ONE stance per SITE, not per (site, rule).
+    sib_stance[(m.group(1), m.group(2))] = m.group(4)
 if not sib_map:
     print('COVERAGE ERROR: no bucket-A sites were read from the sibling spec — its format')
     print('  has changed. WHAT YOU SEE IS NOT A PASS.')
@@ -315,7 +341,27 @@ if sib_pairs != my_pairs:
     print('  here but not in the sibling: {0}'.format(sorted(my_pairs - sib_pairs)[:5]))
     print('  WHAT YOU SEE IS NOT A PASS.')
     raise SystemExit(1)
-print('EXTERNAL: the bucket-A (site, rule) pairs match the sibling spec ({0} pairs over {1} sites).'.format(len(sib_pairs), len(sib_map)))
+# The STANCE each site carries — TEACHES, NAMES, WARNS, EXPLAINS — is compared as
+# well. It is the sibling's own adjudication, and the two files must agree on it.
+my_stance = {}
+for rid, body in RULE_TABLES.items():
+    for chapter, lineno, span, gap, stance in re.findall(r'\| `([a-z0-9-]+)` line (\d+) \| (\d+) \| (\d+) \| ([A-Z]+) \|', body):
+        my_stance.setdefault(('mods-doc-' + chapter, lineno), set()).add(stance)
+for site in sorted(sib_stance):
+    if site not in my_stance:
+        print('EXTERNAL ERROR: {0} {1} has a stance in the sibling but no row here.'.format(site[0], site[1]))
+        print('  WHAT YOU SEE IS NOT A PASS.')
+        raise SystemExit(1)
+    # This file records the stance per (site, rule) row; the sibling records one per
+    # site. A site carrying two rules must carry the SAME stance on both rows, and
+    # that stance must be the sibling's.
+    stances = sorted(my_stance[site])
+    if stances != [sib_stance[site]]:
+        print('EXTERNAL ERROR: the stance at {0} {1} differs — sibling has {2}, this file has {3}.'.format(site[0], site[1], sib_stance[site], stances))
+        print('  A site carrying two rules must carry the SAME stance on both rows.')
+        print('  WHAT YOU SEE IS NOT A PASS.')
+        raise SystemExit(1)
+print('EXTERNAL: the bucket-A (site, rule) pairs match the sibling spec ({0} pairs over {1} sites), and the stances agree.'.format(len(sib_pairs), len(sib_map)))
 
 # EXTERNAL CHECK 2 — the total against the VALIDATOR'S OWN OUTPUT, if it is present.
 # The validator's own output, captured from a strict run over this tree. The path
@@ -330,21 +376,27 @@ if not scan.exists():
     print('  Capture a strict scan there, or point CPV_SCAN_OUTPUT at one, and re-run:')
     print('    PLUGIN_SKIP_GITHUB_INTEGRITY=1 uvx --from git+https://github.com/Emasoft/claude-plugins-validation@v5.22.0 cpv-remote-validate plugin . --strict > {0} 2>&1'.format(scan))
     raise SystemExit(1)
-# A scan that is OLDER than the corpus it describes is not a baseline for that
-# corpus. The corpus is the chapters the sites sit on; the scan must be at least
-# as new as the newest of them, or a chapter edited since the scan would not be
-# reflected in the comparison.
-newest_chapter = 0.0
-for ch in {c for _, _, _, c, _ in rows}:
-    p = pathlib.Path('skills/mods-doc-' + ch + '/references/chapter.md')
-    if p.exists():
-        newest_chapter = max(newest_chapter, p.stat().st_mtime)
-if scan.stat().st_mtime < newest_chapter:
-    print('EXTERNAL ERROR: the validator output at {0} is OLDER than the chapters'.format(scan))
-    print('  it describes, so it is a stale baseline and this comparison would prove')
-    print('  nothing about the tree as it stands. WHAT YOU SEE IS NOT A PASS.')
-    print('  Re-run the scan, then run this script again.')
+# A scan is a RECORDED OBSERVATION of one corpus, so it is only a baseline for
+# that corpus. The check is by CONTENT, not by timestamp: a file's mtime says when
+# it was written, and a fresh checkout writes every file at checkout time, so an
+# mtime comparison fails on a perfectly current tree. The content anchor is the
+# chapter-text digest this file already carries - the sha256 over the seventeen
+# chapters that hold the sites, in SORTED PATH ORDER. A re-sync that re-wraps a
+# chapter changes the digest and therefore invalidates every line number here.
+CHAPTERS = sorted({c for _, _, _, c, _ in rows})
+digest = hashlib.sha256()
+for ch in CHAPTERS:
+    digest.update(pathlib.Path('skills/mods-doc-' + ch + '/references/chapter.md').read_bytes())
+actual = digest.hexdigest()[:16]
+if actual != EXPECTED_DIGEST:
+    print('EXTERNAL ERROR: the chapters have changed since this file was written.')
+    print('  this file records the digest {0}; the chapters now hash to {1}.'.format(EXPECTED_DIGEST, actual))
+    print('  A re-sync that re-wraps a chapter moves every line number here, so the')
+    print('  passages described are no longer the passages at those lines. WHAT YOU')
+    print('  SEE IS NOT A PASS.')
+    print('  Re-run the pass, and re-measure the digest, over the chapters as they are.')
     raise SystemExit(1)
+print('EXTERNAL: the chapter-text digest matches ({0}).'.format(actual))
 nit = set()
 for m in re.finditer(r'\[skillaudit:[a-z_]+ ([A-Z0-9_]+)\].*\((skills/mods-doc-[a-z0-9-]+/references/chapter\.md)\):(\d+)', scan.read_text(encoding='utf-8')):
     nit.add((m.group(1), m.group(2), m.group(3)))
@@ -362,18 +414,29 @@ if nit != table_pairs:
     print('  WHAT YOU SEE IS NOT A PASS.')
     raise SystemExit(1)
 print('EXTERNAL: the (rule, site) set matches the validator output ({0} pairs).'.format(len(nit)))
-# The rule SET as well as the pairs: the file's per-rule tables must be exactly the
-# rules the scanner fired. This is what certifies the block count, and it is read
-# from the scan rather than from a literal here.
+# The rule SET as well as the pairs, and it is checked against BOTH halves of this
+# file: the per-rule PROSE blocks and the per-site TABLES are two separate
+# artefacts, and a rule's analysis can be deleted while its table survives. So the
+# scan's rules must equal the prose blocks' rules AND the tables' rules, and the
+# two counts must equal each other. Without the second half, deleting a rule's
+# whole analysis passed clean while the output printed two disagreeing counts.
 scan_rules = {r for r, _, _ in nit}
-file_rules = set(RULE_TABLES)
-if scan_rules != file_rules:
-    print('EXTERNAL ERROR: the set of rules differs from the validator\'s own.')
-    print('  only in the scan : {0}'.format(sorted(scan_rules - file_rules)))
-    print('  only in this file: {0}'.format(sorted(file_rules - scan_rules)))
+prose_rules = set(blocks)          # the per-rule adjudication blocks
+table_rules = set(RULE_TABLES)     # the per-site tables
+for label, mine in (('per-rule prose blocks', prose_rules), ('per-site tables', table_rules)):
+    if scan_rules != mine:
+        print('EXTERNAL ERROR: the set of rules in the {0} differs from the validator\'s own.'.format(label))
+        print('  only in the scan : {0}'.format(sorted(scan_rules - mine)))
+        print('  only in this file: {0}'.format(sorted(mine - scan_rules)))
+        print('  WHAT YOU SEE IS NOT A PASS.')
+        raise SystemExit(1)
+if len(prose_rules) != len(table_rules):
+    print('EXTERNAL ERROR: the file has {0} per-rule prose blocks but {1} per-site tables.'.format(len(prose_rules), len(table_rules)))
+    print('  The two are one artefact each, so a rule without an analysis, or an')
+    print('  analysis without a table, is a deletion the counts cannot hide.')
     print('  WHAT YOU SEE IS NOT A PASS.')
     raise SystemExit(1)
-print('EXTERNAL: the rule set matches the validator output ({0} rules).'.format(len(scan_rules)))
+print('EXTERNAL: the rule set matches the validator output ({0} rules), and the {0} prose blocks and {0} per-site tables agree.'.format(len(scan_rules)))
 if found:
     print('{0} DISAGREEMENT(S) ABOVE. The file is not self-consistent as it stands.'.format(len(found)))
     raise SystemExit(1)
