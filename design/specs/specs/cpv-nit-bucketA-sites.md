@@ -7,6 +7,12 @@ This is the list backing the editorial question in `DELEGATION.md`: **does this 
 documentation, the vendor's install one-liner, the permission-bypass CLI flag, the long-lived-token minting command, and the
 superuser examples?**
 
+**REGISTER — what in this file is measured and what is a reading.** Two things here are MEASURED: the count of 30 sites (re-derivable
+from the validator's output) and the digest below (a checksum over the chapters' bytes). Everything else in this file is a READING —
+the grouping into contents, the per-site descriptions, the stances, and the per-content decisions. Those are one reader's judgement,
+written here so the owner can CHECK them rather than re-derive them, and marked here so the reader knows which register they are in. A
+count in this file is not an opinion; a stance is.
+
 **Each site carries a STANCE, because that is what the ruling turns on.** Whether a passage TEACHES a thing, merely NAMES it, WARNS
 against it, or merely EXPLAINS it is a different question from whether the passage mentions it, and a summary that flattens those
 together cannot answer the question. Read the STANCE column, not just the description.
@@ -21,16 +27,24 @@ in words instead, and the passage is at the cited line.
 The owner rules on a DECISION, not on 30 sites. The 30 sites reduce to the contents below; each content carries the decision it
 implies, so the ruling can be made from this file alone. The count is the number of SITES, not of findings.
 
-| content | sites | the decision it implies |
-|---|---|---|
-| the vendor's install one-liner | 11 | The plugin ships the vendor's OWN install command, in the chapter that documents installing Claude Code and in the chapter that troubleshoots installing it. The decision is whether preserving the vendor's own installer is within this plugin's remit — the passages that merely explain what it does are the same decision in weaker form. |
-| the permission-bypass flag | 7 | The plugin mentions the permission-bypass flag in three different registers: recommended (running unattended in a container), warned against (use only in environments you trust), and named as an option to override a restored mode. The decision is whether a chapter that mentions the flag at all is within remit, or only one that recommends it. |
-| the superuser examples | 7 | Every one of these is a REMEDY in a troubleshooting chapter: a superuser command the reader needs to fix a permissions problem they already hit, not an instruction to escalate privilege. The decision is whether teaching a superuser remedy falls within remit. |
-| the token-minting command | 4 | The plugin documents the token-minting command once as something to run, once to advise against (use an API key instead for a shared secret), and twice as a reference. The decision is whether documenting the command is within remit. |
-| not one of the four | 1 | This site is EVIDENCE for the upstream discriminator, not an outlier to exclude: a dangerous-instruction rule fired on a pipe character in a sentence that carries no dangerous instruction at all. It is the cleanest demonstration in the set that the rule matches a CHARACTER rather than a danger, and it should be quoted as such in the upstream request. |
-| **total** | **30** | |
+**The "procedure or instruction" column is the distinction the ruling actually turns on**: does the plugin document a PROCEDURE the
+reader runs to accomplish an ordinary goal (installing Claude Code, fixing an install that failed, resuming a session), or does it
+instruct the reader to do something dangerous FOR ITS OWN SAKE? A count of stances cannot supply that; a per-content reading can. The
+column is a reading, not a measurement. It is also why the tally of stances should not be read as a count of endorsed practices.
+
+| content | sites | procedure or instruction | the decision it implies |
+|---|---|---|---|
+| the vendor's install one-liner | 11 | PROCEDURE — the reader's route to installing Claude Code, shown in several forms (the plain command, a corporate-proxy variant, a container build). One instruction, several shapes; 11 sites are not 11 teachings. | The plugin ships the vendor's OWN install command, in the chapter that documents installing Claude Code and in the chapter that troubleshoots installing it. The decision is whether preserving the vendor's own installer is within this plugin's remit — the passages that merely explain what it does are the same decision in weaker form. |
+| the permission-bypass flag | 7 | MIXED — one passage RECOMMENDS it (running unattended in a container), two WARN against it (use only in trusted environments), four merely NAME it as a mode override. Only the first is an instruction for its own sake. | The plugin mentions the permission-bypass flag in three different registers: recommended (running unattended in a container), warned against (use only in environments you trust), and named as an option to override a restored mode. The decision is whether a chapter that mentions the flag at all is within remit, or only one that recommends it. |
+| the superuser examples | 7 | PROCEDURE — every one is a remedy in a troubleshooting chapter: a superuser command the reader needs to fix a permissions problem they already hit. None instructs privilege escalation for its own sake. | Every one of these is a REMEDY in a troubleshooting chapter: a superuser command the reader needs to fix a permissions problem they already hit, not an instruction to escalate privilege. The decision is whether teaching a superuser remedy falls within remit. |
+| the token-minting command | 4 | PROCEDURE — documenting how to authenticate, with one passage advising AGAINST the token for a shared secret. It is how a reader authenticates, not an instruction to mint a token for its own sake. | The plugin documents the token-minting command once as something to run, once to advise against (use an API key instead for a shared secret), and twice as a reference. The decision is whether documenting the command is within remit. |
+| not one of the four | 1 | NEITHER — a plain network-fetch command mentioned in passing, with no dangerous instruction behind it. | This site is EVIDENCE for the upstream discriminator, not an outlier to exclude: a dangerous-instruction rule fired on a pipe character in a sentence that carries no dangerous instruction at all. It is the cleanest demonstration in the set that the rule matches a CHARACTER rather than a danger, and it should be quoted as such in the upstream request. |
+| **total** | **30** | | |
 
 ## The stance tally
+
+**The stance tally is a READING, like the grouping and the descriptions.** The count of 30 and the digest are measured; this is a
+judgement about what each passage does, one reader's account of it, recorded so it can be checked.
 
 | content | TEACHES | NAMES | WARNS | EXPLAINS |
 |---|---|---|---|---|
