@@ -1,10 +1,10 @@
 ---
 trdd-id: LVED6ZUU
-title: The mis-citation card's decision was never put to the owner - the owner is asked to rule on (a), (b) or (c)
+title: The mis-citation card's decision was never put to the owner, who has now ruled (b) - rewrite all twelve subjects
 column: proposal
 status: proposed
 created: 2026-10-20T14:04:30+0200
-updated: 2026-10-20T14:26:40+0200
+updated: 2026-10-20T14:44:41+0200
 current-owner: user
 created-by: user
 task-type: docs
@@ -50,8 +50,8 @@ The count is twelve. It is DERIVED rather than remembered - the series window d1
 
 ## Acceptance
 
-- [x] The defect is stated plainly and with the evidence: the archived card's Approval log records an owner ruling that was never given, and the owner's three actual answers are named.
-- [x] The card says what it does NOT do: it does not repair the archived card, its reach is limited to readers who reach this card, and the missing forward pointer is filed upstream as ai-maestro#182.
-- [x] The unverifiable completeness claim is gone, and 'permanent' is now scoped to the option not yet chosen - the false assertion persists unless the owner chooses (b), which rewrites it out.
-- [x] The count is stated as derived AND unverified: reproducible from the stated git commands, with no test or script that would fail if it drifted.
-- [x] The body is section-structured, so trddgrep append and check-box address this card's parts rather than a single pipe-separated paragraph.
+- [ ] The defect is stated plainly and with the evidence: the archived card's Approval log records an owner ruling that was never given, and the owner's three actual answers are named.
+- [ ] The card says what it does NOT do: it does not repair the archived card, its reach is limited to readers who reach this card, and the missing forward pointer is filed upstream as ai-maestro#182.
+- [ ] The unverifiable completeness claim is gone, and 'permanent' is now scoped to the option not yet chosen - the false assertion persists unless the owner chooses (b), which rewrites it out.
+- [ ] The count is stated as derived AND unverified: reproducible from the stated git commands, with no test or script that would fail if it drifted.
+- [ ] The body is section-structured, so trddgrep append and check-box address this card's parts rather than a single pipe-separated paragraph.
