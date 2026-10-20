@@ -31,9 +31,9 @@ WHAT THE REWRITE CHANGES BEYOND THE TWELVE. A rewritten commit changes the SHA o
 
 THE MEASUREMENT IS A SNAPSHOT TAKEN ON 2026-10-20, NOT A DURABLE PROPERTY. This card is a standing instruction and the tree will move before the push: other work will add commits, and a subject can be edited. The worker MUST RE-DERIVE the twelve-and-only-twelve scope against the tree it is about to rewrite, with 'git log --format=%h %s | grep XV6QOEK1', and confirm the list is exactly the twelve named here plus 1050ffe. A worker who trusts this card's number and rewrites only what it lists will silently leave a thirteenth commit uncorrected.
 
+THE MEASUREMENT ABOVE IS ABOUT THE TWELVE COMMITS' OWN MESSAGE TEXT. What the rewrite does to the SHAs that follow is the subject of its own section below.
 
-
-
+THE SCOPE CONSEQUENCE STATED ABOVE IS ABOUT EVERY COMMIT AFTER THE TWELVE. The window that fixes which twelve are in scope is a separate section below, and it is a choice this card made.
 
 ## The scope is twelve, not twenty-two
 
@@ -45,7 +45,7 @@ THE BOOKKEEPING PROBLEM, WHICH THE OWNER WAS TOLD ABOUT AND ACCEPTED. PRHYQEVK's
 
 PRHYQEVK's list must be recorded as KNOWN-STALE, not merely wrong, so a future reader who lands on it is told it is superseded rather than believing it. The superseding card carries that statement. The remedy necessarily creates the list in two places - the stale one on the archived card and the correct one on its successor - which is the shape the original mis-citation had; the difference is that the successor is reachable by `supersedes:`, and that gap is filed upstream as ai-maestro#182.
 
-
+THE STALE-LIST STATEMENT ABOVE IS THE WHOLE OF THIS SECTION'S CLAIM. The successor card that carries the corrected list is named in the section above.
 
 ## The 22-commit window is a choice, not a fact anything checks
 
