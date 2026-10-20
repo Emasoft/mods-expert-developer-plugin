@@ -277,10 +277,17 @@ contains no "Initial packaging" line, and its Features group reads "Embed chapte
 canonical pipeline". **So the file is only PARTLY derived**: the pipeline overwrites it wholesale on the next publish, and in doing so
 the hand-written 0.1.0 bullet DISAPPEARS — carrying the false word with it, by regeneration rather than by correction. The false
 word does not persist into the next CHANGELOG, but it also is not corrected there; it is simply gone, and what replaces it is a
-commit-subject-derived bullet about the pipeline work. **THIS HOLDS CONDITIONALLY** — it is true for a release cut from a commit that
-still contains `e25b03e`, which every current commit does. This repository has NO TAGS, so the release-cut point is not fixed, and
-`stage_changelog`'s own docstring warns that a `-o` overwrite destroys prior entries; a release cut from a commit BEFORE `e25b03e`
-would produce a CHANGELOG with no 0.1.0 section at all, and the false word would be gone in a different way again.
+commit-subject-derived bullet about the pipeline work. **THE LOSS IS UNCONDITIONAL, and the conditional this file previously carried is RETIRED.** An earlier draft held that a release cut
+from a commit before `e25b03e` would behave differently, and that a release cut after it keeps the 0.1.0 section. **The measurement
+does not support that**, and the conditional is withdrawn: the render has no "## [0.1.0]" heading whichever commit the release is cut
+from, because no cliff-generated 0.1.0 ever existed — the shipped file was hand-authored in a DIFFERENT FORMAT (its header text is
+not `cliff.toml`'s, it carries a "## [Unreleased]" section cliff does not emit, and it carries no cliff footer). What a publish does
+is REPLACE A HAND-AUTHORED FILE WITH A CLIFF-GENERATED ONE. The 0.1.0-era COMMITS all survive in the render; the hand-written
+headings and prose do not. **The two "## [Unreleased]" bullets go the same way** ("Renamed 11 skills…" and "Every SKILL.md now
+embeds the full table of contents…"), and unlike the commits they are NOT recoverable from the commit log, because a search of the
+whole log for them returns nothing — they were never in a commit message. This repository has NO TAGS, so `--bump` has no prior
+release boundary and warns "There is nothing to bump"; that warning is about VERSION DERIVATION, not about section preservation. The
+publish-path defect this creates is measured and filed as its own card, `TRDD-XV6QOEK1`.
 
 **THE CONSEQUENCE FOR THE RULING.** The false word lives in a released file the plugin ships, and it says the chapters are verbatim —
 which would make preservation unconditional by description. Two things follow, and both are stated rather than assumed. First, until
