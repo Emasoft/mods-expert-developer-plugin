@@ -33,10 +33,11 @@ BRANCH, not a gap in the safety net. The branch is kept as a defensive
 assertion against a future change to the row parsing; the cost of keeping
 it is that the figure counts a dead branch.
 
-The figure is described here WITHOUT ITS NUMBER, and so is the measurement
-output it is derived from: the number is the complement of the covered
-count, which no routine check can enforce, so stating it in prose would
-hand the removed figure back by arithmetic.
+The figure is described here WITHOUT ITS NUMBER. The number is the
+complement of the covered count, which no routine check can enforce, so
+stating it in the LEDGER would hand the removed figure back by
+arithmetic - 19 and the complement together give the covered count, and
+that is the trap this series paid for.
 """
 
 from __future__ import annotations
@@ -137,6 +138,21 @@ def test_the_ledger_states_this_scripts_guard_count() -> None:
     assert is_guard(backstop), (
         "the ledger calls {0!r} a guard, but the code excludes it as one of "
         "the conditions that are not guards.".format(backstop)
+    )
+    # The ledger PROMISES the covered-count figure is absent, and that promise
+    # is about the prose's own shape, so it is checked as a property: the
+    # passage must carry no covered-count figure. The check is scoped to the
+    # guard-coverage language, because the passage legitimately contains other
+    # figures of the form "N of the M" - the corpus counts, which are the
+    # SPEC's to state and the script's to check row by row.
+    passage = _guard_coverage_bullet(ledger)
+    covered_figures = re.findall(r"\d+ of the \d+ GUARD CONDITIONS|\d+ (?:are )?covered", passage)
+    assert not covered_figures, (
+        "the guard-coverage passage states a covered-count figure {0}, and the "
+        "covered count is the one figure no routine check can enforce - its "
+        "complement would hand it back by arithmetic. Remove it.".format(
+            covered_figures
+        )
     )
     # The COVERED count is deliberately NOT checked here, and NOT stated in the
     # ledger either. The measurement that derives it is expensive (a suite run
