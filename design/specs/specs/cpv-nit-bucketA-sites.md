@@ -11,12 +11,13 @@ superuser examples?**
 against it, or merely EXPLAINS it is a different question from whether the passage mentions it, and a summary that flattens those
 together cannot answer the question. Read the STANCE column, not just the description.
 
-**REGISTER — what in this file is measured and what is a reading.** Three things here are MEASURED: the count of 30 sites
-(re-derivable from the validator's output), the digest below (a checksum over the chapters' bytes), and the recorded search result
-(the pattern and the command are given above, so it can be re-run). Everything else in this file is a READING —
-the grouping into contents, the per-site descriptions, the stances, and the per-content decisions. Those are one reader's judgement,
-written here so the owner can CHECK them rather than re-derive them, and marked here so the reader knows which register they are in. A
-count in this file is not an opinion; a stance is.
+**REGISTER — what in this file is measured and what is a reading.** Four things here are MEASURED, and they are not the same KIND of
+measurement: the count of 30 sites and the recorded search result are RE-RUNNABLE (re-derivable from the validator's output; the pattern
+and the command are given above); the digest below is RE-RUNNABLE (a checksum over the chapters' bytes); and the CHANGELOG rendering is
+a SNAPSHOT — the output of one invocation of one command at one moment, given because it cannot be re-derived (the commit log it was
+rendered from keeps moving). Everything else in this file is a READING — the grouping into contents, the per-site descriptions, the
+stances, and the per-content decisions. Those are one reader's judgement, written here so the owner can CHECK them rather than
+re-derive them, and marked here so the reader knows which register they are in. A count in this file is not an opinion; a stance is.
 
 **The passages are deliberately NOT quoted.** A tracked file that quotes these commands is itself read by the skillaudit rules as
 an invocation, so quoting them would make this file a new instance of the very finding it documents. The same thing happened to the
@@ -96,27 +97,38 @@ alternation over those phrasings was run against the same corpus, and it hit 10 
 **ONE INCONSISTENCY IN THE REPOSITORY'S OWN SELF-DESCRIPTION, FOUND WHILE DOING THIS, AND MATERIAL TO THE RULING.**
 `CHANGELOG.md:20` describes the bundle as "60 reference skills holding **verbatim** Claude Code documentation chapters", while
 `NOTICE:12-17` describes the same files as "**adapted** from Anthropic's Claude Code documentation" and lists what was changed. The
-NOTICE is the accurate one, and the chapter files bear it out. **What is checkable, with a procedure and its result:**
+NOTICE is the accurate one, and the chapter files bear it out — but the evidence is DOCUMENTARY, and the file says so, because a
+reader judging this question needs to know how strong it is. **A reworded section title, exhibited.** Commit `2339314` ("broaden
+section titles in 7 chapters so they cover their subsections") changed, in
+`skills/mods-doc-automate-actions-with-hooks/references/chapter.md`:
+
+    - #### What you can automate
+    + #### Hook recipes for common automation tasks
+    - #### How hooks work
+    + #### Hook execution, input and output, matchers, and locations
+
+A title that says what its section COVERS, where the vendor's was a topic label — and it is in the shipped file today. That is one
+demonstrable adaptation, and `git show 2339314` shows it in full.
+
+**WHAT WAS WITHDRAWN, AND WHY — THE TRADE THIS FILE MAKES EXPLICIT.** An earlier version of this section claimed the chapters' added
+`## Table of Contents` and `## Chapter content` headings were evidence of adaptation, on the reasoning that a document fetched from
+`code.claude.com` is prose under one title. **That reasoning was wrong against the baseline**: `0a8e531~1` — the pre-series upstream —
+ALREADY had both headings in all 60 files (`git show 0a8e531~1:skills/mods-doc-hooks-reference/references/chapter.md` opens `## HOOKS
+REFERENCE` / `## Table of Contents` / `## Chapter content`), and the rewording commits `fa1395b`, `2339314`, `8f6d9f6` and `076adfb` are
+all ANCESTORS of that baseline (`git merge-base --is-ancestor <commit> 0a8e531~1`). So the structural difference from Anthropic's pages
+is NOT this plugin's, and the withdrawal of that argument leaves the plugin's case resting on its own documents and its own history —
+which is weaker than a demonstrable difference from Anthropic's pages, and is stated here rather than left for a reader to discover.
+Against `0a8e531~1` the net diff is 4 path values and 1 README line, across 2 chapter files — the same figure the series has carried
+throughout, in one convention.
+
+**ONE UNIFORMITY CHECK, WHICH IS NOT EVIDENCE OF ADAPTATION.** For completeness, the shape is uniform across the corpus:
 
     git ls-files 'skills/*/references/chapter.md' | xargs grep -c "^## Chapter content"
 
-→ 60 of 60 files. Every chapter file carries a `## Chapter content` heading with Anthropic's `### Hooks reference`-style section
-titles nested under it (`skills/mods-doc-hooks-reference/references/chapter.md:17` is that heading, and the chapter's own
-`### Hooks reference` sits at `:23`), and each opens with a `## Table of Contents` at `:3`. That two-heading shape is NOT Anthropic's
-page structure: a document fetched from `code.claude.com` is prose under one title, and the plugin's chapters are restructured into a
-contents list plus a content section.
-
-**A CORRECTION TO AN EARLIER CLAIM IN THIS FILE.** A previous version of this section cited the two headings as "the ADDED
-`## Table of Contents` heading" and "the ADDED `## Chapter content` heading", and said the chapters were reworded in a way "verbatim"
-forbids. **That was wrong on both counts.** The baseline commit `0a8e531~1` — the pre-series upstream — ALREADY had both headings in
-all 60 files (`git show 0a8e531~1:skills/mods-doc-hooks-reference/references/chapter.md` opens `## HOOKS REFERENCE` / `## Table of
-Contents` / `## Chapter content`), so the two-heading shape is the baseline's, not this plugin's addition. And the reworded section
-TITLES that NOTICE lists were reworded in the plugin's OWN EARLIER WORK — commits `fa1395b` ("trim chapter TOCs to section level,
-reword reader-facing passages for the agent"), `2339314` ("broaden section titles in 7 chapters so they cover their subsections") and
-`8f6d9f6` ("broaden section titles in the remaining chapters") — which are all BEFORE the `0a8e531~1` baseline. So the chapter files are
-NOT verbatim, but the evidence is the plugin's own history, not a structural difference from the baseline: against `0a8e531~1` the net
-diff is 2 chapter files and 4 path values. **The honest statement is therefore narrower: the chapters are adaptations because the
-plugin's own commit history says so, and NOTICE describes them accurately; the "verbatim" word is wrong.** The
+→ 60 of 60 files. That shows the files are CONSISTENT WITH EACH OTHER — the shape is the baseline's, so it is not evidence that the
+plugin adapted anything, and it is recorded here only so the check is not re-derived later. The honest statement of the position is
+therefore narrower: the chapters are adaptations because the plugin's own history says so and NOTICE describes them accurately, and the
+"verbatim" word is wrong.
 CHANGELOG's word is wrong, and it is wrong in the direction that MATTERS here: "verbatim" would make preservation unconditional by
 description, whereas the truth is that the chapters are adaptations, and whether an instruction may be omitted from an adaptation is
 the question the owner is being asked.
