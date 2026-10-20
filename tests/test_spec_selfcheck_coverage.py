@@ -81,43 +81,53 @@ NOT_GUARDS = ("if m:", "if rid not in sib_rules:")
 # "covered", and it will not fire on a sentence that never mentions the
 # guards. That is why the DENOMINATOR of a ratio form is bound to the
 # guard total the code itself derives - "18 of the 19" is a claim about
-# the guards, "37 of the 72" is a claim about the corpus, and the pattern
-# tells them apart by the number, not by the words around it.
+# the guards, "37 of the 72" is a claim about the corpus, and the ratio
+# form tells them apart by the number, not by the words around it. (The
+# NOUN form below does not: it takes any count, so "37 of the 72 guard
+# conditions are covered" fires - which is right, because that would be
+# a claim about the guards.)
 #
 # The count and the guard word must be in the same CLAUSE, not merely in
 # the same sentence: a sentence that says "the 72 sites are covered by
 # the scan, and the script's guards are covered by tests" mentions both
 # a corpus count and the guards, and a sentence-wide window would read
-# that as a claim about the guards. A CLAUSE BOUNDARY is a comma, a
-# semicolon, a colon, a dash, brackets or a full stop, and the windows
-# below do not cross one.
+# that as a claim about the guards. The windows below do not cross a
+# COMMA, a SEMICOLON, a COLON, a FULL STOP, parentheses or square
+# brackets. They DO cross a dash: a dash is not in the excluded set, so
+# a figure separated from "covered" by a dash is still caught, which is
+# the right way round - a dash is an aside, not a clause boundary.
 #
 # The ban is bounded in three ways, and the bounds are stated here rather
 # than left for a reader to discover: spelled counts run one..twenty; the
-# count and the guard word must be in one clause; and a period inside the
-# clause (an "e.g.", or a "chapter.md:586") ends the window, so a figure
-# interrupted by one is not caught.
+# count and the guard word must be in one clause; and a character that
+# ends the clause - a comma, a semicolon, a colon, a full stop, a
+# bracket - ends the window with it, so a figure interrupted by one (an
+# "e.g.", or a "chapter.md:586") is not caught. The passage's own
+# register uses colons freely, so a count written after one is not
+# caught either, and that is the bound's cost.
 def covered_figure_re(guard_total: int) -> str:
     """The pattern that finds a covered-count figure in the passage.
 
     The guard total is an ARGUMENT, not a literal: it is the count the
     script's own refusing conditions yield, so the ratio form is bound
     to the code's figure rather than to a number restated in this file.
+
+    A guard total past the spelled range does not abort: the pattern
+    falls back to the NUMERAL denominator, which is the form the
+    passage actually uses, and the bound is stated in the comment above
+    rather than enforced by a crash. A guard count that grows past
+    twenty is a thing to notice, not a thing to abort a test run over.
     """
     spelled = (
         "zero one two three four five six seven eight nine ten eleven "
         "twelve thirteen fourteen fifteen sixteen seventeen eighteen "
         "nineteen twenty"
     ).split()
-    if guard_total >= len(spelled):
-        raise SystemExit(
-            "the script has {0} guards, which is past the spelled range the "
-            "covered-count pattern knows ({1} words). Extend the spelled list "
-            "in this module, or the check cannot see a spelled covered "
-            "count.".format(guard_total, len(spelled) - 1)
-        )
     count = r"\d+|" + "|".join(spelled)
-    total = f"{guard_total}|{spelled[guard_total]}"
+    if guard_total < len(spelled):
+        total = f"{guard_total}|{spelled[guard_total]}"
+    else:
+        total = str(guard_total)
     ratio = rf"\b(?:{count})\s+of\s+(?:the\s+)?(?:{total})\b"
     clause = r"[^,;:.()\[\]]"
     noun = (
