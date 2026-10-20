@@ -96,12 +96,27 @@ alternation over those phrasings was run against the same corpus, and it hit 10 
 **ONE INCONSISTENCY IN THE REPOSITORY'S OWN SELF-DESCRIPTION, FOUND WHILE DOING THIS, AND MATERIAL TO THE RULING.**
 `CHANGELOG.md:20` describes the bundle as "60 reference skills holding **verbatim** Claude Code documentation chapters", while
 `NOTICE:12-17` describes the same files as "**adapted** from Anthropic's Claude Code documentation" and lists what was changed. The
-NOTICE is the accurate one, and the chapter files bear it out: they carry an added section-level table of contents, section titles
-reworded to describe what each section covers, and a subsection promoted to a section — none of which "verbatim" allows. **The
-citations, so this is checkable:** `skills/mods-doc-hooks-reference/references/chapter.md:3` is the added `## Table of Contents` heading
-and `:17` is the added `## Chapter content` heading (a promoted section, with the chapter's own `### Hooks reference` at `:23` nested
-under it); every one of the 60 chapter files opens with that same two-heading shape. A file that carried Anthropic's text VERBATIM
-would have neither the added table of contents nor the promoted section. The
+NOTICE is the accurate one, and the chapter files bear it out. **What is checkable, with a procedure and its result:**
+
+    git ls-files 'skills/*/references/chapter.md' | xargs grep -c "^## Chapter content"
+
+→ 60 of 60 files. Every chapter file carries a `## Chapter content` heading with Anthropic's `### Hooks reference`-style section
+titles nested under it (`skills/mods-doc-hooks-reference/references/chapter.md:17` is that heading, and the chapter's own
+`### Hooks reference` sits at `:23`), and each opens with a `## Table of Contents` at `:3`. That two-heading shape is NOT Anthropic's
+page structure: a document fetched from `code.claude.com` is prose under one title, and the plugin's chapters are restructured into a
+contents list plus a content section.
+
+**A CORRECTION TO AN EARLIER CLAIM IN THIS FILE.** A previous version of this section cited the two headings as "the ADDED
+`## Table of Contents` heading" and "the ADDED `## Chapter content` heading", and said the chapters were reworded in a way "verbatim"
+forbids. **That was wrong on both counts.** The baseline commit `0a8e531~1` — the pre-series upstream — ALREADY had both headings in
+all 60 files (`git show 0a8e531~1:skills/mods-doc-hooks-reference/references/chapter.md` opens `## HOOKS REFERENCE` / `## Table of
+Contents` / `## Chapter content`), so the two-heading shape is the baseline's, not this plugin's addition. And the reworded section
+TITLES that NOTICE lists were reworded in the plugin's OWN EARLIER WORK — commits `fa1395b` ("trim chapter TOCs to section level,
+reword reader-facing passages for the agent"), `2339314` ("broaden section titles in 7 chapters so they cover their subsections") and
+`8f6d9f6` ("broaden section titles in the remaining chapters") — which are all BEFORE the `0a8e531~1` baseline. So the chapter files are
+NOT verbatim, but the evidence is the plugin's own history, not a structural difference from the baseline: against `0a8e531~1` the net
+diff is 2 chapter files and 4 path values. **The honest statement is therefore narrower: the chapters are adaptations because the
+plugin's own commit history says so, and NOTICE describes them accurately; the "verbatim" word is wrong.** The
 CHANGELOG's word is wrong, and it is wrong in the direction that MATTERS here: "verbatim" would make preservation unconditional by
 description, whereas the truth is that the chapters are adaptations, and whether an instruction may be omitted from an adaptation is
 the question the owner is being asked.
@@ -116,9 +131,11 @@ correction is what reaches the CHANGELOG. **Until such a commit is released, the
 stated here rather than left for a reader to discover.**
 
 **WHAT THE NEXT CHANGELOG WILL SAY — MEASURED, not predicted, and the measurement corrects an earlier claim of this file's.**
-`git-cliff` was run against the repository. **The pipeline's own invocation, `git cliff --bump --tag v<NEXT> -o CHANGELOG.md`
-(`scripts/publish.py:2740`), was run and produced a dated `## [0.2.0]` heading with the same body**; the `--bump` variant is the
-pipeline's exact command and it ran successfully here. The two commits carrying this correction render under "Bug Fixes" as:
+`git-cliff` was run against the repository, in a scratch clone, using **the pipeline's own command, `git cliff --bump --tag v<NEXT> -o
+CHANGELOG.md` (`scripts/publish.py:2740`)**. **It exited 0 and produced a dated `## [0.2.0]` heading with the same body — but it also
+printed `WARN There is nothing to bump`, because this repository has NO TAGS.** So: the generator's output from this commit log was
+MEASURED, and it is the dated form the pipeline writes; the version-bump path itself is NOT exercised here, and the pipeline's step is
+not what was run end-to-end. The two commits carrying this correction render under "Bug Fixes" as:
 
     - **docs:** The chapters are adapted, not verbatim — the release note said otherwise (cb5a1d8)
     - **docs:** Revert the CHANGELOG hand-edit — that file is generated (9404d9e)
@@ -147,8 +164,9 @@ which would make preservation unconditional by description. Two things follow, a
 the next publish, the word is in the released artefact, and the correction lives only in this repository. Second, the next publish
 removes the word as a side effect of overwriting a hand-written file, not as a correction — so nobody should read the next CHANGELOG as
 evidence that the point was settled. **NOTICE already states the adaptations accurately**, so the claim the CHANGELOG contradicted is already answered correctly in the
-repository, and the false word was a DOCUMENTATION defect rather than a policy question in disguise. (NOTICE is the licensing and
-attribution statement; nothing in this repository designates it as the plugin's policy authority, and this file does not claim one.) **There is no CLAUDE.md and no PRRD.md in this repository** — the project's conventions
+repository. (NOTICE is the licensing and attribution statement; nothing in this repository designates it as the plugin's policy
+authority, and this file does not claim one. Whether the false word constitutes a POLICY problem is the owner's question, and this
+file does not answer it — it reports the false claim and the corrected fact.) **There is no CLAUDE.md and no PRRD.md in this repository** — the project's conventions
 elsewhere assume a PRRD, and its absence here is itself part of the finding. So the premise is HALF-stated, not absent: the practice of
 preservation is declared, the rule for dangerous content is not, and the rule for dangerous content is exactly what is under review. A
 practice is not a grant of authority over the question. **The silence may also mean the question has simply never been put** — a READING, not a fact about the repository: the owner may hold the policy in their head rather than in a file, which is why the rule is asked rather than derived. It is offered as a possible explanation, not as the explanation.
