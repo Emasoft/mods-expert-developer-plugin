@@ -35,6 +35,14 @@ THE MECHANISM: a pre-existing tag OPENS A SECTION for the commits up to and incl
 
 THE THREE MEASURED FACTS: (1) the same 90 commits appear in every case — the tag changes neither which commits are rendered nor their count; (2) the RELEASE-SECTION COUNT varies 1, 2, 2, 1, 2, and the top section holds 90, 89, 6, 90 and 6 bullets; (3) the top heading's VERSION varies in exactly one case, (d), and only there. Case (e) is numerically IDENTICAL to (c) and therefore tested nothing new, because 82c693d is an ancestor of HEAD either way.
 
+**THE LABELLING RULE, AS MEASURED, AND THE CASE THAT REASSURES.** Cliff labels the window from a tag that ALREADY EXISTS on the commit
+it is labelling, and falls back to the supplied "--tag" only when none does. **THE REASSURING ARGUMENT, which belongs to this card and
+was moved here with the subject it is about: on the FIRST release the render labels the window from the SUPPLIED tag, which is built
+from the version the pipeline computed, so the two agree BY CONSTRUCTION.** Once a tag exists, the computed version is derived FROM a
+tag and the label is taken FROM a tag — so they agree again IN THE ORDINARY CASE, WHERE THE RELEASE TAG IS ALSO THE MOST RECENT TAG.
+That uniqueness is not guaranteed: a stale tag sitting on the released commit alongside a newer tag elsewhere would put the label and
+the version on DIFFERENT tags, and they would disagree. That is the narrow case, and it is the one the owner's question is about.
+
 THE OPEN QUESTION, which is the owner's and not the plugin's: SHOULD A PRE-EXISTING TAG BE ALLOWED TO RE-SECTION THE CHANGELOG, AND TO RELABEL ITS TOP HEADING? The plugin states the measurement and does not classify its significance.
 
 THE INFERENCE THE WARNING COLUMN SUPPORTS BUT DOES NOT ESTABLISH: cliff prints 'There is already a tag' in exactly the one case where the tag sits on the commit being released, and in no other. What that supports is that cliff reports a pre-existing tag only when that tag is on the commit it is labelling. What it does NOT establish is WHY — it may report only for a tag on the labelled commit, or only when the existing tag's version differs from the supplied one, and the measurement does not separate the two.
