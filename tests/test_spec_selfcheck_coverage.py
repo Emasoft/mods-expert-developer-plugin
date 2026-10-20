@@ -23,6 +23,15 @@ measurement that derives it is a full suite run per guard, so it lives in
 every change, and a number in prose about it would drift silently in every
 checkout that had not run it. A figure no check can enforce is worse than no
 figure, because a reader trusts it.
+
+WHAT THE MEASUREMENT'S "UNCOVERED" FIGURE MEANS, for a reader deciding
+whether to trust it: the one branch it reports as uncovered is the
+bucket-A BACKSTOP, which is UNREACHABLE - this file's rows feed both the
+pair set and the stance set, so the pair comparison refuses first. A branch
+nothing can reach has no test behind it, so the figure counts an
+UNEXECUTABLE BRANCH, not a gap in the safety net. The branch is kept as a
+defensive assertion against a future change to the row parsing; the cost of
+keeping it is that the figure permanently counts a dead branch.
 """
 
 from __future__ import annotations
@@ -153,26 +162,41 @@ def _ledger_named_conditions(ledger: str) -> list[str]:
 
 
 def _guard_coverage_bullet(ledger: str) -> str:
-    """The ledger's bullet that states the guard figure.
+    """The ledger's PASSAGE that states the guard figure.
 
-    Located by the phrase that bullet is about, so it is found by what it
-    SAYS rather than by a line number, which a reword or an inserted bullet
-    would move. The bullet is a single markdown list item; the text of the
-    line is the passage.
+    Located by the phrase that passage is about, so it is found by what it
+    SAYS rather than by a line number, which a reword or an inserted passage
+    would move.
+
+    The passage is a markdown list item that CONTINUES onto the next line -
+    the figure and the sentences around it span more than one line - so the
+    passage is bounded by the NEXT list item, not by the next newline. A
+    bound of one line would silently miss a name that a later edit moved
+    onto the continuation line, and the read would then pass while checking
+    less than it claims to.
+
+    If the passage is not a list item at all, the whole of the text from the
+    marker to the next blank line is used, and the caller sees a different
+    span rather than a silently narrower one.
     """
     marker = "GUARD CONDITIONS"
     index = ledger.find(marker)
     if index == -1:
         return ""
     start = ledger.rfind("\n- ", 0, index)
+    if start != -1:
+        end = ledger.find("\n- ", index)
+        if end == -1:
+            end = len(ledger)
+        return ledger[start:end]
+    # Not a list item: bound by the next blank line, which is the end of a
+    # paragraph in markdown.
+    start = ledger.rfind("\n", 0, index)
+    end = ledger.find("\n\n", index)
     if start == -1:
-        start = ledger.rfind("\n", 0, index)
-    # The bullet runs to the end of its LINE, and the names this reads can come
-    # after the marker on that same line, so the line's end is the bound - not
-    # the marker's position.
-    end = ledger.find("\n", index)
-    if start == -1 or end == -1:
-        return ledger[index:]
+        start = 0
+    if end == -1:
+        end = len(ledger)
     return ledger[start:end]
 
 
@@ -183,7 +207,7 @@ def _ledger_named_backstop(ledger: str) -> str:
     the script, rather than describing it in prose that no check can verify.
     """
     bullet = _guard_coverage_bullet(ledger)
-    marker = "ends in a BACKSTOP (`"
+    marker = "a BACKSTOP (`"
     index = bullet.find(marker)
     if index == -1:
         return ""
