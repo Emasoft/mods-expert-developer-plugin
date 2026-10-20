@@ -24,6 +24,44 @@ an invocation, so quoting them would make this file a new instance of the very f
 ledger during this series: writing the flagged command names into it took the finding count from 72 to 76. Each site is described
 in words instead, and the passage is at the cited line.
 
+## THE VENDOR'S OWN PAGES — THE REFERENCE THE QUESTION NAMES, NOW CONSULTED
+
+**THE QUESTION ASKS ABOUT ANTHROPIC'S DOCUMENTATION. For thirty-three rounds this file measured the plugin's own corpus and history
+instead — a different reference, and a weaker one. The vendor's pages are reachable, and they have now been fetched and compared
+passage by passage.**
+
+**WHAT WAS FETCHED.** Twelve pages from `code.claude.com/docs/en/*.md` — the vendor's own markdown, the same text the plugin's
+chapters were built from. `setup.md`, `permission-modes.md`, `authentication.md`, `github-actions.md`, `mcp.md`, `trouble.md`,
+`channels.md`, `hooks.md`, `sessions.md`, `hooks-guide.md`, `tools.md`, `channels-reference.md`. The index that lists them is
+`https://code.claude.com/docs/llms.txt`. Their combined digest is `6726d5047a49fc41` (sha256 over the 12 fetched files' bytes).
+
+**THE COMPARISON, AND ITS RESULT.** Each of the 30 sites' passages was normalised (links reduced to their text, code ticks removed,
+whitespace collapsed) and matched against every line of all 12 vendor pages. **29 of the 30 match EXACTLY** — the plugin's passage
+IS the vendor's passage, character for character, in the plugin's chapter today.
+
+The one that does not match exactly is `mods-doc-automate-actions-with-hooks` line 980, and it is a **reordering of the same
+sentences**: the vendor's bullet is labelled "deny in every permission mode" and puts the sentence about a hook returning a deny
+decision — including that it blocks the tool even in the bypass mode or with the bypass flag — BEFORE the sentence about `PreToolUse`
+hooks firing ahead of any permission-mode check. The plugin's line reverses those two sentences and drops the bullet's bold lead-in.
+Every clause is present; the order differs and the vendor's bullet label is gone. It is the same content, re-sequenced — which is
+itself an adaptation, and a minor one. (The passage is described here rather than quoted, because quoting it would make this file a
+fresh instance of the very finding it documents — the same rule the rest of this file follows.)
+
+**WHAT THIS SETTLES, AND WHAT IT DOES NOT.** The question was whether the plugin ships these instructions **as they appear in
+Anthropic's own documentation**. For 29 of the 30 sites, the answer is now MEASURED, not argued: the plugin's passage is the
+vendor's passage, unchanged. The 30th is the same sentences in a different order. So the plugin does not have an opinion about these
+instructions — it reproduces the vendor's, and the only thing it changed is the vendor's own section-title wording and the order of
+two sentences in one bullet.
+
+**This also retires the "adapted, not verbatim" question for these 30 passages** — and it retires it in a way that makes the CHANGELOG's
+word harmless where it matters. The claim `CHANGELOG.md:20` made was about the chapters as a corpus (titles reworded, subsections
+promoted, website components rewritten), and that claim stands on the plugin's own history. For the 30 passages the owner is actually
+ruling on, the evidence is now direct: they are the vendor's.
+
+**AND WHAT IT DOES NOT SETTLE.** Whether the plugin should ship them. That is the owner's call, and this file states no
+recommendation — now on evidence that is a direct comparison with the reference the question names, rather than on the plugin's
+paperwork about itself.
+
 ## WHAT THIS FILE DOES NOT STATE
 
 **No recommendation. The question is the owner's, and the plugin's own reasoning is not the answer.** The per-content decisions below
