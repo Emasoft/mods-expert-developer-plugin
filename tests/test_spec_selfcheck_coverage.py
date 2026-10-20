@@ -128,11 +128,7 @@ def spelled_or_numeral(count: int) -> str:
     """How a count is written in the pattern: spelled if it is known, else numerals.
 
     ONE owner for the rule, read by the pattern and by the test that
-    pins the pattern's behaviour. The two used to decide this
-    independently - the pattern by `guard_total < len(spelled)`, the
-    test by the same comparison written again - and a future edit to
-    the range would have left the test asserting sentences the pattern
-    no longer matched.
+    pins the pattern's behaviour, so the two cannot diverge.
     """
     if count < len(SPELLED_COUNTS):
         return SPELLED_COUNTS[count]
@@ -154,7 +150,8 @@ def covered_figure_re(guard_total: int) -> str:
     """
     spelled = SPELLED_COUNTS
     count = r"\d+|" + "|".join(spelled)
-    total = f"{guard_total}|{spelled_or_numeral(guard_total)}"
+    written = spelled_or_numeral(guard_total)
+    total = written if written == str(guard_total) else f"{guard_total}|{written}"
     ratio = rf"\b(?:{count})\s+of\s+(?:the\s+)?(?:{total})\b"
     clause = r"[^,;:.()\[\]]"
     noun = (
