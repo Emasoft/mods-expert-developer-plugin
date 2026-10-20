@@ -54,6 +54,7 @@ itself is worth nothing, so the script's checks are separated by where their bas
 | the bucket-A (site, rule) pairs | the SIBLING SPEC `cpv-nit-bucketA-sites.md`, a different committed file | yes |
 | the total (rule, site) set | the VALIDATOR'S OWN `[NIT]` output | yes |
 | the SET OF RULES, in BOTH halves of this file | the same validator output — the rules the scanner fired. The per-rule PROSE section and the per-site TABLES are two separate artefacts, and each is compared against that rule set | yes |
+| the PROSE half's completeness | its own headings against its own measured blocks | yes — a rule with a heading but no measured block is an analysis that says nothing, and is caught |
 
 The distinction matters because an earlier version of this script held its expected row, block and site counts as
 LITERALS BESIDE THE TABLE, which made the coverage assertion circular: deleting one rule's table and lowering the
