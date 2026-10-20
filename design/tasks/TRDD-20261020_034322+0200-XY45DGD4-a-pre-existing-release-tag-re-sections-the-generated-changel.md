@@ -41,23 +41,17 @@ RELEASED, THE SUPPLIED TAG WAS USED; IN THE ONE CASE WHERE IT WAS, THE EXISTING 
 THAT GOVERNS IT. THE RULES THIS MEASUREMENT LEAVES OPEN ARE SEVERAL, AND THE "TAG ON THE RELEASED COMMIT" READING IS ONE OF THEM, NOT
 THE ESTABLISHED ONE** — the cases are equally consistent with "a tag on HEAD" (case (d) IS HEAD in that run) and with "the
 highest-version tag", and this card's own warning-column paragraph is where that limit is stated in the file's own voice. **"THE NEAREST
-TAG" IS EXCLUDED, by cases (b) and (c): a nearest-tag rule would have selected the root in (b) and the ancestor in (c), and in both the
-SUPPLIED tag was used.** So the rules still open are the position-based ones and the version-based one, and the choice among them is
-what this measurement does not settle. An earlier draft of the series stated the behaviour as "cliff labels the window from a tag that
-ALREADY EXISTS on the commit it is labelling, and falls back to the supplied --tag ONLY WHEN NONE DOES" — and THAT IS WITHDRAWN, because
-it asserts a rule about tag EXISTENCE that the cases are INCONSISTENT WITH twice over: cases (b) and (c) each HAVE a tag and still used
-the supplied one. The withdrawal travels with the rule, so a reader does not have to go looking for it.
+**AND WHAT THE CASES EXCLUDE, STATED AT THE SCOPE THE CASES REACH.** Cases (b) and (c) show that the SUPPLIED tag was used even
+when a pre-existing tag was present — in (b) the root commit's tag, in (c) the ancestor's. **THAT EXCLUDES EVERY READING THAT WOULD
+HAVE SELECTED THE TAG ACTUALLY PRESENT IN THOSE CASES** — the root in (b), the ancestor in (c) — and it excludes them TOGETHER, because in
+(b) there is exactly ONE tag in the repository, so "the nearest", "the only", "the sole pre-existing" and "the ancestor of HEAD" all
+select that same tag and are ruled out by that same observation. **AND IT DOES NOT ENUMERATE WHAT REMAINS.** An earlier draft of this
+card listed "the nearest tag" among the open rules and named the survivors as "the position-based ones and the version-based one"; THAT
+PARTITION IS WITHDRAWN, because it singled out one reading from a family the cases ruled out together, and it read as a settled
+partition of the rule space in a paragraph whose whole point is that the measurement settles nothing. The exclusions the cases DO
+support are the two above, and the rule space beyond them is not enumerated here.
 
-**THE REASSURING CASE, and one clause connecting it to the case that disagrees.** On the FIRST release — the one with no pre-existing tag
-to label from — the render labels the window from the SUPPLIED tag, which is built from the version the pipeline computed, so the two
-agree BY CONSTRUCTION. Once a tag exists, the computed version is derived FROM a tag and the label is taken FROM a tag — so they agree
-again IN THE ORDINARY CASE, WHERE THE RELEASE TAG IS ALSO THE MOST RECENT TAG. That uniqueness is not guaranteed: a stale tag sitting
-on the released commit alongside a newer tag elsewhere would put the label and the version on DIFFERENT tags, and they would disagree.
-**AND HERE IS WHY THAT DOES NOT CONFLICT WITH CASE (d) — the one case where the label visibly disagrees. THE REASON IS THE SOURCE OF THE
-LABEL, NOT A TIMELINE. The five cases are five CONFIGURATIONS OF ONE HISTORY at one pinned commit, not a sequence of releases; all five
-render the same 90 commits at the same commit.** The first-release statement is about a label taken from the SUPPLIED tag, which is built
-from the version the pipeline computed. Case (d) is about a label taken from an EXISTING TAG ON THE RELEASED COMMIT. Those are different
-SOURCES of the label, so the two statements never meet. Case (d) is also the narrow case the owner's question is about.
+SOURCES of the label, so the two statements DO NOT BEAR ON EACH OTHER. Case (d) is also the narrow case the owner's question is about.
 
 THE OPEN QUESTION, which is the owner's and not the plugin's: SHOULD A PRE-EXISTING TAG BE ALLOWED TO RE-SECTION THE CHANGELOG, AND TO RELABEL ITS TOP HEADING? The plugin states the measurement and does not classify its significance.
 
