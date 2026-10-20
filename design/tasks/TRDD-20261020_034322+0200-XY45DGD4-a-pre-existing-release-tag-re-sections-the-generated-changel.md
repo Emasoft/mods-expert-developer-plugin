@@ -41,8 +41,13 @@ THE COMMIT THE RENDER LABELS, THE SUPPLIED TAG WAS USED; IN THE ONE CASE WHERE I
 OBSERVED, NOT THE RULE THAT GOVERNS IT. THE RULES THIS MEASUREMENT LEAVES OPEN ARE SEVERAL, AND THE "TAG ON THE COMMIT THE RENDER
 LABELS" READING IS ONE OF THEM, NOT THE ESTABLISHED ONE** — the cases are equally consistent with "a tag on HEAD" (case (d) IS HEAD in
 that run) and with "the highest-version tag", and this card's own warning-column paragraph is where that limit is stated in the file's
-own voice. **"THE COMMIT THE RENDER LABELS" IS A NEUTRAL PIVOT, NOT A MECHANISM** — it names the commit the render was asked to label,
-which is observable in the command line, and it does not say what cliff looks for when it decides which tag supplies the label.
+own voice. **"THE COMMIT THE RENDER LABELS" IS A NEUTRAL PIVOT, NOT A MECHANISM — AND THE FRAME THIS CARD USES IS RELATIONAL,
+NOT POSITIONAL: THE QUESTION IS WHICH PRE-EXISTING TAG, IF ANY, CLIFF PREFERS TO THE SUPPLIED ONE, AND EVERY CANDIDATE RULE IS A RULE
+ABOUT THE RELATIONSHIP BETWEEN A PRE-EXISTING TAG AND THE SUPPLIED ONE.** The pivot names the commit the render was asked to label,
+which is observable in the command line, and it does not say what cliff looks for when it decides which tag supplies the label. It is
+more neutral than the term it replaced — "the commit being released" named the position-reading as a fact — but it is not perfectly
+neutral either, because it still centres the render's target. The RELATIONAL frame is the one the card's own handle paragraph is
+written in, and it is the one that matches the question.
 
 **AND WHAT THE CASES EXCLUDE, STATED AT THE SCOPE THE CASES REACH.** Cases (b) and (c) show that the SUPPLIED tag was used even
 when a pre-existing tag was present — in (b) the root commit's tag, in (c) the ancestor's. **THAT EXCLUDES EVERY READING THAT WOULD
@@ -63,17 +68,22 @@ by the cases as they stand: any reading that would have selected the tag present
 ancestor's. These readings are NOT SEPARATED by the cases, and are what a re-run would have to discriminate: "a tag on the commit the
 render labels" and "a tag on HEAD" are the same reading in case (d), which IS HEAD in that run, and no other case puts a tag on HEAD that
 is not also on the commit the render labels; "the highest-version tag" is untested, because no case had two tags with different
-versions; and any rule keyed to the RELATIONSHIP between the existing tag and the supplied one — a version comparison, a distance
-comparison — is likewise untested, because in every case the existing tag's version was v0.0.1 and the supplied one was v0.9.9, so the
-two never varied independently. **A RE-RUN THAT PLACES A SECOND TAG AT A DIFFERENT POSITION, OR WITH A DIFFERENT VERSION, WOULD SEPARATE
+versions; and any rule keyed to the RELATIONSHIP between the existing tag and the supplied one — a version comparison — is likewise
+untested, because in every case that HAS an existing tag its version was v0.0.1 while the supplied one was v0.9.9, so the two never
+varied independently; and "the most recent tag" is untested too, because no case had a tag that was both older and present, so
+most-recent was never separated from the readings the cases exclude. **This paragraph and the reassuring case above now name the SAME
+set of untested readings, and a reader needs only this one.**
 THESE; the table above says which cases were run, and this paragraph says which hypotheses they left open.
 
 **THE REASSURING CASE, and why it does not conflict with case (d).** On the FIRST release — the one with no pre-existing tag to label
 from — the render labels the window from the SUPPLIED tag, which is built from the version the pipeline computed, so the two agree BY
 CONSTRUCTION. Once a tag exists, the computed version is derived FROM a tag and the label is taken FROM a tag — so they agree again
-IN THE ORDINARY CASE, WHERE THE TAG THE RENDER LABELS IS ALSO THE MOST RECENT TAG. **"THE MOST RECENT TAG" IS A READING LIKE THE
-OTHERS, NOT ONE THE CASES ESTABLISH** — no case had a tag that was both older and present, so most-recent was never separated from the
-readings the cases do exclude. That uniqueness is not guaranteed: a stale tag on the commit the render labels, alongside a newer tag
+**"THE MOST RECENT TAG" IS A READING LIKE THE OTHERS, NOT ONE THE CASES ESTABLISH** — no case had a tag that was both older and
+present, so most-recent was never separated from the readings the cases do exclude. **SO THE AGREEMENT IN THE ORDINARY CASE IS
+CONDITIONAL, NOT ESTABLISHED: THEY WOULD AGREE AGAIN IF THE LABEL IS TAKEN FROM THE MOST RECENT TAG — A READING THE CASES DO NOT
+ESTABLISH.** Under the readings the cases DO exclude, the label falls back to the supplied tag, which is built from the computed
+version, and the two agree; under the most-recent reading, the label and the version are derived from the same tag and they agree
+differently. **The cases cannot say which of these holds, and this card does not claim to know.**
 elsewhere, would put the label and the version on DIFFERENT tags, and they would disagree. **AND HERE IS WHY THAT DOES NOT CONFLICT WITH
 CASE (d) — THE REASON IS THE SOURCE OF THE LABEL, NOT A TIMELINE. The five cases are five CONFIGURATIONS OF ONE HISTORY at one pinned
 commit, not a sequence of releases; all five render the same 90 commits at the same commit.** The first-release statement concerns a
