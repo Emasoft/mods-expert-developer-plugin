@@ -1,13 +1,13 @@
 ---
 trdd-id: XV6QOEK1
 title: The next publish replaces the hand-authored CHANGELOG.md with a cliff-generated one, losing every hand-written passage in it
-column: todo
+column: human_review
 status: tasked
 created: 2026-10-20T03:15:02+0200
-updated: 2026-10-20T03:17:53+0200
+updated: 2026-10-20T03:22:55+0200
 current-owner: user
 created-by: user
-task-type: bugfix
+task-type: infra
 min-approval-requirement: none
 assignee: user
 mandate: true
@@ -35,7 +35,9 @@ THE LOSS DOES NOT DEPEND ON WHERE THE RELEASE IS CUT. An earlier draft of this c
 
 THE VERSION-BUMP PATH IS UNTESTED HERE. With no tag there is nothing for --bump to bump from; it warns "There is nothing to bump" and falls back to the supplied --tag. That warning is about VERSION DERIVATION, not about section preservation — the two are connected (no tag means no prior release boundary, so the whole history renders under one heading) but the warning is not the mechanism that drops the section.
 
-WHAT IS PROPOSED, AND WHAT IS NOT. Nothing is proposed beyond recording the defect, because the fix is a publish-path decision and it is the owner's. The question is not "how does cliff preserve a section it never had" but two questions: SHOULD THIS REPOSITORY BE TAGGED, and SHOULD THE HAND-WRITTEN RELEASE PROSE BE MOVED somewhere the pipeline does not overwrite. On the first: creating the first tag is OUTWARD-FACING (a later push of tags publishes it) and it decides WHERE 0.1.0 ENDS AND 0.2.0 BEGINS, so it is not merely "one command" — it is one command with a semantic choice inside it. On the second: stage_changelog's own docstring already states the constraints (-o overwrites, --unreleased truncates to only the new release, --prepend accumulates), so the obvious implementations of "preserve the prior section" inside that step are already ruled out by its own analysis.
+WHAT TAGGING WOULD ACTUALLY DO — MEASURED, not assumed. A card that says "tag the repository" without saying what the render then looks like sends the reader in blind. Three cases were rendered on clones, with the pipeline's exact command: (a) NO TAG — the render begins at "## [0.2.0] - 2026-10-20" and carries the WHOLE history, 114 lines; (b) a tag at the ROOT commit — same shape, same 0.2.0 heading, same whole history, 116 lines; (c) a tag at an INTERMEDIATE commit — same shape, same 0.2.0 heading, 118 lines; (d) a tag at HEAD — the render STILL carries the whole history, root commit and HEAD commit both present, 114 lines. **SO TAGGING DOES NOT NARROW THE RENDER, AND IT DOES NOT PRODUCE AN EMPTY HISTORY.** The reason is that cliff.toml configures no commit RANGE, so cliff renders the whole history whatever tags exist; the tag affects only which heading cliff labels the window with. **AND THAT IS WHERE THE TAG IS DANGEROUS.** In case (d) — a tag at HEAD — cliff renders the heading "## [0.1.0] - 2026-10-20" while the pipeline passes it "--tag v0.2.0" (the version the pipeline computed). THE TWO DISAGREE: the file would claim the whole history IS release 0.1.0, dated today, under a version the pipeline did not intend. A tag therefore does not fix anything here; it introduces a version-label mismatch, and where the tag is placed decides whether the entire history is presented as an old release or as the new one.
+
+WHAT IS PROPOSED, AND WHAT IS NOT. Nothing is proposed beyond recording the defect, because the fix is a publish-path decision and it is the owner's. The question is not "how does cliff preserve a section it never had" but two questions: SHOULD THIS REPOSITORY BE TAGGED, and SHOULD THE HAND-WRITTEN RELEASE PROSE BE MOVED somewhere the pipeline does not overwrite. On the first: creating the first tag is OUTWARD-FACING (a later push of tags publishes it) and it decides WHERE 0.1.0 ENDS AND 0.2.0 BEGINS, so it is not merely "one command" — it is one command with a semantic choice inside it. On the second: stage_changelog's own docstring already states the constraints (-o overwrites, --unreleased truncates to only the new release, --prepend accumulates), so the obvious implementations of "preserve the prior section" inside that step are already ruled out by its own analysis. **AND THE CHEAPEST AVAILABLE ANSWER IS ALREADY PROVEN IN THIS REPOSITORY**: hand-written release prose can simply go into a commit message, which is where the series put the correction to the false word, and from where cliff will render it. That pattern is the repository's own, and it costs nothing.
 
 REPRODUCTION (read-only, on a clone in /tmp, not on the working tree): git clone <this repo> /tmp/cliff-test; cd /tmp/cliff-test; git cliff --bump --tag v0.2.0 -o /tmp/cliff-out.md; grep -c 0.1.0 /tmp/cliff-out.md  # 0.
 
