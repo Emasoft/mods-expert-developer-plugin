@@ -25,13 +25,18 @@ checkout that had not run it. A figure no check can enforce is worse than no
 figure, because a reader trusts it.
 
 WHAT THE MEASUREMENT'S "UNCOVERED" FIGURE MEANS, for a reader deciding
-whether to trust it: the one branch it reports as uncovered is the
-bucket-A BACKSTOP, which is UNREACHABLE - this file's rows feed both the
-pair set and the stance set, so the pair comparison refuses first. A branch
-nothing can reach has no test behind it, so the figure counts an
-UNEXECUTABLE BRANCH, not a gap in the safety net. The branch is kept as a
-defensive assertion against a future change to the row parsing; the cost of
-keeping it is that the figure permanently counts a dead branch.
+whether to trust it: the branch it reports as uncovered is the bucket-A
+BACKSTOP, which is UNREACHABLE - this file's rows feed both the pair set
+and the stance set, so the pair comparison refuses first. A branch nothing
+can reach has no test behind it, so the figure counts an UNEXECUTABLE
+BRANCH, not a gap in the safety net. The branch is kept as a defensive
+assertion against a future change to the row parsing; the cost of keeping
+it is that the figure counts a dead branch.
+
+The figure is described here WITHOUT ITS NUMBER, and so is the measurement
+output it is derived from: the number is the complement of the covered
+count, which no routine check can enforce, so stating it in prose would
+hand the removed figure back by arithmetic.
 """
 
 from __future__ import annotations
@@ -207,7 +212,7 @@ def _ledger_named_backstop(ledger: str) -> str:
     the script, rather than describing it in prose that no check can verify.
     """
     bullet = _guard_coverage_bullet(ledger)
-    marker = "a BACKSTOP (`"
+    marker = "CONTAINS a BACKSTOP (`"
     index = bullet.find(marker)
     if index == -1:
         return ""
