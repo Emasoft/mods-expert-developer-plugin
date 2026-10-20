@@ -52,17 +52,30 @@ itself is worth nothing, so the script's checks are separated by where their bas
 | each row's raw span and token gap | the installed CPV catalogue, applied to the cited line | yes |
 | each per-rule block's widest figures | the table's own re-measured values | yes (the block is compared against the catalogue, not against a literal) |
 | the bucket-A (site, rule) pairs | the SIBLING SPEC `cpv-nit-bucketA-sites.md`, a different committed file | yes |
-| the total (rule, site) set | the VALIDATOR'S OWN `[NIT]` output, when a scan has been captured | yes |
-| the number of per-rule blocks | the rules this file's table names | **no** — a coordinated edit of the table and of that count would pass, so the count is reported rather than asserted |
+| the total (rule, site) set | the VALIDATOR'S OWN `[NIT]` output | yes |
+| the SET OF RULES the file tabulates | the same validator output — the rules the scanner fired | yes |
 
 The distinction matters because an earlier version of this script held its expected row, block and site counts as
 LITERALS BESIDE THE TABLE, which made the coverage assertion circular: deleting one rule's table and lowering the
 count to match produced a clean run. The counts are no longer asserted from this file. The bucket-A comparison is
 the strongest of the external checks because the sibling spec was adjudicated independently and covers 36 of the 72
-findings; the validator-output check covers all 72 when a scan has been captured, and says plainly when it did not
-run. What remains un-checked from outside this file is the number of distinct rules — the catalogue holds twenty-six
-rules for these chapters and the scanner's own suppression reduces that to the fourteen that fire here, so there is
-no external statement of "fourteen" to compare against.
+findings; the validator-output check covers all 72 and, with it, the set of rules.
+
+**THE VALIDATOR OUTPUT IS A REQUIRED INPUT, NOT AN OPTIONAL ONE.** Without a captured scan the script cannot say
+whether the table matches the scanner's own findings, so an absent scan is a FAILURE, not a skipped check — and a scan
+that is OLDER than the chapters it describes is a FAILURE too, because a stale capture proves nothing about the tree
+as it stands. A scan that is read but yields no recognisable finding line is also a failure: that is a change in the
+validator's OUTPUT FORMAT, and treating it as an empty result would let a truncated table pass. The path is a default
+that `CPV_SCAN_OUTPUT` overrides, and the file's own strict run is what produces it.
+
+**WHAT IS NOT CHECKED FROM OUTSIDE THIS FILE, STATED PLAINLY.** The bucket-A comparison covers the SIBLING SPEC's
+rule names and the pair count, but not the STANCE each site carries in the sibling (`TEACHES`, `NAMES`, `WARNS`,
+`EXPLAINS`) — the sibling records that in a different shape, and this file's table column is not compared against it.
+And the number of rules the CATALOGUE holds for these chapters is not what this file tabulates: applying the
+catalogue's own patterns to the seventeen chapters that hold the sites yields **twenty-six rules over 209 sites and
+224 (rule, site) pairs**, of which the scanner's own suppression reports fourteen over 72 — the two numbers measure
+different things, and the file tabulates the latter. The catalogue count is a re-runnable measurement, not a baseline
+for the table.
 
 **THIS FILE MATCHES ZERO PATTERNS IN THE INSTALLED CATALOGUE, AND THE CLAIM IS SCOPED TO A VERSION.** Checked rule by rule
 against every pattern in `skillaudit_patterns.json` and every intent pattern in `cpv_skillaudit_native.py`, at CPV v5.22.0:
@@ -255,11 +268,14 @@ for rid, (gap, span) in blocks.items():
 #   * the per-rule block figures are compared against those values — independent.
 #   * the bucket-A site set is compared against the SIBLING SPEC — independent.
 #   * the TOTAL row count is compared against the VALIDATOR'S OWN NIT LINES — independent.
-#   * the total block count is NOT independently derived: it is the number of rules
-#     the catalogue holds for these sites, which this file's own table names. A
-#     coordinated edit of the table and that number would pass; the block count is
-#     reported so a reader can see it rather than asserted.
-print('COVERAGE: {0} rows re-measured, {1} per-rule blocks compared against the table.'.format(len(rows), len(blocks)))
+#   * the number of per-rule blocks is READ FROM THIS FILE. It is certified below
+#     against the scan's own set of rule ids, not against a literal — a coordinated
+#     edit of the tables and a literal here would pass, and there is no literal.
+# The row count is MEASURED (the rows the table yields); the block count is READ
+# from this file, so it is reported rather than certified, and the rule-set check
+# below is what certifies it.
+print('COVERAGE: {0} rows re-measured against the catalogue, {1} per-rule blocks compared against the table.'.format(len(rows), len(blocks)))
+print('          (the block count is READ from this file; the rule-set check below is what certifies it)')
 sites = {(r[3], r[4]) for r in rows}   # (chapter, line) pairs are unique per site
 
 # EXTERNAL CHECK 1 — the bucket-A site set against the SIBLING SPEC, a different file.
@@ -306,21 +322,58 @@ print('EXTERNAL: the bucket-A (site, rule) pairs match the sibling spec ({0} pai
 # is a DEFAULT, not a fixture: point it at a fresh capture to re-check against a
 # newer CPV, or leave it and the script says plainly that the check did not run.
 scan = pathlib.Path(os.environ.get('CPV_SCAN_OUTPUT', '/tmp/cpv-r6.txt'))
-if scan.exists():
-    nit = set()
-    for m in re.finditer(r'\[skillaudit:[a-z_]+ ([A-Z0-9_]+)\].*\((skills/mods-doc-[a-z0-9-]+/references/chapter\.md)\):(\d+)', scan.read_text(encoding='utf-8')):
-        nit.add((m.group(1), m.group(2), m.group(3)))
-    table_pairs = {(rid, 'skills/mods-doc-' + c + '/references/chapter.md', str(l)) for rid, _, _, c, l in rows}
-    if nit and nit != table_pairs:
-        print('EXTERNAL ERROR: the (rule, site) set differs from the validator\'s own output.')
-        print('  only in the scan : {0}'.format(sorted(nit - table_pairs)[:5]))
-        print('  only in this table: {0}'.format(sorted(table_pairs - nit)[:5]))
-        print('  WHAT YOU SEE IS NOT A PASS.')
-        raise SystemExit(1)
-    print('EXTERNAL: the (rule, site) set matches the validator output ({0} pairs).'.format(len(nit)))
-else:
-    print('EXTERNAL: the validator output is not present at {0} — that check'.format(scan))
-    print('  did NOT run. Capture a strict scan there (or set CPV_SCAN_OUTPUT) and run this again.')
+if not scan.exists():
+    print('EXTERNAL ERROR: the validator output is not present at {0}.'.format(scan))
+    print('  The total baseline is NOT optional: without it this script cannot say')
+    print('  whether the table matches the scanner\'s own findings, and a clean run')
+    print('  would be a clean run over half the checks. WHAT YOU SEE IS NOT A PASS.')
+    print('  Capture a strict scan there, or point CPV_SCAN_OUTPUT at one, and re-run:')
+    print('    PLUGIN_SKIP_GITHUB_INTEGRITY=1 uvx --from git+https://github.com/Emasoft/claude-plugins-validation@v5.22.0 cpv-remote-validate plugin . --strict > {0} 2>&1'.format(scan))
+    raise SystemExit(1)
+# A scan that is OLDER than the corpus it describes is not a baseline for that
+# corpus. The corpus is the chapters the sites sit on; the scan must be at least
+# as new as the newest of them, or a chapter edited since the scan would not be
+# reflected in the comparison.
+newest_chapter = 0.0
+for ch in {c for _, _, _, c, _ in rows}:
+    p = pathlib.Path('skills/mods-doc-' + ch + '/references/chapter.md')
+    if p.exists():
+        newest_chapter = max(newest_chapter, p.stat().st_mtime)
+if scan.stat().st_mtime < newest_chapter:
+    print('EXTERNAL ERROR: the validator output at {0} is OLDER than the chapters'.format(scan))
+    print('  it describes, so it is a stale baseline and this comparison would prove')
+    print('  nothing about the tree as it stands. WHAT YOU SEE IS NOT A PASS.')
+    print('  Re-run the scan, then run this script again.')
+    raise SystemExit(1)
+nit = set()
+for m in re.finditer(r'\[skillaudit:[a-z_]+ ([A-Z0-9_]+)\].*\((skills/mods-doc-[a-z0-9-]+/references/chapter\.md)\):(\d+)', scan.read_text(encoding='utf-8')):
+    nit.add((m.group(1), m.group(2), m.group(3)))
+if not nit:
+    print('EXTERNAL ERROR: the validator output at {0} was read but no [NIT] line'.format(scan))
+    print('  matched the pattern this script looks for. That is a FORMAT change in the')
+    print('  validator\'s output, not an empty result — and an empty result would let a')
+    print('  truncated table pass. WHAT YOU SEE IS NOT A PASS.')
+    raise SystemExit(1)
+table_pairs = {(rid, 'skills/mods-doc-' + c + '/references/chapter.md', str(l)) for rid, _, _, c, l in rows}
+if nit != table_pairs:
+    print('EXTERNAL ERROR: the (rule, site) set differs from the validator\'s own output.')
+    print('  only in the scan : {0}'.format(sorted(nit - table_pairs)[:5]))
+    print('  only in this table: {0}'.format(sorted(table_pairs - nit)[:5]))
+    print('  WHAT YOU SEE IS NOT A PASS.')
+    raise SystemExit(1)
+print('EXTERNAL: the (rule, site) set matches the validator output ({0} pairs).'.format(len(nit)))
+# The rule SET as well as the pairs: the file's per-rule tables must be exactly the
+# rules the scanner fired. This is what certifies the block count, and it is read
+# from the scan rather than from a literal here.
+scan_rules = {r for r, _, _ in nit}
+file_rules = set(RULE_TABLES)
+if scan_rules != file_rules:
+    print('EXTERNAL ERROR: the set of rules differs from the validator\'s own.')
+    print('  only in the scan : {0}'.format(sorted(scan_rules - file_rules)))
+    print('  only in this file: {0}'.format(sorted(file_rules - scan_rules)))
+    print('  WHAT YOU SEE IS NOT A PASS.')
+    raise SystemExit(1)
+print('EXTERNAL: the rule set matches the validator output ({0} rules).'.format(len(scan_rules)))
 if found:
     print('{0} DISAGREEMENT(S) ABOVE. The file is not self-consistent as it stands.'.format(len(found)))
     raise SystemExit(1)
