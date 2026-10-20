@@ -158,7 +158,15 @@ import re, json, pathlib, os, glob, hashlib
 # which is why the scan comparison, and not this digest, is the total baseline.
 EXPECTED_DIGEST = 'b70a6dce9f702157'
 import glob
-CAT = json.load(open(glob.glob(os.path.expanduser('~/.claude/plugins/cache/emasoft-plugins/claude-plugins-validation/*/scripts/rules/skillaudit_patterns.json'))[0]))['rules']
+_CATALOGUE = glob.glob(os.path.expanduser('~/.claude/plugins/cache/emasoft-plugins/claude-plugins-validation/*/scripts/rules/skillaudit_patterns.json'))
+if not _CATALOGUE:
+    print('COVERAGE ERROR: the CPV pattern catalogue was not found under the plugin cache.')
+    print('  This script measures every row against the INSTALLED catalogue, so')
+    print('  without it there is nothing to measure against and no row can be')
+    print('  certified. Install the claude-plugins-validation plugin and re-run.')
+    print('  WHAT YOU SEE IS NOT A PASS.')
+    raise SystemExit(1)
+CAT = json.load(open(_CATALOGUE[0]))['rules']
 PATS = {}
 for r in CAT:
     lst = []
@@ -314,8 +322,11 @@ for label, headings in (('per-rule prose section', _prose_headings), ('per-site 
         raise SystemExit(1)
 _block_hits = re.findall(r'### `([A-Z0-9_]+)`[^\n]*\n(?:(?!\n### |\n## )[\s\S])*?- \*\*widest token gap:\*\* (\d+) characters\.\n- \*\*widest raw span:\*\* (\d+) characters', text)
 # The heading guard above already refuses a repeated rule id in either section,
-# and a duplicated block always repeats its heading, so no second duplicate
-# check is needed here: the heading check is strictly the earlier of the two.
+# and a duplicated block always repeats its heading, so the prose half needs no
+# second duplicate check. The TABLE half does: the table guard below reads the
+# rule id out of the SLICE, and catches a rule id the slice read twice - which
+# the heading guard, reading the raw text, does not cover. It is a backstop, not
+# a restatement.
 blocks = {m[0]: (m[1], m[2]) for m in _block_hits}
 for rid, (gap, span) in blocks.items():
     sel = [r for r in rows if r[0] == rid]
@@ -436,6 +447,21 @@ if not scan.exists():
 CHAPTERS = sorted([
     'automate-actions-with-hooks', 'cc-github-actions', 'cc-native-memory-and-rules', 'cc-permissions-modes', 'cc-projects-directory-structure', 'channels-reference', 'hooks-reference', 'loop-and-chron-reference', 'mcp-servers-reference', 'models-configuration', 'native-toolset-reference', 'prompt-caching-reference', 'sessions-reference', 'skills-reference', 'status-line-customization', 'troubleshooting-cc-setup', 'worktrees-reference',
 ])
+# The written list and the table's own chapters must be the SAME set. Writing
+# the list out makes the digest's input independent of the table, which is the
+# point - but independence in the wrong direction would let the digest watch a
+# set the table does not have to agree with, and a chapter outside the digest is
+# a corpus the digest does not watch. So the two are compared, and a difference
+# is a failure rather than a silent narrowing of the digest's reach.
+table_chapters = {c for _, _, _, c, _ in rows}
+if set(CHAPTERS) != table_chapters:
+    print('EXTERNAL ERROR: the written chapter list and the chapters the table names differ.')
+    print('  in the written list but not in the table: {0}'.format(sorted(set(CHAPTERS) - table_chapters)))
+    print('  in the table but not in the written list: {0}'.format(sorted(table_chapters - set(CHAPTERS))))
+    print('  A chapter outside the digest is a corpus the digest does not watch, and')
+    print('  a chapter in the table but not the digest is a passage with no anchor.')
+    print('  WHAT YOU SEE IS NOT A PASS.')
+    raise SystemExit(1)
 digest = hashlib.sha256()
 for ch in CHAPTERS:
     digest.update(pathlib.Path('skills/mods-doc-' + ch + '/references/chapter.md').read_bytes())
@@ -482,13 +508,11 @@ for label, mine in (('per-rule prose blocks', prose_rules), ('per-site tables', 
         print('  only in this file: {0}'.format(sorted(mine - scan_rules)))
         print('  WHAT YOU SEE IS NOT A PASS.')
         raise SystemExit(1)
-if len(prose_rules) != len(table_rules):
-    print('EXTERNAL ERROR: the file has {0} per-rule prose blocks but {1} per-site tables.'.format(len(prose_rules), len(table_rules)))
-    print('  The two are one artefact each, so a rule without an analysis, or an')
-    print('  analysis without a table, is a deletion the counts cannot hide.')
-    print('  WHAT YOU SEE IS NOT A PASS.')
-    raise SystemExit(1)
-print('EXTERNAL: the rule set matches the validator output ({0} rules), and the {0} prose blocks and {0} per-site tables agree.'.format(len(scan_rules)))
+# The two counts need no separate comparison: each half is compared with the
+# scan's rule set above, and a rule present in one half and absent from the
+# other is caught by whichever half it is missing from. A separate count check
+# would restate that, so it is not here.
+print('EXTERNAL: the rule set matches the validator output ({0} rules), and both halves of this file ({0} prose blocks and {0} per-site tables) carry exactly those rules.'.format(len(scan_rules)))
 if found:
     print('{0} DISAGREEMENT(S) ABOVE. The file is not self-consistent as it stands.'.format(len(found)))
     raise SystemExit(1)

@@ -133,6 +133,11 @@ def sandbox(tmp_path: Path, pristine: tuple[str, str, str]) -> Path:
     shutil.copytree(ROOT / "skills", skills)
     return tmp_path
 
+def _mutate_chapter(sandbox: Path, chapter: str, extra: str) -> None:
+    """Append text to a chapter, as a re-sync would."""
+    path = sandbox / "skills" / ("mods-doc-" + chapter) / "references" / "chapter.md"
+    path.write_text(path.read_text(encoding="utf-8") + extra, encoding="utf-8")
+
 def _prose_block(text: str, rule: str) -> str:
     start = text.index("### `" + rule + "`")
     end = text.index("### `", start + 10)
@@ -148,7 +153,7 @@ def _table_section_start(text: str) -> int:
 # expected string is a fragment the script prints for THAT perturbation.
 PERTURBATIONS: list[tuple[str, str, str]] = [
     ("delete a per-rule prose block", "delete_prose_block", "per-rule prose blocks differs"),
-    ("delete a per-site table", "delete_site_table", "(rule, site) set differs from the validator"),
+    ("delete a per-site table", "delete_site_table", "the written chapter list and the chapters the table names differ"),
     ("duplicate a per-rule prose block", "duplicate_prose_block", "appears more than once"),
     ("duplicate a prose block with wrong figures, copy first", "duplicate_forged_first", "appears more than once"),
     ("duplicate a prose block with wrong figures, copy last", "duplicate_forged_last", "appears more than once"),
@@ -162,6 +167,8 @@ PERTURBATIONS: list[tuple[str, str, str]] = [
     ("change a stance in this file", "change_own_stance", "the stance at"),
     ("change a stance in the sibling spec", "change_sibling_stance", "the stance at"),
     ("empty the per-site table section", "empty_table_section", "COVERAGE ERROR"),
+    ("append to a chapter that holds no cited line", "append_to_chapter", "the chapters have changed"),
+    ("duplicate a per-site table", "duplicate_site_table", "a rule id was read more than once"),
 ]
 
 def _mutate(sandbox: Path, kind: str) -> None:
@@ -185,6 +192,17 @@ def _mutate(sandbox: Path, kind: str) -> None:
         block = _prose_block(text, "SUPPLY_CHAIN")
         forged = block.replace("**widest token gap:** 73 characters", "**widest token gap:** 999 characters")
         text = text.replace(block, forged + block if kind.endswith("first") else block + forged, 1)
+    elif kind == "duplicate_site_table":
+        s = _table_section_start(text)
+        i = text.index("### `SHELL_EXEC`", s)
+        j = text.index("### `", i + 10)
+        block = text[i:j]
+        text = text[:i] + block + block + text[j:]
+    elif kind == "append_to_chapter":
+        # A corpus change that leaves every CITED line intact. Nothing else can
+        # see it: the row re-measurement reads the cited lines, which did not
+        # move. The chapter-text digest is the only guard that watches it.
+        _mutate_chapter(sandbox, "cc-github-actions", "\n\nA paragraph appended by a re-sync.\n")
     elif kind == "duplicate_heading_only":
         # The heading line alone, repeated. The block that follows it stays intact,
         # so the block's FIGURES are still matched and still checked - the point is
@@ -230,6 +248,97 @@ def _mutate(sandbox: Path, kind: str) -> None:
     else:  # pragma: no cover - the table above is the only caller
         raise AssertionError("unknown perturbation: " + kind)
     spec_path.write_text(text, encoding="utf-8")
+
+def test_a_chapter_whose_raw_and_collapsed_lines_disagree_is_refused(
+    sandbox: Path, pristine: tuple[str, str, str]
+) -> None:
+    """The raw line and the whitespace-collapsed line must select the SAME text.
+
+    That is what justifies the two columns having two different references: the
+    raw span is measured on the line as it stands, the gap on the collapsed
+    line, and the check proves they are looking at the same construct. The
+    perturbation splits a cited line in two at a point INSIDE a multi-word
+    trigger, so the raw line no longer carries the trigger whole while the
+    collapsed line still does - the two then select different text, and the
+    script must refuse rather than measure a construct that is not there.
+    """
+    _spec, _sibling, capture = pristine
+    assert capture, "no validator capture matching the spec's own table was found"
+    chapter = sandbox / "skills/mods-doc-cc-github-actions/references/chapter.md"
+    lines = chapter.read_text(encoding="utf-8").split("\n")
+    for index, line in enumerate(lines):
+        if "claude setup-token" in line:
+            # Break the line right between the two words of the trigger.
+            lines[index] = line.replace("claude setup-token", "claude setup\n-token", 1)
+            break
+    else:  # pragma: no cover - the chapter is part of the corpus
+        pytest.skip("the cited chapter no longer carries the line this test needs")
+    chapter.write_text("\n".join(lines), encoding="utf-8")
+    code, output = _run(sandbox, capture)
+    assert code != 0, (
+        "the script certified a document whose raw and collapsed lines select "
+        "different text: " + output
+    )
+    # The check that fires is the REFS one: after the split, the RAW line no
+    # longer carries the trigger whole, so one side matches nothing at all.
+    assert "one side matched NOTHING" in output or "match DIFFERENT text" in output, output
+
+def test_a_line_whose_raw_and_collapsed_forms_match_different_text_is_refused(
+    sandbox: Path, pristine: tuple[str, str, str]
+) -> None:
+    """Both sides must match the SAME text, not merely both match something.
+
+    This is the other half of the check: the row re-measurement measures on the
+    COLLAPSED line, so a chapter that puts two spaces where the trigger's words
+    meet leaves every stated figure still correct while the RAW line's match is
+    a different string. The check is what notices, and it must be exercised
+    separately from the case where one side matches nothing at all.
+    """
+    _spec, _sibling, capture = pristine
+    assert capture, "no validator capture matching the spec's own table was found"
+    chapter = sandbox / "skills/mods-doc-cc-github-actions/references/chapter.md"
+    text = chapter.read_text(encoding="utf-8")
+    if "claude setup-token" not in text:  # pragma: no cover - the chapter is in the corpus
+        pytest.skip("the cited chapter no longer carries the line this test needs")
+    chapter.write_text(text.replace("claude setup-token", "claude  setup-token", 1), encoding="utf-8")
+    code, output = _run(sandbox, capture)
+    assert code != 0, "the script certified a document whose raw and collapsed forms disagree"
+    assert "match DIFFERENT text" in output, output
+
+def test_an_absent_capture_is_refused(sandbox: Path, pristine: tuple[str, str, str]) -> None:
+    """The total baseline is required: without a capture the script must refuse."""
+    _spec, _sibling, _capture = pristine
+    code, output = _run(sandbox, "")
+    assert code != 0, "the script certified the document with no capture to check it against"
+    assert "the validator output is not present" in output, output
+
+def test_a_capture_in_an_unknown_format_is_refused(
+    sandbox: Path, pristine: tuple[str, str, str]
+) -> None:
+    """A capture the script cannot read is a FORMAT CHANGE, not an empty result.
+
+    An empty result would let a truncated table pass, so the script must refuse
+    rather than treat "nothing to compare" as agreement.
+    """
+    _spec, _sibling, _capture = pristine
+    bogus = "totally different output format\nno findings here\n"
+    (sandbox / "_bogus.txt").write_text(bogus, encoding="utf-8")
+    script = _extract_script((sandbox / SPEC_REL).read_text(encoding="utf-8"))
+    script_path = sandbox / "_script.py"
+    script_path.write_text(script, encoding="utf-8")
+    import os
+
+    env = dict(os.environ)
+    env["CPV_SCAN_OUTPUT"] = str(sandbox / "_bogus.txt")
+    result = subprocess.run(
+        [sys.executable, "-I", str(script_path)],
+        cwd=str(sandbox),
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+    assert result.returncode != 0, "the script accepted a capture it could not read"
+    assert "no [NIT] line" in result.stdout + result.stderr, result.stdout
 
 def test_the_untouched_document_is_certified(sandbox: Path, pristine: tuple[str, str, str]) -> None:
     """The script passes on the document as it stands - otherwise the rest proves nothing."""
