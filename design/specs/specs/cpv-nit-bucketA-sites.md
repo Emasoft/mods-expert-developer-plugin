@@ -7,35 +7,9 @@ This is the list backing the editorial question in `DELEGATION.md`: **does this 
 documentation, the vendor's install one-liner, the permission-bypass CLI flag, the long-lived-token minting command, and the
 superuser examples?**
 
-**REGISTER — what in this file is measured and what is a reading.** Two things here are MEASURED: the count of 30 sites (re-derivable
-from the validator's output) and the digest below (a checksum over the chapters' bytes). Everything else in this file is a READING —
-the grouping into contents, the per-site descriptions, the stances, and the per-content decisions. Those are one reader's judgement,
-written here so the owner can CHECK them rather than re-derive them, and marked here so the reader knows which register they are in. A
-count in this file is not an opinion; a stance is.
-
 **Each site carries a STANCE, because that is what the ruling turns on.** Whether a passage TEACHES a thing, merely NAMES it, WARNS
 against it, or merely EXPLAINS it is a different question from whether the passage mentions it, and a summary that flattens those
 together cannot answer the question. Read the STANCE column, not just the description.
-
-**The passages are deliberately NOT quoted.** A tracked file that quotes these commands is itself read by the skillaudit rules as
-an invocation, so quoting them would make this file a new instance of the very finding it documents. The same thing happened to the
-ledger during this series: writing the flagged command names into it took the finding count from 72 to 76. Each site is described
-in words instead, and the passage is at the cited line.
-
-## WHAT THIS FILE DOES NOT DO
-
-**It does not answer the question. The question is the owner's, and the plugin's own reasoning is not the answer.**
-
-The tempting move — after twenty-two rounds of characterising these passages, to state a position and hand it over — is wrong here for three
-reasons, and the first is the important one: the plugin's own self-description is not a stated editorial remit anywhere in this
-repository (the NOTICE covers licensing; the README describes the plugin's structure and the skills it ships), so an argument from
-"a plugin whose purpose is to preserve the documentation has no coherent reason to redact" rests on a premise that is exactly what is
-under review. The second is that a brief which arranges a position next to its supporting evidence makes that position easier to
-accept than the evidence alone would make it, and a decision-maker handed a brief is not making the decision the same way. The third
-is simpler: a plugin that states its own editorial position in its own file exercises an authority its owner has not granted it.
-
-What follows is EVIDENCE, and the readings on it, so the owner can rule without re-deriving anything. The decision per content below is
-what each content IMPLIES, not what the plugin recommends.
 
 ## The contents, and the decision each one implies
 
@@ -57,6 +31,45 @@ why the tally of stances should not be read as a count of endorsed practices.
 | the token-minting command | 4 | PROCEDURE — documenting how to authenticate, with one passage advising AGAINST the token for a shared secret. It is how a reader authenticates, not an instruction to mint a token for its own sake. | The plugin documents the token-minting command once as something to run, once to advise against (use an API key instead for a shared secret), and twice as a reference. The decision is whether documenting the command is within remit. |
 | not one of the four | 1 | NEITHER — a plain network-fetch command mentioned in passing, with no dangerous instruction behind it. | This site is EVIDENCE for the upstream discriminator, not an outlier to exclude: a dangerous-instruction rule fired on a pipe character in a sentence that carries no dangerous instruction at all. It is the cleanest demonstration in the set that the rule matches a CHARACTER rather than a danger, and it should be quoted as such in the upstream request. |
 | **total** | **30** | | |
+
+**REGISTER — what in this file is measured and what is a reading.** Two things here are MEASURED: the count of 30 sites (re-derivable
+from the validator's output) and the digest below (a checksum over the chapters' bytes). Everything else in this file is a READING —
+the grouping into contents, the per-site descriptions, the stances, and the per-content decisions. Those are one reader's judgement,
+written here so the owner can CHECK them rather than re-derive them, and marked here so the reader knows which register they are in. A
+count in this file is not an opinion; a stance is.
+
+**The passages are deliberately NOT quoted.** A tracked file that quotes these commands is itself read by the skillaudit rules as
+an invocation, so quoting them would make this file a new instance of the very finding it documents. The same thing happened to the
+ledger during this series: writing the flagged command names into it took the finding count from 72 to 76. Each site is described
+in words instead, and the passage is at the cited line.
+
+## WHAT THIS FILE DOES NOT STATE
+
+**No recommendation. The question is the owner's, and the plugin's own reasoning is not the answer.** (Not "does not answer the
+question" — the per-content decisions below do resolve it in practice. This file states no RECOMMENDATION, and the readings below are
+the plugin's account of the evidence, not its ruling on it.)
+
+The tempting move — after twenty-two rounds of characterising these passages, to state a position and hand it over — is wrong here for
+three reasons, and the first is the load-bearing one.
+
+**The premise was not established, and the repository says so in a way that cuts both ways.** The repository DOES state a practice of
+preservation: `README.md:8` and `.claude-plugin/plugin.json:4` both describe "60 **preserved** Claude Code documentation chapters", and
+`NOTICE:12-17` says the chapter files are "adapted from Anthropic's Claude Code documentation ... included for reference only". What
+the repository does NOT state anywhere is a policy on what to do when a preserved passage is a dangerous instruction — no file says
+whether preservation is unconditional, whether redaction is permitted, or who decides. So an argument from "a plugin whose purpose is
+to preserve the documentation has no coherent reason to redact" rests on a premise that is half-stated: the practice of preservation is
+declared, the rule for dangerous content is not, and the rule for dangerous content is exactly what is under review. A practice is not a
+grant of authority over the question.
+
+The second reason is about the document's function, not its content: a brief which arranges a position next to its supporting evidence
+makes that position easier to accept than the evidence alone would make it, and a decision-maker handed a brief is not making the
+decision the same way as one handed a table of readings.
+
+The third is simpler: a plugin that states its own editorial position in its own file exercises an authority its owner has not granted
+it.
+
+What follows is EVIDENCE, and the readings on it, so the owner can rule without re-deriving anything. The decision per content below is
+what each content IMPLIES, not what the plugin recommends.
 
 ## The stance tally
 
