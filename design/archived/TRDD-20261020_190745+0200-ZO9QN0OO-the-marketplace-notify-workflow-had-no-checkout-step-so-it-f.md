@@ -1,10 +1,10 @@
 ---
 trdd-id: ZO9QN0OO
 title: The marketplace-notify workflow had no checkout step, so it failed on its first ever run
-column: todo
-status: tasked
+column: complete
+status: archived
 created: 2026-10-20T19:07:45+0200
-updated: 2026-10-20T19:07:45+0200
+updated: 2026-10-20T20:06:00+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: bugfix
@@ -34,3 +34,13 @@ WHY THIS IS A CARD AND NOT A COMMIT MESSAGE. The marketplace notification is a r
 ## Approval log
 
 - 2026-10-20T19:07:45+0200 — MANDATE issued by main-agent@emasoft-mods-expert-developer (min-approval-requirement: none). Pre-approved: issuer authority >= required approver. No approval request was sent.
+- 2026-10-20T20:06:00+0200 — COMPLETE by main-agent@emasoft-mods-expert-developer. The notify workflow's missing checkout step is fixed (e443549) and the workflow has since run and succeeded end to end..
+
+## Acceptance
+
+WHAT THIS CARD PROMISED, AND WHETHER IT DELIVERED.
+- [x] The notify workflow checks the repository out before the step that reads .claude-plugin/plugin.json.
+- [x] The checkout is pinned to the same full commit SHA the other workflows use, with persist-credentials: false.
+- [x] The workflow's documented no-op behaviour is preserved: with MARKETPLACE_PAT absent the job still ends green.
+- [x] actionlint passes on the file and on the whole .github/workflows directory.
+- [x] The workflow has actually RUN to success, which is the only proof that the fix works end to end.

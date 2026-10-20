@@ -1,10 +1,10 @@
 ---
 trdd-id: SUCA1A1A
 title: The guard-coverage series' authoritative commit list, after the 2026-10-20 rewrite
-column: todo
-status: tasked
+column: complete
+status: archived
 created: 2026-10-20T19:46:50+0200
-updated: 2026-10-20T19:55:30+0200
+updated: 2026-10-20T20:06:04+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: docs
@@ -60,7 +60,17 @@ THE COMMIT THAT APPLIED THE REWRITE is the one that moved main to the rewritten 
 ## Approval log
 
 - 2026-10-20T19:46:50+0200 — MANDATE issued by main-agent@emasoft-mods-expert-developer (min-approval-requirement: none). Pre-approved: issuer authority >= required approver. No approval request was sent.
+- 2026-10-20T20:06:04+0200 — COMPLETE by main-agent@emasoft-mods-expert-developer. The successor card carries the twenty-two series commits with their post-rewrite SHAs, supersedes the archived PRHYQEVK, and records that the two archived cards' SHA references describe the pre-rewrite state..
 
 ## THE ARCHIVED CARDS' SHA REFERENCES ARE STALE, AND THIS IS THE RECORD THAT SAYS SO
 
 THE TWO ARCHIVED CARDS' SHA REFERENCES ARE STALE, AND THIS IS THE RECORD THAT SAYS SO. TRDD-8BXXNOPQ and TRDD-PRHYQEVK are ARCHIVED, so no verb can amend them, and their SHA references describe the PRE-REWRITE state as of 2026-10-20. Specifically, 8BXXNOPQ's 'THE FULL LIST, in series order' names the twelve by their PRE-REWRITE SHAs (0464a58, d731e2e, 36a441e, a3c71df, 073c46d, 705c26f, 089ae10, 01ef8e4, 168175f, d9a2075, 6c76e6a, 040ea53), and PRHYQEVK's implementation-commits field names the same twelve. EVERY ONE OF THOSE TWELVE SHAs IS NOW DIFFERENT. THE OLD-TO-NEW MAPPING IS IN THIS CARD: the twenty-two series commits are listed above with their post-rewrite SHAs, and the first ten are unchanged. So a reader who needs the pre-rewrite list finds it here, not in the archived cards, where it is right about the past and wrong about the present. THE ARCHIVED CARDS ARE NOT WRITTEN AS IF THEY WERE WRONG - they are records of what was true when they were written, which is exactly what an archive should hold.
+
+## Acceptance
+
+WHAT THIS CARD PROMISED, AND WHETHER IT DELIVERED.
+- [x] The card supersedes PRHYQEVK, which is archived and therefore unamendable.
+- [x] It carries all TWENTY-TWO series commits, in order, with their post-rewrite SHAs.
+- [x] The first ten are the unchanged ones and the last twelve are the rewritten ones, in that order.
+- [x] It records that the two ARCHIVED cards' SHA references describe the pre-rewrite state, and where the old-to-new mapping lives.
+- [x] Every SHA it names in the LIST OF TWENTY-TWO is a SHA that exists in the current history. THE PRE-REWRITE SHAs IT ALSO NAMES, in the section recording that the archived cards are stale, DO NOT - and that is the point of that section: they are named as what the archived cards say, and they are labelled as pre-rewrite. A SHA on this card is 'current' if it appears in the list of twenty-two, and 'historical' if it appears in the stale-record section; the two are never confused, and the section says which is which.
