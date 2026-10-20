@@ -24,7 +24,8 @@ PRE-TAG, NO-REMOTE STATE** — a repository with no git remote and no tags — a
 Creating the first release tag and publishing it changes both the tag set and (if the repository is given a remote) the version
 baseline, so the render measured here is the render BEFORE, not the render after. **WHICH FINDING THIS CARD IS ABOUT: the title names the FORMAT MIGRATION — the next publish replaces a hand-authored
 CHANGELOG.md with a cliff-generated one, and every hand-written passage in it is lost. THAT is the finding the card is about, and it
-is the one the owner must act on. The version-label and section-structure material was a SECOND, SEPARATE finding and has now been
+is the one this card is about. **WHICH OF THE TWO IS MORE URGENT IS THE OWNER'S JUDGEMENT, NOT THIS CARD'S** — the plugin records what
+each is, and does not rank them. The version-label and section-structure material was a SECOND, SEPARATE finding and has now been
 SPLIT OUT INTO ITS OWN CARD, TRDD-XY45DGD4, because it is a different subject and because eleven rounds of review had grown it inside
 a card whose title names something else. This card keeps the format migration; the other card keeps the sectioning and the heading
 label, and states the owner's question without classifying its significance. **This card does NOT classify
@@ -48,76 +49,7 @@ THE LOSS DOES NOT DEPEND ON WHERE THE RELEASE IS CUT. An earlier draft of this c
 
 THE VERSION-BUMP PATH IS UNTESTED HERE. With no tag there is nothing for --bump to bump from; it warns "There is nothing to bump" and falls back to the supplied --tag. That warning is about VERSION DERIVATION, not about section preservation — the two are connected (no tag means no prior release boundary, so the whole history renders under one heading) but the warning is not the mechanism that drops the section.
 
-WHAT TAGGING WOULD ACTUALLY DO — MEASURED, not assumed. A card that says "tag the repository" without saying what the render then looks like sends the reader in blind. Three cases were rendered on clones, with the pipeline's exact command: (a) NO TAG — the render begins at "## [0.2.0] - 2026-10-20" and carries the WHOLE history, 114 lines; (b) a tag at the ROOT commit — same shape, same 0.2.0 heading, same whole history, 116 lines; (c) a tag at an INTERMEDIATE commit — same shape, same 0.2.0 heading, 118 lines; (d) a tag at HEAD — the render STILL carries the whole history, root commit and HEAD commit both present, 114 lines. **SO TAGGING DOES NOT NARROW THE RENDER, AND IT DOES NOT PRODUCE AN EMPTY HISTORY.** The reason is that cliff.toml configures no commit RANGE, so cliff renders the whole history whatever tags exist; the tag affects only which heading cliff labels the window with. **AND THAT IS WHERE THE TAG CAN BE DANGEROUS. In case (d) — a tag at HEAD — cliff renders the heading "## [0.0.1] - 2026-10-20" while the pipeline passes it "--tag v0.1.1" (the version the pipeline actually computes, measured below). THE TWO DISAGREE: the file would claim the whole history IS release 0.0.1, dated today, under a version the pipeline did not intend.
-
-**THE OBSERVED BEHAVIOUR, STATED AS WHAT WAS MEASURED.** With NO tag, the supplied "--tag v0.9.9" is used ("## [0.9.9]"); with a tag at an EARLIER commit, the supplied tag is STILL used ("## [0.9.9]") and the render still carries the whole history; with a tag AT the commit being released, cliff warns "There is already a tag (v0.0.1) for <sha>" and labels the window with the EXISTING tag instead ("## [0.0.1]").
-
-**THE FIVE CASES, AS A CONTROLLED EXPERIMENT.** All five were re-run on five SEPARATE CLONES PINNED AT ONE COMMIT (8052a3c), so the
-only variable is where the tag sits. The earlier version of this table was measured on clones at DIFFERENT commits and its bullet
-counts varied (87, 87, 87, 86, 89) for that reason alone; those numbers are WITHDRAWN and the table below replaces them.
-
-| case | tag position | supplied `--tag` | top heading | top bullets | second section | 2nd bullets | cliff's "already a tag" warning |
-|---|---|---|---|---|---|---|---|
-| (a) | no tag at all | v0.9.9 | `## [0.9.9]` | 90 | (none) | 0 | (none) |
-| (b) | root commit (2026-10-15) | v0.9.9 | `## [0.9.9]` | 89 | `## [0.0.1]` — 2026-10-15 | 1 | (none) |
-| (c) | 82c693d (2026-10-20), an ancestor of HEAD | v0.9.9 | `## [0.9.9]` | 6 | `## [0.0.1]` — 2026-10-20 | 84 | (none) |
-| (d) | HEAD, the commit being released | v0.9.9 | `## [0.0.1]` | 90 | (none) | 0 | `There is already a tag (v0.0.1)` |
-| (e) | 82c693d on a SEPARATE BRANCH `side` | v0.9.9 | `## [0.9.9]` | 6 | `## [0.0.1]` — 2026-10-20 | 84 | (none) |
-
-**THE BULLET COUNT IS UNIFORM AT 90 IN EVERY CASE, AND THE ROOT COMMIT IS IN EVERY CASE** — so the tag does not change the CONTENT
-rendered: the same 90 commits, the whole history, in all five cases. That was the claim an earlier draft of this card supported with a
-one-bullet difference; the difference was an artefact of the clones sitting at different commits, and the claim now rests on the uniform
-count, which is the correct evidence for it.
-
-**BUT A DIFF BETWEEN THE RENDERED FILES SHOWS THAT "ONLY THE HEADING STRING DIFFERS" IS FALSE, AND WHAT DIFFERS IS MORE INTERESTING.**
-The observable the uniform bullet count was blind to is the SECTION STRUCTURE. **THE MECHANISM, AS MEASURED: a pre-existing tag OPENS A
-SECTION for the commits up to and including the tagged commit, dated by THE TAGGED COMMIT'S OWN COMMIT DATE; the commits AFTER the tag
-stay in the top section, dated today, under the SUPPLIED version.** So:
-
-- (b), tag at the root commit: the root commit's bullet moves DOWN into its own section, dated 2026-10-15, which is the root commit's own
-  date. The top section keeps the other 89.
-- (c), tag at 82c693d: the second section holds 84 bullets and is dated 2026-10-20, which is 82c693d's own commit date. The top section
-  keeps the 6 commits after 82c693d.
-- (d), tag at the commit being released: there is nothing after the tag, so there is NO second section, and the top heading carries the
-  EXISTING tag's version (0.0.1) rather than the supplied one — with all 90 bullets under it.
-- (e), tag on another branch at 82c693d: NUMERICALLY IDENTICAL TO (c) — 6 top bullets, 84 in a second section dated 2026-10-20. **CASE (e)
-  THEREFORE TESTED NOTHING NEW**, because 82c693d is an ancestor of HEAD either way, so placing the tag on a branch that `main` also
-  contains does not change what cliff sees. An earlier draft of this card described case (e) as moving the ROOT commit into a section
-  dated 2026-10-15, which is the (b) mechanism and does not apply to it; that description is corrected here.
-
-**THE THREE FACTS, WHICH THE PREVIOUS SENTENCE CONFLATED INTO ONE.** (1) The same 90 commits appear in every case — the tag changes
-neither which commits are rendered nor their count. (2) The RELEASE-SECTION COUNT varies: 1, 2, 2, 1, 2 — the top section holds 90, 89, 6,
-90 and 6 bullets respectively. (3) The top heading's VERSION varies in exactly one case, (d), and only there. **An earlier draft of this
-card said "the tag does not change WHAT IS RENDERED" and then qualified it in the next clause; that sentence was self-contradictory and
-is withdrawn, because the sectioning IS part of what is rendered and the diff proves the rendered file differs in three of the five
-cases.**
-
-**THE OBSERVABLE THAT WAS MISSING: WHICH TAG CLIFF LOCATED.** Cliff's own warning is the direct observable of the variable under test, and it appears in exactly ONE case: (d) printed "There is already a tag (v0.0.1)". Cases (a), (b), (c) and (e) printed no such warning. That is a sharper discriminator than the bullet count, and it is now a column in the table.
-
-**AND THIS COLUMN BEARS ON A CONDITION THE CARD WITHDREW TWO COMMITS AGO, so the two must be reconciled rather than left side by side.**
-The card had withdrawn the necessary condition "the mismatch appears only when a tag sits ON the commit being released", because the cases
-did not isolate it. The warning column is the datum that comes closest to isolating it: cliff prints "There is already a tag" in exactly
-the one case where the tag sits on the commit being released, and in no other. **WHAT THIS SUPPORTS: cliff reports a pre-existing tag only
-when that tag is on the commit it is labelling.** **WHAT IT DOES NOT ESTABLISH: WHY** — it may report only for a tag on the labelled
-commit, or only when the existing tag's VERSION differs from the supplied one (case (d)'s existing tag is 0.0.1 against a supplied
-0.9.9, and every other case's tag version differs too, so the measurement does not separate the two). The withdrawn condition is
-therefore not reinstated; it is NARROWED to a question the warning raises and does not answer, and that question is recorded here as
-open rather than as a conclusion.
-
-**THE CONSTRUCTION OF CASE (e), so it can be reproduced**: a branch `side` is created at 82c693d, the tag is placed on `side`, and the
-released commit stays on `main`. Case (c) places the tag on 82c693d while `main` stays checked out; case (d) places it on the released
-commit itself. **A NOTE ON THE CONTROL: case (e) varies the repository SHAPE and not only the tag position — a second branch exists,
-and the tag sits on a ref `main` does not contain — so the control is very slightly wider than "the only variable is where the tag
-sits". It did not change the outcome.
-
-**WHAT THE CASES SHOW, AT THE STRENGTH THEY SUPPORT.** In every case where the tag was NOT on the commit being released, the supplied tag was used; in the one case where it was, the existing tag was used. **The earlier draft of this card stated this as a NECESSARY CONDITION — "the mismatch appears only when a tag sits ON the commit being released" — and that is withdrawn, because the cases do not isolate it.** Case (e) was added specifically to try to discriminate, and it does not: a tag on a different branch is also unaffected. **THE RULES THE MEASUREMENT LEAVES OPEN ARE SEVERAL — "a tag on the released commit", "a tag on HEAD", "the nearest tag", "the highest-version tag" — and the five cases are consistent with all of them.** A case that would discriminate them is a tag on the released commit whose version is NOT the highest in the repository; none was run. (The earlier draft of this card also said cliff "falls back to the supplied --tag only when none exists", which asserts a rule about tag EXISTENCE that the cases contradict twice over — cases (b) and (c) have a tag and still used the supplied one. Withdrawn.)
-
-**AND THE UNIFORM BULLET COUNT, which is the direct evidence that the tag's POSITION does not change WHAT IS RENDERED**: 90 in every
-case, with the root commit present in every case. The earlier draft of this card cited a ONE-BULLET DIFFERENCE between the cases as that
-evidence; that difference was an artefact of the clones sitting at different commits, and the claim now rests on the uniform count
-instead — which is the correct evidence for it, and stronger.
-
-**AND THE PIPELINE'S OWN STEP ORDER MAKES THE PRECONDITION REACHABLE.** stage_changelog is step 13 and stage_commit_and_push (which creates the release tag) is step 14 — so the changelog is rendered BEFORE this publish's tag exists. The precondition is a tag sitting ON the commit about to be released. **AN EARLIER DRAFT OF THIS CARD SAID THE HAZARD "FIRES ON THE SECOND RELEASE" — THAT IS WITHDRAWN, and the card's own case table contradicts it**: after a first release, the first release's tag sits on the FIRST release's commit, which is an EARLIER commit relative to the second release, and the measurement says that case is UNAFFECTED. What the step order does establish is that the tag for the release being cut is created AFTER the changelog is rendered, so the tag that could collide is always a LEFTOVER one. When a leftover tag ends up on the commit being released — a re-release of an already-tagged commit, or a tag placed at HEAD by hand — the mismatch fires. WHICH RELEASE IT FIRES ON IS NOT ESTABLISHED, and this card does not predict it.
+THE SECTION-STRUCTURE AND VERSION-LABEL MATERIAL HAS MOVED OUT OF THIS CARD into TRDD-XY45DGD4, which is the authoritative record for it: the five-case table, the controlled experiment, the diff, the mechanism, the baseline derivation and the warning-column inference all live there now. This card keeps the FORMAT MIGRATION — the next publish replaces a hand-authored CHANGELOG.md with a cliff-generated one, and every hand-written passage in it is lost — which is the finding the title names. **THE ONE FACT THIS CARD STILL NEEDS FROM THAT MATERIAL**: the version the pipeline computes here is 0.1.1, because the repository has no remote and no tag, so the baseline is the local plugin.json at 0.1.0 and the bump is a patch — which is the version any first tag would have to match. That derivation is in the next section.
 
 THE VERSION THE PIPELINE ACTUALLY COMPUTES HERE — MEASURED, because the constraint below turns on it, and its BASELINE is measured too so the number is earned. The pipeline's detect_next calls "git-cliff --bumped-version"; on this TAGLESS repository that command does not merely warn, it FAILS — it reports "No releases found, using 0.1.0 as the next version" on STDERR and then exits non-zero with "Next version (0.1.0) does not match the tag pattern: v[0-9].*". Its STDOUT is empty, so detect_next's own guard "if not bumped or bumped == current: return patch" applies. The baseline is "_read_remote_version(root) or get_current_version(root)", and **THIS REPOSITORY HAS NO GIT REMOTE AT ALL — "git remote -v" prints nothing — so every ref that function tries (origin/master, origin/main, origin/HEAD) is unresolvable, it returns None, and the baseline is the LOCAL .claude-plugin/plugin.json, whose version is 0.1.0. (The general rule is "the remote lookup returned nothing", which also holds for a repository that HAS a remote but is offline or lacks such a ref; the local fact measured here is the stronger and simpler one — there is no remote to look at.)** bump_semver("0.1.0", "patch") is therefore 0.1.1. **So the version this card earlier asserted — 0.2.0 — was NOT MEASURED and was in fact WRONG; the pipeline would pass "--tag v0.1.1".** Every step of that chain is measured, and the repository's lack of a remote is what pins the baseline to the local value.
 

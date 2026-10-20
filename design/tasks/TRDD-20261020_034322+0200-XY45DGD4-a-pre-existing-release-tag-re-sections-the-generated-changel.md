@@ -44,3 +44,26 @@ EVERY MEASUREMENT HERE IS OF THE PRE-TAG, NO-REMOTE STATE. Creating the first re
 ## Approval log
 
 - 2026-10-20T03:43:22+0200 — MANDATE issued by user (min-approval-requirement: none). Pre-approved: issuer authority >= required approver. No approval request was sent.
+
+---
+
+**PROVENANCE — WHERE THIS EVIDENCE WAS TAKEN, so a future session can re-check it rather than re-derive it.** The measurement was made
+on CLONES of this repository, in /tmp, never on the working tree. All five cases were run on five SEPARATE CLONES PINNED AT ONE
+COMMIT — 8052a3c, "docs: pin the version's baseline, and add the case that fails to discriminate" — so that the only variable is where
+the tag sits. The command in every case was the pipeline's own: "git cliff --bump --tag v0.9.9 -o CHANGELOG.md". The first record of
+these runs is TRDD-XV6QOEK1, the card they were taken while investigating; that card now carries only the format migration.
+
+**HOW MANY CASES THIS FINDING RESTS ON: FOUR, not five.** The table has five rows because case (e) was run to try to discriminate a rule
+that case (c) could not, and it turned out NUMERICALLY IDENTICAL to case (c) — because 82c693d is an ancestor of HEAD either way, so
+placing the tag on a branch that main also contains changes nothing cliff can see. So the distinct cases are: (a) the no-tag CONTROL;
+(b) the tag at the first commit; (c) the tag at an ancestor of the released commit; (d) the tag at the released commit. (e) is (c) again.
+
+**THE CLAUSE THAT ONE CASE SEPARATES, AND WHICH CASE SEPARATES IT.** The rule says the second section is dated by THE TAGGED COMMIT'S OWN
+COMMIT DATE and the top section is dated by the release date. Case (b) is the case that separates those two dates — the root commit is
+dated 2026-10-15 and the top section is dated 2026-10-20. In cases (c) and (e) the two dates COINCIDE (both 2026-10-20), so those
+cases do not test that clause. Case (d) has no second section at all, and (a) has no tag.
+
+**THE THREE MEASURED FACTS, RESTATED.** (1) The same 90 commits appear in every case — the tag changes neither which commits are
+rendered nor their count. (2) The release-section COUNT varies 1, 2, 2, 1, 2, and the top section holds 90, 89, 6, 90 and 6 bullets;
+each row's two counts sum to 90, which is how the table reproduces. (3) The top heading's VERSION varies in exactly one case, (d), and
+only there.

@@ -247,7 +247,12 @@ the question the owner is being asked.
 **THE CHANGELOG IS NOT A GENERATED FILE TODAY — IT IS HAND-AUTHORED, AND WILL BE REPLACED BY A GENERATED ONE ON THE NEXT PUBLISH. So the word is corrected in the commit message and not in the file.** (This sentence previously read "THE CHANGELOG IS GENERATED"; that was FALSE of the current file and is corrected here. The shipped CHANGELOG.md is hand-authored — its header is not `cliff.toml`'s, it carries a `## [Unreleased]` section cliff does not emit on this pipeline's invocation, and it carries no cliff footer. What the pipeline does on the next publish is REPLACE it with a cliff-generated file, and everything hand-written in it goes. The DECISION is the same either way and the two facts imply DIFFERENT JUSTIFICATIONS: "the file is overwritten" is a guarantee about a FUTURE publish, while "the file is already in the wrong format" is a warning about the same publish — and the guarantee is the stronger ground, so the commit message remains the right place for the correction.) `scripts/publish.py:2740`
 (`stage_changelog`) runs `git cliff --bump --tag v<NEXT> -o CHANGELOG.md`, and `-o` OVERWRITES the file from the commit log; the
 step's own docstring says "CHANGELOG.md is fully DERIVED from conventional commits, so hand-written prose in it does not survive a
-publish. Put release prose in the commit messages." A hand-edit to the 0.1.0 entry would therefore be discarded on the next release —
+publish. Put release prose in the commit messages." **AND ONE QUALIFICATION THE DOCSTRING'S PHRASING DOES NOT CARRY, measured on
+clones: the render is derived from the commit log, but a PRE-EXISTING TAG SECTIONS it.** A tag opens a section for the commits up to
+and including the tagged commit, dated by that commit's own date, and the top section is dated by the release date under the supplied
+version — so the changelog's shape is not purely a function of the commit log. The docstring's statement is about the CONTENT, which
+does hold; it is the SHAPE that a tag also determines. That behaviour is measured, filed and owned in `TRDD-XY45DGD4`, and it is
+mentioned here only so that this section is not read as describing a flat derivation. A hand-edit to the 0.1.0 entry would therefore be discarded on the next release —
 and with it the one correction in this series that bears on the owner's ruling. The fix belongs in a conventional commit message,
 which git-cliff renders into the next entry; `cliff.toml`'s `body` template uses `commit.message`, so a `fix:` commit carrying the
 correction is what reaches the CHANGELOG. **Until such a commit is released, the false word is still in `CHANGELOG.md:20`, and that is
