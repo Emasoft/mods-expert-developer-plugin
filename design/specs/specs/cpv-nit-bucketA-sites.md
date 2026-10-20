@@ -252,7 +252,10 @@ clones: the render is derived from the commit log, but a PRE-EXISTING TAG SECTIO
 and including the tagged commit, dated by that commit's own date, and the top section is dated by the release date under the supplied
 version — so the changelog's shape is not purely a function of the commit log. The docstring's statement is about the CONTENT, which
 does hold; it is the SHAPE that a tag also determines. That behaviour is measured, filed and owned in `TRDD-XY45DGD4`, and it is
-mentioned here only so that this section is not read as describing a flat derivation. A hand-edit to the 0.1.0 entry would therefore be discarded on the next release —
+mentioned here only so that this section is not read as describing a flat derivation. **AND IT DOES NOT CHANGE WHERE THE CORRECTION
+GOES**: the correction goes in a conventional commit message because the pipeline OVERWRITES the file, not because of how the render is
+sectioned — a commit message is rendered into the changelog either way, and the fact that a tag can re-section the render is a separate
+question about the release's own history, owned by that other card. A hand-edit to the 0.1.0 entry would therefore be discarded on the next release —
 and with it the one correction in this series that bears on the owner's ruling. The fix belongs in a conventional commit message,
 which git-cliff renders into the next entry; `cliff.toml`'s `body` template uses `commit.message`, so a `fix:` commit carrying the
 correction is what reaches the CHANGELOG. **Until such a commit is released, the false word is still in `CHANGELOG.md:20`, and that is

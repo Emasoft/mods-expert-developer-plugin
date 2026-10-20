@@ -53,6 +53,11 @@ COMMIT — 8052a3c, "docs: pin the version's baseline, and add the case that fai
 the tag sits. The command in every case was the pipeline's own: "git cliff --bump --tag v0.9.9 -o CHANGELOG.md". The first record of
 these runs is TRDD-XV6QOEK1, the card they were taken while investigating; that card now carries only the format migration.
 
+**THE ANCESTOR FACT, WHICH IS WHY CASE (e) DUPLICATES CASE (c) AND IS THE ONE PROVENANCE ITEM THAT HAD LIVED ONLY IN A COMMIT
+MESSAGE: 82c693d IS AN ANCESTOR OF HEAD. Check it with "git merge-base --is-ancestor 82c693d HEAD" on any clone at the pinned commit
+— it returns 0. That is why placing the tag on a branch that `main` also contains changes nothing cliff can see, and it is the fact a
+future session must re-check to understand why the table has five rows and the finding has four cases.**
+
 **HOW MANY CASES THIS FINDING RESTS ON: FOUR, not five.** The table has five rows because case (e) was run to try to discriminate a rule
 that case (c) could not, and it turned out NUMERICALLY IDENTICAL to case (c) — because 82c693d is an ancestor of HEAD either way, so
 placing the tag on a branch that main also contains changes nothing cliff can see. So the distinct cases are: (a) the no-tag CONTROL;
