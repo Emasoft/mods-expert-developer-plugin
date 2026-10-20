@@ -44,6 +44,26 @@ count from 72 to 76. The span is therefore given as a LENGTH and a DESCRIPTION, 
 at the cited line. What a reader can still do is reproduce the whole thing: re-run the validator, then apply the
 catalogue's pattern to the line, and the span is whatever comes back.
 
+**WHAT THE SCRIPT CHECKS, AND WHICH OF ITS CHECKS ARE INDEPENDENT OF THIS FILE.** A per-site table that certifies
+itself is worth nothing, so the script's checks are separated by where their baseline comes from:
+
+| check | baseline | independent of this file? |
+|---|---|---|
+| each row's raw span and token gap | the installed CPV catalogue, applied to the cited line | yes |
+| each per-rule block's widest figures | the table's own re-measured values | yes (the block is compared against the catalogue, not against a literal) |
+| the bucket-A (site, rule) pairs | the SIBLING SPEC `cpv-nit-bucketA-sites.md`, a different committed file | yes |
+| the total (rule, site) set | the VALIDATOR'S OWN `[NIT]` output, when a scan has been captured | yes |
+| the number of per-rule blocks | the rules this file's table names | **no** — a coordinated edit of the table and of that count would pass, so the count is reported rather than asserted |
+
+The distinction matters because an earlier version of this script held its expected row, block and site counts as
+LITERALS BESIDE THE TABLE, which made the coverage assertion circular: deleting one rule's table and lowering the
+count to match produced a clean run. The counts are no longer asserted from this file. The bucket-A comparison is
+the strongest of the external checks because the sibling spec was adjudicated independently and covers 36 of the 72
+findings; the validator-output check covers all 72 when a scan has been captured, and says plainly when it did not
+run. What remains un-checked from outside this file is the number of distinct rules — the catalogue holds twenty-six
+rules for these chapters and the scanner's own suppression reduces that to the fourteen that fire here, so there is
+no external statement of "fourteen" to compare against.
+
 **THIS FILE MATCHES ZERO PATTERNS IN THE INSTALLED CATALOGUE, AND THE CLAIM IS SCOPED TO A VERSION.** Checked rule by rule
 against every pattern in `skillaudit_patterns.json` and every intent pattern in `cpv_skillaudit_native.py`, at CPV v5.22.0:
 **0 hits on every line of this file and of the ledger.** The scope matters: a later CPV release that WIDENS a rule's pattern
@@ -224,26 +244,83 @@ for rid, (gap, span) in blocks.items():
     if (max(s for _, s, _, _, _ in sel), max(g for _, _, g, _, _ in sel)) != (int(span), int(gap)):
         print(f'BLOCK {rid:32s} block says span={span} gap={gap}  table says span={max(s for _,s,_,_,_ in sel)} gap={max(g for _,_,g,_,_ in sel)}   <-- DISAGREES')
         found.append(rid)
-# The EXPECTED coverage is stated here, so the script can tell "everything checked"
-# from "something was checked". A coverage count with no expected value is a claim
-# with nothing behind it — which is the defect this report exists to prevent.
-EXPECTED_ROWS = 72
-EXPECTED_BLOCKS = 14
-EXPECTED_SITES = 64
+# THE BASELINE IS EXTERNAL, NOT A LITERAL BESIDE THE TABLE. A count written in the
+# same file as the table it covers is a restatement, not a check: an editor who
+# changed the table AND the count would pass clean. So the baseline comes from
+# elsewhere — the SIBLING SPEC for the bucket-A subset, which is a different
+# committed file, and the VALIDATOR'S OWN OUTPUT for the total.
+#
+# WHAT IS INDEPENDENT OF THIS FILE, AND WHAT IS NOT:
+#   * the per-row span and gap values are re-derived from the CATALOGUE — independent.
+#   * the per-rule block figures are compared against those values — independent.
+#   * the bucket-A site set is compared against the SIBLING SPEC — independent.
+#   * the TOTAL row count is compared against the VALIDATOR'S OWN NIT LINES — independent.
+#   * the total block count is NOT independently derived: it is the number of rules
+#     the catalogue holds for these sites, which this file's own table names. A
+#     coordinated edit of the table and that number would pass; the block count is
+#     reported so a reader can see it rather than asserted.
 print('COVERAGE: {0} rows re-measured, {1} per-rule blocks compared against the table.'.format(len(rows), len(blocks)))
-if len(rows) != EXPECTED_ROWS:
-    print('COVERAGE ERROR: expected {0} rows, read {1}. The table has changed shape, a rule\'s'.format(EXPECTED_ROWS, len(rows)))
-    print('  table is missing, or the row pattern no longer matches. WHAT YOU SEE IS NOT A PASS.')
-    raise SystemExit(1)
-if len(blocks) != EXPECTED_BLOCKS:
-    print('COVERAGE ERROR: expected {0} per-rule blocks, read {1}. A block heading or its'.format(EXPECTED_BLOCKS, len(blocks)))
-    print('  "widest token gap" / "widest raw span" lines have changed. WHAT YOU SEE IS NOT A PASS.')
-    raise SystemExit(1)
 sites = {(r[3], r[4]) for r in rows}   # (chapter, line) pairs are unique per site
-if len(sites) != EXPECTED_SITES:
-    print('COVERAGE ERROR: expected {0} distinct sites, read {1}. A site row is missing or'.format(EXPECTED_SITES, len(sites)))
-    print('  duplicated. WHAT YOU SEE IS NOT A PASS.')
+
+# EXTERNAL CHECK 1 — the bucket-A site set against the SIBLING SPEC, a different file.
+# The sibling spec was written first and adjudicated independently; it names each
+# bucket-A site and the rule that fired there. This file's per-rule tables are
+# sliced BY RULE, so the rule association is carried by the table a row sits in,
+# not by the row itself — the two are compared here, site set and rule set.
+sib = pathlib.Path('design/specs/specs/cpv-nit-bucketA-sites.md')
+if not sib.exists():
+    print('COVERAGE ERROR: the sibling spec is missing, so the bucket-A site set cannot be')
+    print('  checked against anything outside this file. WHAT YOU SEE IS NOT A PASS.')
     raise SystemExit(1)
+sib_text = sib.read_text(encoding='utf-8')
+sib_map = {}
+for m in re.finditer(r'- \*\*(mods-doc-[a-z0-9-]+)\*\* line (\d+) — rule: ([A-Z0-9_, ]+?) — ', sib_text):
+    sib_map.setdefault((m.group(1), m.group(2)), set()).update(x.strip() for x in m.group(3).split(','))
+if not sib_map:
+    print('COVERAGE ERROR: no bucket-A sites were read from the sibling spec — its format')
+    print('  has changed. WHAT YOU SEE IS NOT A PASS.')
+    raise SystemExit(1)
+# The sibling also names WHICH rules are bucket-A. Derive that list from the sibling
+# rather than naming it here, so this check does not restate the thing it checks.
+sib_rules = set()
+for srules in sib_map.values():
+    sib_rules |= srules
+# This file's own rows, as (site, rule) pairs, restricted to the sibling's rules.
+my_pairs = set()
+for rid, body in RULE_TABLES.items():
+    if rid not in sib_rules:
+        continue
+    for chapter, lineno, span, gap, stance in re.findall(r'\| `([a-z0-9-]+)` line (\d+) \| (\d+) \| (\d+) \| ([A-Z]+) \|', body):
+        my_pairs.add((('mods-doc-' + chapter, lineno), rid))
+sib_pairs = set((site, rule) for site, rules in sib_map.items() for rule in rules)
+if sib_pairs != my_pairs:
+    print('EXTERNAL ERROR: the bucket-A (site, rule) pairs differ from the sibling spec.')
+    print('  in the sibling but not here: {0}'.format(sorted(sib_pairs - my_pairs)[:5]))
+    print('  here but not in the sibling: {0}'.format(sorted(my_pairs - sib_pairs)[:5]))
+    print('  WHAT YOU SEE IS NOT A PASS.')
+    raise SystemExit(1)
+print('EXTERNAL: the bucket-A (site, rule) pairs match the sibling spec ({0} pairs over {1} sites).'.format(len(sib_pairs), len(sib_map)))
+
+# EXTERNAL CHECK 2 — the total against the VALIDATOR'S OWN OUTPUT, if it is present.
+# The validator's own output, captured from a strict run over this tree. The path
+# is a DEFAULT, not a fixture: point it at a fresh capture to re-check against a
+# newer CPV, or leave it and the script says plainly that the check did not run.
+scan = pathlib.Path(os.environ.get('CPV_SCAN_OUTPUT', '/tmp/cpv-r6.txt'))
+if scan.exists():
+    nit = set()
+    for m in re.finditer(r'\[skillaudit:[a-z_]+ ([A-Z0-9_]+)\].*\((skills/mods-doc-[a-z0-9-]+/references/chapter\.md)\):(\d+)', scan.read_text(encoding='utf-8')):
+        nit.add((m.group(1), m.group(2), m.group(3)))
+    table_pairs = {(rid, 'skills/mods-doc-' + c + '/references/chapter.md', str(l)) for rid, _, _, c, l in rows}
+    if nit and nit != table_pairs:
+        print('EXTERNAL ERROR: the (rule, site) set differs from the validator\'s own output.')
+        print('  only in the scan : {0}'.format(sorted(nit - table_pairs)[:5]))
+        print('  only in this table: {0}'.format(sorted(table_pairs - nit)[:5]))
+        print('  WHAT YOU SEE IS NOT A PASS.')
+        raise SystemExit(1)
+    print('EXTERNAL: the (rule, site) set matches the validator output ({0} pairs).'.format(len(nit)))
+else:
+    print('EXTERNAL: the validator output is not present at {0} — that check'.format(scan))
+    print('  did NOT run. Capture a strict scan there (or set CPV_SCAN_OUTPUT) and run this again.')
 if found:
     print('{0} DISAGREEMENT(S) ABOVE. The file is not self-consistent as it stands.'.format(len(found)))
     raise SystemExit(1)
