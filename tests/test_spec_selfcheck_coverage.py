@@ -74,7 +74,7 @@ def test_the_ledger_states_this_scripts_guard_count() -> None:
     # The ledger states the TOTAL, and only the total: the covered count is
     # derived by the measurement and is deliberately not asserted in prose,
     # because no routine check can enforce it.
-    match = re.search(r"has (\d+) GUARD CONDITIONS", ledger)
+    match = re.search(r"the script has (\d+) GUARD CONDITIONS", ledger)
     assert match, "the ledger no longer states the guard count in the expected form"
     stated_total = int(match.group(1))
     # The TOTAL is checked against the script's own count, so a guard added or
@@ -87,10 +87,42 @@ def test_the_ledger_states_this_scripts_guard_count() -> None:
         "the exclusions no longer account for the difference: {0} refusing "
         "conditions, {1} guards, {2} exclusions".format(raw, guards, len(NOT_GUARDS))
     )
+    # The COUNT of the exclusions is not enough on its own: the ledger NAMES
+    # them, and prose that names code identifiers no check binds to the code is
+    # the pattern this series exists to remove. So the ledger's backticked
+    # conditions are read and required to be exactly the ones the code excludes.
+    named = _ledger_named_exclusions(ledger)
+    assert named == list(NOT_GUARDS), (
+        "the ledger names the exclusions as {0}, but the code excludes {1}. "
+        "One place owns the fact - say it in the code and point at it.".format(
+            named, list(NOT_GUARDS)
+        )
+    )
     # The COVERED count is deliberately NOT checked here, and NOT stated in the
     # ledger either. The measurement that derives it is expensive (a suite run
-    # per guard) and its report is a local artefact, so a number in prose
+    # per guard) and produces NO PERSISTED ARTEFACT, so a number in prose
     # about it would drift silently in every checkout that had not run it -
     # which is every fresh clone. A figure no check can enforce is worse than
     # no figure, so the ledger states the TOTAL, which IS enforced here, and
     # points at the measurement for the rest.
+    #
+    # The regex is anchored on "the script has ", not on "has N GUARD
+    # CONDITIONS": the shorter form matches any occurrence in the file, and
+    # re.search takes the FIRST one, so an unrelated sentence elsewhere could
+    # supply the number this assert is about.
+
+
+def _ledger_named_exclusions(ledger: str) -> list[str]:
+    """The conditions the ledger names as NOT being guards.
+
+    Read from the ledger's own sentence about the count, so the names the
+    reader sees are the names the check compares against the code. Only
+    backticked conditions inside that sentence are considered, so a condition
+    quoted elsewhere in the file is not mistaken for one of these.
+    """
+    marker = "are NOT guards"
+    index = ledger.find(marker)
+    if index == -1:
+        return []
+    window = ledger[index : index + 400]
+    return re.findall(r"`(if [^`]+:)`", window)

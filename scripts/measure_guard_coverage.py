@@ -54,7 +54,7 @@ def guard_indices(script: str) -> list[int]:
     sys.path.insert(0, str(ROOT / "tests"))
     try:
         from test_spec_selfcheck_coverage import guard_conditions, is_guard  # noqa: E402
-    except ImportError as exc:  # pragma: no cover - the tree is always complete here
+    except ImportError as exc:  # pragma: no cover - the suite cannot reach this path
         raise SystemExit(
             "The shared guard scanner is missing: {0} does not hold "
             "test_spec_selfcheck_coverage.py. The scanner lives there so this "
