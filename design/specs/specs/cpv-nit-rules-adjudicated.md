@@ -29,7 +29,7 @@ Every number in this file is RE-RUNNABLE, and the method is given so a re-run ca
 | the 72 | the validator's `[NIT]` lines, one per (rule, site) pair; the scanner marks all 72 *demoted, needs review* itself |
 | distinct sites | **64**, not 72: eight sites carry two rules each, so eight findings share a site with another |
 | the rules | **14** distinct rule ids; three of them are `agent_manipulation` rules, counted separately |
-| the per-site match | re-derived by applying the installed CPV's OWN pattern catalogue to the exact line at each site |
+| the per-site match | re-derived by applying the installed CPV's OWN pattern catalogue to the exact line at each site — the RAW SPAN on the line as it stands, the TOKEN GAP on the whitespace-normalised line, which selects the SAME matched text at all 72 sites (checked by the script below) |
 | the passage column | read from the passage at the cited line; for the 36 bucket-A sites it is the STANCE the sibling spec already adjudicated |
 
 **WHY THE PER-SITE MATCH IS RE-DERIVED RATHER THAN QUOTED.** A per-site report that says what a rule "detected" is only
@@ -154,13 +154,39 @@ def measure(rule, text):
 # read the per-site table out of the spec itself
 S = pathlib.Path('design/specs/specs/cpv-nit-rules-adjudicated.md')
 text = S.read_text(encoding='utf-8')
+def raw_match(rule, text):
+    # the scanner applies the pattern to the LINE, not to normalised text
+    span = None
+    for rx in PATS.get(rule, []):
+        m = rx.search(text)
+        if m: span = m.group(0); break
+    if span is None and rule == 'INTENT_DESTRUCTIVE_INTENT':
+        m = INTENT.search(text)
+        if m: span = m.group(0)
+    return span
+
+rows = []
 for rid, body in re.findall(r'### `([A-Z0-9_]+)`\n\n\| site \|[^\n]*\n\|[^\n]*\n((?:\|[^\n]*\n)+)', text):
     for chapter, lineno, span, gap, stance in re.findall(r'\| `([a-z0-9-]+)` line (\d+) \| (\d+) \| (\d+) \| ([A-Z]+) \|', body):
         L = pathlib.Path(f'skills/mods-doc-{chapter}/references/chapter.md').read_text(encoding='utf-8').split('\n')[int(lineno)-1]
         g, s = measure(rid, L)
-        flag = '' if (g == int(gap) and s == int(span)) else '   <-- DISAGREES'
-        if flag: print(f'{rid:32s} {chapter}:{lineno}  spec span={span} gap={gap}  measured span={s} gap={g}{flag}')
-print('every row checked against the catalogue; only disagreements are printed.')
+        # CHECK 1: the table's own figures against the catalogue
+        if (g, s) != (int(gap), int(span)):
+            print(f'ROW  {rid:32s} {chapter}:{lineno}  spec span={span} gap={gap}  measured span={s} gap={g}   <-- DISAGREES')
+        # CHECK 2: the raw line and the normalised line select the SAME matched text,
+        # which is what justifies the two columns having two different references
+        if raw_match(rid, L) != raw_match(rid, re.sub(r'\s+', ' ', L)):
+            print(f'REFS {rid:32s} {chapter}:{lineno}  raw and normalised text match DIFFERENT text   <-- DISAGREES')
+        rows.append((rid, int(span), int(gap)))
+# CHECK 3: the per-rule blocks' own stated figures against the table
+blocks = {m[0]: (m[1], m[2]) for m in re.findall(r'### `([A-Z0-9_]+)`[^\n]*\n(?:(?!\n### |\n## )[\s\S])*?- \*\*widest token gap:\*\* (\d+) characters\.\n- \*\*widest raw span:\*\* (\d+) characters', text)}
+for rid, (gap, span) in blocks.items():
+    sel = [r for r in rows if r[0] == rid]
+    if not sel: continue
+    if (max(s for _, s, _ in sel), max(g for _, _, g in sel)) != (int(span), int(gap)):
+        print(f'BLOCK {rid:32s} block says span={span} gap={gap}  table says span={max(s for _,s,_ in sel)} gap={max(g for _,_,g in sel)}   <-- DISAGREES')
+print('every row re-measured, both references compared, and every per-rule block checked against the table;')
+print('only disagreements are printed.')
 ```
 
 **WHY THE NORMALISATION IS WHAT MAKES THE GAP INVARIANT — AND THE EXACT SCOPE OF THAT INVARIANCE, WHICH IS NARROWER THAN
@@ -172,8 +198,9 @@ That is the property the raw span does not have, and it is why the gap carries t
 
 **BUT THE INVARIANCE IS ABOUT THE LINE'S OWN CONTENT RE-WRAPPED IN PLACE, AND NOT ABOUT A PARAGRAPH RE-FLOWED — AND THE
 DIFFERENCE IS THE WHOLE STORY.** Re-flowing a PARAGRAPH moves tokens onto different lines, and then the rule may not fire
-at all: measured on the ten wide-gap sites, re-flowing each site's surrounding paragraph at 60 and at 100 characters made
-**every one of those ten rules STOP FIRING**, because the two trigger tokens ended up on different lines. **SO THE
+at all: measured on the TEN SITES whose gap is 100 characters or more — which is a different population from the FOUR RULES
+listed by widest gap, and the file does not conflate the two — re-flowing each site's surrounding paragraph at 60 and at 100
+characters made **every one of those ten findings STOP FIRING**, because the two trigger tokens ended up on different lines. **SO THE
 FOURTEEN RULES WHOSE PATTERN IS A LEXICAL SEQUENCE ARE FINDINGS THAT A RE-SYNC CAN ERASE, AND THAT IS A PROPERTY OF THE
 DETECTOR, NOT OF THIS FILE'S MEASUREMENT.** It also means the gap's invariance is the RIGHT invariance to quote: it holds
 for the line the scanner actually reads, and it would still hold on that line after any re-wrap that left the two tokens
@@ -205,7 +232,7 @@ pattern.**
 ### `SUPPLY_CHAIN` — supply-chain — bucket A — 10 findings, 10 sites
 
 - **what the pattern detects:** a downloader piped into an interpreter.
-- **widest token gap:** 68 characters.
+- **widest token gap:** 73 characters.
 - **widest raw span:** 81 characters, of the line as it currently stands.
 - **what was observed at every site:** the passage is the vendor's own documentation. No site is executed by the plugin.
 
@@ -302,7 +329,7 @@ DISCRIMINATOR CANNOT BE LEXICAL HERE AT ALL**, because the defect is not the tok
 ### `A2A_CROSS_AGENT_INJECT` — cross-agent-injection — bucket B — 3 findings, 3 sites
 
 - **what the pattern detects:** a verb from a set, followed later on the line by a noun, followed later still by an agent noun.
-- **widest token gap:** 175 characters.
+- **widest token gap:** 221 characters.
 - **widest raw span:** 340 characters, of the line as it currently stands.
 - **what was observed at every site:** the passage is the vendor's own documentation. No site is executed by the plugin.
 
@@ -603,7 +630,7 @@ documentation; whether those passages belong in the plugin is the owner's questi
 |---|---|
 | validator | `cpv-remote-validate plugin . --strict` (CPV v5.22.0), re-run at commit `1bb05ad` |
 | the 72 | the validator's `[NIT]` lines; the (rule, site) set re-verified byte-identical to the enumeration in `cpv-nit-bucketA-sites.md` |
-| the per-site match | re-derived from the installed catalogue at `claude-plugins-validation` 5.22.0: `scripts/rules/skillaudit_patterns.json` and `scripts/cpv_skillaudit_native.py` |
+| the per-site match | re-derived from the installed catalogue at `claude-plugins-validation` 5.22.0: `scripts/rules/skillaudit_patterns.json` and `scripts/cpv_skillaudit_native.py` — the RAW SPAN on the line as it stands, the TOKEN GAP on the whitespace-normalised line; the two select the same matched text at all 72 sites, checked by the script above |
 | the write-intent classification | the scanner's own `_shell_match_lacks_write_intent` predicate in `scripts/_skillaudit_shell_context.py` |
 | the passage column | the sibling spec's adjudicated stances for the 36 bucket-A sites; the remaining 36 read from the passage at the cited line |
 
