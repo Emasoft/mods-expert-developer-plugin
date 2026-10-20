@@ -111,17 +111,34 @@ which git-cliff renders into the next entry; `cliff.toml`'s `body` template uses
 correction is what reaches the CHANGELOG. **Until such a commit is released, the false word is still in `CHANGELOG.md:20`, and that is
 stated here rather than left for a reader to discover.**
 
-**WHAT THE NEXT CHANGELOG WILL SAY — VERIFIED, not predicted.** The pipeline renders each conventional commit's subject into the
-next entry, so the two commits carrying this correction will appear under "Bug Fixes" as:
+**WHAT THE NEXT CHANGELOG WILL SAY — MEASURED, not predicted, and the measurement corrects an earlier claim of this file's.**
+`git-cliff` was run against the repository (`git-cliff --config cliff.toml`, the same render `scripts/publish.py` performs with
+`-o`). The two commits carrying this correction render under "Bug Fixes" as:
 
     - **docs:** The chapters are adapted, not verbatim — the release note said otherwise (cb5a1d8)
     - **docs:** Revert the CHANGELOG hand-edit — that file is generated (9404d9e)
 
-That first bullet carries the corrected FACT — the chapters are adapted, not verbatim — which is what a reader of the next CHANGELOG
-needs. The 0.1.0 bullet itself is NOT replaced by that process: it is regenerated from the same commit log, and the commit that
-produced it still says "verbatim". So the next CHANGELOG will contain the correction and the uncorrected original in the same file.
-**That is a property of the tool, and it is the strongest argument for reading NOTICE rather than the release notes**; it is stated
-here so no one mistakes the next CHANGELOG for a corrected record. **There is no CLAUDE.md and no PRRD.md in this repository** — the project's conventions
+The first bullet carries the corrected FACT — the chapters are adapted, not verbatim — which is what a reader of the next CHANGELOG
+needs. Those two bullets are a SLICE of a larger "Bug Fixes" group, not the whole group.
+
+**AND THE MEASUREMENT CORRECTED A CLAIM THIS FILE PREVIOUSLY MADE.** An earlier version of this section said the 0.1.0 bullet "is
+regenerated from the same commit log, and the commit that produced it still says 'verbatim'". **That was false.** The committed
+`CHANGELOG.md` is a 20-line HAND-AUTHORED file, and the "verbatim" bullet is hand-written prose in it: `git show HEAD:CHANGELOG.md`
+reads "## [0.1.0] … - Initial packaging: the expert mods developer agent and 60 reference skills holding verbatim Claude Code
+documentation chapters", and **no commit subject in this repository contains that sentence** — `e25b03e`, the commit that created the
+file, has the subject "feat: embed chapter TOCs in SKILL.md, rename reserved-word skills, add canonical pipeline" and uses "verbatim"
+in its body about TOC COPYING, not about the chapters. The generated render does not reproduce the bullet at all: the measured output
+contains no "Initial packaging" line, and its Features group reads "Embed chapter TOCs in SKILL.md, rename reserved-word skills, add
+canonical pipeline". **So the file is only PARTLY derived**: the pipeline overwrites it wholesale on the next publish, and in doing so
+the hand-written 0.1.0 bullet DISAPPEARS — carrying the false word with it, by regeneration rather than by correction. The false
+word does not persist into the next CHANGELOG, but it also is not corrected there; it is simply gone, and what replaces it is a
+commit-subject-derived bullet about the pipeline work.
+
+**THE CONSEQUENCE FOR THE RULING.** The false word lives in a released file the plugin ships, and it says the chapters are verbatim —
+which would make preservation unconditional by description. Two things follow, and both are stated rather than assumed. First, until
+the next publish, the word is in the released artefact, and the correction lives only in this repository. Second, the next publish
+removes the word as a side effect of overwriting a hand-written file, not as a correction — so nobody should read the next CHANGELOG as
+evidence that the point was settled. **NOTICE remains the authoritative statement of what the plugin ships**, and it was already correct. **There is no CLAUDE.md and no PRRD.md in this repository** — the project's conventions
 elsewhere assume a PRRD, and its absence here is itself part of the finding. So the premise is HALF-stated, not absent: the practice of
 preservation is declared, the rule for dangerous content is not, and the rule for dangerous content is exactly what is under review. A
 practice is not a grant of authority over the question. **The silence may also mean the question has simply never been put** — a READING, not a fact about the repository: the owner may hold the policy in their head rather than in a file, which is why the rule is asked rather than derived. It is offered as a possible explanation, not as the explanation.
