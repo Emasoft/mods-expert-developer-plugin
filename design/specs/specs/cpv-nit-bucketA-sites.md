@@ -15,7 +15,8 @@ together cannot answer the question. Read the STANCE column, not just the descri
 measurement: the count of 30 sites and the recorded search result are RE-RUNNABLE (re-derivable from the validator's output; the pattern
 and the command are given above); the digest below is RE-RUNNABLE (a checksum over the chapters' bytes); and the CHANGELOG rendering is
 a SNAPSHOT — the output of one invocation of one command at one moment, given because it cannot be re-derived (the commit log it was
-rendered from keeps moving). Everything else in this file is a READING — the grouping into contents, the per-site descriptions, the
+rendered from keeps moving); and so is the VENDOR-PAGES DIGEST, which moves whenever the vendor edits its documentation and is
+therefore a REFRESH TRIGGER for the comparison rather than a defect signal. Everything else in this file is a READING — the grouping into contents, the per-site descriptions, the
 stances, and the per-content decisions. Those are one reader's judgement, written here so the owner can CHECK them rather than
 re-derive them, and marked here so the reader knows which register they are in. A count in this file is not an opinion; a stance is.
 
@@ -43,7 +44,17 @@ edits its documentation; a re-fetch that changes the digest means a page changed
 it. The chapter digest in the Provenance section answers the same question for the plugin's side (did the chapters change?); this one
 answers it for the vendor's (did the reference change?).
 
-**THE PER-SITE → VENDOR-PAGE MAPPING**, so a re-check can be targeted rather than redone wholesale:
+**WHAT WAS AND WAS NOT CONSULTED.** Twelve pages were fetched — the ones that CONTAIN the 30 passages. They are not certified as the
+vendor's canonical source for each of the 9 chapters, and they are 12 pages of a much larger vendor corpus (`llms.txt` lists far
+more); a variant of a passage on a page not fetched would not be seen by this comparison. What the comparison establishes is that each
+passage appears, identical, on a page the vendor serves today.
+
+**THE PER-SITE → VENDOR-PAGE MAPPING**, so a re-check can be targeted rather than redone wholesale. **THE PROCEDURE, so a re-run is
+read correctly**: each site's normalised passage was matched against every line of all twelve pages, and the table records the FIRST
+page that contained it, in the page order listed above. A passage may appear on MORE THAN ONE page — the install one-liner, for
+instance, is on both `setup.md` and `troubleshoot-install.md` — so a re-run whose `vendor page` column differs for some site is NOT
+staleness; it is a different first match. The `identical after normalisation` column means identical in PROSE, since the normalisation
+discards link targets.
 
 | plugin chapter | line | vendor page | identical after normalisation |
 |---|---|---|---|
@@ -214,8 +225,9 @@ all ANCESTORS of that baseline (`git merge-base --is-ancestor <commit> 0a8e531~1
 is NOT this plugin's, and the withdrawal of that argument leaves the plugin's case resting on its own documents and its own history —
 which is weaker than a demonstrable difference from Anthropic's pages, and is stated here rather than left for a reader to discover.
 **AND THAT GAP IS NOW CLOSED — IN THE OTHER DIRECTION.** The vendor's pages have since been fetched and compared passage by passage
-(the section above): 29 of the 30 ARE the vendor's passages, identical after normalisation. The demonstrated difference is ZERO for
-29 of the 30, and the 30th is the same two sentences re-sequenced. So the plugin's case is no longer a matter of paperwork about
+(the section above): 29 of the 30 ARE the vendor's passages. **The demonstrated difference is ZERO IN PROSE for 29 of the 30** — with
+link FORM differing where the comparison notes it, which the normalisation discards and which the same section names. The 30th is the
+same two sentences re-sequenced. So the plugin's case is no longer a matter of paperwork about
 itself — it is a direct measurement against the reference the question names.
 Against `0a8e531~1` the net diff is 4 path values and 1 README line, across 2 chapter files — the same figure the series has carried
 throughout, in one convention.
