@@ -56,6 +56,15 @@ SCRIPT_RE = re.compile(r"```python\n(.*?)```", re.S)
 # spec's set. Excluding these by name is what makes the count re-derivable.
 NOT_GUARDS = ("if m:", "if rid not in sib_rules:")
 
+# The spelled counts the covered-count pattern knows, in one place: the
+# pattern reads this list, and the test that pins the pattern's behaviour
+# reads it too, so a change to the range cannot leave one behind.
+SPELLED_COUNTS = (
+    "zero one two three four five six seven eight nine ten eleven "
+    "twelve thirteen fourteen fifteen sixteen seventeen eighteen "
+    "nineteen twenty"
+).split()
+
 # The shapes a covered-count figure can take in the guard-coverage passage.
 #
 # It is scoped to the GUARD-COUNT language on purpose: the passage is allowed
@@ -128,11 +137,7 @@ def covered_figure_re(guard_total: int) -> str:
     rather than enforced by a crash. A guard count that grows past
     twenty is a thing to notice, not a thing to abort a test run over.
     """
-    spelled = (
-        "zero one two three four five six seven eight nine ten eleven "
-        "twelve thirteen fourteen fifteen sixteen seventeen eighteen "
-        "nineteen twenty"
-    ).split()
+    spelled = SPELLED_COUNTS
     count = r"\d+|" + "|".join(spelled)
     if guard_total < len(spelled):
         total = f"{guard_total}|{spelled[guard_total]}"
@@ -340,7 +345,17 @@ def test_the_covered_count_ban_has_the_properties_its_comment_claims() -> None:
     moved. A comment is a snapshot of a behaviour; this is the
     behaviour.
     """
-    total = 19
+    # The total is DERIVED, not written: the real check builds the
+    # pattern with the guard count the embedded script yields, and a
+    # total written here would pin a frozen copy of the behaviour while
+    # the real check moved on. The sentences below are built from the
+    # derived total for the same reason.
+    spec = (ROOT / SPEC_REL).read_text(encoding="utf-8")
+    blocks = SCRIPT_RE.findall(spec)
+    script = blocks[len(blocks) - 1]  # the last embedded python block
+    _raw, total = guard_count(script)
+    spelled_total = SPELLED_COUNTS[total]
+    one_less = total - 1
     pattern = re.compile(covered_figure_re(total), re.IGNORECASE)
 
     def matches(sentence: str) -> bool:
@@ -350,17 +365,25 @@ def test_the_covered_count_ban_has_the_properties_its_comment_claims() -> None:
     # the series has found one in: the article present or dropped, the
     # noun lower or upper case, the count spelled or in digits, and the
     # ratio with its subject named or not.
-    for sentence in (
-        "18 of the 19 GUARD CONDITIONS are covered by a test",
-        "18 of 19 GUARD CONDITIONS are covered by a test",
-        "18 of the 19 conditions are covered by a test",
-        "18 of the 19 guard conditions are covered",
-        "18 of the 19 GUARD CONDITIONS are covered",
-        "eighteen of the nineteen guards are covered",
-        "the 19 guard conditions are covered",
-        "18 of the 19 are covered by a test",
-    ):
+    caught_shapes = [
+        "{0} of the {1} GUARD CONDITIONS are covered by a test",
+        "{0} of {1} GUARD CONDITIONS are covered by a test",
+        "{0} of the {1} conditions are covered by a test",
+        "{0} of the {1} guard conditions are covered",
+        "{0} of the {1} GUARD CONDITIONS are covered",
+        "{0} of the {1} guards are covered",
+        "the {1} guard conditions are covered",
+        "{0} of the {1} are covered by a test",
+    ]
+    for template in caught_shapes:
+        sentence = template.format(one_less, total)
         assert matches(sentence), "a covered-count figure was not caught: " + sentence
+    # the same shapes with a SPELLED count and a SPELLED total
+    for template in caught_shapes:
+        sentence = template.format(SPELLED_COUNTS[one_less], spelled_total)
+        assert matches(sentence), (
+            "a spelled covered-count figure was not caught: " + sentence
+        )
 
     # A claim about the CORPUS is not caught, even though the passage
     # is full of them and the corpus counts are its legitimate figures.
@@ -430,4 +453,21 @@ def test_the_covered_count_ban_has_the_properties_its_comment_claims() -> None:
     )
     assert not past.search("18 of the 72 are covered by a test"), (
         "above twenty a corpus ratio was caught"
+    )
+    # "Everything else is unchanged" is a claim about the NOUN form too:
+    # it takes any count and any guard word, and it does not consult the
+    # guard total at all, so a SPELLED count with a guard word in the
+    # same clause is still caught above twenty. Without this assertion
+    # the comment would claim something the test does not pin.
+    assert past.search("eighteen of the twenty-five guards are covered"), (
+        "above twenty a spelled count with a guard word stopped matching"
+    )
+    # The SPELLED subject-less ratio form is the shape that stops
+    # matching above twenty: it has no guard word, so the noun form
+    # cannot take it, and its spelled denominator is not in the pattern.
+    assert matches("{0} of the {1} are covered".format(SPELLED_COUNTS[one_less], spelled_total)), (
+        "the spelled subject-less ratio form stopped matching at the guard total"
+    )
+    assert not past.search("eighteen of the twenty-five are covered"), (
+        "above twenty the spelled subject-less ratio form was still caught"
     )
