@@ -97,7 +97,11 @@ alternation over those phrasings was run against the same corpus, and it hit 10 
 `CHANGELOG.md:20` describes the bundle as "60 reference skills holding **verbatim** Claude Code documentation chapters", while
 `NOTICE:12-17` describes the same files as "**adapted** from Anthropic's Claude Code documentation" and lists what was changed. The
 NOTICE is the accurate one, and the chapter files bear it out: they carry an added section-level table of contents, section titles
-reworded to describe what each section covers, and a subsection promoted to a section — none of which "verbatim" allows. The
+reworded to describe what each section covers, and a subsection promoted to a section — none of which "verbatim" allows. **The
+citations, so this is checkable:** `skills/mods-doc-hooks-reference/references/chapter.md:3` is the added `## Table of Contents` heading
+and `:17` is the added `## Chapter content` heading (a promoted section, with the chapter's own `### Hooks reference` at `:23` nested
+under it); every one of the 60 chapter files opens with that same two-heading shape. A file that carried Anthropic's text VERBATIM
+would have neither the added table of contents nor the promoted section. The
 CHANGELOG's word is wrong, and it is wrong in the direction that MATTERS here: "verbatim" would make preservation unconditional by
 description, whereas the truth is that the chapters are adaptations, and whether an instruction may be omitted from an adaptation is
 the question the owner is being asked.
@@ -112,8 +116,9 @@ correction is what reaches the CHANGELOG. **Until such a commit is released, the
 stated here rather than left for a reader to discover.**
 
 **WHAT THE NEXT CHANGELOG WILL SAY — MEASURED, not predicted, and the measurement corrects an earlier claim of this file's.**
-`git-cliff` was run against the repository (`git-cliff --config cliff.toml`, the same render `scripts/publish.py` performs with
-`-o`). The two commits carrying this correction render under "Bug Fixes" as:
+`git-cliff` was run against the repository. **The pipeline's own invocation, `git cliff --bump --tag v<NEXT> -o CHANGELOG.md`
+(`scripts/publish.py:2740`), was run and produced a dated `## [0.2.0]` heading with the same body**; the `--bump` variant is the
+pipeline's exact command and it ran successfully here. The two commits carrying this correction render under "Bug Fixes" as:
 
     - **docs:** The chapters are adapted, not verbatim — the release note said otherwise (cb5a1d8)
     - **docs:** Revert the CHANGELOG hand-edit — that file is generated (9404d9e)
@@ -132,13 +137,18 @@ contains no "Initial packaging" line, and its Features group reads "Embed chapte
 canonical pipeline". **So the file is only PARTLY derived**: the pipeline overwrites it wholesale on the next publish, and in doing so
 the hand-written 0.1.0 bullet DISAPPEARS — carrying the false word with it, by regeneration rather than by correction. The false
 word does not persist into the next CHANGELOG, but it also is not corrected there; it is simply gone, and what replaces it is a
-commit-subject-derived bullet about the pipeline work.
+commit-subject-derived bullet about the pipeline work. **THIS HOLDS CONDITIONALLY** — it is true for a release cut from a commit that
+still contains `e25b03e`, which every current commit does. This repository has NO TAGS, so the release-cut point is not fixed, and
+`stage_changelog`'s own docstring warns that a `-o` overwrite destroys prior entries; a release cut from a commit BEFORE `e25b03e`
+would produce a CHANGELOG with no 0.1.0 section at all, and the false word would be gone in a different way again.
 
 **THE CONSEQUENCE FOR THE RULING.** The false word lives in a released file the plugin ships, and it says the chapters are verbatim —
 which would make preservation unconditional by description. Two things follow, and both are stated rather than assumed. First, until
 the next publish, the word is in the released artefact, and the correction lives only in this repository. Second, the next publish
 removes the word as a side effect of overwriting a hand-written file, not as a correction — so nobody should read the next CHANGELOG as
-evidence that the point was settled. **NOTICE remains the authoritative statement of what the plugin ships**, and it was already correct. **There is no CLAUDE.md and no PRRD.md in this repository** — the project's conventions
+evidence that the point was settled. **NOTICE already states the adaptations accurately**, so the claim the CHANGELOG contradicted is already answered correctly in the
+repository, and the false word was a DOCUMENTATION defect rather than a policy question in disguise. (NOTICE is the licensing and
+attribution statement; nothing in this repository designates it as the plugin's policy authority, and this file does not claim one.) **There is no CLAUDE.md and no PRRD.md in this repository** — the project's conventions
 elsewhere assume a PRRD, and its absence here is itself part of the finding. So the premise is HALF-stated, not absent: the practice of
 preservation is declared, the rule for dangerous content is not, and the rule for dangerous content is exactly what is under review. A
 practice is not a grant of authority over the question. **The silence may also mean the question has simply never been put** — a READING, not a fact about the repository: the owner may hold the policy in their head rather than in a file, which is why the rule is asked rather than derived. It is offered as a possible explanation, not as the explanation.
