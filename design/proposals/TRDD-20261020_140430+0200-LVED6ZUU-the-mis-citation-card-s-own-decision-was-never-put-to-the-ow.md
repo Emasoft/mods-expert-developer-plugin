@@ -48,7 +48,7 @@ THE BOOKKEEPING PROBLEM, WHICH WAS DISCLOSED TO THE OWNER BEFORE THE RULING AND 
 
 ## The count, and what binds it
 
-The count is twelve. It is DERIVED rather than remembered - the series window d1c4cd0..040ea53 holds 22 commits, of which exactly twelve carry the wrong citation and the other ten carry no TRDD id at all, and the twelve mis-cited commits are the last twelve of the twenty-two. The derivation is reproducible from the stated git commands, and NO CHECK BINDS IT: no test or script would fail if the count drifted. The archived card's own body names PRHYQEVK as the card the work belongs to, and PRHYQEVK's implementation-commits lists the last twelve of the series, omitting the first ten - among them d1c4cd0, which created the series, and 12446de, which removed the covered count.
+The count is twelve. It is DERIVED rather than remembered - the series window d1c4cd0^..0c5cb79 holds 22 commits, of which exactly twelve carry the wrong citation (the window's END boundary was 040ea53 before the 2026-10-20 rewrite and is 0c5cb79 after it; the start boundary d1c4cd0 is unchanged, because it predates the rewrite and so kept its SHA) and the other ten carry no TRDD id at all, and the twelve mis-cited commits are the last twelve of the twenty-two. The derivation is reproducible from the stated git commands, and NO CHECK BINDS IT: no test or script would fail if the count drifted. The archived card's own body names PRHYQEVK as the card the work belongs to, and PRHYQEVK's implementation-commits lists the last twelve of the series, omitting the first ten - among them d1c4cd0, which created the series, and 12446de, which removed the covered count.
 
 ## Acceptance
 
