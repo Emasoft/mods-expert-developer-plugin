@@ -49,9 +49,9 @@ Gate: open — 8 independent units; four 15-skill cohorts plus menu, security, p
 - The findings behind that question: 30 DISTINCT SITES, in bucket A, out of the 36 bucket-A findings. **THE LINK FROM THE QUESTION'S LIST TO THE 30 SITES: THE FOUR THINGS ARE NAMED IN THE QUESTION BULLET ABOVE, AND THE SPEC GROUPS
 THE 30 SITES UNDER A HEADING THAT NAMES THEM** — `design/specs/specs/cpv-nit-bucketA-sites.md`, section "The contents, and the decision
 each one implies" (NOT the separate "The stance tally" section, which is a READING rather than the grouping) — **WHICH CARRIES THE COUNTS AND
-THE PER-CONTENT DECISION FOR EACH OF THEM. THE GROUPS ARE A CLASSIFICATION OF CONTENT, NOT A CLAIM THAT A PASSAGE IS ONE OF THE FOUR
-THINGS, AND THE GROUPS ARE NOT UNIFORM IN STANCE — THE PERMISSION-BYPASS GROUP IS MIXED, AND THE SPEC'S STANCE TALLY SAYS WHICH PASSAGE
-DOES WHAT. The ledger does not restate the counts, the decisions or the stances; it points at the two sections that hold them.**
+THE PER-CONTENT DECISION FOR EACH OF THEM, AND THE SEPARATE "The stance tally" SECTION, WHICH CARRIES THE STANCES. The spec groups by
+CONTENT, so a site grouped under one of the four is not thereby an instance of it; the ledger does not restate the counts, the decisions or
+the stances, and asserts no property of the spec's data of its own — it points at the sections that hold them.**
 **THE ENUMERATION IS IN THE TRACKED SPEC, NOT HERE** — `design/specs/specs/cpv-nit-bucketA-sites.md` carries the 30 sites with per-site descriptions, stances, per-content
 decisions, a procedure-or-instruction reading with its criterion, a register note and a staleness check; this ledger is the index, and
 duplicating the enumeration here is what made this bullet a fourth copy of a finding the spec already holds. **WHAT THE LEDGER KEEPS, BECAUSE
