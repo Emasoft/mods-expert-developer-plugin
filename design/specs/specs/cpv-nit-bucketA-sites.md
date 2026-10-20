@@ -33,11 +33,60 @@ passage by passage.**
 **WHAT WAS FETCHED.** Twelve pages from `code.claude.com/docs/en/*.md` — the vendor's own markdown, the same text the plugin's
 chapters were built from. `setup.md`, `permission-modes.md`, `authentication.md`, `github-actions.md`, `mcp.md`, `trouble.md`,
 `channels.md`, `hooks.md`, `sessions.md`, `hooks-guide.md`, `tools.md`, `channels-reference.md`. The index that lists them is
-`https://code.claude.com/docs/llms.txt`. Their combined digest is `6726d5047a49fc41` (sha256 over the 12 fetched files' bytes).
+`https://code.claude.com/docs/llms.txt`.
+
+**THE FETCH, RECORDED FOR RE-CHECKING.** Fetched `2026-10-20T01:09:06Z` (UTC), every one of the twelve returning **HTTP 200**. Their
+combined digest is `6726d5047a49fc41` (sha256 over the 12 fetched files' bytes, in the order listed above).
+
+**THAT DIGEST IS A SNAPSHOT, NOT A DURABLE PROPERTY** — and it should be read as a REFRESH TRIGGER, not a defect signal. The vendor
+edits its documentation; a re-fetch that changes the digest means a page changed, and the passages below must be re-matched against
+it. The chapter digest in the Provenance section answers the same question for the plugin's side (did the chapters change?); this one
+answers it for the vendor's (did the reference change?).
+
+**THE PER-SITE → VENDOR-PAGE MAPPING**, so a re-check can be targeted rather than redone wholesale:
+
+| plugin chapter | line | vendor page | identical after normalisation |
+|---|---|---|---|
+| `mods-doc-troubleshooting-cc-setup` | 125 | setup.md | yes |
+| `mods-doc-troubleshooting-cc-setup` | 390 | trouble.md | yes |
+| `mods-doc-troubleshooting-cc-setup` | 391 | trouble.md | yes |
+| `mods-doc-troubleshooting-cc-setup` | 528 | trouble.md | yes |
+| `mods-doc-troubleshooting-cc-setup` | 535 | trouble.md | yes |
+| `mods-doc-troubleshooting-cc-setup` | 599 | trouble.md | yes |
+| `mods-doc-troubleshooting-cc-setup` | 688 | trouble.md | yes |
+| `mods-doc-troubleshooting-cc-setup` | 704 | trouble.md | yes |
+| `mods-doc-troubleshooting-cc-setup` | 788 | trouble.md | yes |
+| `mods-doc-troubleshooting-cc-setup` | 789 | trouble.md | yes |
+| `mods-doc-troubleshooting-cc-setup` | 790 | trouble.md | yes |
+| `mods-doc-troubleshooting-cc-setup` | 791 | trouble.md | yes |
+| `mods-doc-troubleshooting-cc-setup` | 797 | setup.md | yes |
+| `mods-doc-troubleshooting-cc-setup` | 829 | trouble.md | yes |
+| `mods-doc-troubleshooting-cc-setup` | 836 | trouble.md | yes |
+| `mods-doc-troubleshooting-cc-setup` | 845 | setup.md | yes |
+| `mods-doc-troubleshooting-cc-setup` | 1049 | setup.md | yes |
+| `mods-doc-cc-permissions-modes` | 76 | permission-modes.md | yes |
+| `mods-doc-cc-permissions-modes` | 382 | permission-modes.md | yes |
+| `mods-doc-channels-reference` | 293 | channels.md | yes |
+| `mods-doc-hooks-reference` | 2033 | hooks.md | yes |
+| `mods-doc-sessions-reference` | 68 | sessions.md | yes |
+| `mods-doc-sessions-reference` | 79 | sessions.md | yes |
+| `mods-doc-sessions-reference` | 83 | sessions.md | yes |
+| `mods-doc-automate-actions-with-hooks` | 980 | NO EXACT MATCH | no |
+| `mods-doc-cc-github-actions` | 94 | github-actions.md | yes |
+| `mods-doc-cc-github-actions` | 116 | github-actions.md | yes |
+| `mods-doc-cc-github-actions` | 381 | github-actions.md | yes |
+| `mods-doc-mcp-servers-reference` | 1181 | mcp.md | yes |
+| `mods-doc-native-toolset-reference` | 632 | tools.md | yes |
 
 **THE COMPARISON, AND ITS RESULT.** Each of the 30 sites' passages was normalised (links reduced to their text, code ticks removed,
-whitespace collapsed) and matched against every line of all 12 vendor pages. **29 of the 30 match EXACTLY** — the plugin's passage
-IS the vendor's passage, character for character, in the plugin's chapter today.
+whitespace collapsed) and matched against every line of all 12 vendor pages. **29 of the 30 are IDENTICAL AFTER NORMALISATION** — the
+plugin's passage IS the vendor's passage, in the plugin's chapter today.
+
+**THE NORMALISATION, AND WHAT IT DISCARDS, NAMED.** It removes link TARGETS (so a relative `/docs/en/...` and an absolute
+`https://code.claude.com/docs/en/...` read the same) and CODE TICKS (so `` `x` `` and `x` read the same), and collapses whitespace. It
+does not touch a command's flags, a path, an identifier, or a name. **One real difference is discarded by it**, and it is worth naming:
+the permissions-modes table row at `mods-doc-cc-permissions-modes` line 76 uses ABSOLUTE vendor links where the vendor's own page uses
+RELATIVE ones — the prose is identical, the link form is not. So the claim is "identical after normalisation", not a raw-text identity.
 
 The one that does not match exactly is `mods-doc-automate-actions-with-hooks` line 980, and it is a **reordering of the same
 sentences**: the vendor's bullet is labelled "deny in every permission mode" and puts the sentence about a hook returning a deny
@@ -145,8 +194,16 @@ section titles in 7 chapters so they cover their subsections") changed, in
     - #### How hooks work
     + #### Hook execution, input and output, matchers, and locations
 
-A title that says what its section COVERS, where the vendor's was a topic label — and it is in the shipped file today. That is one
-demonstrable adaptation, and `git show 2339314` shows it in full.
+A title that says what its section COVERS — and it is in the shipped file today. **What this exhibit does and does not show:** it shows
+the plugin reworded a section title at some point in its own history, and `git show 2339314` shows that in full. It does NOT show what
+the VENDOR's title was: the `-` side of that diff is the plugin's own earlier title, already several edits removed from the vendor's
+text, and the repository holds no vendor-side artefact for these headings. So this is evidence of a PLUGIN adaptation, demonstrated
+against the plugin's own history — not a difference from Anthropic's pages.
+
+**AND FOR THESE 30 PASSAGES THAT DISTINCTION NO LONGER MATTERS**, because the vendor's pages have now been fetched and compared
+directly (the section above): 29 of the 30 ARE the vendor's passages, identical after normalisation. The title-rewording evidence was
+the best available before that comparison; it is now redundant for the passages under ruling, and it stands on its own for the corpus
+as a whole.
 
 **WHAT WAS WITHDRAWN, AND WHY — THE TRADE THIS FILE MAKES EXPLICIT.** An earlier version of this section claimed the chapters' added
 `## Table of Contents` and `## Chapter content` headings were evidence of adaptation, on the reasoning that a document fetched from
@@ -156,6 +213,10 @@ REFERENCE` / `## Table of Contents` / `## Chapter content`), and the rewording c
 all ANCESTORS of that baseline (`git merge-base --is-ancestor <commit> 0a8e531~1`). So the structural difference from Anthropic's pages
 is NOT this plugin's, and the withdrawal of that argument leaves the plugin's case resting on its own documents and its own history —
 which is weaker than a demonstrable difference from Anthropic's pages, and is stated here rather than left for a reader to discover.
+**AND THAT GAP IS NOW CLOSED — IN THE OTHER DIRECTION.** The vendor's pages have since been fetched and compared passage by passage
+(the section above): 29 of the 30 ARE the vendor's passages, identical after normalisation. The demonstrated difference is ZERO for
+29 of the 30, and the 30th is the same two sentences re-sequenced. So the plugin's case is no longer a matter of paperwork about
+itself — it is a direct measurement against the reference the question names.
 Against `0a8e531~1` the net diff is 4 path values and 1 README line, across 2 chapter files — the same figure the series has carried
 throughout, in one convention.
 
