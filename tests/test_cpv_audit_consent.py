@@ -2,20 +2,32 @@
 
 CPV's audit-consent registry (``.cpv-audit-consent.json``) records, per
 REVIEWED finding, a ``lineSha256`` of the flagged line and a prose ``reason``.
-The hash pins the LINE; the reason is a CLAIM about CONTEXT ("a chapter about
-the memory directory map", "a chapter about model selection and fallback
-chains"). Nothing checked that claim, so an edit that turned the passage from
-*documentation about* the memory directory into an *instruction to* modify it
-would leave the reason false and the repo silent.
+The hash pins the LINE; the reason is a CLAIM about that line -- what it is
+doing, and why the rule does not apply to it. Nothing checked that claim, so
+an edit that turned the passage from *documentation about* a command into an
+*instruction to* run it would leave the reason false and the repo silent.
 
-These tests close that hole. They assert, against the CURRENT tree:
+The reasons have the shape::
+
+    <skill> | sec: <section> | topic: <what that line does> - <rule subject> - <clause>
+
+``topic`` is a claim about THE LINE, not about the chapter: it must be
+VERBATIM within a few lines of the flagged line. A chapter-level claim can be
+true while the line-level claim is false, and a consent registry's whole job
+is to say "this specific line, in this context, is not an instance of the
+rule" -- so the claim is tied to the line.
+
+These tests assert, against the CURRENT tree:
 
 1. every registry entry's ``lineSha256`` still matches the file's current line
    N (a stale entry fails, and so does a moved line);
-2. every reason's SUBJECT CLAIM is re-derivable from the chapter it names --
-   the reason names the chapter, and its subject phrase is VERBATIM in that
-   chapter's own H1 heading or Overview;
-3. the registry and the recorded findings agree IN BOTH DIRECTIONS: every
+2. every reason's SUBJECT CLAIM is re-derivable from the flagged line -- the
+   topic phrase occurs verbatim within ``TOPIC_WINDOW`` lines of it, and the
+   section scope resolves to a real section of the chapter;
+3. the reasons DISTINGUISH their sites: two entries for the same
+   (file, rule) may share a reason only when their flagged lines are
+   byte-identical (then CPV's own consent key is the same too);
+4. the registry and the recorded findings agree IN BOTH DIRECTIONS: every
    entry matches a current finding, and every current finding has an entry.
 
 The findings come from a TRACKED capture
@@ -45,6 +57,12 @@ CAPTURE = Path(__file__).resolve().parent / "fixtures" / "cpv_audit_consent_find
 # the reason is whitespace-collapsed and truncated to 200 characters.
 CPV_REASON_CAP = 200
 
+# How far from the flagged line the topic phrase may be and still be a claim
+# about that line. The reason quotes the line's own surroundings, so the
+# phrase has to be near it -- a phrase from the chapter's H1 is a claim about
+# the chapter.
+TOPIC_WINDOW = 8
+
 # The buckets, from the tracked adjudication spec
 # ``design/specs/specs/cpv-nit-rules-adjudicated.md``.
 BUCKET_A_RULES = {
@@ -68,17 +86,17 @@ BUCKET_C_RULES = {"SHELL_EXEC", "FS_WRITE", "ENV_INJECTION"}
 # RULE is about -- so the entry reads as a statement about its own rule, not a
 # template stamped 36 times -- and the test re-derives it from the rule id.
 BUCKET_A_SUBJECT = {
-    "SUPPLY_CHAIN": "a downloaded script piped to a shell",
-    "CMD_INJECTION": "a command piped into another command",
+    "SUPPLY_CHAIN": "a piped download",
+    "CMD_INJECTION": "a piped command",
     "PRIVILEGE_ESC": "a superuser command",
-    "CLAUDE_CLI_PERMISSION_BYPASS": "the permission-bypass flag",
-    "CLAUDE_CLI_TOKEN_THEFT": "the long-lived-token minting command",
+    "CLAUDE_CLI_PERMISSION_BYPASS": "the bypass flag",
+    "CLAUDE_CLI_TOKEN_THEFT": "the token-minting command",
 }
 
 # The reason's clause per bucket. Bucket A's clause carries BOTH facts: the
 # plugin's own code never executes the passage, AND the chapter is agent-facing
 # prose the agent may act on -- the residual risk the registry has to state.
-BUCKET_A_CLAUSE = ("plugin code never runs it; the chapter is agent-facing prose the agent may act on")
+BUCKET_A_CLAUSE = "plugin code never runs it; the chapter is agent-facing prose the agent may act on"
 BUCKET_B_CLAUSE = "the rule detects its own subject matter, not an instance of it"
 BUCKET_C_CLAUSE = "the rule is right about the pattern, wrong about a corpus that shows it"
 
@@ -125,21 +143,57 @@ def _chapter_headings(rel: str) -> list[str]:
     return out
 
 
-def _chapter_overview(rel: str) -> str:
-    """The chapter's Overview line: the block-quote under its first `###`."""
-    lines = _chapter_lines(rel)
-    for i, line in enumerate(lines):
-        if line.startswith("### "):
-            for j in range(i + 1, min(i + 8, len(lines))):
-                if lines[j].startswith("> "):
-                    return _norm_heading(lines[j][2:])
+def _enclosing_section(rel: str, line: int) -> str:
+    """The heading that encloses ``line``: the deepest heading before it with
+    no heading of its own level or shallower between it and the line."""
+    headings = []
+    fenced = False
+    for i, text in enumerate(_chapter_lines(rel), start=1):
+        stripped = text.strip()
+        if stripped.startswith("```"):
+            fenced = not fenced
+            continue
+        if fenced:
+            continue
+        m = re.match(r"^(#{1,6})\s+(.*\S)\s*$", text)
+        if m:
+            headings.append((i, len(m.group(1)), m.group(2)))
+    best = None
+    for ln, level, title in headings:
+        if ln >= line:
             break
-    return ""
+        closed = [1 for (l2, lv2, _t) in headings if l2 > ln and l2 < line and lv2 <= level]
+        if closed:
+            continue
+        best = (ln, level, title)
+    assert best is not None, f"no heading encloses {rel}:{line}"
+    return _norm_heading(best[2])
 
 
 def _sha256_line(line: str) -> str:
     """CPV's exact recipe: sha256 of the FULL flagged line, stripped."""
     return hashlib.sha256(line.strip().encode("utf-8")).hexdigest()
+
+
+def _reason_fields(reason: str) -> tuple[str | None, str | None]:
+    """The ``sec:`` scope and the ``topic:`` phrase of a reason."""
+    scope = None
+    topic = None
+    m = re.search(r"sec:\s*([^|]+?)(?:\s*\|\s*)", reason)
+    if m:
+        scope = m.group(1).strip()
+    m = re.search(r"topic:\s*([^|]+?)(?:\s+-\s+|\s*\|\s*$)", reason)
+    if m:
+        topic = m.group(1).strip()
+    return scope, topic
+
+
+def _capture_by_key() -> dict[tuple[str, str, str], list[dict]]:
+    """The recorded findings, grouped by CPV's own consent key."""
+    out: dict[tuple[str, str, str], list[dict]] = {}
+    for row in _load_capture():
+        out.setdefault((row["file"], row["ruleId"], row["lineSha256"]), []).append(row)
+    return out
 
 
 # --------------------------------------------------------------------------- #
@@ -223,7 +277,6 @@ def test_every_recorded_line_hash_still_matches_the_tree():
     assert not stale, f"recorded findings whose line no longer matches the tree: {stale}"
 
 
-
 def test_each_recorded_line_is_one_of_the_lines_the_hash_actually_selects():
     """A consent keyed on a hash is only meaningful when the hash selects the
     line the consent was written for.
@@ -252,7 +305,7 @@ def test_each_recorded_line_is_one_of_the_lines_the_hash_actually_selects():
 
 
 # --------------------------------------------------------------------------- #
-# 3. the reason's SUBJECT CLAIM is re-derivable from the chapter it names
+# 3. the reason's SUBJECT CLAIM is re-derivable from the flagged LINE
 # --------------------------------------------------------------------------- #
 
 
@@ -295,73 +348,130 @@ def test_every_bucket_b_and_c_reason_carries_its_rule_clause():
             )
 
 
-
-def test_every_bucket_b_and_c_subject_phrase_is_verbatim_in_its_own_chapter():
-    """The reason subject claim must be re-derivable from the chapter, not
-    merely asserted.
-
-    The reason names a phrase after ``topic:``. The phrase ends at the `` - ``
-    that introduces the clause. The test asserts that phrase is VERBATIM in the
-    chapter own H1 heading or Overview -- and that it appears in NO other
-    chapter H1 or Overview, so the claim cannot be satisfied by a phrase that
-    belongs to some other chapter.
-
-    This is the check that fails when a chapter is edited so the passage stops
-    being about the subject the reason names: the phrase stops being in the
-    chapter, and the reason becomes an unbacked claim.
-    """
-    all_chapters = sorted({e["file"] for e in _load_registry()})
-    haystacks = {rel: _norm_heading(_chapter_headings(rel)[0]) + " " + _chapter_overview(rel)
-                 for rel in all_chapters}
+def test_every_reason_carries_a_topic_phrase():
+    """Every reason names what the flagged line does, after ``topic:``. A
+    reason without one asserts nothing about the line it consents."""
     checked = 0
     for entry in _load_registry():
-        reason = entry["reason"]
-        # "<chapter> | sec: <scope> | topic: <phrase> - <clause>"
-        m = re.search(r"topic:\s*([^|]+?)(?:\s+-\s+|\s*\|\s*$)", reason)
-        if not m:
-            continue
-        phrase = m.group(1).strip()
-        assert phrase, f"empty subject phrase: {reason!r}"
-        assert phrase in haystacks[entry["file"]], (
-            f"subject phrase {phrase!r} is not in {entry['file']} own H1/Overview: {reason!r}"
-        )
-        others = [rel for rel in all_chapters
-                  if rel != entry["file"] and phrase in haystacks[rel]]
-        assert not others, (
-            f"subject phrase {phrase!r} is not unique to {entry['file']}; it also matches {others}"
-        )
+        _scope, topic = _reason_fields(entry["reason"])
+        assert topic, f"reason carries no topic phrase: {entry['reason']!r}"
         checked += 1
-    assert checked >= 36, f"only {checked} reasons carried a subject phrase"
+    assert checked == len(_load_registry())
 
+
+def test_every_topic_phrase_is_verbatim_near_its_own_flagged_line():
+    """The topic phrase must be a claim about THE FLAGGED LINE.
+
+    It is checked against the line's own neighbourhood -- the phrase has to
+    occur within ``TOPIC_WINDOW`` lines of the flagged line -- so a reason
+    cannot be satisfied by a phrase that belongs to the chapter at large. This
+    is the check that fails when the passage around the flagged line stops
+    saying what the reason says it says.
+    """
+    groups = _capture_by_key()
+    checked = 0
+    for entry in _load_registry():
+        key = (entry["file"], entry["ruleId"], entry["lineSha256"])
+        sites = groups[key]
+        _scope, topic = _reason_fields(entry["reason"])
+        assert topic, f"reason carries no topic phrase: {entry['reason']!r}"
+        lines = _chapter_lines(entry["file"])
+        for site in sites:
+            n = site["line"]
+            lo = max(1, n - TOPIC_WINDOW)
+            hi = min(len(lines), n + TOPIC_WINDOW)
+            window = "\n".join(lines[lo - 1: hi])
+            assert topic in window, (
+                f"topic phrase {topic!r} does not occur within {TOPIC_WINDOW} lines of "
+                f"{entry['file']}:{n}: {entry['reason']!r}"
+            )
+        checked += 1
+    assert checked == len(_load_registry())
 
 
 def test_every_reason_names_a_section_of_its_own_chapter():
     """The reason scope field (``sec: ...``) must resolve to a section of the
-    chapter it names -- a prose claim nothing checks would go stale silently."""
+    chapter it names -- a prose claim nothing checks would go stale silently.
+
+    Two shapes are accepted, and both are re-derived from the tree:
+
+    * a heading of the chapter (shortest UNIQUE prefix of the heading that
+      encloses the flagged line) -- checked by re-deriving the enclosing
+      heading and matching the scope against it;
+    * ``<N> sections`` -- the flagged lines sit under N different headings;
+      the COUNT is re-derived by counting the distinct enclosing headings.
+    """
+    groups = _capture_by_key()
     checked = 0
     for entry in _load_registry():
-        reason = entry["reason"]
-        # "<chapter> | sec: <scope> | ..."
-        m = re.search(r"sec:\s*([^|]+?)(?:\s+-\s+|\s*\|)", reason)
-        if not m:
-            continue
-        scope = m.group(1).strip()
+        key = (entry["file"], entry["ruleId"], entry["lineSha256"])
+        sites = groups[key]
+        scope, _topic = _reason_fields(entry["reason"])
+        assert scope, f"reason carries no section scope: {entry['reason']!r}"
+        enclosing = {_enclosing_section(entry["file"], s["line"]) for s in sites}
         if scope.endswith(" sections"):
-            # A multi-section scope: the COUNT is the claim. It is re-derived
-            # from the tree by the sibling test below.
-            assert scope[:-len(" sections")].isdigit(), f"malformed section count: {scope!r}"
-            checked += 1
-            continue
-        headings = _chapter_headings(entry["file"])
-        matching = [h for h in headings if h.startswith(scope)]
-        assert matching, f"section {scope!r} is not a heading of {entry['file']}: {reason!r}"
-        assert len(matching) == 1, (
-            f"section {scope!r} matches {len(matching)} headings of {entry['file']}: {matching}"
-        )
+            count = scope[: -len(" sections")]
+            assert count.isdigit(), f"malformed section count: {scope!r}"
+            assert int(count) == len(enclosing), (
+                f"scope {scope!r} claims {count} sections, but the flagged lines of "
+                f"{entry['file']} sit under {len(enclosing)}: {sorted(enclosing)}"
+            )
+        else:
+            for site in sites:
+                title = _enclosing_section(entry["file"], site["line"])
+                assert title.startswith(scope), (
+                    f"section {scope!r} is not a prefix of the heading enclosing "
+                    f"{entry['file']}:{site['line']} ({title!r}): {entry['reason']!r}"
+                )
+                assert sum(1 for h in _chapter_headings(entry["file"]) if h.startswith(scope)) == 1, (
+                    f"section {scope!r} is not unique in {entry['file']}: {entry['reason']!r}"
+                )
         checked += 1
     assert checked == len(_load_registry()), (
         f"only {checked} of {len(_load_registry())} reasons carried a section scope"
     )
+
+
+def test_reasons_distinguish_their_sites():
+    """Two entries for the same (file, rule) may share a reason ONLY when their
+    flagged lines are byte-identical.
+
+    That is the exception CPV itself forces: the consent key is
+    (file, ruleId, lineSha256), so two byte-identical lines ARE one key and
+    one reason is all that can apply. Anything else is a registry where the
+    reader cannot tell which of two sites a reason is talking about -- the
+    defect this check exists to catch.
+    """
+    by_site: dict[tuple[str, str], dict[str, list[str]]] = {}
+    for entry in _load_registry():
+        bucket = by_site.setdefault((entry["file"], entry["ruleId"]), {})
+        bucket.setdefault(entry["reason"], []).append(entry["lineSha256"])
+    offenders = []
+    for (rel, rule), reasons in by_site.items():
+        for reason, digests in reasons.items():
+            if len(set(digests)) > 1:
+                offenders.append((rel, rule, reason, sorted(set(digests))))
+    assert not offenders, (
+        "reasons shared by sites with DIFFERENT flagged lines (a reader cannot tell "
+        f"the sites apart): {offenders}"
+    )
+
+
+def test_the_number_of_shared_reasons_is_bounded_by_the_byte_identical_sites():
+    """The measured shape of the registry: the reasons that repeat do so
+    because the LINE repeats. Every shared reason must cover only
+    byte-identical lines -- the same condition the per-site test asserts, but
+    counted, so a registry that collapsed every reason into one template is
+    caught even when every line happens to differ."""
+    by_reason: dict[str, list[str]] = {}
+    for entry in _load_registry():
+        by_reason.setdefault(entry["reason"], []).append(entry["lineSha256"])
+    shared = {r: d for r, d in by_reason.items() if len(d) > 1}
+    for reason, digests in shared.items():
+        assert len(set(digests)) == 1, (
+            f"reason {reason!r} is used for {len(set(digests))} different flagged lines"
+        )
+    assert len(shared) <= 8, f"{len(shared)} shared reasons is more than the corpus allows"
 
 
 BUCKETS = {"A": BUCKET_A_RULES, "B": BUCKET_B_RULES, "C": BUCKET_C_RULES}
