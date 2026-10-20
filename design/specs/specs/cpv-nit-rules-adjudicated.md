@@ -79,13 +79,17 @@ catalogue; the script below declares them explicitly, so the column is a re-runn
 arithmetic. It READS the table out of this file and re-measures every row against the catalogue, so it also serves as a
 self-check of the file:
 
+**THE SCRIPT IS THE FENCED BLOCK BELOW, AND A CLONER HAS NO SEPARATE FILE TO RUN.** The block is the script, in full; a
+reader extracts it and runs it. It is NOT a file the repository ships — `scripts_dev/` is gitignored, so a local copy there
+is a convenience for the author and not something a reader can rely on:
+
 ```bash
 cd /Volumes/EmaUITEK4TBSSD/Code/emasoft-mods-expert-developer
-python3 -I gap_repro.py
+# extract the block below into a file, then:
+python3 -I <extracted>.py
 ```
 
-The script itself is in `scripts_dev/gap_repro.py` (gitignored working file, kept beside the plugin's own scripts while
-the column stands) and is reproduced here in full so the measurement is not dependent on a file outside the repository:
+It is reproduced here in full so the measurement is not dependent on a file outside the repository:
 
 ```python
 import re, json, pathlib, os, glob
@@ -159,12 +163,22 @@ for rid, body in re.findall(r'### `([A-Z0-9_]+)`\n\n\| site \|[^\n]*\n\|[^\n]*\n
 print('every row checked against the catalogue; only disagreements are printed.')
 ```
 
-**WHY THE NORMALISATION IS WHAT MAKES THE GAP INVARIANT.** The scanner matches LINE BY LINE, so a re-wrap that separates
-two trigger tokens onto different lines changes which line the rule fires on at all. Measured against the LINE AS IT STANDS,
-the gap is a property of the line's current wrapping. **Measured against the whitespace-normalised text, the gap does not
-move**: re-wrapping each of the 72 sites' own line at word boundaries and at three widths — 30, 50 and 80 characters —
-produced the same gap in every case, for all 72. That is the property the raw span does not have, and it is why the gap
-carries the argument.
+**WHY THE NORMALISATION IS WHAT MAKES THE GAP INVARIANT — AND THE EXACT SCOPE OF THAT INVARIANCE, WHICH IS NARROWER THAN
+IT LOOKS.** The scanner matches LINE BY LINE, so a re-wrap that separates two trigger tokens onto different lines changes
+which line the rule fires on at all. Measured against the LINE AS IT STANDS, the gap is a property of the line's current
+wrapping. **Measured against the whitespace-normalised text, the gap does not move**: re-wrapping each of the 72 sites' own
+line at word boundaries and at three widths — 30, 50 and 80 characters — produced the same gap in every case, for all 72.
+That is the property the raw span does not have, and it is why the gap carries the argument.
+
+**BUT THE INVARIANCE IS ABOUT THE LINE'S OWN CONTENT RE-WRAPPED IN PLACE, AND NOT ABOUT A PARAGRAPH RE-FLOWED — AND THE
+DIFFERENCE IS THE WHOLE STORY.** Re-flowing a PARAGRAPH moves tokens onto different lines, and then the rule may not fire
+at all: measured on the ten wide-gap sites, re-flowing each site's surrounding paragraph at 60 and at 100 characters made
+**every one of those ten rules STOP FIRING**, because the two trigger tokens ended up on different lines. **SO THE
+FOURTEEN RULES WHOSE PATTERN IS A LEXICAL SEQUENCE ARE FINDINGS THAT A RE-SYNC CAN ERASE, AND THAT IS A PROPERTY OF THE
+DETECTOR, NOT OF THIS FILE'S MEASUREMENT.** It also means the gap's invariance is the RIGHT invariance to quote: it holds
+for the line the scanner actually reads, and it would still hold on that line after any re-wrap that left the two tokens
+together. What it does not promise — and the file does not claim — is that the finding survives a re-wrap that separates
+them.
 
 **37 of the 72 sites have a token gap greater than zero, and 10 have a gap of 100 characters or more.** Those ten are
 concentrated in four rules, and they are the rules whose pattern is a LEXICAL SEQUENCE rather than a single token: the
@@ -416,6 +430,18 @@ first trigger token and its last, which is the measure that survives a re-wrap. 
 of passage: the sibling spec's own four stances where it has already adjudicated the site (TEACHES, NAMES, WARNS, EXPLAINS),
 plus SAMPLE for a fenced code sample the reader is shown and DESCRIBES for a passage stating the product's own behaviour.
 The column reports WHAT WAS OBSERVED, not what the finding is worth.
+
+**BOTH COLUMNS ARE COMPUTED ON THE SAME TEXT, AND THAT IS MEASURED, NOT ASSUMED.** The gap is measured on the
+whitespace-normalised line while the span is measured on the line as it stands, so the two columns could in principle have
+different references. They do not: applying the catalogue's pattern to the raw line and to the normalised line
+**selects the same matched text at all 72 sites**, so the normalisation changes the gap's units without changing which
+construct the rule matched. A reader can confirm this with the script above.
+
+**WHERE THE FIFTH COLUMN'S EVIDENCE COMES FROM, SO A READER KNOWS WHICH CELL IS A POINTER AND WHICH IS A READING HERE.** The
+36 bucket-A rows carry the sibling spec's own per-site descriptions, which that file marks as readings — so those cells are
+pointers to a reading recorded elsewhere, and the reader can check them there. **The other 36 are readings made HERE, and
+they are marked as readings in the same way**: the sibling spec's four stances and this file's two are the vocabulary, but
+the classification of those 36 sites is this file's own judgement, and the passage in words is the basis it rests on.
 
 ### `SUPPLY_CHAIN`
 
