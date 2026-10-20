@@ -166,27 +166,88 @@ def raw_match(rule, text):
     return span
 
 rows = []
-for rid, body in re.findall(r'### `([A-Z0-9_]+)`\n\n\| site \|[^\n]*\n\|[^\n]*\n((?:\|[^\n]*\n)+)', text):
+found = []
+# The rows are read from THE PER-SITE TABLE SECTION ONLY, and located by their own
+# form rather than by any header wording — so renaming a column heading cannot hide
+# the table from this script, and a table deleted from one rule cannot be made up
+# for by the summary block's own mention of the same sites.
+table_section = text[text.rindex('## THE PER-SITE TABLE, RULE BY RULE'):]
+# The slice must contain the table section and nothing else. The section is closed
+# by the next '## ' heading; a file where that heading is missing or renamed makes
+# the slice run on, which the coverage count below then catches.
+_next = table_section.find('\n## ', 2)
+if _next == -1:
+    print('COVERAGE ERROR: the per-site table section has no closing "## " heading, so the')
+    print('  slice below runs past it and may read other sections. NOTHING IS RELIABLE HERE.')
+    raise SystemExit(1)
+table_section = table_section[:_next]
+# Each rule's table is located by its OWN heading followed by a TABLE HEADER ROW and
+# a separator row — not by any column wording. A renamed column therefore cannot
+# hide a table, and a deleted one is a deleted one.
+RULE_TABLES = {}
+_found = []
+for rid, body in re.findall(r'### `([A-Z0-9_]+)`[^\n]*\n((?:(?!\n### |\n## )[\s\S])*?)(?=\n### |\n## |$)', table_section):
+    m = re.search(r'\n\|([^\n]*)\|\n\|[-|]+\|\n((?:\|[^\n]*(?:\n|$))*)', body)
+    if m:
+        _found.append(rid)
+        RULE_TABLES[rid] = m.group(2)
+# ONE table per rule. A rule id seen twice means the slice caught a block from
+# elsewhere in the file, which would let one rule's rows be counted twice and
+# would hide a deleted table.
+if len(_found) != len(set(_found)):
+    print('COVERAGE ERROR: a rule id was read more than once — the table section slice')
+    print('  is picking up blocks from elsewhere in the file. NOTHING IS RELIABLE HERE.')
+    raise SystemExit(1)
+for rid, body in RULE_TABLES.items():
     for chapter, lineno, span, gap, stance in re.findall(r'\| `([a-z0-9-]+)` line (\d+) \| (\d+) \| (\d+) \| ([A-Z]+) \|', body):
         L = pathlib.Path(f'skills/mods-doc-{chapter}/references/chapter.md').read_text(encoding='utf-8').split('\n')[int(lineno)-1]
         g, s = measure(rid, L)
         # CHECK 1: the table's own figures against the catalogue
         if (g, s) != (int(gap), int(span)):
             print(f'ROW  {rid:32s} {chapter}:{lineno}  spec span={span} gap={gap}  measured span={s} gap={g}   <-- DISAGREES')
+            found.append(rid)
         # CHECK 2: the raw line and the normalised line select the SAME matched text,
         # which is what justifies the two columns having two different references
-        if raw_match(rid, L) != raw_match(rid, re.sub(r'\s+', ' ', L)):
+        raw_hits = raw_match(rid, L)
+        norm_hits = raw_match(rid, re.sub(r'\s+', ' ', L))
+        if raw_hits is None or norm_hits is None:
+            print(f'REFS {rid:32s} {chapter}:{lineno}  one side matched NOTHING (raw={raw_hits is not None}, normalised={norm_hits is not None})   <-- DISAGREES')
+        elif raw_hits != norm_hits:
             print(f'REFS {rid:32s} {chapter}:{lineno}  raw and normalised text match DIFFERENT text   <-- DISAGREES')
-        rows.append((rid, int(span), int(gap)))
+            found.append(rid)
+        rows.append((rid, int(span), int(gap), chapter, lineno))
 # CHECK 3: the per-rule blocks' own stated figures against the table
 blocks = {m[0]: (m[1], m[2]) for m in re.findall(r'### `([A-Z0-9_]+)`[^\n]*\n(?:(?!\n### |\n## )[\s\S])*?- \*\*widest token gap:\*\* (\d+) characters\.\n- \*\*widest raw span:\*\* (\d+) characters', text)}
 for rid, (gap, span) in blocks.items():
     sel = [r for r in rows if r[0] == rid]
     if not sel: continue
-    if (max(s for _, s, _ in sel), max(g for _, _, g in sel)) != (int(span), int(gap)):
-        print(f'BLOCK {rid:32s} block says span={span} gap={gap}  table says span={max(s for _,s,_ in sel)} gap={max(g for _,_,g in sel)}   <-- DISAGREES')
-print('every row re-measured, both references compared, and every per-rule block checked against the table;')
-print('only disagreements are printed.')
+    if (max(s for _, s, _, _, _ in sel), max(g for _, _, g, _, _ in sel)) != (int(span), int(gap)):
+        print(f'BLOCK {rid:32s} block says span={span} gap={gap}  table says span={max(s for _,s,_,_,_ in sel)} gap={max(g for _,_,g,_,_ in sel)}   <-- DISAGREES')
+        found.append(rid)
+# The EXPECTED coverage is stated here, so the script can tell "everything checked"
+# from "something was checked". A coverage count with no expected value is a claim
+# with nothing behind it — which is the defect this report exists to prevent.
+EXPECTED_ROWS = 72
+EXPECTED_BLOCKS = 14
+EXPECTED_SITES = 64
+print('COVERAGE: {0} rows re-measured, {1} per-rule blocks compared against the table.'.format(len(rows), len(blocks)))
+if len(rows) != EXPECTED_ROWS:
+    print('COVERAGE ERROR: expected {0} rows, read {1}. The table has changed shape, a rule\'s'.format(EXPECTED_ROWS, len(rows)))
+    print('  table is missing, or the row pattern no longer matches. WHAT YOU SEE IS NOT A PASS.')
+    raise SystemExit(1)
+if len(blocks) != EXPECTED_BLOCKS:
+    print('COVERAGE ERROR: expected {0} per-rule blocks, read {1}. A block heading or its'.format(EXPECTED_BLOCKS, len(blocks)))
+    print('  "widest token gap" / "widest raw span" lines have changed. WHAT YOU SEE IS NOT A PASS.')
+    raise SystemExit(1)
+sites = {(r[3], r[4]) for r in rows}   # (chapter, line) pairs are unique per site
+if len(sites) != EXPECTED_SITES:
+    print('COVERAGE ERROR: expected {0} distinct sites, read {1}. A site row is missing or'.format(EXPECTED_SITES, len(sites)))
+    print('  duplicated. WHAT YOU SEE IS NOT A PASS.')
+    raise SystemExit(1)
+if found:
+    print('{0} DISAGREEMENT(S) ABOVE. The file is not self-consistent as it stands.'.format(len(found)))
+    raise SystemExit(1)
+print('Only disagreements are printed above; a clean run means every check found none.')
 ```
 
 **WHY THE NORMALISATION IS WHAT MAKES THE GAP INVARIANT — AND THE EXACT SCOPE OF THAT INVARIANCE, WHICH IS NARROWER THAN
@@ -357,11 +418,11 @@ PRESENTS A FALSE AGENT.** This is the clearest instance of the defect this file 
 rule — the pattern is a reasonable shape — **the GAP is**, because a regex that reaches hundreds of characters will join any
 three words a paragraph happens to contain.
 
-### `INTENT_DESTRUCTIVE_INTENT` — destructive-intent — bucket B — 1 findings, 1 sites
+### `INTENT_DESTRUCTIVE_INTENT` — destructive-intent — bucket B — 1 finding, 1 site
 
 - **what the pattern detects:** a delete or remove verb followed by a noun such as files or data.
-- **widest token gap:** -1 characters (the pattern matches a single adjacent pair, so there is no gap).
-- **widest raw span:** 0 characters, of the line as it currently stands.
+- **widest token gap:** 1 characters.
+- **widest raw span:** 12 characters, of the line as it currently stands.
 - **what was observed at every site:** the passage is the vendor's own documentation. No site is executed by the plugin.
 
 **WHAT THE NAME IMPLIES vs WHAT IT DETECTS.** The name says destructive intent, and the
@@ -463,6 +524,10 @@ whitespace-normalised line while the span is measured on the line as it stands, 
 different references. They do not: applying the catalogue's pattern to the raw line and to the normalised line
 **selects the same matched text at all 72 sites**, so the normalisation changes the gap's units without changing which
 construct the rule matched. A reader can confirm this with the script above.
+
+**THE PER-RULE BLOCKS' FIGURES ARE MACHINE-CHECKED AGAINST THIS TABLE**, by the script above — the blocks' stated widest
+span and widest gap are compared with the table's, and a disagreement is reported and the run exits non-zero. **SO A FUTURE
+EDITOR WHO CHANGES A FIGURE IN A BLOCK MUST RE-RUN THE SCRIPT**; the blocks are not prose that merely looks like the table.
 
 **WHERE THE FIFTH COLUMN'S EVIDENCE COMES FROM, SO A READER KNOWS WHICH CELL IS A POINTER AND WHICH IS A READING HERE.** The
 36 bucket-A rows carry the sibling spec's own per-site descriptions, which that file marks as readings — so those cells are
@@ -618,7 +683,9 @@ the classification of those 36 sites is this file's own judgement, and the passa
 that until each rule was adjudicated individually the bucket partition was a hypothesis. That pass is now DONE: the partition's
 counts are confirmed against the scan, and every rule is adjudicated. What is left is not a missing measurement.
 
-**It sharpens the upstream case from "these rules over-fire on documentation" to a per-rule statement of what each pattern
+**A READING ABOUT THE RECORD'S OWN SIGNIFICANCE, not a measurement** — the next paragraph says what the pass is worth, and
+that is this file's judgement, marked here so it is not read as another measured fact. **It sharpens the upstream case from
+"these rules over-fire on documentation" to a per-rule statement of what each pattern
 actually matches** — and for four rules, to a statement about the GAP, which is the part a fix would change.
 
 **It does not dispose of bucket A, and it does not set severity.** The 36 bucket-A findings sit in the vendor's own
