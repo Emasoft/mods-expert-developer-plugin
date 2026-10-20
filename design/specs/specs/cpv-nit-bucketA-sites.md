@@ -49,11 +49,19 @@ whether preservation is unconditional, whether redaction is permitted, or who de
     |keep verbatim|unmodified
 
 Command, run over the corpus EXCLUDING this series' own two artefacts, so a re-runner reaches the substantive result without
-subtracting by hand:
+subtracting by hand. The pattern is inline so the command is copy-pasteable, not a placeholder to reconstruct:
 
+    PAT='redact|unconditional|editorial (policy|remit)|dangerous (content|instruction)|permitted to (remove|omit|edit)|must not ship|omit|sanitis|sanitiz|scrub|keep verbatim|unmodified'
     git ls-files -z | grep -zvE "chapter\.md$" \
       | grep -zvE "^(DELEGATION\.md|design/specs/specs/cpv-nit-bucketA-sites\.md)$" \
-      | xargs -0 grep -ilE "<the pattern above>"
+      | xargs -0 grep -ilE "$PAT"
+
+And pass 2, the broader alternation, the same way:
+
+    PAT2='as-is|as is|do not alter|without modification|reproduce|reproducible|unaltered|authoritative|verbatim|do not change|do not edit|do not modify|do not remove|must remain|unchanged|fidelity|faithful'
+    git ls-files -z | grep -zvE "chapter\.md$" \
+      | grep -zvE "^(DELEGATION\.md|design/specs/specs/cpv-nit-bucketA-sites\.md)$" \
+      | xargs -0 grep -ilE "$PAT2"
 
 Substantive hits — 3 files, and each is an unrelated use of the word:
 
@@ -65,15 +73,25 @@ Substantive hits — 3 files, and each is an unrelated use of the word:
 
 Running the same command WITHOUT the second filter also returns this file and `DELEGATION.md` — the two artefacts doing the recording.
 
-**THE PATTERN'S COVERAGE LIMIT, so the negative is bounded on the record the way the digest bounds its scope.** A search for WORDS is
-a search for words, not a proof of silence: a policy could be written in vocabulary this alternation does not match. Plausible
-phrasings it would MISS include "ships as-is", "do not alter the vendor's instructions", "reproduced without modification", "the
-upstream text is authoritative", "unaltered", "do not remove", "must remain unchanged", "reproduced faithfully". A second, broader
-alternation over those phrasings was run against the same corpus: it hit `LICENSE` ("AS IS" — the standard MIT warranty disclaimer),
-`CHANGELOG.md` ("verbatim" — see below), `git-hooks/pre-push` ("Do NOT edit by hand" — about a generated file, not the chapters),
-`scripts/publish.py` and `tests/test_skills_menu.py` ("authoritative" — about a build step and about skill frontmatter). **No hit in
-either pass is a policy on preserved documentation.** So the accurate statement is: no tracked non-chapter file states such a policy
-in the vocabulary searched, and the vocabulary is not exhaustive of how a policy might be phrased.
+**THE COVERAGE LIMIT OF BOTH PASSES JOINTLY, so the negative is bounded on the record the way the digest bounds its scope.** A search
+for WORDS is a search for words, not a proof of silence: a policy could be written in vocabulary neither alternation matches. Pass 2
+was built to test pass 1, so the phrasings named as pass 1's misses ARE pass 2's vocabulary — and pass 2 is one more word list among
+two, with its own misses. Phrasings NEITHER pass would match include "these chapters ship exactly as Anthropic publishes them",
+"the upstream text governs", "reproduced faithfully", "not to be altered", "pass through unmodified". The honest bound is therefore
+stated over the two passes TOGETHER: **no tracked non-chapter file states a policy on preserved documentation in the vocabulary
+searched, and that vocabulary is not exhaustive of how a policy might be phrased.** A second, broader
+alternation over those phrasings was run against the same corpus, and it hit 10 files — every one of them an unrelated use of a word:
+
+| file | what the hit is |
+|---|---|
+| `LICENSE` | "AS IS" — the standard MIT warranty disclaimer |
+| `CHANGELOG.md` | "verbatim" — the release note's own claim about the bundle (see below) |
+| `git-hooks/pre-push` | "Do NOT edit by hand" — about a GENERATED file, not the chapters |
+| `scripts/publish.py` | "as-is" / "authoritative" / "verbatim" — about a build step and a shipped artefact |
+| `tests/test_skills_menu.py` | "authoritative" — about skill frontmatter |
+| the 5 `design/proposals/TRDD-*.md` | "authoritative" (a STATE-block header) and "verbatim" (a TRDD body about the chapters) |
+
+**No hit in either pass is a policy on preserved documentation.**
 
 **ONE INCONSISTENCY IN THE REPOSITORY'S OWN SELF-DESCRIPTION, FOUND WHILE DOING THIS, AND MATERIAL TO THE RULING.**
 `CHANGELOG.md:20` describes the bundle as "60 reference skills holding **verbatim** Claude Code documentation chapters", while
@@ -82,7 +100,16 @@ NOTICE is the accurate one, and the chapter files bear it out: they carry an add
 reworded to describe what each section covers, and a subsection promoted to a section — none of which "verbatim" allows. The
 CHANGELOG's word is wrong, and it is wrong in the direction that MATTERS here: "verbatim" would make preservation unconditional by
 description, whereas the truth is that the chapters are adaptations, and whether an instruction may be omitted from an adaptation is
-the question the owner is being asked. **There is no CLAUDE.md and no PRRD.md in this repository** — the project's conventions
+the question the owner is being asked.
+
+**THE CHANGELOG IS GENERATED, SO THE WORD IS CORRECTED IN THE COMMIT MESSAGE AND NOT IN THE FILE.** `scripts/publish.py:2740`
+(`stage_changelog`) runs `git cliff --bump --tag v<NEXT> -o CHANGELOG.md`, and `-o` OVERWRITES the file from the commit log; the
+step's own docstring says "CHANGELOG.md is fully DERIVED from conventional commits, so hand-written prose in it does not survive a
+publish. Put release prose in the commit messages." A hand-edit to the 0.1.0 entry would therefore be discarded on the next release —
+and with it the one correction in this series that bears on the owner's ruling. The fix belongs in a conventional commit message,
+which git-cliff renders into the next entry; `cliff.toml`'s `body` template uses `commit.message`, so a `fix:` commit carrying the
+correction is what reaches the CHANGELOG. **Until such a commit is released, the false word is still in `CHANGELOG.md:20`, and that is
+stated here rather than left for a reader to discover.** **There is no CLAUDE.md and no PRRD.md in this repository** — the project's conventions
 elsewhere assume a PRRD, and its absence here is itself part of the finding. So the premise is HALF-stated, not absent: the practice of
 preservation is declared, the rule for dangerous content is not, and the rule for dangerous content is exactly what is under review. A
 practice is not a grant of authority over the question. **The silence may also mean the question has simply never been put** — a READING, not a fact about the repository: the owner may hold the policy in their head rather than in a file, which is why the rule is asked rather than derived. It is offered as a possible explanation, not as the explanation.
