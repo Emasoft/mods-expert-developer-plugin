@@ -48,9 +48,13 @@ ONCE, in the next section; the paragraphs after it refer there rather than resta
 
 **THE FRAME, STATED ONCE, BECAUSE IT DECIDES HOW THE ITEMS BELOW ARE WORDED.** The question is WHICH PRE-EXISTING TAG, IF ANY, CLIFF
 PREFERS TO THE SUPPLIED ONE, and every candidate rule is a rule about the RELATIONSHIP between a pre-existing tag and the supplied one.
-**"THE LABELLED COMMIT" IS THIS CARD'S SHORTHAND FOR THE COMMIT THE SUPPLIED TAG POINTS AT — WHICH IS ALSO THE COMMIT THE RENDER
-LABELS. IT IS A SHORTHAND, NOT A CLAIM about what cliff looks for.** An earlier draft of this card pivoted on "the commit being released",
-which named the position-reading as a fact; that term is gone, and this one is used in a relational frame throughout.
+**"THE LABELLED COMMIT" IS THIS CARD'S SHORTHAND, AND IT MEANS DIFFERENT THINGS IN THE EXPERIMENT AND IN THE REAL PIPELINE — SO THE
+TWO ARE MARKED HERE AND USED SEPARATELY BELOW.** In the EXPERIMENT, the supplied tag was a PROBE VALUE, v0.9.9, passed on the command
+line and never created as a tag, so it points at NO commit; "the labelled commit" there means the commit the RENDER LABELS, which is the
+one HEAD in the experiment. In the REAL PIPELINE, the supplied tag is the COMPUTED VERSION — v0.1.1, derived in TRDD-XV6QOEK1 — and it
+points at the commit being released, so there "the labelled commit" and the release commit are the same thing. **IT IS A SHORTHAND, NOT A
+CLAIM about what cliff looks for.** An earlier draft of this card pivoted on "the commit being released", which named the
+position-reading as a fact; that term is gone, and this one is used in a relational frame throughout.
 
 **THE ONE INVENTORY: WHAT THE CASES EXCLUDE, WHAT THEY LEAVE OPEN, AND WHAT A RE-RUN MUST VARY.** This is the single place in this card
 where the rule space is enumerated.
@@ -79,8 +83,10 @@ the list above says which hypotheses they left open.
 
 **THE REASSURING CASE, reduced to a reference to the list above.** On the FIRST release — the one with no pre-existing tag — the render labels
 the window from the SUPPLIED tag, which is what case (a) shows: the top heading is the supplied version. **IN THE REAL PIPELINE THE
-SUPPLIED TAG IS THE COMPUTED VERSION, so the two agree BY CONSTRUCTION**; in the experiment the supplied tag was v0.9.9, chosen to stand
-out from the computed 0.1.1, and case (a) confirms the label follows the supplied tag rather than the computed one. Once a tag exists,
+SUPPLIED TAG IS THE COMPUTED VERSION — v0.1.1, derived in TRDD-XV6QOEK1 — so the two agree BY CONSTRUCTION**; in the experiment the
+supplied tag was the PROBE VALUE v0.9.9, chosen to stand out from the computed 0.1.1, and case (a) SHOWS the top heading taking the
+supplied version rather than the computed one. **"Shows", not "confirms": the experiment cannot separate that from the most-recent reading
+or from a version-matching reading, and the inventory below says so.** Once a tag exists,
 whether the label and the version agree again depends on which of the UNTESTED READINGS above governs — and the cases do not say.
 **"THE MOST RECENT TAG" IS ONE OF THOSE UNTESTED READINGS, SO THIS CARD DOES NOT ASSERT THE AGREEMENT.** The reassuring case is one of the
 four measured cases; it is not a claim about ordinary releases.
