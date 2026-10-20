@@ -17,4 +17,4 @@ All notable changes to this project are documented in this file. The format is b
 
 ### Added
 
-- Initial packaging: the expert mods developer agent and 60 reference skills holding verbatim Claude Code documentation chapters.
+- Initial packaging: the expert mods developer agent and 60 reference skills holding ADAPTED Claude Code documentation chapters. (This entry originally said "verbatim". That was wrong: NOTICE lists what was adapted — section-level tables of contents added, section titles reworded, one subsection promoted to a section, website-only components rewritten, a few passages reworded — and the chapter files bear that out. The word mattered because "verbatim" would have made preservation unconditional by description, and the chapters are adaptations.)

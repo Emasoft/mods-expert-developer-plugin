@@ -48,25 +48,44 @@ whether preservation is unconditional, whether redaction is permitted, or who de
     |permitted to (remove|omit|edit)|must not ship|omit|sanitis|sanitiz|scrub
     |keep verbatim|unmodified
 
-Command:
+Command, run over the corpus EXCLUDING this series' own two artefacts, so a re-runner reaches the substantive result without
+subtracting by hand:
 
-    git ls-files -z | grep -zvE "chapter\.md$" | xargs -0 grep -ilE "<the pattern above>"
+    git ls-files -z | grep -zvE "chapter\.md$" \
+      | grep -zvE "^(DELEGATION\.md|design/specs/specs/cpv-nit-bucketA-sites\.md)$" \
+      | xargs -0 grep -ilE "<the pattern above>"
 
-Hits — 5 files, and each is this series' own artefact or an unrelated use of the word:
+Substantive hits — 3 files, and each is an unrelated use of the word:
 
 | file | what the hit is |
 |---|---|
-| `design/specs/specs/cpv-nit-bucketA-sites.md` | this file |
-| `DELEGATION.md` | this series' ledger |
 | `scripts/publish.py` | a publish gate's CREDENTIAL redaction, not documentation |
 | `scripts/cpv_network_resilience.py` | "unconditionally" describing network-failure handling |
 | `.github/workflows/notify-marketplace.yml` | "Sanitization" of `${{ github.* }}` values crossing into a shell |
 
-No hit is a policy on preserved documentation. **There is no CLAUDE.md and no PRRD.md in this repository** — the project's conventions
+Running the same command WITHOUT the second filter also returns this file and `DELEGATION.md` — the two artefacts doing the recording.
+
+**THE PATTERN'S COVERAGE LIMIT, so the negative is bounded on the record the way the digest bounds its scope.** A search for WORDS is
+a search for words, not a proof of silence: a policy could be written in vocabulary this alternation does not match. Plausible
+phrasings it would MISS include "ships as-is", "do not alter the vendor's instructions", "reproduced without modification", "the
+upstream text is authoritative", "unaltered", "do not remove", "must remain unchanged", "reproduced faithfully". A second, broader
+alternation over those phrasings was run against the same corpus: it hit `LICENSE` ("AS IS" — the standard MIT warranty disclaimer),
+`CHANGELOG.md` ("verbatim" — see below), `git-hooks/pre-push` ("Do NOT edit by hand" — about a generated file, not the chapters),
+`scripts/publish.py` and `tests/test_skills_menu.py` ("authoritative" — about a build step and about skill frontmatter). **No hit in
+either pass is a policy on preserved documentation.** So the accurate statement is: no tracked non-chapter file states such a policy
+in the vocabulary searched, and the vocabulary is not exhaustive of how a policy might be phrased.
+
+**ONE INCONSISTENCY IN THE REPOSITORY'S OWN SELF-DESCRIPTION, FOUND WHILE DOING THIS, AND MATERIAL TO THE RULING.**
+`CHANGELOG.md:20` describes the bundle as "60 reference skills holding **verbatim** Claude Code documentation chapters", while
+`NOTICE:12-17` describes the same files as "**adapted** from Anthropic's Claude Code documentation" and lists what was changed. The
+NOTICE is the accurate one, and the chapter files bear it out: they carry an added section-level table of contents, section titles
+reworded to describe what each section covers, and a subsection promoted to a section — none of which "verbatim" allows. The
+CHANGELOG's word is wrong, and it is wrong in the direction that MATTERS here: "verbatim" would make preservation unconditional by
+description, whereas the truth is that the chapters are adaptations, and whether an instruction may be omitted from an adaptation is
+the question the owner is being asked. **There is no CLAUDE.md and no PRRD.md in this repository** — the project's conventions
 elsewhere assume a PRRD, and its absence here is itself part of the finding. So the premise is HALF-stated, not absent: the practice of
 preservation is declared, the rule for dangerous content is not, and the rule for dangerous content is exactly what is under review. A
-practice is not a grant of authority over the question. **The silence may also mean the question has simply never been put** — the
-owner may hold the policy in their head rather than in a file, which is why the rule is asked rather than derived.
+practice is not a grant of authority over the question. **The silence may also mean the question has simply never been put** — a READING, not a fact about the repository: the owner may hold the policy in their head rather than in a file, which is why the rule is asked rather than derived. It is offered as a possible explanation, not as the explanation.
 
 **SCOPE LIMIT, so this negative has a shelf life stated:** the check covers the 151 tracked non-chapter files as of this commit. It
 does not cover the 60 chapter files (Anthropic's own text, which cannot state this repository's policy), and it would need re-running
