@@ -460,11 +460,17 @@ def _is_generic_account_segment(segment: str) -> bool:
 def test_no_tracked_file_contains_a_home_path_that_reads_as_a_person() -> None:
     """No shipped DOCUMENT may contain a home path whose segment is a NAME.
 
-    The rule this test enforces, exactly: a path segment under /Users that
-    is NOT on the known-not-a-name list is treated as a name. A path under
-    somebody's own name reads, to a person, as somebody's actual home
-    directory; the plugin ships these files to users, so that reading is the
-    one that counts — whether or not a validator objects.
+    The rule this test enforces, exactly: a path segment UNDER A RECOGNISED
+    HOME ROOT (a macOS user root, a Linux user root, a Windows user root,
+    with either slash direction) that is NOT on the known-not-a-name list is
+    treated as a name. A path under somebody's own name reads, to a person,
+    as somebody's actual home directory; the plugin ships these files to
+    users, so that reading is the one that counts — whether or not a
+    validator objects.
+
+    The property is deliberately narrower than "any path segment that names
+    a person": a segment under some other root is not covered, and the rule
+    says so rather than implying a coverage it does not have.
 
     Two boundaries, both deliberate:
       - COVERAGE is every readable tracked file, not an extension
