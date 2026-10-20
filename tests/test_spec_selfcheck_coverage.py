@@ -34,6 +34,7 @@ SCRIPT_RE = re.compile(r"```python\n(.*?)```", re.S)
 # spec's set. Excluding these by name is what makes the count re-derivable.
 NOT_GUARDS = ("if m:", "if rid not in sib_rules:")
 
+
 def guard_conditions(script: str) -> list[tuple[int, str]]:
     """Every refusing condition in the script, with the line it is on.
 
@@ -91,12 +92,25 @@ def test_the_ledger_states_this_scripts_guard_count() -> None:
     # them, and prose that names code identifiers no check binds to the code is
     # the pattern this series exists to remove. So the ledger's backticked
     # conditions are read and required to be exactly the ones the code excludes.
-    named = _ledger_named_exclusions(ledger)
-    assert named == list(NOT_GUARDS), (
-        "the ledger names the exclusions as {0}, but the code excludes {1}. "
+    named = _ledger_named_conditions(ledger)
+    expected = list(NOT_GUARDS) + [_ledger_named_backstop(ledger)]
+    assert sorted(named) == sorted(expected), (
+        "the ledger names the conditions {0}, but the code knows {1}. "
         "One place owns the fact - say it in the code and point at it.".format(
-            named, list(NOT_GUARDS)
+            named, expected
         )
+    )
+    # The ledger names the uncovered BACKSTOP's condition, so the reader has a
+    # pointer they can check rather than a prose description. That name must
+    # be a condition the script actually has: if the guard is renamed and the
+    # ledger is not, this fails. This is cheap - it needs no measurement run.
+    backstop = _ledger_named_backstop(ledger)
+    assert backstop, "the ledger no longer names the uncovered backstop's condition"
+    script_conditions = [condition for _, condition in guard_conditions(script)]
+    assert backstop in script_conditions, (
+        "the ledger names the uncovered backstop as {0!r}, which is not a "
+        "condition of the script. The script's refusing conditions are: "
+        "{1}".format(backstop, script_conditions)
     )
     # The COVERED count is deliberately NOT checked here, and NOT stated in the
     # ledger either. The measurement that derives it is expensive (a suite run
@@ -112,17 +126,30 @@ def test_the_ledger_states_this_scripts_guard_count() -> None:
     # supply the number this assert is about.
 
 
-def _ledger_named_exclusions(ledger: str) -> list[str]:
-    """The conditions the ledger names as NOT being guards.
+def _ledger_named_conditions(ledger: str) -> list[str]:
+    """Every condition the ledger names in backticks, in order.
 
-    Read from the ledger's own sentence about the count, so the names the
-    reader sees are the names the check compares against the code. Only
-    backticked conditions inside that sentence are considered, so a condition
-    quoted elsewhere in the file is not mistaken for one of these.
+    Read from the WHOLE ledger rather than from a window around a sentence:
+    a fixed character count over prose a human rewrites is a future false
+    alarm, because a reworded sentence can push a name out of the window and
+    make the failure message claim the ledger names fewer conditions than it
+    does. The whole ledger names exactly the conditions the code owns, so
+    reading all of them is both window-free and STRICTER: a condition named
+    anywhere in the ledger must be one the code knows about.
     """
-    marker = "are NOT guards"
+    return re.findall(r"`(if [^`]+:)`", ledger)
+
+
+def _ledger_named_backstop(ledger: str) -> str:
+    """The condition the ledger names as the uncovered BACKSTOP.
+
+    The ledger points at that guard by name so a reader can check it against
+    the script, rather than describing it in prose that no check can verify.
+    """
+    marker = "the BACKSTOP `"
     index = ledger.find(marker)
     if index == -1:
-        return []
-    window = ledger[index : index + 400]
-    return re.findall(r"`(if [^`]+:)`", window)
+        return ""
+    rest = ledger[index + len(marker) :]
+    end = rest.find("`")
+    return rest[:end] if end != -1 else ""
