@@ -1,10 +1,10 @@
 ---
 trdd-id: 8BXXNOPQ
 title: Twelve commits of the guard-coverage series cite TRDD-XV6QOEK1, which is a different card
-column: todo
-status: tasked
+column: complete
+status: archived
 created: 2026-10-20T13:04:52+0200
-updated: 2026-10-20T13:55:13+0200
+updated: 2026-10-20T13:56:31+0200
 current-owner: user
 created-by: user
 task-type: docs
@@ -37,6 +37,7 @@ THE LESSON, WHICH IS THE PART WORTH KEEPING. Twenty-four adversarial review roun
 
 - 2026-10-20T13:04:52+0200 — MANDATE issued by user (min-approval-requirement: none). Pre-approved: issuer authority >= required approver. No approval request was sent.
 - 2026-10-20 — OWNER RULED (a): leave the commit subjects as they are. The note and PRHYQEVK's implementation-commits make both directions resolvable; no history rewrite.
+- 2026-10-20T13:56:31+0200 — COMPLETE by user. Owner ruled option (a) on 2026-10-20: the commit subjects stay as they are, and this note plus PRHYQEVK's implementation-commits make both directions resolvable. No history rewrite. The count is now derived (12 of 22) and the title and body agree..
 
 ## Acceptance
 
