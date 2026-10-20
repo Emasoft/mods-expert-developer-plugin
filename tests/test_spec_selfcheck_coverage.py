@@ -87,6 +87,16 @@ NOT_GUARDS = ("if m:", "if rid not in sib_rules:")
 # conditions are covered" fires - which is right, because that would be
 # a claim about the guards.)
 #
+# ABOVE TWENTY GUARDS the ratio form's denominator is matched as a
+# NUMERAL only - "18 of the 25" - and not as a SPELLED word, so the
+# spelled form of that one shape stops matching. Everything else is
+# unchanged: the noun form takes any count and any guard word, so a
+# spelled count with a guard word in the same clause is still caught,
+# and the ratio form still binds its denominator to the guard total, so
+# "18 of the 72" is still a corpus claim and not a guard one. A guard
+# count that grows past twenty is therefore worth noticing: the check
+# does not fail, it quietly stops matching one shape.
+#
 # The count and the guard word must be in the same CLAUSE, not merely in
 # the same sentence: a sentence that says "the 72 sites are covered by
 # the scan, and the script's guards are covered by tests" mentions both
@@ -315,3 +325,109 @@ def _ledger_named_backstop(ledger: str) -> str:
     rest = bullet[index + len(marker) :]
     end = rest.find("`")
     return rest[:end] if end != -1 else ""
+def test_the_covered_count_ban_has_the_properties_its_comment_claims() -> None:
+    """The ban's behaviour is a PROPERTY, not a comment.
+
+    The comment above `covered_figure_re` describes what the pattern
+    matches: which characters end its window, which do not, which
+    counts it takes, and which claims it tells apart. Prose about a
+    regex drifts the moment the regex is edited, and a check that only
+    the prose constrains is a check that quietly stops being true.
+
+    So the properties the comment claims are asserted here, one per
+    assertion, and each names the behaviour it pins. If a later edit
+    changes the pattern, one of these fails and says which property
+    moved. A comment is a snapshot of a behaviour; this is the
+    behaviour.
+    """
+    total = 19
+    pattern = re.compile(covered_figure_re(total), re.IGNORECASE)
+
+    def matches(sentence: str) -> bool:
+        return bool(pattern.search(sentence))
+
+    # A covered-count figure about the guards is caught, in every shape
+    # the series has found one in: the article present or dropped, the
+    # noun lower or upper case, the count spelled or in digits, and the
+    # ratio with its subject named or not.
+    for sentence in (
+        "18 of the 19 GUARD CONDITIONS are covered by a test",
+        "18 of 19 GUARD CONDITIONS are covered by a test",
+        "18 of the 19 conditions are covered by a test",
+        "18 of the 19 guard conditions are covered",
+        "18 of the 19 GUARD CONDITIONS are covered",
+        "eighteen of the nineteen guards are covered",
+        "the 19 guard conditions are covered",
+        "18 of the 19 are covered by a test",
+    ):
+        assert matches(sentence), "a covered-count figure was not caught: " + sentence
+
+    # A claim about the CORPUS is not caught, even though the passage
+    # is full of them and the corpus counts are its legitimate figures.
+    for sentence in (
+        "all 72 of the 72 findings are covered by the scan",
+        "the 72 findings are covered",
+        "the 30 sites are covered by the sibling spec's table",
+        "ten of the fourteen rules are covered by a per-rule block",
+        "37 of the 72 sites have a token gap greater than zero",
+    ):
+        assert not matches(sentence), "a corpus claim was caught: " + sentence
+
+    # A sentence that mentions BOTH a corpus count and the guards is
+    # not a claim about the guards, and the count and the guard word
+    # must be in the same CLAUSE for the ban to fire.
+    assert not matches(
+        "the 72 sites are covered by the scan, and the script's guards are covered by tests"
+    ), "a corpus count and the guards in different clauses were read as one claim"
+
+    # The windows end at a COMMA, a SEMICOLON, a COLON, a FULL STOP,
+    # parentheses and square brackets - the comment names exactly these,
+    # and each one really does end the window.
+    for separator in (",", ";", ":", ".", "(", ")", "[", "]"):
+        sentence = "18 of the 19 GUARD CONDITIONS{0} covered by a test".format(separator)
+        assert not matches(sentence), (
+            "the window crossed a {0!r}, which the comment says it does not: {1}".format(
+                separator, sentence
+            )
+        )
+
+    # The windows DO cross a DASH: a dash is an aside, not a clause
+    # boundary, so a figure separated from "covered" by one is caught.
+    assert matches("18 of the 19 GUARD CONDITIONS - the count - are covered by a test"), (
+        "the window stopped at a dash, which the comment says it does not"
+    )
+
+    # The RATIO form tells a claim about the guards from a claim about
+    # the corpus by the number, and the NOUN form takes any count, so a
+    # corpus ratio with a guard word in it is caught - correctly, since
+    # that would be a claim about the guards.
+    assert matches("37 of the 72 guard conditions are covered"), (
+        "the noun form stopped taking any count, which the comment says it does"
+    )
+    assert not matches("37 of the 72 sites are covered"), (
+        "a corpus ratio was caught, which the comment says it is not"
+    )
+
+    # Above twenty guards the ratio form's denominator is matched as a
+    # NUMERAL only - "18 of the 25" - and not as a SPELLED word. The
+    # subject-less ratio form is the shape only the ratio alternative
+    # catches, so that is the shape whose matching changes: it is caught
+    # at nineteen and missed at twenty-five. Everything else is
+    # unchanged, because the noun form takes any count and any guard
+    # word, and because the ratio form still binds its denominator to
+    # the guard total. The check does not fail - it quietly stops
+    # matching one shape, which is why the bound is worth noticing when
+    # the guard count grows.
+    past = re.compile(covered_figure_re(25), re.IGNORECASE)
+    assert past.search("18 of the 25 GUARD CONDITIONS are covered by a test"), (
+        "above twenty the numeral denominator stopped matching"
+    )
+    assert past.search("18 of the 25 are covered by a test"), (
+        "above twenty the subject-less ratio form stopped matching"
+    )
+    assert not past.search("18 of the 19 are covered by a test"), (
+        "above twenty the ratio form stopped binding its denominator to the guard total"
+    )
+    assert not past.search("18 of the 72 are covered by a test"), (
+        "above twenty a corpus ratio was caught"
+    )
