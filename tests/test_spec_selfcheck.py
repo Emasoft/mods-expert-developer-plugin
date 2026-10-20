@@ -22,6 +22,8 @@ or an editor could plausibly make by hand.
 
 from __future__ import annotations
 
+import json
+import os
 import re
 import shutil
 import subprocess
@@ -35,23 +37,172 @@ SPEC_REL = "design/specs/specs/cpv-nit-rules-adjudicated.md"
 SIBLING_REL = "design/specs/specs/cpv-nit-bucketA-sites.md"
 SCRIPT_RE = re.compile(r"```python\n(.*?)```", re.S)
 
+# The TRACKED BASELINE INPUTS. Both are committed fixtures under tests/fixtures/.
+#
+# FIXTURE_CAPTURE is the 72 `[NIT]` lines of a real strict scan over this tree.
+# The spec's script measures every row against the validator's own output, so a
+# capture is a REQUIRED input; leaving it to a scratch file made the suite's
+# baseline depend on a machine-local accident rather than on the repository.
+#
+# FIXTURE_CATALOGUE is the subset of CPV's own pattern catalogue the spec's script
+# re-measures its rows against. The script globs it out of the installed CPV
+# plugin cache (`~/.claude/plugins/cache/...`), which exists on a maintainer's
+# machine and does NOT exist on a fresh CI runner, so the script refused to
+# certify anything there. The vendored subset is the same catalogue content for
+# the fourteen rules the spec tabulates, tracked so the measurement is
+# reproducible everywhere.
+FIXTURE_CAPTURE = ROOT / "tests/fixtures/cpv-scan-capture.txt"
+FIXTURE_CATALOGUE = ROOT / "tests/fixtures/skillaudit_patterns.json"
+
+# Where the spec's script looks for the catalogue: the glob is
+# `~/.claude/plugins/cache/emasoft-plugins/claude-plugins-validation/*/scripts/rules/`.
+CATALOGUE_HOME_DIR = Path(".claude/plugins/cache/emasoft-plugins/claude-plugins-validation/5.22.0/scripts/rules")
+
+
+def test_the_vendored_catalogue_matches_the_installed_one() -> None:
+    """The vendored catalogue is byte-identical to CPV's own, for its 13 rules.
+
+    The vendored file is a SNAPSHOT of CPV 5.22.0's `skillaudit_patterns.json`,
+    restricted to the thirteen pattern-file rules the spec's per-site table
+    tabulates (the fourteenth rule in that table, `INTENT_DESTRUCTIVE_INTENT`,
+    comes from `cpv_skillaudit_native.py`, not from this file). The snapshot
+    exists so the suite's measurement is reproducible on a machine with no CPV
+    installed — but a snapshot that silently drifts from its source measures
+    against patterns CPV no longer uses, and the spec would keep certifying.
+
+    This test compares the two where CPV IS installed, and SKIPS where it is
+    not, so a fresh CI runner is not failed by the absence of the thing this
+    test is comparing against. A mismatch FAILS, which is the point: a CPV
+    release that edits one of these thirteen rule sets must be caught here
+    rather than silently changing what the spec certifies.
+    """
+    import glob
+
+    installed = glob.glob(
+        os.path.expanduser(
+            "~/.claude/plugins/cache/emasoft-plugins/claude-plugins-validation/"
+            "*/scripts/rules/skillaudit_patterns.json"
+        )
+    )
+    if not installed:
+        pytest.skip("CPV's own catalogue is not installed on this machine")
+
+    def by_id(doc: dict) -> dict:
+        rules = doc["rules"] if isinstance(doc, dict) else doc
+        out = {}
+        for rule in rules:
+            patterns = rule.get("patterns", rule) if isinstance(rule, dict) else rule
+            out[rule["id"] if isinstance(rule, dict) else rule] = patterns
+        return out
+
+    real = by_id(json.loads(Path(sorted(installed)[-1]).read_text(encoding="utf-8")))
+    vendored = by_id(json.loads(FIXTURE_CATALOGUE.read_text(encoding="utf-8")))
+
+    for rule_id, patterns in vendored.items():
+        assert rule_id in real, (
+            f"the vendored catalogue holds rule {rule_id}, which CPV's own catalogue "
+            f"no longer defines — the snapshot has drifted from its source"
+        )
+        assert patterns == real[rule_id], (
+            f"the vendored patterns for {rule_id} differ from CPV's own: the snapshot "
+            f"has {len(patterns)} pattern(s), CPV has {len(real[rule_id])}. The spec's "
+            f"per-site table is measured against these patterns, so a divergence means "
+            f"the spec certifies against patterns the validator no longer applies."
+        )
+
+
+def _catalogue_home(base: Path) -> Path:
+    """A HOME directory carrying the vendored catalogue where the script looks.
+
+    The script's glob is under `~`, so pointing HOME at a directory that holds
+    the catalogue at the expected path is what makes the script find it. The
+    catalogue itself is the tracked fixture, copied here verbatim — the copy is
+    what the script reads, and the fixture stays the single source of truth.
+    """
+    home = base / "_catalogue_home"
+    target = home / CATALOGUE_HOME_DIR
+    target.mkdir(parents=True, exist_ok=True)
+    (target / "skillaudit_patterns.json").write_text(
+        FIXTURE_CATALOGUE.read_text(encoding="utf-8"), encoding="utf-8"
+    )
+    return home
+
 def _extract_script(spec_text: str) -> str:
     blocks = SCRIPT_RE.findall(spec_text)
     assert blocks, "the spec carries no embedded python script"
-    return blocks[-1]
+    # Annotated as str explicitly: `re.findall` on a pattern with one group
+    # returns list[Any] to mypy, and `warn_return_any` rejects returning it
+    # from a function declared to return `str`.
+    script: str = blocks[-1]
+    return script
+
 
 def _find_capture() -> str:
     """A captured validator scan, or "" when none is available.
 
-    The scan is found in the session's own scratch area. It is NOT globbed
-    blindly from a shared directory: a stale capture that sorts first would
-    make the baseline test fail for a reason that has nothing to do with the
-    repository, and a future session would read that as "the spec is broken"
-    and debug the wrong thing. A capture whose (rule, site) set disagrees with
-    the spec's table is rejected here rather than at the assertion.
+    THE TRACKED FIXTURE IS THE SOURCE, and it is consulted FIRST. It is TRACKED,
+    so a fresh CI checkout has it: the suite's baseline is a property of the
+    repository, not of whatever happened to be lying in /tmp on the machine that
+    ran it last.
+
+    WHY THE FALLBACK IS NOT A FALLBACK IN EFFECT. A capture whose (rule, file,
+    line) set disagrees with the spec's table is REJECTED and the search moves on.
+    That rejection is what makes a stale fixture SILENTLY REPLACED rather than
+    loudly reported: a developer whose tracked fixture has gone stale (a chapter
+    edit moved a flagged line) and who happens to have an older matching capture
+    in /tmp gets a PASSING module that certified against the scratch file, while
+    the tracked fixture — the thing the docstring calls the source — says
+    something else. MEASURED: corrupting one line number in the tracked fixture
+    left all 28 tests passing, because a /tmp capture shadowed it; the same
+    corruption failed 26 of 28 once the scratch files were moved aside.
+
+    So the scratch locations are consulted ONLY when the tracked fixture is
+    ABSENT (a partial clone, a source tarball, a checkout before the fixture
+    was added). A tracked fixture that is present but STALE returns "" and the
+    module fails loudly, instead of being shadowed — which is the property a
+    reproducible baseline needs. To re-check against a newer CPV without
+    editing the fixture, REPLACE the fixture deliberately.
+
+    A STALE FIXTURE IS A TOTAL FAILURE OF THIS MODULE, and it is meant to be:
+    every test below depends on this one file, the fixture's line numbers are
+    tied to the chapter files as they stand, and a chapter edit that moves a
+    flagged line invalidates it. The failure reads "no validator capture
+    matching the spec's own table was found" — which names the cause, unlike the
+    older message that read like a missing file. Re-capture the fixture after
+    any edit under `skills/*/references/`.
     """
     spec = (ROOT / SPEC_REL).read_text(encoding="utf-8")
     expected = _expected_pairs(spec)
+
+    # THE TRACKED FIXTURE FIRST, AND ONLY IT, WHEN IT IS PRESENT. A tracked
+    # fixture that has gone stale must make this module FAIL LOUDLY rather than
+    # be shadowed by a scratch capture that happens to match: a passing module
+    # that certified against an untracked file is a baseline that does not
+    # describe the repository. The scratch locations are consulted only when
+    # the tracked fixture is ABSENT or UNREADABLE, so a checkout without it
+    # (a partial clone, a source tarball) still finds a capture.
+    if FIXTURE_CAPTURE.is_file():
+        try:
+            tracked = FIXTURE_CAPTURE.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            tracked = ""
+        if "[NIT]" in tracked:
+            # PRESENT BUT STALE RETURNS "" AND THE MODULE FAILS LOUDLY. It
+            # does NOT fall through to a scratch capture: a passing module that
+            # certified against an untracked file is a baseline that does not
+            # describe the repository, and the whole point of tracking the
+            # fixture is that a stale one is a VISIBLE failure. To re-check
+            # against a newer CPV without editing the fixture, replace the
+            # fixture deliberately.
+            if _pairs_in(tracked) == expected:
+                return tracked
+            return ""
+
+    return _find_scratch_capture(expected)
+
+
+def _find_scratch_capture(expected: set[tuple[str, str, str]]) -> str:
+    """A matching capture from the scratch locations, or "" when there is none."""
     for directory in (Path("/tmp"), ROOT / "reports_dev"):
         if not directory.is_dir():
             continue
@@ -65,7 +216,6 @@ def _find_capture() -> str:
             if _pairs_in(text) == expected:
                 return text
     return ""
-
 def _expected_pairs(spec_text: str) -> set[tuple[str, str, str]]:
     """The (rule, file, line) triples the spec's per-site table asserts."""
     section = spec_text[spec_text.rindex("## THE PER-SITE TABLE, RULE BY RULE") :]
@@ -101,17 +251,24 @@ def pristine() -> tuple[str, str, str]:
     return spec, sibling, _find_capture()
 
 def _run(sandbox: Path, capture: str) -> tuple[int, str]:
-    """Run the spec's script inside the sandbox and return its exit code."""
+    """Run the spec's script inside the sandbox and return its exit code.
+
+    HOME points at a directory carrying the vendored catalogue, because the
+    script globs it out of `~/.claude/plugins/cache/...` and refuses to certify
+    anything when it is absent. On a maintainer's machine the real installed CPV
+    plugin supplies it; on a fresh CI runner nothing does, which is why the
+    catalogue is vendored as a tracked fixture and staged here.
+    """
+    import os
+
     script = _extract_script((sandbox / SPEC_REL).read_text(encoding="utf-8"))
     script_path = sandbox / "_script.py"
     script_path.write_text(script, encoding="utf-8")
     if capture:
         (sandbox / "_scan.txt").write_text(capture, encoding="utf-8")
-    env = {"CPV_SCAN_OUTPUT": str(sandbox / "_scan.txt"), "PATH": "/usr/bin:/bin"}
-    import os
-
     env = dict(os.environ)
     env["CPV_SCAN_OUTPUT"] = str(sandbox / "_scan.txt")
+    env["HOME"] = str(_catalogue_home(sandbox))
     result = subprocess.run(
         [sys.executable, "-I", str(script_path)],
         cwd=str(sandbox),
@@ -120,7 +277,6 @@ def _run(sandbox: Path, capture: str) -> tuple[int, str]:
         env=env,
     )
     return result.returncode, result.stdout + result.stderr
-
 @pytest.fixture()
 def sandbox(tmp_path: Path, pristine: tuple[str, str, str]) -> Path:
     """A writable copy of the tree the script reads."""
@@ -416,6 +572,11 @@ def test_a_capture_in_an_unknown_format_is_refused(
 
     An empty result would let a truncated table pass, so the script must refuse
     rather than treat "nothing to compare" as agreement.
+
+    HOME carries the vendored catalogue, exactly as `_run` does: the script globs
+    it out of `~`, so without it the script refuses on the MISSING CATALOGUE and
+    the format check below is never reached — the test would then assert a
+    message the script never prints.
     """
     _spec, _sibling, _capture = pristine
     bogus = "totally different output format\nno findings here\n"
@@ -427,6 +588,7 @@ def test_a_capture_in_an_unknown_format_is_refused(
 
     env = dict(os.environ)
     env["CPV_SCAN_OUTPUT"] = str(sandbox / "_bogus.txt")
+    env["HOME"] = str(_catalogue_home(sandbox))
     result = subprocess.run(
         [sys.executable, "-I", str(script_path)],
         cwd=str(sandbox),

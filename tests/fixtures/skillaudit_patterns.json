@@ -1,0 +1,169 @@
+{
+  "rules": [
+    {
+      "id": "SUPPLY_CHAIN",
+      "patterns": [
+        "require\\s*\\(\\s*['\"]https?://",
+        "import\\s+.*from\\s+['\"]https?://",
+        "eval\\s*\\(\\s*(?:await\\s+)?fetch",
+        "eval\\s*\\(\\s*(?:await\\s+)?axios",
+        "new Function\\s*\\(.*fetch",
+        "npm install\\s+(?!--|@)\\S+.*&&",
+        "pip install\\s+\\S+.*&&.*python",
+        "curl.*\\|\\s*(?:bash|sh|python|node|perl)",
+        "wget.*\\|\\s*(?:bash|sh|python|node|perl)",
+        "import\\(\\s*['\"]https?://",
+        "globalThis\\[.*\\]\\s*=",
+        "window\\[.*\\]\\s*="
+      ]
+    },
+    {
+      "id": "CMD_INJECTION",
+      "patterns": [
+        "exec\\s*\\(\\s*[`'\"].*\\$\\{",
+        "exec\\s*\\(.*\\+.*(?:req|input|param|arg|user|query)",
+        "execSync\\s*\\(\\s*[`'\"].*\\$\\{",
+        "child_process.*exec.*\\+",
+        "os\\.system\\s*\\(.*(?:format|%s|\\+|f['\"])",
+        "subprocess\\.(?:call|run|Popen)\\s*\\(.*(?:format|%s|\\+|f['\"]|shell\\s*=\\s*True)",
+        "(?:;|\\||&&)\\s*\\b(?:curl|wget|nc|bash|sh|python|perl|ruby|php)\\b",
+        "\\$\\((?:curl|wget)\\s+\\S",
+        "\\$\\((?:cat|ls|whoami|id|uname)\\s+\\S",
+        "`\\s*\\b(?:curl|wget|cat|ls|whoami|id|uname)\\b(?:\\s+[^`]*)?`",
+        "Runtime\\.getRuntime\\(\\)\\.exec",
+        "ProcessBuilder.*(?:command|start)",
+        "(?:system|passthru|shell_exec|popen)\\s*\\(.*\\$"
+      ]
+    },
+    {
+      "id": "PRIVILEGE_ESC",
+      "patterns": [
+        "sudo\\s",
+        "chmod\\s+\\+s",
+        "setuid",
+        "setgid",
+        "chown\\s+root",
+        "/etc/shadow",
+        "\\bpkexec\\b",
+        "\\bdoas\\s"
+      ]
+    },
+    {
+      "id": "CLAUDE_CLI_PERMISSION_BYPASS",
+      "patterns": [
+        "\\bclaude\\b[^\\n]{0,200}--dangerously-skip-permissions\\b",
+        "\\bclaude\\b[^\\n]{0,200}--dangerously-bypass-approvals-and-sandbox\\b"
+      ]
+    },
+    {
+      "id": "CLAUDE_CLI_TOKEN_THEFT",
+      "patterns": [
+        "\\bclaude\\s+setup-token\\b"
+      ]
+    },
+    {
+      "id": "AGENT_MEMORY_MOD",
+      "patterns": [
+        "(?:^|[^\\w-])(?:over|re)?write.*MEMORY\\.md",
+        "(?:^|[^\\w-])(?:over|re)?write.*SOUL\\.md",
+        "(?:^|[^\\w-])(?:over|re)?write.*AGENTS\\.md",
+        "(?:^|[^\\w-])edit.*MEMORY\\.md",
+        "(?:^|[^\\w-])edit.*SOUL\\.md",
+        "(?:^|[^\\w-])edit.*AGENTS\\.md",
+        "(?:^|[^\\w-])overwrite.*MEMORY\\.md",
+        "(?:^|[^\\w-])modify.*SOUL\\.md",
+        "(?:^|[^\\w-])append.*MEMORY\\.md",
+        "(?:^|[^\\w-])replace.*SOUL\\.md",
+        "(?:^|[^\\w-])echo.*>.*MEMORY\\.md",
+        "(?:^|[^\\w-])echo.*>.*SOUL\\.md",
+        "(?:^|[^\\w-])cat.*>.*AGENTS\\.md"
+      ]
+    },
+    {
+      "id": "A2A_CROSS_AGENT_INJECT",
+      "patterns": [
+        "(?:inject|insert|embed|hide|smuggle).*(?:instruction|prompt|command).*(?:agent|a2a|message|task|artifact)",
+        "(?:message|artifact|response).*(?:payload|body|content).*(?:hidden|inject|embed).*(?:instruction|command|prompt)",
+        "a2a.*(?:message|task|artifact).*(?:poison|inject|tamper|manipulat)",
+        "(?:tell|instruct|command|convince)\\s+(?:the\\s+)?(?:other|target|receiving|downstream)\\s+agent",
+        "(?:downstream|receiving|target)\\s+agent.*(?:must|should|will).*(?:execute|run|perform|ignore|override)",
+        "(?:when|if).*(?:other|receiving)\\s+agent.*(?:reads?|processes?|receives?).*(?:then|execute|run)"
+      ]
+    },
+    {
+      "id": "A2A_AGENT_IMPERSONATION",
+      "patterns": [
+        "agentCard.*(?:override|replace|fake|spoof|forge)",
+        "agent[_-]?card.*(?:capabilities|skills).*(?:all|everything|unlimited)",
+        "impersonat.*agent",
+        "(?:pose|posing|masquerade|disguise)\\s+as\\s+(?:a|an|another)\\s+agent",
+        "trusted[_-]?agent.*(?:false|fake|fabricat)",
+        "authentication.*(?:bypass|skip|ignore|disable).*agent",
+        "agent[_-]?(?:id|identity).*(?:spoof|fake|clone|copy|steal)"
+      ]
+    },
+    {
+      "id": "TIME_BOMB",
+      "patterns": [
+        "new Date\\(\\).*(?:getMonth|getFullYear|getDate|getTime).*(?:>|<|>=|<=|===|==)\\s*\\d",
+        "Date\\.now\\(\\)\\s*(?:>|<|>=|<=)\\s*\\d{10,}",
+        "(?:if|when|after)\\s+.{0,40}\\b\\d+\\s+(?:days?|hours?|minutes?)\\b.{0,40}(?:then|execute|run|activate)",
+        "activation[_-]?date",
+        "trigger[_-]?(?:after|date|time)",
+        "dormant.*(?:until|period|phase)"
+      ]
+    },
+    {
+      "id": "CLAUDE_AUTH_ENV_OVERRIDE",
+      "patterns": [
+        "export\\s+(?:ANTHROPIC_API_KEY|ANTHROPIC_AUTH_TOKEN|ANTHROPIC_AWS_API_KEY|ANTHROPIC_FOUNDRY_API_KEY|ANTHROPIC_WORKSPACE_ID|ANTHROPIC_AWS_WORKSPACE_ID|CLAUDE_CODE_OAUTH_TOKEN|CLAUDE_CODE_OAUTH_REFRESH_TOKEN|CLAUDE_CODE_OAUTH_SCOPES|AWS_BEARER_TOKEN_BEDROCK|ANTHROPIC_BASE_URL|ANTHROPIC_[A-Z_]*BASE_URL)\\s*=",
+        "process\\.env\\.(?:ANTHROPIC_API_KEY|ANTHROPIC_AUTH_TOKEN|ANTHROPIC_AWS_API_KEY|ANTHROPIC_FOUNDRY_API_KEY|CLAUDE_CODE_OAUTH_TOKEN|CLAUDE_CODE_OAUTH_REFRESH_TOKEN|CLAUDE_CODE_OAUTH_SCOPES|AWS_BEARER_TOKEN_BEDROCK|ANTHROPIC_BASE_URL)\\s*=[^=]",
+        "process\\.env\\[\\s*['\"](?:ANTHROPIC_API_KEY|ANTHROPIC_AUTH_TOKEN|CLAUDE_CODE_OAUTH_TOKEN|CLAUDE_CODE_OAUTH_REFRESH_TOKEN|ANTHROPIC_BASE_URL)['\"]\\s*\\]\\s*=[^=]",
+        "os\\.environ\\[\\s*['\"](?:ANTHROPIC_API_KEY|ANTHROPIC_AUTH_TOKEN|ANTHROPIC_AWS_API_KEY|ANTHROPIC_FOUNDRY_API_KEY|CLAUDE_CODE_OAUTH_TOKEN|CLAUDE_CODE_OAUTH_REFRESH_TOKEN|CLAUDE_CODE_OAUTH_SCOPES|AWS_BEARER_TOKEN_BEDROCK|ANTHROPIC_BASE_URL)['\"]\\s*\\]\\s*=[^=]",
+        "(?:os\\.putenv|os\\.setenv)\\s*\\(\\s*['\"](?:ANTHROPIC_API_KEY|ANTHROPIC_AUTH_TOKEN|CLAUDE_CODE_OAUTH_TOKEN|ANTHROPIC_BASE_URL)['\"]"
+      ]
+    },
+    {
+      "id": "SHELL_EXEC",
+      "patterns": [
+        "\\bchild_process\\b",
+        "\\bexecSync\\b",
+        "\\bspawn\\s*\\(",
+        "\\beval\\s*\\(",
+        "(?:\\bnew\\s+)?\\b(?-i:Function)\\s*\\(\\s*[`'\"]",
+        "\\bos\\.system\\b",
+        "\\bsubprocess\\.(?:call|run|Popen)\\b",
+        "\\b(?:os\\.popen|subprocess\\.get(?:status)?output|commands\\.get(?:status)?output|asyncio\\.create_subprocess_shell)\\s*\\("
+      ]
+    },
+    {
+      "id": "FS_WRITE",
+      "patterns": [
+        "writeFile.*(/etc/|/usr/|/bin/|~/.)",
+        "appendFile.*cron",
+        "fs\\.write.*\\.\\.\\./",
+        "chmod\\s+[0-7]*7[0-7]*",
+        "(?:^|[/~\\s'\"`])\\.bashrc\\b",
+        "(?:^|[/~\\s'\"`])\\.profile\\b",
+        "(?:^|[/~\\s'\"`])\\.zshrc\\b",
+        "\\bcrontab\\b"
+      ]
+    },
+    {
+      "id": "ENV_INJECTION",
+      "patterns": [
+        "process\\.env\\.[A-Z_]+\\s*=[^=]",
+        "os\\.environ\\[.*\\]\\s*=[^=]",
+        "os\\.putenv\\s*\\(",
+        "os\\.setenv\\s*\\(",
+        "(?:export|setx?|set)\\s+(?:PATH|LD_PRELOAD|LD_LIBRARY_PATH|DYLD_|NODE_OPTIONS|PYTHONPATH|RUBYLIB|PERL5LIB|CLASSPATH)\\s*=",
+        "Environment\\.SetEnvironmentVariable\\s*\\(",
+        "putenv\\s*\\(.*=",
+        "(?:echo|printf).*>>?\\s*(?:/etc/environment|~/.bashrc|~/.profile|~/.zshrc).*(?:export|PATH|LD_)",
+        "NODE_OPTIONS\\s*=.*--require",
+        "PYTHONSTARTUP\\s*=",
+        "GIT_SSH_COMMAND\\s*="
+      ]
+    }
+  ]
+}

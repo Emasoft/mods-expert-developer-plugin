@@ -6,9 +6,9 @@ follows), and the README's Components table (the catalogue). They are edited by
 hand, so they drift. These tests pin the invariants that make the three agree.
 
 The load-bearing one is the preload budget. Claude Code injects the full content of
-"the first 32 distinct names in the list" (sub-agents docs), so with 64 names
-listed, the LIST ORDER selects which 32 skills have their content injected. Order is
-therefore not cosmetic: it selects the preload set.
+"the first 32 distinct names in the list" (sub-agents docs), so with more than 32
+names listed, the LIST ORDER selects which 32 skills have their content injected.
+Order is therefore not cosmetic: it selects the preload set.
 
 What happens to the skills past that window is narrower than "they do not exist":
 the `skills` field controls what is PRELOADED, not what is accessible — "without
@@ -87,10 +87,6 @@ PRELOAD_LIMIT = 32
 # update this set to match. To reorder the frontmatter's TAIL, edit only the
 # frontmatter — the tail is not preloaded and is not mirrored here.
 PINNED_PRELOAD_SKILLS = {
-    "tldr-code",
-    "fastedit",
-    "jgrep",
-    "quicksilver",
     "mods-doc-mods-overview",
     "mods-doc-mods-development",
     "mods-doc-mods-interfaces",
@@ -119,10 +115,22 @@ PINNED_PRELOAD_SKILLS = {
     "mods-doc-troubleshooting-plugins",
     "mods-doc-tracing-the-origin-of-a-plugin",
     "mods-doc-plugin-manifest-reference",
+    "mods-doc-marketplace-manifest-reference",
+    "mods-doc-plugin-commands-reference",
+    "mods-doc-hooks-reference",
+    "mods-doc-automate-actions-with-hooks",
 }
 
-# The non-doc skills the agent preloads ahead of the documentation wrappers. Pinned so
-# that a fifth tool skill is caught and a dropped one is not silently tolerated.
+# The four USER-SCOPE tool skills the agent uses but the plugin does NOT ship.
+# They are deliberately ABSENT from the frontmatter's `skills:` list: a preload of a
+# skill that resolves in no skill search root of THIS plugin is a MAJOR finding
+# (Claude Code skips a missing preload and only logs a warning, so the agent silently
+# runs without it), and these four resolve only in a developer's own `~/.claude/skills`.
+# The agent loads them on demand instead and reports `[BLOCKED]` when one is missing.
+#
+# Pinned so that a fifth tool skill is caught and a dropped one is not silently
+# tolerated. This constant is now a NEGATIVE list - the tool skills are what must NOT
+# be preloaded - so the tests below assert their ABSENCE.
 TOOL_SKILLS = ("tldr-code", "fastedit", "jgrep", "quicksilver")
 
 # A markdown table row: two cells, no padding, no inner pipes. Every cell in both
@@ -232,22 +240,84 @@ def test_preloaded_skills_are_the_first_entries_in_frontmatter_order() -> None:
     Claude Code injects the full content of the first 32 distinct names in the list,
     so position decides which skills are preloaded. This asserts that the window
     itself is well-formed: no duplicates (a duplicate would silently consume a slot)
-    and every name in it resolves to a real skill.
+    and every name in it resolves to a real skill that THIS plugin ships.
+
+    The `name not in TOOL_SKILLS` escape used to exist because the tool skills were
+    preloaded and are not shipped here. They are no longer preloaded at all, so the
+    escape is gone: every name in the window must now resolve to a shipped skill.
     """
     listed = _frontmatter_skills()
     preloaded = listed[:PRELOAD_LIMIT]
     assert len(set(preloaded)) == len(preloaded), "duplicate skill in the preloaded prefix"
     for name in preloaded:
-        if name not in TOOL_SKILLS:
-            assert (SKILLS / name / "SKILL.md").exists(), f"preloaded skill {name} does not exist"
+        assert (SKILLS / name / "SKILL.md").exists(), f"preloaded skill {name} does not exist"
 
 
-def test_tool_skills_precede_the_documentation_wrappers() -> None:
-    """The tool skills come first, so they are always inside the preload window."""
+def test_every_declared_skill_resolves_to_a_shipped_skill() -> None:
+    """Every name in the frontmatter resolves to a skill this plugin ships.
+
+    This is the WHOLE-LIST property, and it is what the removed
+    `test_tool_skills_precede_the_documentation_wrappers` asserted: the only
+    names anywhere in the list lacking a shipped `SKILL.md` were exactly the
+    four tool skills. The new `test_the_tool_skills_are_not_preloaded` pins
+    those four's absence, and `test_preloaded_skills_are_the_first_entries_in
+    _frontmatter_order` covers only the first 32 — so without this test the
+    28 TAIL entries (positions 33-60) have no resolvability check at all,
+    even though CPV's validator checks EVERY `skills:` entry, not just the
+    preload window.
+
+    `SKILL_DIRS` filters on `d.is_dir()` alone, so a directory with no
+    `SKILL.md` counts as a shipped skill here and would NOT be caught by
+    `DOC_SKILLS`. This test is what catches it.
+    """
     listed = _frontmatter_skills()
-    assert listed[: len(TOOL_SKILLS)] == list(TOOL_SKILLS)
-    non_doc = [name for name in listed if not (SKILLS / name / "SKILL.md").exists()]
-    assert non_doc == list(TOOL_SKILLS), f"unexpected non-doc skills in the list: {non_doc}"
+    unresolved = [name for name in listed if not (SKILLS / name / "SKILL.md").exists()]
+    assert not unresolved, (
+        f"the frontmatter declares these names, which resolve to no shipped SKILL.md: "
+        f"{unresolved}. CPV's strict validation reports each as a MAJOR "
+        f"('skills' preloads '<name>' but no such skill exists in any skill search root), "
+        f"and a preload that resolves nowhere is SKIPPED by Claude Code at runtime."
+    )
+
+
+def test_the_tool_skills_are_not_preloaded() -> None:
+    """The four tool skills are absent from the frontmatter's `skills:` list.
+
+    THIS IS THE CONTRACT THAT KEEPS THE PLUGIN PORTABLE. `tldr-code`, `fastedit`,
+    `jgrep` and `quicksilver` are USER-SCOPE skills: they live in a developer's own
+    `~/.claude/skills`, not in this plugin. A preload of a skill that resolves in no
+    skill search root of THIS plugin is a MAJOR finding in CPV's strict validation —
+    and it is a real defect, not a lint quibble: Claude Code SKIPS a missing preload
+    and only logs a warning to the debug log, so an installed user silently runs an
+    agent that lacks four of its tools, while CI (where the user scope is empty)
+    reports MAJOR=4 and turns the build red.
+
+    The agent loads these four on demand instead, and reports `[BLOCKED]` when one is
+    not installed. That behaviour lives in the agent body, not here; this test pins
+    the frontmatter side of it.
+    """
+    listed = _frontmatter_skills()
+    present = [name for name in TOOL_SKILLS if name in listed]
+    assert not present, (
+        f"the user-scope tool skills {present} are preloaded; the plugin does not ship "
+        "them, so a preload of them is a MAJOR finding and silently drops the skill "
+        "at runtime. Remove them from the frontmatter's `skills:` list."
+    )
+
+
+def test_every_shipped_skill_is_still_declared() -> None:
+    """All 60 documentation chapters remain declared in the frontmatter.
+
+    The property that matters is not "which 32" but that no skill absent from the
+    plugin is preloaded AND every shipped chapter is still declared. Dropping the
+    declarations would not break the agent — the Skill tool discovers plugin skills
+    at runtime regardless — but it would break the frontmatter↔body↔README
+    agreement that the routing table is built on, and it would make the frontmatter
+    stop describing what the agent can reach.
+    """
+    listed = _frontmatter_skills()
+    missing = sorted(set(DOC_SKILLS) - set(listed))
+    assert not missing, f"the frontmatter no longer declares these shipped chapters: {missing}"
 
 
 def test_frontmatter_and_body_index_list_the_same_skills_in_the_same_order() -> None:
@@ -261,7 +331,7 @@ def test_frontmatter_and_body_index_list_the_same_skills_in_the_same_order() -> 
     touches the body table for readability will fail here, and the fix is to bring the
     frontmatter with it, not to relax the check.
     """
-    listed = [name for name in _frontmatter_skills() if name not in TOOL_SKILLS]
+    listed = _frontmatter_skills()
     body = [skill for _, skill in _body_index()]
     assert listed == body, (
         "agent frontmatter and body index list different skills or orders; the frontmatter "

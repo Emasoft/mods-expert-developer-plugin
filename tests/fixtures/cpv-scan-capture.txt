@@ -1,0 +1,72 @@
+  [NIT] ⚠ [skillaudit:intent_analysis INTENT_DESTRUCTIVE_INTENT] (demoted, needs review) Destructive intent (skills/mods-doc-worktrees-reference/references/chapter.md):81
+  [NIT] ⚠ [skillaudit:code_execution CLAUDE_CLI_PERMISSION_BYPASS] (demoted, needs review) claude --dangerously-skip-permissions invocation (skills/mods-doc-channels-reference/references/chapter.md):293
+  [NIT] ⚠ [skillaudit:credential_theft CLAUDE_CLI_TOKEN_THEFT] (demoted, needs review) claude setup-token invocation (long-lived token minting) (skills/mods-doc-mcp-servers-reference/references/chapter.md):1181
+  [NIT] ⚠ [skillaudit:code_execution SHELL_EXEC] (demoted, needs review) Shell command execution (skills/mods-doc-status-line-customization/references/chapter.md):598
+  [NIT] ⚠ [skillaudit:code_execution SHELL_EXEC] (demoted, needs review) Shell command execution (skills/mods-doc-status-line-customization/references/chapter.md):599
+  [NIT] ⚠ [skillaudit:code_execution SHELL_EXEC] (demoted, needs review) Shell command execution (skills/mods-doc-status-line-customization/references/chapter.md):600
+  [NIT] ⚠ [skillaudit:code_execution SHELL_EXEC] (demoted, needs review) Shell command execution (skills/mods-doc-status-line-customization/references/chapter.md):601
+  [NIT] ⚠ [skillaudit:code_execution SHELL_EXEC] (demoted, needs review) Shell command execution (skills/mods-doc-status-line-customization/references/chapter.md):774
+  [NIT] ⚠ [skillaudit:code_execution SHELL_EXEC] (demoted, needs review) Shell command execution (skills/mods-doc-status-line-customization/references/chapter.md):1067
+  [NIT] ⚠ [skillaudit:code_execution SHELL_EXEC] (demoted, needs review) Shell command execution (skills/mods-doc-status-line-customization/references/chapter.md):1068
+  [NIT] ⚠ [skillaudit:code_execution SHELL_EXEC] (demoted, needs review) Shell command execution (skills/mods-doc-status-line-customization/references/chapter.md):1069
+  [NIT] ⚠ [skillaudit:code_execution SHELL_EXEC] (demoted, needs review) Shell command execution (skills/mods-doc-status-line-customization/references/chapter.md):1070
+  [NIT] ⚠ [skillaudit:agent_manipulation AGENT_MEMORY_MOD] (demoted, needs review) Agent memory/config modification (skills/mods-doc-cc-native-memory-and-rules/references/chapter.md):553
+  [NIT] ⚠ [skillaudit:agent_manipulation AGENT_MEMORY_MOD] (demoted, needs review) Agent memory/config modification (skills/mods-doc-cc-native-memory-and-rules/references/chapter.md):563
+  [NIT] ⚠ [skillaudit:agent_manipulation AGENT_MEMORY_MOD] (demoted, needs review) Agent memory/config modification (skills/mods-doc-cc-native-memory-and-rules/references/chapter.md):26
+  [NIT] ⚠ [skillaudit:agent_manipulation AGENT_MEMORY_MOD] (demoted, needs review) Agent memory/config modification (skills/mods-doc-cc-native-memory-and-rules/references/chapter.md):55
+  [NIT] ⚠ [skillaudit:agent_manipulation AGENT_MEMORY_MOD] (demoted, needs review) Agent memory/config modification (skills/mods-doc-cc-native-memory-and-rules/references/chapter.md):474
+  [NIT] ⚠ [skillaudit:credential_theft CLAUDE_CLI_TOKEN_THEFT] (demoted, needs review) claude setup-token invocation (long-lived token minting) (skills/mods-doc-cc-github-actions/references/chapter.md):94
+  [NIT] ⚠ [skillaudit:credential_theft CLAUDE_CLI_TOKEN_THEFT] (demoted, needs review) claude setup-token invocation (long-lived token minting) (skills/mods-doc-cc-github-actions/references/chapter.md):116
+  [NIT] ⚠ [skillaudit:credential_theft CLAUDE_CLI_TOKEN_THEFT] (demoted, needs review) claude setup-token invocation (long-lived token minting) (skills/mods-doc-cc-github-actions/references/chapter.md):381
+  [NIT] ⚠ [skillaudit:agent_manipulation A2A_CROSS_AGENT_INJECT] (demoted, needs review) Cross-agent prompt injection via A2A (skills/mods-doc-skills-reference/references/chapter.md):909
+  [NIT] ⚠ [skillaudit:supply_chain SUPPLY_CHAIN] (demoted, needs review) Supply chain attack indicators (skills/mods-doc-cc-permissions-modes/references/chapter.md):382
+  [NIT] ⚠ [skillaudit:code_execution CLAUDE_CLI_PERMISSION_BYPASS] (demoted, needs review) claude --dangerously-skip-permissions invocation (skills/mods-doc-cc-permissions-modes/references/chapter.md):76
+  [NIT] ⚠ [skillaudit:evasion TIME_BOMB] (demoted, needs review) Time-based activation / logic bomb (skills/mods-doc-loop-and-chron-reference/references/chapter.md):207
+  [NIT] ⚠ [skillaudit:code_execution CLAUDE_CLI_PERMISSION_BYPASS] (demoted, needs review) claude --dangerously-skip-permissions invocation (skills/mods-doc-sessions-reference/references/chapter.md):68
+  [NIT] ⚠ [skillaudit:code_execution CLAUDE_CLI_PERMISSION_BYPASS] (demoted, needs review) claude --dangerously-skip-permissions invocation (skills/mods-doc-sessions-reference/references/chapter.md):79
+  [NIT] ⚠ [skillaudit:code_execution CLAUDE_CLI_PERMISSION_BYPASS] (demoted, needs review) claude --dangerously-skip-permissions invocation (skills/mods-doc-sessions-reference/references/chapter.md):83
+  [NIT] ⚠ [skillaudit:filesystem FS_WRITE] (demoted, needs review) Filesystem write operations (skills/mods-doc-troubleshooting-cc-setup/references/chapter.md):179
+  [NIT] ⚠ [skillaudit:filesystem FS_WRITE] (demoted, needs review) Filesystem write operations (skills/mods-doc-troubleshooting-cc-setup/references/chapter.md):180
+  [NIT] ⚠ [skillaudit:filesystem FS_WRITE] (demoted, needs review) Filesystem write operations (skills/mods-doc-troubleshooting-cc-setup/references/chapter.md):865
+  [NIT] ⚠ [skillaudit:filesystem FS_WRITE] (demoted, needs review) Filesystem write operations (skills/mods-doc-troubleshooting-cc-setup/references/chapter.md):172
+  [NIT] ⚠ [skillaudit:filesystem FS_WRITE] (demoted, needs review) Filesystem write operations (skills/mods-doc-troubleshooting-cc-setup/references/chapter.md):173
+  [NIT] ⚠ [skillaudit:filesystem FS_WRITE] (demoted, needs review) Filesystem write operations (skills/mods-doc-troubleshooting-cc-setup/references/chapter.md):523
+  [NIT] ⚠ [skillaudit:privilege_escalation PRIVILEGE_ESC] (demoted, needs review) Privilege escalation attempt (skills/mods-doc-troubleshooting-cc-setup/references/chapter.md):390
+  [NIT] ⚠ [skillaudit:privilege_escalation PRIVILEGE_ESC] (demoted, needs review) Privilege escalation attempt (skills/mods-doc-troubleshooting-cc-setup/references/chapter.md):391
+  [NIT] ⚠ [skillaudit:privilege_escalation PRIVILEGE_ESC] (demoted, needs review) Privilege escalation attempt (skills/mods-doc-troubleshooting-cc-setup/references/chapter.md):528
+  [NIT] ⚠ [skillaudit:privilege_escalation PRIVILEGE_ESC] (demoted, needs review) Privilege escalation attempt (skills/mods-doc-troubleshooting-cc-setup/references/chapter.md):788
+  [NIT] ⚠ [skillaudit:privilege_escalation PRIVILEGE_ESC] (demoted, needs review) Privilege escalation attempt (skills/mods-doc-troubleshooting-cc-setup/references/chapter.md):789
+  [NIT] ⚠ [skillaudit:privilege_escalation PRIVILEGE_ESC] (demoted, needs review) Privilege escalation attempt (skills/mods-doc-troubleshooting-cc-setup/references/chapter.md):790
+  [NIT] ⚠ [skillaudit:privilege_escalation PRIVILEGE_ESC] (demoted, needs review) Privilege escalation attempt (skills/mods-doc-troubleshooting-cc-setup/references/chapter.md):791
+  [NIT] ⚠ [skillaudit:supply_chain SUPPLY_CHAIN] (demoted, needs review) Supply chain attack indicators (skills/mods-doc-troubleshooting-cc-setup/references/chapter.md):125
+  [NIT] ⚠ [skillaudit:supply_chain SUPPLY_CHAIN] (demoted, needs review) Supply chain attack indicators (skills/mods-doc-troubleshooting-cc-setup/references/chapter.md):535
+  [NIT] ⚠ [skillaudit:supply_chain SUPPLY_CHAIN] (demoted, needs review) Supply chain attack indicators (skills/mods-doc-troubleshooting-cc-setup/references/chapter.md):599
+  [NIT] ⚠ [skillaudit:supply_chain SUPPLY_CHAIN] (demoted, needs review) Supply chain attack indicators (skills/mods-doc-troubleshooting-cc-setup/references/chapter.md):688
+  [NIT] ⚠ [skillaudit:supply_chain SUPPLY_CHAIN] (demoted, needs review) Supply chain attack indicators (skills/mods-doc-troubleshooting-cc-setup/references/chapter.md):797
+  [NIT] ⚠ [skillaudit:supply_chain SUPPLY_CHAIN] (demoted, needs review) Supply chain attack indicators (skills/mods-doc-troubleshooting-cc-setup/references/chapter.md):829
+  [NIT] ⚠ [skillaudit:supply_chain SUPPLY_CHAIN] (demoted, needs review) Supply chain attack indicators (skills/mods-doc-troubleshooting-cc-setup/references/chapter.md):836
+  [NIT] ⚠ [skillaudit:supply_chain SUPPLY_CHAIN] (demoted, needs review) Supply chain attack indicators (skills/mods-doc-troubleshooting-cc-setup/references/chapter.md):845
+  [NIT] ⚠ [skillaudit:supply_chain SUPPLY_CHAIN] (demoted, needs review) Supply chain attack indicators (skills/mods-doc-troubleshooting-cc-setup/references/chapter.md):1049
+  [NIT] ⚠ [skillaudit:code_execution CMD_INJECTION] (demoted, needs review) Command injection (skills/mods-doc-troubleshooting-cc-setup/references/chapter.md):125
+  [NIT] ⚠ [skillaudit:code_execution CMD_INJECTION] (demoted, needs review) Command injection (skills/mods-doc-troubleshooting-cc-setup/references/chapter.md):599
+  [NIT] ⚠ [skillaudit:code_execution CMD_INJECTION] (demoted, needs review) Command injection (skills/mods-doc-troubleshooting-cc-setup/references/chapter.md):797
+  [NIT] ⚠ [skillaudit:code_execution CMD_INJECTION] (demoted, needs review) Command injection (skills/mods-doc-troubleshooting-cc-setup/references/chapter.md):829
+  [NIT] ⚠ [skillaudit:code_execution CMD_INJECTION] (demoted, needs review) Command injection (skills/mods-doc-troubleshooting-cc-setup/references/chapter.md):845
+  [NIT] ⚠ [skillaudit:code_execution CMD_INJECTION] (demoted, needs review) Command injection (skills/mods-doc-troubleshooting-cc-setup/references/chapter.md):1049
+  [NIT] ⚠ [skillaudit:code_execution CMD_INJECTION] (demoted, needs review) Command injection (skills/mods-doc-troubleshooting-cc-setup/references/chapter.md):704
+  [NIT] ⚠ [skillaudit:persistence ENV_INJECTION] (demoted, needs review) Environment variable injection / poisoning (skills/mods-doc-troubleshooting-cc-setup/references/chapter.md):172
+  [NIT] ⚠ [skillaudit:persistence ENV_INJECTION] (demoted, needs review) Environment variable injection / poisoning (skills/mods-doc-troubleshooting-cc-setup/references/chapter.md):179
+  [NIT] ⚠ [skillaudit:persistence ENV_INJECTION] (demoted, needs review) Environment variable injection / poisoning (skills/mods-doc-troubleshooting-cc-setup/references/chapter.md):186
+  [NIT] ⚠ [skillaudit:credential_theft CLAUDE_AUTH_ENV_OVERRIDE] (demoted, needs review) Claude Code auth / API-endpoint env override (skills/mods-doc-troubleshooting-cc-setup/references/chapter.md):1188
+  [NIT] ⚠ [skillaudit:filesystem FS_WRITE] (demoted, needs review) Filesystem write operations (skills/mods-doc-automate-actions-with-hooks/references/chapter.md):1055
+  [NIT] ⚠ [skillaudit:code_execution CLAUDE_CLI_PERMISSION_BYPASS] (demoted, needs review) claude --dangerously-skip-permissions invocation (skills/mods-doc-automate-actions-with-hooks/references/chapter.md):980
+  [NIT] ⚠ [skillaudit:agent_manipulation A2A_CROSS_AGENT_INJECT] (demoted, needs review) Cross-agent prompt injection via A2A (skills/mods-doc-prompt-caching-reference/references/chapter.md):253
+  [NIT] ⚠ [skillaudit:agent_manipulation A2A_CROSS_AGENT_INJECT] (demoted, needs review) Cross-agent prompt injection via A2A (skills/mods-doc-hooks-reference/references/chapter.md):2538
+  [NIT] ⚠ [skillaudit:persistence ENV_INJECTION] (demoted, needs review) Environment variable injection / poisoning (skills/mods-doc-hooks-reference/references/chapter.md):1320
+  [NIT] ⚠ [skillaudit:code_execution CLAUDE_CLI_PERMISSION_BYPASS] (demoted, needs review) claude --dangerously-skip-permissions invocation (skills/mods-doc-hooks-reference/references/chapter.md):2033
+  [NIT] ⚠ [skillaudit:agent_manipulation A2A_AGENT_IMPERSONATION] (demoted, needs review) A2A agent impersonation / card spoofing (skills/mods-doc-models-configuration/references/chapter.md):504
+  [NIT] ⚠ [skillaudit:code_execution CMD_INJECTION] (demoted, needs review) Command injection (skills/mods-doc-native-toolset-reference/references/chapter.md):632
+  [NIT] ⚠ [skillaudit:agent_manipulation AGENT_MEMORY_MOD] (demoted, needs review) Agent memory/config modification (skills/mods-doc-cc-projects-directory-structure/references/chapter.md):287
+  [NIT] ⚠ [skillaudit:agent_manipulation AGENT_MEMORY_MOD] (demoted, needs review) Agent memory/config modification (skills/mods-doc-cc-projects-directory-structure/references/chapter.md):394
+  [NIT] ⚠ [skillaudit:agent_manipulation AGENT_MEMORY_MOD] (demoted, needs review) Agent memory/config modification (skills/mods-doc-cc-projects-directory-structure/references/chapter.md):29
+  [NIT] ⚠ [skillaudit:agent_manipulation AGENT_MEMORY_MOD] (demoted, needs review) Agent memory/config modification (skills/mods-doc-cc-projects-directory-structure/references/chapter.md):70

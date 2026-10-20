@@ -78,7 +78,7 @@ Skills: plugin skills are namespaced `mods-expert-developer-plugin:<skill>` and 
 
 ## Prerequisites
 
-The agent preloads the user-scope skills `tldr-code`, `fastedit`, `jgrep` and `quicksilver`, and delegates to the user-scope agents `fast-worker` and `cheap-worker`. These are NOT bundled with this plugin; without them the agent reports `[BLOCKED]`. Node is also required.
+The agent uses the user-scope skills `tldr-code`, `fastedit`, `jgrep` and `quicksilver`, and delegates to the user-scope agents `fast-worker` and `cheap-worker`. These are NOT bundled with this plugin, and they are NOT preloaded: the agent resolves each one's installed location and loads it on demand, because a preload of a skill this plugin does not ship is silently skipped by Claude Code. Without them the agent reports `[BLOCKED]`. Node is also required.
 
 ## Installation
 
@@ -118,7 +118,7 @@ between them. A skill addition is not one edit:
 1. `skills/<name>/SKILL.md` — the wrapper, with its `skills/<name>/references/chapter.md` and `skills/<name>/agents/openai.yaml`.
 2. `README.md` — a row in the Components table above. The table must cover every skill exactly once, its heading column must match each SKILL.md's H1, and it is ordered by heading (case-insensitive) — deliberately NOT the same order as the frontmatter.
 3. `agents/mods-expert-developer-agent.md` — an entry in the `skills:` frontmatter AND a row in the "Chapter skill index" table, at the same position in the same order, so the two copies of the routing order agree. The body table must cover every skill exactly once, and its label column must match each SKILL.md's H1.
-4. `PINNED_PRELOAD_SKILLS` in `tests/test_skills_menu.py` — the set of skills occupying the first 32 frontmatter entries, which are the ones Claude Code preloads in full. It is mirrored as a set, not a list: reordering within the window does not change it, but adding a skill at position 30 or earlier pushes another skill out, and the set must be updated to match. Read the frontmatter's own diff too, since the set records the membership and not which member was displaced. The four tool skills occupy the first four entries, so they are always inside the window.
+4. `PINNED_PRELOAD_SKILLS` in `tests/test_skills_menu.py` — the set of skills occupying the first 32 frontmatter entries, which are the ones Claude Code preloads in full. It is mirrored as a set, not a list: reordering within the window does not change it, but adding a skill at position 30 or earlier pushes another skill out, and the set must be updated to match. Read the frontmatter's own diff too, since the set records the membership and not which member was displaced. The user-scope tool skills are deliberately NOT in the frontmatter, so they never occupy a window slot; `tests/test_skills_menu.py` asserts their absence.
 
 Then run the tests:
 
