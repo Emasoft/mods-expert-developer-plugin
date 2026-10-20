@@ -22,19 +22,20 @@ an invocation, so quoting them would make this file a new instance of the very f
 ledger during this series: writing the flagged command names into it took the finding count from 72 to 76. Each site is described
 in words instead, and the passage is at the cited line.
 
-## THE PLUGIN'S RECOMMENDATION — one line, and it is the plugin's POSITION, not a fact
+## WHAT THIS FILE DOES NOT DO
 
-**YES — this plugin should ship these instructions as they appear in Anthropic's own documentation.** They are Anthropic's official
-instructions, in chapters whose subject IS the vendor's own product, and a plugin whose stated purpose is to preserve Claude Code's
-documentation has no coherent reason to redact them while claiming to be that documentation. The three superuser examples are remedies
-for problems the reader already hit; the permission-bypass flag appears once as a recommendation with a non-root caveat, twice with a
-warning, and four times as a mode override; the token-minting command is documented once to run and once to advise against it.
+**It does not answer the question. The question is the owner's, and the plugin's own reasoning is not the answer.**
 
-**This is the plugin's position, and it is offered for the owner to accept, amend or reject — it is not a finding, and nothing in the
-evidence above depends on it.** The owner may answer no, in which case a substantial part of bucket A becomes locally fixable by
-redaction and the ledger's disposition changes; the owner may answer yes, in which case bucket A joins the upstream-discriminator
-request and the other 36 findings do not follow. What follows from an answer of no, and what follows from an answer of yes, are
-recorded in `DELEGATION.md`.
+The tempting move — after twenty-two rounds of characterising these passages, to state a position and hand it over — is wrong here for three
+reasons, and the first is the important one: the plugin's own self-description is not a stated editorial remit anywhere in this
+repository (the NOTICE covers licensing; the README describes the plugin's structure and the skills it ships), so an argument from
+"a plugin whose purpose is to preserve the documentation has no coherent reason to redact" rests on a premise that is exactly what is
+under review. The second is that a brief which arranges a position next to its supporting evidence makes that position easier to
+accept than the evidence alone would make it, and a decision-maker handed a brief is not making the decision the same way. The third
+is simpler: a plugin that states its own editorial position in its own file exercises an authority its owner has not granted it.
+
+What follows is EVIDENCE, and the readings on it, so the owner can rule without re-deriving anything. The decision per content below is
+what each content IMPLIES, not what the plugin recommends.
 
 ## The contents, and the decision each one implies
 
