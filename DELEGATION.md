@@ -16,6 +16,12 @@ Gate: open — 8 independent units; four 15-skill cohorts plus menu, security, p
 
 ## Cell conventions
 
+- **THIS LEDGER IS THE INDEX, AND THAT IS A DECISION, NOT A DRIFT.** The enumeration lives in the tracked spec
+  `design/specs/specs/cpv-nit-bucketA-sites.md`; the publish-path measurement lives in TRDD-XV6QOEK1 and TRDD-XY45DGD4; this file
+  holds the DISPOSITION and the two facts about the series' own history. A previous revision of this ledger also held a
+  summary of the 30 sites; it was removed as part of splitting a 24,361-character bullet, and the removal was made in
+  SUBTRACTION rather than by a decision, over nine rounds. The decision is now recorded: the ledger indexes. **A READER WHO
+  WANTS WHAT THE EVIDENCE SAYS GOES TO THE SPEC, WHICH IS NAMED WHERE IT IS NEEDED** — that is what an index is for.
 - **Acceptance cell** = the unit's criterion, then its reported verdict after an em-dash: `<criterion> — REPORTED:/VERIFIED: <verdict>`. The criterion text is the template from this ledger's first version (`git show 4840d96:DELEGATION.md`), identical across the four cohort rows; it describes the report's required FORMAT, not a per-unit threshold. The per-unit scope lives in the Files column (which skills, which range), and the verdict is what the run found.
 - **Status cell** = the outcome and the report path, and the only place a report path belongs.
 - Row 4's report path was in both cells in df69583; the Acceptance-cell copy was removed in 25583d9. One path, one cell.
@@ -49,8 +55,9 @@ Gate: open — 8 independent units; four 15-skill cohorts plus menu, security, p
 - The findings behind that question: 30 DISTINCT SITES, in bucket A, out of the 36 bucket-A findings. **THE LINK FROM THE QUESTION'S LIST TO THE 30 SITES: THE FOUR THINGS ARE NAMED IN THE QUESTION BULLET ABOVE, AND THE SPEC GROUPS
 THE 30 SITES UNDER A HEADING THAT NAMES THEM** — `design/specs/specs/cpv-nit-bucketA-sites.md`, section "The contents, and the decision
 each one implies" (NOT the separate "The stance tally" section, which is a READING rather than the grouping) — **WHICH CARRIES THE COUNTS AND
-THE PER-CONTENT DECISION FOR EACH OF THEM, AND THE SEPARATE "The stance tally" SECTION, WHICH CARRIES THE STANCES. The spec GROUPS BY CONTENT, and the
-permission-bypass group's cell reads "MIXED — …" — the spec's own label for that group. The ledger does not restate the counts, the
+THE PER-CONTENT DECISION FOR EACH OF THEM, AND THE SEPARATE "The stance tally" SECTION, WHICH CARRIES THE STANCES. The spec GROUPS BY CONTENT, and its
+grouping table reads "PROCEDURE" for three of the four groups and "MIXED — …" for the permission-bypass flag — the spec's own labels
+for them, and the contrast is the fact a reader needs to size the hazard. The ledger does not restate the counts, the
 decisions or the stances; it points at the sections that hold them.**
 **THE ENUMERATION IS IN THE TRACKED SPEC, NOT HERE** — `design/specs/specs/cpv-nit-bucketA-sites.md` carries the 30 sites with per-site descriptions, stances, per-content
 decisions, a procedure-or-instruction reading with its criterion, a register note and a staleness check; this ledger is the index, and
