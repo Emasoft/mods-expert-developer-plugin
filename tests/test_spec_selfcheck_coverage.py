@@ -13,7 +13,7 @@ the next editor that the ledger's figure needs re-deriving.
 
 The DEEPER question - which guards have a test behind them, measured by
 neutering each one and re-running the suite - is expensive (a full suite run
-per guard), so it lives in `scripts_dev/measure_guard_coverage.py` and is run
+per guard), so it lives in `scripts/measure_guard_coverage.py` and is run
 by a reviewer rather than on every change. The number the ledger states is
 the one this file keeps in sync; the coverage behind it is established there.
 """
