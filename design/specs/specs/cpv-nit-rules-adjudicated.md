@@ -50,7 +50,7 @@ itself is worth nothing, so the script's checks are separated by where their bas
 | check | baseline | independent of this file? |
 |---|---|---|
 | each row's raw span and token gap | the installed CPV catalogue, applied to the cited line | yes |
-| each per-rule block's widest figures, AND ITS EXISTENCE | the table's own re-measured values, and the scan's rule set | yes (the block is compared against the catalogue, not against a literal, and a rule whose block is deleted is caught) |
+| each per-rule block's widest figures, AND ITS EXISTENCE | the table's own re-measured values, and the scan's rule set | yes (the block is compared against the catalogue, not against a literal; a rule whose block is DELETED is caught, and a rule whose block is DUPLICATED is caught too — a duplicate is not a copy the reader can ignore, because whichever one they read is the one they will believe) |
 | the bucket-A (site, rule) pairs | the SIBLING SPEC `cpv-nit-bucketA-sites.md`, a different committed file | yes |
 | the total (rule, site) set | the VALIDATOR'S OWN `[NIT]` output | yes |
 | the SET OF RULES, in BOTH halves of this file | the same validator output — the rules the scanner fired. The per-rule PROSE blocks and the per-site TABLES are two separate artefacts, and each is compared, and their counts are compared with each other | yes |
@@ -73,6 +73,14 @@ whether the table matches the scanner's own findings, so an absent scan is a FAI
 is read but yields no recognisable finding line is also a failure: that is a change in the validator's OUTPUT FORMAT,
 and treating it as an empty result would let a truncated table pass. The path is a default that `CPV_SCAN_OUTPUT`
 overrides, and the file's own strict run is what produces it.
+
+**THE DIGEST'S OWN LIMIT, NAMED: ITS ANCHOR AND THE ANCHORED THING LIVE IN THE SAME FILE.** The digest value
+is a literal in this document, so editing a chapter AND updating that literal to the new hash passes the digest
+check — the check is content-anchored, but its anchor is not independent of what it anchors. That is why the SCAN,
+not the digest, is the total baseline: the scan is a record of a run against the corpus, and a re-run of the
+validator against a changed corpus disagrees with the old capture in a way a rewritten digest cannot reproduce. The
+digest answers a narrower question — *has the corpus moved since this document was written* — and the row checks
+cover the rest, because every row is re-measured against the chapter it names.
 
 **WHETHER THE CORPUS HAS MOVED IS DECIDED BY CONTENT, NOT BY TIMESTAMP.** A capture's mtime says when it was written,
 and a fresh checkout writes every file at checkout time — so a timestamp comparison fails on a perfectly current tree,
@@ -252,7 +260,14 @@ if len(_found) != len(set(_found)):
     raise SystemExit(1)
 for rid, body in RULE_TABLES.items():
     for chapter, lineno, span, gap, stance in re.findall(r'\| `([a-z0-9-]+)` line (\d+) \| (\d+) \| (\d+) \| ([A-Z]+) \|', body):
-        L = pathlib.Path(f'skills/mods-doc-{chapter}/references/chapter.md').read_text(encoding='utf-8').split('\n')[int(lineno)-1]
+        _ch_path = pathlib.Path(f'skills/mods-doc-{chapter}/references/chapter.md')
+        _ch_lines = _ch_path.read_text(encoding='utf-8').split('\n')
+        if int(lineno) < 1 or int(lineno) > len(_ch_lines):
+            print('COVERAGE ERROR: the row for {0} names line {1}, but that chapter has'.format(chapter, lineno))
+            print('  only {0} lines. The row points at a line that does not exist, so'.format(len(_ch_lines)))
+            print('  there is no passage for it to describe. WHAT YOU SEE IS NOT A PASS.')
+            raise SystemExit(1)
+        L = _ch_lines[int(lineno)-1]
         g, s = measure(rid, L)
         # CHECK 1: the table's own figures against the catalogue
         if (g, s) != (int(gap), int(span)):
@@ -269,7 +284,22 @@ for rid, body in RULE_TABLES.items():
             found.append(rid)
         rows.append((rid, int(span), int(gap), chapter, lineno))
 # CHECK 3: the per-rule blocks' own stated figures against the table
-blocks = {m[0]: (m[1], m[2]) for m in re.findall(r'### `([A-Z0-9_]+)`[^\n]*\n(?:(?!\n### |\n## )[\s\S])*?- \*\*widest token gap:\*\* (\d+) characters\.\n- \*\*widest raw span:\*\* (\d+) characters', text)}
+# The per-rule PROSE blocks, collected into a LIST first. A dict comprehension
+# over a whole-file regex keeps the LAST match per rule id and discards every
+# earlier one, so a forged copy placed BEFORE the real block was never seen - and
+# a copy placed after it won, carrying whatever figures it stated. The table
+# half already had a duplicate guard; this half now has the same one.
+_block_hits = re.findall(r'### `([A-Z0-9_]+)`[^\n]*\n(?:(?!\n### |\n## )[\s\S])*?- \*\*widest token gap:\*\* (\d+) characters\.\n- \*\*widest raw span:\*\* (\d+) characters', text)
+_block_ids = [m[0] for m in _block_hits]
+if len(_block_ids) != len(set(_block_ids)):
+    dupes = sorted({r for r in _block_ids if _block_ids.count(r) > 1})
+    print('COVERAGE ERROR: the per-rule prose section has {0} block(s) for a rule that'.format(len(dupes)))
+    print('  appears more than once: {0}.'.format(dupes))
+    print('  A duplicate is not a copy the reader can ignore: whichever one the')
+    print('  reader happens to read is the one that will be believed. WHAT YOU SEE')
+    print('  IS NOT A PASS.')
+    raise SystemExit(1)
+blocks = {m[0]: (m[1], m[2]) for m in _block_hits}
 for rid, (gap, span) in blocks.items():
     sel = [r for r in rows if r[0] == rid]
     if not sel: continue
