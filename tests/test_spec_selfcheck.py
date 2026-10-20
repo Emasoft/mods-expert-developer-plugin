@@ -40,21 +40,67 @@ def _extract_script(spec_text: str) -> str:
     assert blocks, "the spec carries no embedded python script"
     return blocks[-1]
 
+def _find_capture() -> str:
+    """A captured validator scan, or "" when none is available.
+
+    The scan is found in the session's own scratch area. It is NOT globbed
+    blindly from a shared directory: a stale capture that sorts first would
+    make the baseline test fail for a reason that has nothing to do with the
+    repository, and a future session would read that as "the spec is broken"
+    and debug the wrong thing. A capture whose (rule, site) set disagrees with
+    the spec's table is rejected here rather than at the assertion.
+    """
+    spec = (ROOT / SPEC_REL).read_text(encoding="utf-8")
+    expected = _expected_pairs(spec)
+    for directory in (Path("/tmp"), ROOT / "reports_dev"):
+        if not directory.is_dir():
+            continue
+        for candidate in sorted(directory.glob("cpv-*.txt")):
+            try:
+                text = candidate.read_text(encoding="utf-8", errors="replace")
+            except OSError:
+                continue
+            if "[NIT]" not in text:
+                continue
+            if _pairs_in(text) == expected:
+                return text
+    return ""
+
+def _expected_pairs(spec_text: str) -> set[tuple[str, str, str]]:
+    """The (rule, file, line) triples the spec's per-site table asserts."""
+    section = spec_text[spec_text.rindex("## THE PER-SITE TABLE, RULE BY RULE") :]
+    pairs: set[tuple[str, str, str]] = set()
+    # The same block-slice shape the spec's own script uses, spelled with a
+    # character class rather than a negated group so a markdown linter does not
+    # read the pattern as a reversed link.
+    block_re = re.compile(
+        r"### `([A-Z0-9_]+)`[^\n]*\n((?:(?!\n### |\n## ).)*?)(?=\n### |\n## |$)", re.S
+    )
+    for rule, body in block_re.findall(section):
+        table = re.search(r"\n\|([^\n]*)\|\n\|[-|]+\|\n((?:\|[^\n]*(?:\n|$))*)", body)
+        if not table:
+            continue
+        for chapter, lineno in re.findall(r"\| `([a-z0-9-]+)` line (\d+) \|", table.group(2)):
+            pairs.add((rule, "skills/mods-doc-" + chapter + "/references/chapter.md", lineno))
+    return pairs
+
+def _pairs_in(capture: str) -> set[tuple[str, str, str]]:
+    """The (rule, file, line) triples a captured scan reports."""
+    pairs: set[tuple[str, str, str]] = set()
+    for m in re.finditer(
+        r"\[skillaudit:[a-z_]+ ([A-Z0-9_]+)\].*\((skills/[^)]*chapter\.md)\):(\d+)", capture
+    ):
+        pairs.add((m.group(1), m.group(2), m.group(3)))
+    return pairs
+
 @pytest.fixture(scope="module")
 def pristine() -> tuple[str, str, str]:
-    """The spec, the sibling spec, and a captured validator scan, as they stand."""
+    """The spec, the sibling spec, and a matching captured validator scan."""
     spec = (ROOT / SPEC_REL).read_text(encoding="utf-8")
     sibling = (ROOT / SIBLING_REL).read_text(encoding="utf-8")
-    scans = sorted(Path("/tmp").glob("cpv-*.txt"))
-    capture = ""
-    for candidate in scans:
-        text = candidate.read_text(encoding="utf-8", errors="replace")
-        if "[NIT]" in text:
-            capture = text
-            break
-    return spec, sibling, capture
+    return spec, sibling, _find_capture()
 
-def _run(sandbox: Path, capture: str) -> int:
+def _run(sandbox: Path, capture: str) -> tuple[int, str]:
     """Run the spec's script inside the sandbox and return its exit code."""
     script = _extract_script((sandbox / SPEC_REL).read_text(encoding="utf-8"))
     script_path = sandbox / "_script.py"
@@ -73,7 +119,7 @@ def _run(sandbox: Path, capture: str) -> int:
         text=True,
         env=env,
     )
-    return result.returncode
+    return result.returncode, result.stdout + result.stderr
 
 @pytest.fixture()
 def sandbox(tmp_path: Path, pristine: tuple[str, str, str]) -> Path:
@@ -95,23 +141,27 @@ def _prose_block(text: str, rule: str) -> str:
 def _table_section_start(text: str) -> int:
     return text.rindex("## THE PER-SITE TABLE, RULE BY RULE")
 
-# Each perturbation is (name, mutate, expect_clean). `expect_clean` is True when the
-# perturbation is one the script is DOCUMENTED to tolerate; every other one must
-# make the script refuse to certify the document.
-PERTURBATIONS: list[tuple[str, str, bool]] = [
-    ("delete a per-rule prose block", "delete_prose_block", False),
-    ("delete a per-site table", "delete_site_table", False),
-    ("duplicate a per-rule prose block", "duplicate_prose_block", False),
-    ("duplicate a prose block with wrong figures, copy first", "duplicate_forged_first", False),
-    ("duplicate a prose block with wrong figures, copy last", "duplicate_forged_last", False),
-    ("rename a rule heading in the prose section", "rename_rule", False),
-    ("change a row's stated gap", "change_row_gap", False),
-    ("change a prose block's stated widest gap", "change_block_gap", False),
-    ("delete a row from a per-site table", "delete_row", False),
-    ("repoint a row at a chapter with fewer lines", "repoint_row", False),
-    ("change a stance in this file", "change_own_stance", False),
-    ("change a stance in the sibling spec", "change_sibling_stance", False),
-    ("empty the per-site table section", "empty_table_section", False),
+# Each perturbation is (name, mutation, expected message). The message is what
+# makes the test discriminating: the script's ABSENT-SCAN branch also exits
+# non-zero, so a test that asserts only the exit code would pass whenever the
+# capture went missing - the perturbation would not be detected at all. Each
+# expected string is a fragment the script prints for THAT perturbation.
+PERTURBATIONS: list[tuple[str, str, str]] = [
+    ("delete a per-rule prose block", "delete_prose_block", "per-rule prose blocks differs"),
+    ("delete a per-site table", "delete_site_table", "(rule, site) set differs from the validator"),
+    ("duplicate a per-rule prose block", "duplicate_prose_block", "appears more than once"),
+    ("duplicate a prose block with wrong figures, copy first", "duplicate_forged_first", "appears more than once"),
+    ("duplicate a prose block with wrong figures, copy last", "duplicate_forged_last", "appears more than once"),
+    ("duplicate a heading without its figures", "duplicate_heading_only", "appears more than once"),
+    ("rename a rule heading in the prose section", "rename_rule", "differs from the validator"),
+    ("change a row's stated gap", "change_row_gap", "DISAGREES"),
+    ("change a prose block's stated widest gap", "change_block_gap", "DISAGREES"),
+    ("delete a row from a per-site table", "delete_row", "bucket-A (site, rule) pairs differ"),
+    ("repoint a row at a chapter with fewer lines", "repoint_row", "names line 382, but that chapter has"),
+    ("repoint a row at a chapter that does not exist", "repoint_missing_chapter", "does not exist"),
+    ("change a stance in this file", "change_own_stance", "the stance at"),
+    ("change a stance in the sibling spec", "change_sibling_stance", "the stance at"),
+    ("empty the per-site table section", "empty_table_section", "COVERAGE ERROR"),
 ]
 
 def _mutate(sandbox: Path, kind: str) -> None:
@@ -135,6 +185,15 @@ def _mutate(sandbox: Path, kind: str) -> None:
         block = _prose_block(text, "SUPPLY_CHAIN")
         forged = block.replace("**widest token gap:** 73 characters", "**widest token gap:** 999 characters")
         text = text.replace(block, forged + block if kind.endswith("first") else block + forged, 1)
+    elif kind == "duplicate_heading_only":
+        # The heading line alone, repeated. The block that follows it stays intact,
+        # so the block's FIGURES are still matched and still checked - the point is
+        # that a repeated heading is a second copy the reader will read.
+        i = text.index("### `SUPPLY_CHAIN`")
+        end = text.index("\n", i) + 1
+        text = text[:end] + text[i:end] + text[end:]
+    elif kind == "repoint_missing_chapter":
+        text = text.replace("| `cc-permissions-modes` line 382 |", "| `no-such-chapter` line 382 |", 1)
     elif kind == "rename_rule":
         block = _prose_block(text, "SUPPLY_CHAIN")
         text = text.replace(block, block.replace("### `SUPPLY_CHAIN`", "### `SUPPLY_CHAINX`", 1), 1)
@@ -152,7 +211,7 @@ def _mutate(sandbox: Path, kind: str) -> None:
             1,
         )
     elif kind == "delete_row":
-        line = next(l for l in text.split("\n") if "`cc-permissions-modes` line 382 |" in l)
+        line = next(candidate for candidate in text.split("\n") if "`cc-permissions-modes` line 382 |" in candidate)
         text = text.replace(line + "\n", "", 1)
     elif kind == "repoint_row":
         text = text.replace("| `cc-permissions-modes` line 382 |", "| `sessions-reference` line 382 |", 1)
@@ -173,17 +232,32 @@ def _mutate(sandbox: Path, kind: str) -> None:
     spec_path.write_text(text, encoding="utf-8")
 
 def test_the_untouched_document_is_certified(sandbox: Path, pristine: tuple[str, str, str]) -> None:
-    """The script passes on the document as it stands — otherwise the rest proves nothing."""
+    """The script passes on the document as it stands - otherwise the rest proves nothing."""
     _spec, _sibling, capture = pristine
-    assert _run(sandbox, capture) == 0
+    assert capture, (
+        "no validator capture matching the spec's own table was found, so the script "
+        "cannot be certified at all. Run the strict scan and leave its output where "
+        "this test can find it."
+    )
+    code, output = _run(sandbox, capture)
+    assert code == 0, output
 
-@pytest.mark.parametrize("name,kind,expect_clean", PERTURBATIONS)
+@pytest.mark.parametrize("name,kind,expected_message", PERTURBATIONS)
 def test_a_perturbed_document_is_not_certified(
-    sandbox: Path, pristine: tuple[str, str, str], name: str, kind: str, expect_clean: bool
+    sandbox: Path, pristine: tuple[str, str, str], name: str, kind: str, expected_message: str
 ) -> None:
-    """Each perturbation must make the script refuse, and say why in its own words."""
+    """Each perturbation must make the script refuse, AND say why in its own words.
+
+    The message is the load-bearing assertion: the script's absent-scan branch
+    also exits non-zero, so a test that checked only the exit code would pass
+    whenever the capture went missing - the perturbation would go undetected
+    while the test stayed green.
+    """
     _spec, _sibling, capture = pristine
+    assert capture, "no validator capture matching the spec's own table was found"
     _mutate(sandbox, kind)
-    assert _run(sandbox, capture) != 0, (
-        "the script certified a document that was perturbed: " + name
+    code, output = _run(sandbox, capture)
+    assert code != 0, "the script certified a document that was perturbed: " + name
+    assert expected_message in output, (
+        "the script refused, but not for the reason this perturbation implies: " + name
     )

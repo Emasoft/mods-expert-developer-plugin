@@ -50,7 +50,7 @@ itself is worth nothing, so the script's checks are separated by where their bas
 | check | baseline | independent of this file? |
 |---|---|---|
 | each row's raw span and token gap | the installed CPV catalogue, applied to the cited line | yes |
-| each per-rule block's widest figures, AND ITS EXISTENCE | the table's own re-measured values, and the scan's rule set | yes (the block is compared against the catalogue, not against a literal; a rule whose block is DELETED is caught, and a rule whose block is DUPLICATED is caught too — a duplicate is not a copy the reader can ignore, because whichever one they read is the one they will believe) |
+| each per-rule block's widest figures, AND ITS EXISTENCE | the table's own re-measured values, and the scan's rule set | yes (the block is compared against the catalogue, not against a literal; a rule whose block is DELETED is caught, and so is a rule whose HEADING is repeated — a duplicate is not a copy the reader can ignore, because whichever one they read is the one they will believe) |
 | the bucket-A (site, rule) pairs | the SIBLING SPEC `cpv-nit-bucketA-sites.md`, a different committed file | yes |
 | the total (rule, site) set | the VALIDATOR'S OWN `[NIT]` output | yes |
 | the SET OF RULES, in BOTH halves of this file | the same validator output — the rules the scanner fired. The per-rule PROSE blocks and the per-site TABLES are two separate artefacts, and each is compared, and their counts are compared with each other | yes |
@@ -73,6 +73,10 @@ whether the table matches the scanner's own findings, so an absent scan is a FAI
 is read but yields no recognisable finding line is also a failure: that is a change in the validator's OUTPUT FORMAT,
 and treating it as an empty result would let a truncated table pass. The path is a default that `CPV_SCAN_OUTPUT`
 overrides, and the file's own strict run is what produces it.
+
+**THE DIGEST'S INPUT IS WRITTEN OUT, NOT TAKEN FROM THE TABLE.** A digest whose chapter list is derived from the
+table it checks moves when the table moves, and would then report a corpus change that is not one — so the list of
+seventeen chapters is stated in this document's own chapter table and the script reads it from there.
 
 **THE DIGEST'S OWN LIMIT, NAMED: ITS ANCHOR AND THE ANCHORED THING LIVE IN THE SAME FILE.** The digest value
 is a literal in this document, so editing a chapter AND updating that literal to the new hash passes the digest
@@ -261,6 +265,11 @@ if len(_found) != len(set(_found)):
 for rid, body in RULE_TABLES.items():
     for chapter, lineno, span, gap, stance in re.findall(r'\| `([a-z0-9-]+)` line (\d+) \| (\d+) \| (\d+) \| ([A-Z]+) \|', body):
         _ch_path = pathlib.Path(f'skills/mods-doc-{chapter}/references/chapter.md')
+        if not _ch_path.exists():
+            print('COVERAGE ERROR: the row for {0} names a chapter that does not exist'.format(chapter))
+            print('  at {0}.'.format(_ch_path))
+            print('  There is no passage for that row to describe. WHAT YOU SEE IS NOT A PASS.')
+            raise SystemExit(1)
         _ch_lines = _ch_path.read_text(encoding='utf-8').split('\n')
         if int(lineno) < 1 or int(lineno) > len(_ch_lines):
             print('COVERAGE ERROR: the row for {0} names line {1}, but that chapter has'.format(chapter, lineno))
@@ -289,16 +298,24 @@ for rid, body in RULE_TABLES.items():
 # earlier one, so a forged copy placed BEFORE the real block was never seen - and
 # a copy placed after it won, carrying whatever figures it stated. The table
 # half already had a duplicate guard; this half now has the same one.
+# Each rule has a heading in the PROSE section and a heading in the TABLE
+# section, so a duplicate is only a duplicate WITHIN a section. The prose section
+# is everything before the per-site table section; the table section is the rest.
+_prose_end = text.rindex('## THE PER-SITE TABLE, RULE BY RULE')
+_prose_headings = re.findall(r'(?m)^### `([A-Z0-9_]+)`', text[:_prose_end])
+_table_headings = re.findall(r'(?m)^### `([A-Z0-9_]+)`', text[_prose_end:])
+for label, headings in (('per-rule prose section', _prose_headings), ('per-site table section', _table_headings)):
+    if len(headings) != len(set(headings)):
+        dupes = sorted({r for r in headings if headings.count(r) > 1})
+        print('COVERAGE ERROR: the {0} has a heading for a rule that'.format(label))
+        print('  appears more than once: {0}.'.format(dupes))
+        print('  A duplicate is not a copy the reader can ignore: whichever one they')
+        print('  read is the one they will believe. WHAT YOU SEE IS NOT A PASS.')
+        raise SystemExit(1)
 _block_hits = re.findall(r'### `([A-Z0-9_]+)`[^\n]*\n(?:(?!\n### |\n## )[\s\S])*?- \*\*widest token gap:\*\* (\d+) characters\.\n- \*\*widest raw span:\*\* (\d+) characters', text)
-_block_ids = [m[0] for m in _block_hits]
-if len(_block_ids) != len(set(_block_ids)):
-    dupes = sorted({r for r in _block_ids if _block_ids.count(r) > 1})
-    print('COVERAGE ERROR: the per-rule prose section has {0} block(s) for a rule that'.format(len(dupes)))
-    print('  appears more than once: {0}.'.format(dupes))
-    print('  A duplicate is not a copy the reader can ignore: whichever one the')
-    print('  reader happens to read is the one that will be believed. WHAT YOU SEE')
-    print('  IS NOT A PASS.')
-    raise SystemExit(1)
+# The heading guard above already refuses a repeated rule id in either section,
+# and a duplicated block always repeats its heading, so no second duplicate
+# check is needed here: the heading check is strictly the earlier of the two.
 blocks = {m[0]: (m[1], m[2]) for m in _block_hits}
 for rid, (gap, span) in blocks.items():
     sel = [r for r in rows if r[0] == rid]
@@ -413,7 +430,12 @@ if not scan.exists():
 # chapter-text digest this file already carries - the sha256 over the seventeen
 # chapters that hold the sites, in SORTED PATH ORDER. A re-sync that re-wraps a
 # chapter changes the digest and therefore invalidates every line number here.
-CHAPTERS = sorted({c for _, _, _, c, _ in rows})
+# The chapter list is WRITTEN OUT here, not taken from the table's rows: a
+# digest whose input list is derived from the artefact it checks moves when
+# the artefact moves, and would then report a corpus change that is not one.
+CHAPTERS = sorted([
+    'automate-actions-with-hooks', 'cc-github-actions', 'cc-native-memory-and-rules', 'cc-permissions-modes', 'cc-projects-directory-structure', 'channels-reference', 'hooks-reference', 'loop-and-chron-reference', 'mcp-servers-reference', 'models-configuration', 'native-toolset-reference', 'prompt-caching-reference', 'sessions-reference', 'skills-reference', 'status-line-customization', 'troubleshooting-cc-setup', 'worktrees-reference',
+])
 digest = hashlib.sha256()
 for ch in CHAPTERS:
     digest.update(pathlib.Path('skills/mods-doc-' + ch + '/references/chapter.md').read_bytes())
