@@ -11,8 +11,9 @@ superuser examples?**
 against it, or merely EXPLAINS it is a different question from whether the passage mentions it, and a summary that flattens those
 together cannot answer the question. Read the STANCE column, not just the description.
 
-**REGISTER — what in this file is measured and what is a reading.** Two things here are MEASURED: the count of 30 sites (re-derivable
-from the validator's output) and the digest below (a checksum over the chapters' bytes). Everything else in this file is a READING —
+**REGISTER — what in this file is measured and what is a reading.** Three things here are MEASURED: the count of 30 sites
+(re-derivable from the validator's output), the digest below (a checksum over the chapters' bytes), and the recorded search result
+(the pattern and the command are given above, so it can be re-run). Everything else in this file is a READING —
 the grouping into contents, the per-site descriptions, the stances, and the per-content decisions. Those are one reader's judgement,
 written here so the owner can CHECK them rather than re-derive them, and marked here so the reader knows which register they are in. A
 count in this file is not an opinion; a stance is.
@@ -38,24 +39,49 @@ README's second sentence — "Use it to create, fix, improve and evaluate Claude
 and it is a USE statement, not a statement of what to do with a dangerous passage.
 
 What the repository does NOT state is a policy on what to do when a preserved passage is a dangerous instruction — no file says
-whether preservation is unconditional, whether redaction is permitted, or who decides. **WHAT WAS CHECKED, so the negative is
-evidenced rather than asserted:** all 151 tracked files other than the 60 chapter files were searched for a policy on redaction,
-conditional preservation, or an editorial remit — README.md, NOTICE, CHANGELOG.md, LICENSE, .claude-plugin/plugin.json, the agent
-definition, all 64 SKILL.md wrappers, all 64 openai.yaml files, the pipeline files (scripts/, git-hooks/, .github/), the lint
-configuration files, the design/ corpus, and the test suite. The only hits were this file and the ledger, plus two scripts in which
-"unconditionally" describes network-failure handling and a publish gate's credential redaction — neither is a policy on preserved
-documentation. There is no CLAUDE.md and no PRRD.md in this repository. So the premise is HALF-stated, not absent: the practice of
-preservation is declared, the rule for dangerous content is not, and the rule for dangerous content is exactly what is under review. A
-practice is not a grant of authority over the question.
+whether preservation is unconditional, whether redaction is permitted, or who decides.
 
-**AND THE CHAPTERS ARE ALREADY ADAPTED — which bears on the ruling, and sits in the same NOTICE paragraph as the citation above.**
-`NOTICE:12-17` also documents that the chapter files are "adapted from Anthropic's Claude Code documentation": section-level tables of
-contents added, section titles reworded to describe what each section covers, one subsection promoted to a section, website-only
-components rewritten as plain Markdown, and a few passages reworded for the agent. The plugin therefore does NOT ship Anthropic's text
-verbatim; it ships an adaptation, and it has already reworded passages once. That is material to the question: if the owner answers
-"no", a redaction that preserves the passage's meaning may be satisfiable at the ADAPTATION level, without rewriting a chapter — a
-third option the enumeration does not otherwise offer. It is stated here so the owner is not left choosing between "ship" and "rewrite a
-chapter".
+**THE CHECK, RECORDED SO IT CAN BE RE-RUN — not a summary of a search, but the search itself.** Corpus: every tracked file except the
+60 chapter files (151 files). Pattern (case-insensitive, one alternation):
+
+    redact|unconditional|editorial (policy|remit)|dangerous (content|instruction)
+    |permitted to (remove|omit|edit)|must not ship|omit|sanitis|sanitiz|scrub
+    |keep verbatim|unmodified
+
+Command:
+
+    git ls-files -z | grep -zvE "chapter\.md$" | xargs -0 grep -ilE "<the pattern above>"
+
+Hits — 5 files, and each is this series' own artefact or an unrelated use of the word:
+
+| file | what the hit is |
+|---|---|
+| `design/specs/specs/cpv-nit-bucketA-sites.md` | this file |
+| `DELEGATION.md` | this series' ledger |
+| `scripts/publish.py` | a publish gate's CREDENTIAL redaction, not documentation |
+| `scripts/cpv_network_resilience.py` | "unconditionally" describing network-failure handling |
+| `.github/workflows/notify-marketplace.yml` | "Sanitization" of `${{ github.* }}` values crossing into a shell |
+
+No hit is a policy on preserved documentation. **There is no CLAUDE.md and no PRRD.md in this repository** — the project's conventions
+elsewhere assume a PRRD, and its absence here is itself part of the finding. So the premise is HALF-stated, not absent: the practice of
+preservation is declared, the rule for dangerous content is not, and the rule for dangerous content is exactly what is under review. A
+practice is not a grant of authority over the question. **The silence may also mean the question has simply never been put** — the
+owner may hold the policy in their head rather than in a file, which is why the rule is asked rather than derived.
+
+**SCOPE LIMIT, so this negative has a shelf life stated:** the check covers the 151 tracked non-chapter files as of this commit. It
+does not cover the 60 chapter files (Anthropic's own text, which cannot state this repository's policy), and it would need re-running
+if a new tracked file appeared — a PRRD, a CLAUDE.md, a policy file, or a pipeline change. Nothing in this file flags that
+automatically; the chapter digest below does not cover it either.
+
+**AND THE CHAPTERS ARE ALREADY ADAPTED — a FACT, which bears on the ruling and sits in the same NOTICE paragraph as the citation
+above.** `NOTICE:12-17` also documents that the chapter files are "adapted from Anthropic's Claude Code documentation": section-level
+tables of contents added, section titles reworded to describe what each section covers, one subsection promoted to a section,
+website-only components rewritten as plain Markdown, and a few passages reworded for the agent. The plugin therefore does NOT ship
+Anthropic's text verbatim; it ships an adaptation, and it has already reworded passages once. That is worth the owner's attention,
+because it means "ship" and "rewrite the chapter" are not the only two shapes the answer can take — but what it does NOT establish is
+that a dangerous instruction may be omitted within that envelope. The NOTICE records that titles are reworded, subsections promoted and
+website components rewritten; it does not record that an instruction was ever removed. Whether an omission is in scope is a question
+for the owner, and this file does not answer it.
 
 The second reason is about the document's function, not its content: a brief which arranges a position next to its supporting evidence
 makes that position easier to accept than the evidence alone would make it, and a decision-maker handed a brief is not making the
