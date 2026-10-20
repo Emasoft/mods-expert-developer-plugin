@@ -4,7 +4,7 @@ title: Rewrite the twelve guard-coverage commit subjects to cite PRHYQEVK, and r
 column: todo
 status: tasked
 created: 2026-10-20T14:32:09+0200
-updated: 2026-10-20T14:59:55+0200
+updated: 2026-10-20T16:43:18+0200
 current-owner: user
 created-by: user
 task-type: infra
@@ -59,6 +59,7 @@ WHAT ELSE THE OWNER ASKED TO BE FIXED, all confirmed by adversarial review and n
 
 - 2026-10-20T14:32:09+0200 — MANDATE issued by user (min-approval-requirement: none). Pre-approved: issuer authority >= required approver. No approval request was sent.
 - 2026-10-20 — THE OWNER RULED IN CONVERSATION, NOT THROUGH THIS TOOL: the message was 'rewrite all, and fix all', which chose option (b). The MANDATE line above is the tool's own generated text for a self-approved mandate, and it records the tool's view of authority, not the provenance of the ruling. The ruling itself arrived as the owner's own words in conversation, and the agent recorded it as a mandate issued on the owner's instruction. This is stated plainly because this repository already carries one approval line that asserted a decision the owner never made (TRDD-LVED6ZUU), and a second line that blurs the same distinction in a card about a history rewrite would be worth getting wrong.
+- 2026-10-20 — BOXES 2, 3, 4 AND 9 TICKED, on the rewrite worker's verified run, which the parent re-verified independently against the clone at /tmp/rewrite-guard-coverage (base e7aa5fe): box 2 (no file content changed) — the parent ran 'git diff --stat' over EVERY changed pair, all 28, and got ZERO content diffs; the only two commit BODY differences are git filter-repo's own rewriting of a SHA reference inside message text (42d14de->f179e0a and a6802d8->04d14f7), which is correct behaviour, not a content change. Box 3 (the mapping covers every commit whose SHA changed) — 28 commits changed, 140 unchanged, and the parent recomputed the mapping from the clone's own NEW_MAP/OLD_MAP and confirmed every changed pair is covered. Box 4 (a card superseding PRHYQEVK carries all twenty-two series commits in order) — TRDD-57DEBIZ2, and the parent derived the twenty-two from git itself ('git log --reverse --format='%h %s' d1c4cd0^..0c5cb79') and confirmed it matches the card commit for commit. Box 9 (the scope was re-derived against the tree being rewritten) — the worker re-derived it against the tree it was about to rewrite and the parent re-derived it again across ALL refs: 'git log --all --format=%s | grep -c XV6QOEK1' returns 13, which is the twelve plus 1050ffe and nothing else, so no stray branch carries the mis-citation either.
 
 ## The push, which is the only irreversible part
 
@@ -70,12 +71,12 @@ WHAT THE FORCE-PUSH BUYS, STATED PRECISELY SO THE COST/BENEFIT IS NOT OVERSTATED
 ## Acceptance
 
 - [ ] The twelve rewritten subjects cite PRHYQEVK, and the only surviving occurrence of XV6QOEK1 in the COMMIT MESSAGES of the whole history is 1050ffe - not over the working tree, where the card files legitimately name the string in their prose.
-- [ ] No commit's file content changed: `git diff <old-sha> <new-sha>` is empty for EACH OF THE TWELVE rewritten commits. The other commits whose SHA changed are unchanged in content by construction, so the check does not need to run over them.
-- [ ] The old-to-new SHA mapping covers EVERY commit whose SHA changed, not only the twelve.
-- [ ] A card superseding PRHYQEVK carries the authoritative list of all TWENTY-TWO series commits in order, and records that PRHYQEVK's own list is stale as of the rewrite.
+- [x] No commit's file content changed: `git diff <old-sha> <new-sha>` is empty for EACH OF THE TWELVE rewritten commits. The other commits whose SHA changed are unchanged in content by construction, so the check does not need to run over them.
+- [x] The old-to-new SHA mapping covers EVERY commit whose SHA changed, not only the twelve.
+- [x] A card superseding PRHYQEVK carries the authoritative list of all TWENTY-TWO series commits in order, and records that PRHYQEVK's own list is stale as of the rewrite.
 - [ ] Every SHA reference in the corpus names the rewritten commits, and the two archived cards' references are recorded as describing the pre-rewrite state.
 - [ ] The force-push to main has been reviewed, and the SHA re-recording happens in the same operation as the push.
 - [ ] The corpus is re-recorded BEFORE the push, not alongside it: every SHA reference in the corpus names a rewritten commit at the moment the push is issued.
 - [ ] The partial-failure case is understood: if the push succeeds and the re-recording does not, PRHYQEVK's and 8BXXNOPQ's SHA references are PERMANENTLY stale, and the fix is a new card recording the old-to-new mapping - filed in the same session as the push, not later.
-- [ ] The scope was re-derived against the tree being rewritten, not taken from this card: 'git log --format=%h %s | grep XV6QOEK1' returns exactly the twelve rewritten commits plus 1050ffe.
+- [x] The scope was re-derived against the tree being rewritten, not taken from this card: 'git log --format=%h %s | grep XV6QOEK1' returns exactly the twelve rewritten commits plus 1050ffe.
 - [ ] THE REWRITE IS APPLIED TO THE LIVE TREE, NOT FORCE-PUSHED FROM A STALE CLONE. The clone's base must be the live repo's main AT THE MOMENT OF THE REWRITE, and the rewritten branch must be fetched into the live repo and main moved there - NOT force-pushed from the clone's branch, which would discard every commit made in the live tree since the clone was taken. A clone of an older commit satisfies every other box on this list: the rewritten history is internally consistent, the content diffs are empty, the message sweep shows only 1050ffe, and the intervening work is silently lost.
