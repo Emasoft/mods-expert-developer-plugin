@@ -31,9 +31,9 @@ WHAT THE REWRITE CHANGES BEYOND THE TWELVE. A rewritten commit changes the SHA o
 
 THE MEASUREMENT IS A SNAPSHOT TAKEN ON 2026-10-20, NOT A DURABLE PROPERTY. This card is a standing instruction and the tree will move before the push: other work will add commits, and a subject can be edited. The worker MUST RE-DERIVE the twelve-and-only-twelve scope against the tree it is about to rewrite, with 'git log --format=%h %s | grep XV6QOEK1', and confirm the list is exactly the twelve named here plus 1050ffe. A worker who trusts this card's number and rewrites only what it lists will silently leave a thirteenth commit uncorrected.
 
-MEASURED, SO THE SCOPE IS UNAMBIGUOUS: in each of the twelve, the string TRDD-XV6QOEK1 occurs EXACTLY ONCE, and that occurrence is in the subject line. The commit BODY - everything after the first line - contains ZERO occurrences in all twelve. An earlier draft of this card said the twelve carry the id 'in their subjects, and in their bodies'; that was WRONG about the bodies, and it is corrected here. The consequence is that the rewrite is a subject-line replacement in all twelve, with no body occurrence to judge and no case where replacing one would make a body assert something false.
 
-WHAT THE REWRITE CHANGES BEYOND THE TWELVE. A rewritten commit changes the SHA of every commit after it, so the rewrite changes the SHA of EVERY COMMIT FROM 0464a58 ONWARD IN THE WHOLE REPO - including the commits made since (the consent registry, the card filings, the marketplace work), not only the twelve and their descendants within the series. The old-to-new SHA mapping therefore covers most of this repository's history, and every SHA reference in the corpus has to be re-recorded against it. The first ten of the series (d1c4cd0 ... 41e833f, listed below) carry no TRDD id at all, so their own messages do not change and their SHAs do not change - but their DESCENDANTS' do.
+
+
 
 ## The scope is twelve, not twenty-two
 
@@ -45,7 +45,7 @@ THE BOOKKEEPING PROBLEM, WHICH THE OWNER WAS TOLD ABOUT AND ACCEPTED. PRHYQEVK's
 
 PRHYQEVK's list must be recorded as KNOWN-STALE, not merely wrong, so a future reader who lands on it is told it is superseded rather than believing it. The superseding card carries that statement. The remedy necessarily creates the list in two places - the stale one on the archived card and the correct one on its successor - which is the shape the original mis-citation had; the difference is that the successor is reachable by `supersedes:`, and that gap is filed upstream as ai-maestro#182.
 
-PRHYQEVK's list must be recorded as KNOWN-STALE, not merely wrong, so a future reader who lands on it is told it is superseded rather than believing it. The superseding card carries that statement. The remedy necessarily creates the list in two places - the stale one on the archived card and the correct one on its successor - which is the shape the original mis-citation had; the difference is that the successor is reachable by `supersedes:`, and that gap is filed upstream as ai-maestro#182.
+
 
 ## The 22-commit window is a choice, not a fact anything checks
 
