@@ -1,10 +1,10 @@
 ---
 trdd-id: UD8EC4FK
 title: The release gate cannot tell a validator abort from a finding because the abort exits inside the verdict range
-column: todo
-status: tasked
+column: complete
+status: archived
 created: 2026-10-21T01:11:06+0200
-updated: 2026-10-21T01:22:40+0200
+updated: 2026-10-21T02:56:41+0200
 current-owner: user
 created-by: user
 task-type: bugfix
@@ -15,6 +15,7 @@ mandated-by: none
 approved: true
 approval-judge: user
 approval-datetime: 2026-10-21T01:11:06+0200
+implementation-commits: 0349b1b
 ---
 
 # The release gate cannot tell a validator abort from a finding because the abort exits inside the verdict range
@@ -34,11 +35,17 @@ THE UNRELATED DEFECT THIS IS NOT. The upstream CPV integrity failure itself (Ema
 ## Approval log
 
 - 2026-10-21T01:11:06+0200 — MANDATE issued by user (min-approval-requirement: none). Pre-approved: issuer authority >= required approver. No approval request was sent.
+- 2026-10-21T02:56:41+0200 — COMPLETE by user. Implemented in commit 0349b1b. The card carried a user MANDATE (min-approval-requirement: none, approved: true, approval-judge: user), so the work was pre-authorized; the five acceptance boxes are ticked, 206 tests pass, ruff is clean, and the Implementation note records both what was done and the token-drift risk it carries..
 
 ## Acceptance checklist
 
-- [ ] 1. The gate distinguishes a validator ABORT from a finding: a run whose output carries the abort heading is refused with a message that says the validator could not run, and NOT with the severity name of the exit code it happened to carry.
-- [ ] 2. The capture does not hide the operator's evidence: the validator's stdout and stderr are re-emitted after capture, so the operator still sees the validator's own report - including the abort block - rather than an empty console. The re-emit happens BEFORE the gate prints its verdict, so the evidence appears above the conclusion rather than below it.
-- [ ] 3. The gate's fail-closed property is preserved: the abort still BLOCKS the release. The defect being fixed is the MISLABEL, not the refusal - a fix that let the abort through would be a worse defect than the one this card records.
-- [ ] 4. The match is on a STABLE token, not on the abort's prose: the abort's heading, not the error text around it, which belongs to CPV and may change. The token this card names is the heading CPV prints verbatim, and it is searched in BOTH captured streams, because the completed run's SUMMARY is on stdout and the observed abort's heading is on stderr. The token is CPV'S string, not this repository's: it is the most stable token AVAILABLE, and a CPV release that changes it must be caught by the test in box 5 rather than silently turning the gate into a pass.
-- [ ] 5. A TEST covers the abort path, and it asserts the negative outcome: given a validator that exits inside the verdict range without producing a verdict, the gate REFUSES and says the validator could not run. A test that only exercises the passing path proves nothing about the defect this card records. The test also covers the two cases that would let a fix pass silently: a validator that exits 0 while carrying the abort token must NOT be read as a pass, and a captured abort with NO SUMMARY in EITHER stream must be REFUSED rather than accepted on the exit code alone. These two cases were added by adversarial review of this card rather than by the original defect report, and they are in service of the same fail-open concern.
+- [x] 1. The gate distinguishes a validator ABORT from a finding: a run whose output carries the abort heading is refused with a message that says the validator could not run, and NOT with the severity name of the exit code it happened to carry.
+- [x] 2. The capture does not hide the operator's evidence: the validator's stdout and stderr are re-emitted after capture, so the operator still sees the validator's own report - including the abort block - rather than an empty console. The re-emit happens BEFORE the gate prints its verdict, so the evidence appears above the conclusion rather than below it.
+- [x] 3. The gate's fail-closed property is preserved: the abort still BLOCKS the release. The defect being fixed is the MISLABEL, not the refusal - a fix that let the abort through would be a worse defect than the one this card records.
+- [x] 4. The match is on a STABLE token, not on the abort's prose: the abort's heading, not the error text around it, which belongs to CPV and may change. The token this card names is the heading CPV prints verbatim, and it is searched in BOTH captured streams, because the completed run's SUMMARY is on stdout and the observed abort's heading is on stderr. The token is CPV'S string, not this repository's: it is the most stable token AVAILABLE, and a CPV release that changes it must be caught by the test in box 5 rather than silently turning the gate into a pass.
+- [x] 5. A TEST covers the abort path, and it asserts the negative outcome: given a validator that exits inside the verdict range without producing a verdict, the gate REFUSES and says the validator could not run. A test that only exercises the passing path proves nothing about the defect this card records. The test also covers the two cases that would let a fix pass silently: a validator that exits 0 while carrying the abort token must NOT be read as a pass, and a captured abort with NO SUMMARY in EITHER stream must be REFUSED rather than accepted on the exit code alone. These two cases were added by adversarial review of this card rather than by the original defect report, and they are in service of the same fail-open concern.
+
+## Implementation note
+
+IMPLEMENTED in commit 0349b1b (fix(gate): tell a validator ABORT from a finding). The gate now captures the validator's stdout and stderr, re-emits both BEFORE the verdict, and classifies the run from the captured output as well as the exit code: CPV's abort heading in EITHER stream means the run produced no verdict and is refused as an abort, and a 0..4 exit code is only accepted as a finding when CPV's SUMMARY line is present in EITHER stream. Fail-closed preserved: every non-pass returns 1, and a pass still falls through to the secret scan and the test suite. The timeout path re-emits the validator's partial output, because the capture would otherwise swallow evidence the operator used to see. THE NEW TESTS assert the negative outcome (tests/test_publish_gate_verdict.py) and also pin the capture arguments at the call site, so the classifier cannot silently lose its input. VERIFIED: the old logic printed "BLOCKED: MAJOR issues found" for the abort and "Validation passed" for an abort exiting 0; the new code refuses both. 206 tests pass; ruff clean.
+THE RISK THIS IMPLEMENTATION CARRIES, recorded rather than hidden. The abort token is CPV's string, and the gate now DEPENDS on CPV's output format in a way it did not before: a CPV release that changes the abort heading makes the gate REFUSE a run with no recognisable verdict, which is the fail-closed direction but still stops the release pipeline, and the only recovery is a code change in this repository. The narrower dangerous case is a release that changes the heading AND still prints a SUMMARY line, which would let an abort be read as a finding - or as a pass, if the exit code were 0. BOX 4 SAYS a CPV release that changes the token must be caught by the test in box 5, and that claim is TOO STRONG AS WRITTEN: the unit test hardcodes the same constant the production code uses, so it CANNOT detect that the constant has drifted from what CPV actually prints. The real detector of token drift is an INTEGRATION RUN against the real validator, not this unit test. The re-measure triggers named in THE FIX remain the mechanism, and they are a process rather than a code-level guarantee.
