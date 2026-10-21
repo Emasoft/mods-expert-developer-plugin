@@ -4,7 +4,7 @@ title: Two of TRDD-UD8EC4FK's own statements disagree about whether the test can
 column: todo
 status: tasked
 created: 2026-10-21T03:08:48+0200
-updated: 2026-10-21T03:08:48+0200
+updated: 2026-10-21T19:38:00+0200
 current-owner: user
 created-by: user
 task-type: bugfix
@@ -36,3 +36,8 @@ THE REMAINING WORK, which is the owner's call. Two things a machine cannot do fr
 ## Approval log
 
 - 2026-10-21T03:08:48+0200 — MANDATE issued by user (min-approval-requirement: none). Pre-approved: issuer authority >= required approver. No approval request was sent.
+
+## Follow-ups from commit b286335
+
+OPEN GAP (2026-10-21): the docstring and comments of _cpv_verdict in scripts/publish.py describe earlier SUMMARY lines as a blocking floor, but the code applies the floor only when the FINAL summary is clean (if severity is None). An earlier CRITICAL summary followed by a final MAJOR summary with exit 2 is reported as MAJOR, and no test covers that case. Either apply the floor in every case or make the docstring match the code.
+OVERCLAIM IN THE COMMIT MESSAGE (2026-10-21): b286335 says a real CPV run prints exactly one SUMMARY line. What was actually read: remote_validation.main() calls validate_plugin.main() once in-process, and validate_plugin.print_results prints one SUMMARY line. Not read: print_compact_summary and save_report_and_print_summary (cpv_validation_common.py:7625 and 7718). The narrower statement is the one supported. If the one-line claim is later proven, the multi-summary floor only guards against text CPV did not produce.
