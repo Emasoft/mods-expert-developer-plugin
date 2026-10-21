@@ -12,7 +12,7 @@
   "keywords": ["claude-code", "plugins", "mods", "plugin-development", "documentation", "hooks", "skills", "subagents"],
   "cpv": {
     "pipeline": {
-      "intentional_divergence": ["cliff.toml", ".github/workflows/notify-marketplace.yml"]
+      "intentional_divergence": ["cliff.toml", ".github/workflows/notify-marketplace.yml", "scripts/publish.py"]
     }
   }
 }
