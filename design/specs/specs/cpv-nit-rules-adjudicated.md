@@ -144,7 +144,7 @@ reader extracts it and runs it. It is NOT a file the repository ships — `scrip
 is a convenience for the author and not something a reader can rely on:
 
 ```bash
-cd /Volumes/EmaUITEK4TBSSD/Code/emasoft-mods-expert-developer
+cd <repo-root>
 # extract the block below into a file, then:
 python3 -I <extracted>.py
 ```
@@ -1034,7 +1034,7 @@ SORTED PATH ORDER** — the order this file's own per-rule grouping happens to u
 | `worktrees-reference` | `skills/mods-doc-worktrees-reference/references/chapter.md` |
 
 ```bash
-cd /Volumes/EmaUITEK4TBSSD/Code/emasoft-mods-expert-developer
+cd <repo-root>
 cat $(printf '%s\n' \
   skills/mods-doc-automate-actions-with-hooks/references/chapter.md
   skills/mods-doc-cc-github-actions/references/chapter.md
