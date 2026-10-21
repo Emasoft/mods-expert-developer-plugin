@@ -233,18 +233,55 @@ _CPV_ABORT_TOKEN = "[CPV integrity] CRITICAL: integrity manifest mismatch"
 #
 #     SUMMARY: CRITICAL=0 MAJOR=0 MINOR=0 NIT=0 WARNING=72
 #
-# so the check below requires a line that STARTS with "SUMMARY:" and carries
-# the severity counters. CPV owns this format too, so a CPV release that
-# changes it shows up as the gate refusing a run with no recognisable verdict
-# - the fail-closed direction.
-_CPV_SUMMARY_PREFIX = "SUMMARY:"
+# so the check below requires a line that carries the severity counters.
+# CPV owns this format too, so a CPV release that changes it shows up as the
+# gate refusing a run with no recognisable verdict - the fail-closed
+# direction.
 # ALL FOUR severity counters CPV's verdict line carries, and not a chosen
 # subset: a subset would be an arbitrary guess at which of them matters, and
 # a CPV release that dropped one of them would look like a missing field
 # rather than like the format change it is. WARNING= is deliberately NOT
 # required: it is not a severity, and a validator that found only warnings
 # still produced a verdict.
+#
+# The order is the SEVERITY PRECEDENCE, and it is the single source of truth
+# for both the precedence and the exit-code cross-check below.
 _CPV_SUMMARY_COUNTERS = ("CRITICAL=", "MAJOR=", "MINOR=", "NIT=")
+# The severity names, in precedence order, derived from the counters above so
+# the two cannot drift apart.
+_CPV_SEVERITY_NAMES = tuple(c.rstrip("=") for c in _CPV_SUMMARY_COUNTERS)
+# The counters parsed out of a verdict line, by name. The names come from
+# _CPV_SUMMARY_COUNTERS so a counter cannot be parsed that the verdict line
+# does not carry.
+_CPV_COUNTER_RE = re.compile(
+    r"(?P<name>" + "|".join(re.escape(c) for c in _CPV_SUMMARY_COUNTERS)
+    + r")(?P<value>\d+)")
+# CPV's strict exit code per severity, derived from the same counts that
+# produce the counters (cpv_validation_common.py's exit_code_strict): no
+# blocking finding -> 0, CRITICAL -> 1, MAJOR -> 2, MINOR -> 3, NIT-only -> 4.
+# The gate uses it to CROSS-CHECK the exit code against the verdict's own
+# counters: agreement is the normal case, and a disagreement means the output
+# and the exit code came from different places, which the gate refuses rather
+# than resolves in either one's favour.
+#
+# The mapping is only valid because the gate invokes the validator WITH
+# --strict (see _run_cpv_validator): without --strict CPV exits 0 on a
+# NIT-only run, and the NIT->4 code would never be seen.
+#
+# It is built from a tuple of pairs and ASSERTED against the derived
+# severity names, so a typo in a key cannot surface as a KeyError inside
+# the gate at the worst possible moment: a divergence fails loudly at
+# import instead.
+_CPV_SEVERITY_EXIT_CODE_PAIRS = (
+    ("CRITICAL", 1),
+    ("MAJOR", 2),
+    ("MINOR", 3),
+    ("NIT", 4),
+)
+_CPV_SEVERITY_EXIT_CODES = dict(_CPV_SEVERITY_EXIT_CODE_PAIRS)
+assert tuple(_CPV_SEVERITY_EXIT_CODES) == _CPV_SEVERITY_NAMES, (
+    "the CPV exit-code map and the CPV severity names must stay in step: "
+    f"{tuple(_CPV_SEVERITY_EXIT_CODES)} != {_CPV_SEVERITY_NAMES}")
 # CPV's verdict line, matched as a WHOLE line and with NUMERIC values. A
 # partial or prose mention of the shape ("SUMMARY: CRITICAL=0 MAJOR=0", or
 # "SUMMARY: CRITICAL=0" inside a quoted example) does not match, so a run
@@ -1340,13 +1377,28 @@ def _run_cpv_validator(root: Path) -> "subprocess.CompletedProcess[str]":
         capture_output=True, text=True)
 
 
-def _reemit_cpv_output(stdout: str | None, stderr: str | None) -> None:
+def _reemit_cpv_output(stdout: str | bytes | None,
+                       stderr: str | bytes | None) -> None:
     """Print captured validator output, unchanged, to the console.
 
     Used both by the normal path and by the timeout path, where the capture
     would otherwise swallow the partial output the operator used to see.
+
+    The timeout path hands over BYTES: CPython's timeout path raises
+    subprocess.TimeoutExpired with the raw captured bytes and does NOT
+    decode them, even when the subprocess was run in text mode - MEASURED
+    on this machine, with the validator invoked exactly as the gate invokes
+    it (capture_output=True, text=True). The normal path's CompletedProcess
+    carries str. Both are accepted and the bytes are decoded here, so the
+    timeout path's evidence still reaches the operator - and so the type
+    checker sees the real type instead of a cast that would hide it. A byte
+    that is not valid UTF-8 is replaced rather than raising: the point of
+    this output is the operator's evidence, and a validator that emitted raw
+    bytes must not crash the gate.
     """
     for stream in (stdout, stderr):
+        if isinstance(stream, bytes):
+            stream = stream.decode("utf-8", errors="replace")
         if stream:
             cprint(stream if stream.endswith("\n") else stream + "\n")
 
@@ -1380,14 +1432,44 @@ def _emit_cpv_result(proc: "subprocess.CompletedProcess[str]") -> int:
     stderr = proc.stderr or ""
     _reemit_cpv_output(stdout, stderr)
 
-    verdict, status = _cpv_verdict(proc.returncode, stdout, stderr)
+    verdict, status, severity = _cpv_verdict(proc.returncode, stdout, stderr)
     if verdict == "pass":
         cprint(f"  {GREEN}Validation passed (0 blocking issues).{NC}")
         return status
     if verdict == "findings":
-        labels = {1: "CRITICAL", 2: "MAJOR", 3: "MINOR", 4: "NIT"}
-        label = labels.get(proc.returncode, "UNKNOWN")
+        # The severity is the one the cross-check has just validated against
+        # the exit code: on this path the code and the counters are
+        # guaranteed to agree, because the cross-check refused every run
+        # where they did not.
+        label = severity or "UNKNOWN"
         cprint(f"  {RED}BLOCKED: {label} issues found{NC}")
+        return status
+    if verdict == "disagreement":
+        # The verdict's counters and the exit code are two accounts of the
+        # same run and they contradict each other, so neither is trusted.
+        # Refusing is the fail-closed direction; picking a winner would be a
+        # guess, and a guess in the releasing direction is the defect this
+        # classifier exists to remove.
+        #
+        # NO severity is named: naming one sends the operator hunting a
+        # finding that the exit code says does not exist, which is the very
+        # defect this classifier was written to remove.
+        cprint(f"  {RED}BLOCKED: the validator's verdict and its exit code "
+               f"({proc.returncode}) disagree — the output and the code came{NC}")
+        cprint(f"  {RED}from different places, so neither is trusted and no"
+               f" severity is named —{NC}")
+        cprint(f"  {RED}UNKNOWN is not clean.{NC}")
+        return status
+    if verdict == "earlier_findings":
+        # The FINAL total is clean, but an EARLIER verdict line carried
+        # findings. The run is blocked, because a clean final line does not
+        # clear a dirty earlier one, but the final total's severity is the
+        # run's severity and it is clean - so no severity is named here
+        # either.
+        cprint(f"  {RED}BLOCKED: the validator's final summary is clean, but an"
+               f" earlier summary carried findings —{NC}")
+        cprint(f"  {RED}the run is not released on the final line alone —"
+               f" UNKNOWN is not clean.{NC}")
         return status
     if verdict == "aborted":
         cprint(f"  {RED}BLOCKED: the validator could not run "
@@ -1400,9 +1482,16 @@ def _emit_cpv_result(proc: "subprocess.CompletedProcess[str]") -> int:
         cprint(f"  {RED}Nothing was validated, so there is no finding to fix —"
                f" UNKNOWN is not clean.{NC}")
         return status
-    cprint(f"  {RED}BLOCKED: the validator FAILED TO RUN (exit {proc.returncode}).{NC}")
-    cprint(f"  {RED}That is outside CPV's 0-4 verdict range, so nothing was"
-           f" validated — UNKNOWN is not clean.{NC}")
+    if verdict == "failed_to_run":
+        cprint(f"  {RED}BLOCKED: the validator FAILED TO RUN (exit {proc.returncode}).{NC}")
+        cprint(f"  {RED}That is outside CPV's 0-4 verdict range, so nothing was"
+               f" validated — UNKNOWN is not clean.{NC}")
+        return status
+    # The gate did not recognise its OWN verdict string. That is not the
+    # validator failing to run, and saying so would misreport the reason -
+    # so the reason is named, and the run is still blocked.
+    cprint(f"  {RED}BLOCKED: the gate did not recognise its own verdict "
+           f"({verdict!r}) — UNKNOWN is not clean.{NC}")
     return status
 
 
@@ -1422,32 +1511,58 @@ def _cpv_lines(stdout: str, stderr: str) -> list[str]:
     return combined.splitlines()
 
 
-def _cpv_verdict(exit_code: int, stdout: str, stderr: str) -> tuple[str, int]:
+def _cpv_verdict(exit_code: int, stdout: str, stderr: str) -> tuple[str, int, str | None]:
     """Classify a CPV validator run from its exit code AND its captured output.
 
-    Returns (verdict, exit_status) where verdict is one of "pass",
-    "findings", "aborted", "no_verdict" or "failed_to_run", and exit_status is
-    0 for a pass and 1 for everything else. The caller re-emits the captured
-    output before printing the verdict, so the operator still sees the
-    validator's report.
+    Returns (verdict, exit_status, severity). verdict is one of "pass",
+    "findings", "disagreement", "earlier_findings", "aborted", "no_verdict"
+    or "failed_to_run";
+    exit_status is 0 for a pass and 1 for every other outcome; severity is the
+    severity the run's LAST verdict line carries ("CRITICAL", "MAJOR", "MINOR"
+    or "NIT"), or None when that line carries no severity counter at all. The
+    caller re-emits the captured output before printing the verdict, so the
+    operator still sees the validator's report.
 
-    The exit code ALONE is not a verdict. CPV's vocabulary is 0..4 (0=pass,
-    1=CRITICAL, 2=MAJOR, 3=MINOR, 4=NIT) but the integrity check ABORTS the
-    run before any validation happens, and that abort's exit code lands
-    INSIDE the 1..4 range. A gate that maps the code to a severity name
-    therefore tells the operator that a MAJOR finding exists when nothing was
-    validated at all (TRDD-UD8EC4FK).
+    THE VERDICT IS THE EVIDENCE; the exit code is only a CROSS-CHECK against
+    it. Two consequences, and both were defects:
 
-    So the exit code is consulted only AFTER the output says the run
-    produced a verdict:
+    - The counters are the SOURCE of the severity; the process exit code is
+      an INDEPENDENT cross-check against them, and a severity is reported
+      only once the two agree. Trusting the exit code as the severity
+      source is the same "trust the exit code" error this classifier
+      exists to remove: an abort's exit code lands inside 1..4 and would
+      be reported as a MAJOR finding when nothing was validated at all.
 
-    - the abort token in EITHER stream means the run produced no verdict, and
-      is reported as an abort, never with a severity name;
-    - a 0..4 code with no SUMMARY line in EITHER stream means the run
-      produced no verdict either ("no_verdict"), and is likewise not a finding;
-    - only a run that actually printed a SUMMARY can be a finding;
-    - an exit code outside 0..4 is "failed_to_run": the validator did not get
-      far enough to have a verdict at all.
+    - EVERY verdict line is read. The LAST whole-line verdict is the run's
+      verdict - a validator that prints a per-phase summary and then a final
+      total ends with the total - and the MAXIMUM count per severity across
+      all the lines is a BLOCKING FLOOR: an earlier line reporting a
+      severity higher than the final total's blocks the run, so a clean
+      final line never clears a dirty earlier one. Reading only the FIRST
+      matching line let a clean summary followed by a CRITICAL summary
+      release the plugin.
+
+    A verdict line is recognised only as a WHOLE line matching CPV's exact
+    shape (numeric counters): a stray mention, a quoted partial example or a
+    section header is not a verdict.
+
+    The abort token is matched as a WHOLE LINE in EITHER stream, and it wins
+    over any verdict line: an aborted run validated nothing, so it is
+    reported as an abort and never with a severity name.
+
+    When the counters and the exit code DISAGREE, the run is REFUSED and
+    reported as a "disagreement". CPV derives its strict exit code from the
+    same counts that produce the counters, so a disagreement means the
+    output and the exit code came from different places; picking either one
+    would be a guess, and a guess in the releasing direction is the defect
+    this card exists to remove. A disagreement names NO severity, for the
+    same reason: a severity named here sends the operator hunting a
+    finding that the exit code says does not exist.
+
+    A NIT-only run is the ONE legitimate divergence and is not a
+    disagreement: CPV's strict code for it is 4, but WITHOUT --strict CPV
+    exits 0, and the gate then sees a NIT verdict and a 0 code. That is a
+    NIT that does not block, so it is reported as the NIT finding it is.
 
     Both streams are searched because the two cases put their marker on
     DIFFERENT streams: the completed run's SUMMARY is on stdout, and the
@@ -1477,34 +1592,92 @@ def _cpv_verdict(exit_code: int, stdout: str, stderr: str) -> tuple[str, int]:
     # The abort heading is recognised only as a WHOLE LINE, so a run that
     # quotes the heading in its prose is not read as an abort.
     if any(line.strip() == _CPV_ABORT_TOKEN for line in lines):
-        return "aborted", 1
+        return "aborted", 1, None
+
+    # A code outside CPV's 0..4 verdict range is not a verdict at all: the
+    # validator did not get far enough to have one. This is checked BEFORE
+    # the verdict, so such a run stays "failed_to_run" even if it printed
+    # something that looks like a verdict.
+    if exit_code < 0:
+        # A NEGATIVE code is the process being killed by a signal (SIGKILL,
+        # SIGTERM, ...), not a severity code. It is a death, not a verdict.
+        return "failed_to_run", 1, None
+    if exit_code > 4:
+        return "failed_to_run", 1, None
 
     # The verdict is recognised only as a WHOLE verdict line - CPV's exact
     # shape, with numeric counters - so a stray mention of the word, or a
     # quoted partial example, cannot stand in for a verdict.
-    produced_verdict = any(
-        _CPV_SUMMARY_LINE_RE.match(line.strip()) for line in lines)
+    verdict_lines = [line.strip() for line in lines
+                     if _CPV_SUMMARY_LINE_RE.match(line.strip())]
+    if not verdict_lines:
+        # A 0..4 code with no verdict line in EITHER stream means the run
+        # produced no verdict, and is likewise not a finding.
+        return "no_verdict", 1, None
 
-    if exit_code == 0:
-        if produced_verdict:
-            return "pass", 0
-        # Exit 0 with no verdict line: the validator exited cleanly without
-        # reporting anything, so there is no verdict to trust.
-        return "no_verdict", 1
+    # The LAST whole-line verdict is the run's verdict: a validator that
+    # prints a per-phase summary and then a final total ends with the
+    # total, and the total is the run's answer. MEASURED on this
+    # repository, the validator's output carries EXACTLY ONE whole-line
+    # verdict, so this rule and "the only line" agree today; it is a
+    # FAIL-CLOSED choice for a future CPV release that prints more than
+    # one verdict line. The CI workflows (ci.yml, release.yml) match the
+    # summary with `grep -q "SUMMARY: CRITICAL="`, a PRESENCE test that
+    # reads no counters, so the gate and CI cannot disagree about the
+    # counts.
+    last_line = verdict_lines[-1]
+    last_counts = {name: 0 for name in _CPV_SEVERITY_NAMES}
+    for match in _CPV_COUNTER_RE.finditer(last_line):
+        last_counts[match.group("name").rstrip("=")] = int(match.group("value"))
+    severity = next((name for name in _CPV_SEVERITY_NAMES
+                     if last_counts[name] > 0), None)
 
-    if exit_code < 0:
-        # A NEGATIVE code is the process being killed by a signal (SIGKILL,
-        # SIGTERM, ...), not a severity code. It is a death, not a verdict.
-        return "failed_to_run", 1
+    # EVERY verdict line is read, and the MAXIMUM count per severity is a
+    # FLOOR: an earlier line reporting a severity HIGHER than the final
+    # total's blocks the run, but it never downgrades it and never becomes
+    # the severity that is reported.
+    maxima = {name: 0 for name in _CPV_SEVERITY_NAMES}
+    for line in verdict_lines:
+        for match in _CPV_COUNTER_RE.finditer(line):
+            name = match.group("name").rstrip("=")
+            maxima[name] = max(maxima[name], int(match.group("value")))
+    floor_severity = next((name for name in _CPV_SEVERITY_NAMES
+                           if maxima[name] > 0), None)
+    floor_blocks = (floor_severity is not None
+                    and (severity is None
+                         or _CPV_SEVERITY_NAMES.index(floor_severity)
+                         < _CPV_SEVERITY_NAMES.index(severity)))
 
-    if exit_code < 5:
-        if produced_verdict:
-            return "findings", 1
-        # A 1..4 code with no verdict line is an abort that happens to carry
-        # a severity-shaped code, not a finding of that severity.
-        return "no_verdict", 1
+    # The exit code CROSS-CHECKS the counters. CPV derives the strict code
+    # from the same counts, so agreement is the normal case and a
+    # disagreement means the output and the code came from different
+    # places. A disagreement is refused, never resolved in either's favour.
+    expected_code = (0 if severity is None
+                     else _CPV_SEVERITY_EXIT_CODES[severity])
+    if exit_code != expected_code:
+        # A NIT-only run is the ONE legitimate divergence: CPV's strict
+        # exit code for it is 4, but WITHOUT --strict CPV exits 0, and the
+        # gate then sees a NIT verdict and a 0 code. That is not two
+        # accounts of the same run disagreeing - it is a NIT that does not
+        # block - so it is reported as the NIT finding it is, never as a
+        # disagreement with no actionable severity. It applies only when
+        # nothing WORSE than a NIT was seen: the floor never downgrades,
+        # so a higher earlier severity is still a disagreement.
+        if (severity == "NIT" and exit_code == 0
+                and (floor_severity is None or floor_severity == "NIT")):
+            return "findings", 1, "NIT"
+        return "disagreement", 1, severity
 
-    return "failed_to_run", 1
+    if severity is None:
+        if floor_blocks:
+            # The final total is clean, but an earlier verdict line carried
+            # findings: the run is blocked on that line, and the clean
+            # total alone does not clear it. No severity is named, because
+            # the severity is the final total's, and the total is clean.
+            return "earlier_findings", 1, None
+        # Every counter is zero: the verdict is a clean one.
+        return "pass", 0, None
+    return "findings", 1, severity
 
 
 def run_gate(root: Path) -> int:

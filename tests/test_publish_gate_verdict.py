@@ -330,3 +330,233 @@ def test_a_colourised_abort_heading_is_still_an_abort():
                   "mismatch\x1b[0m\n")
     assert status == 1
     assert "could not run" in console
+
+
+def test_a_clean_verdict_followed_by_a_critical_verdict_is_not_a_pass():
+    """The false pass: TWO verdict lines, and the first one is clean.
+
+    The defect: the classifier short-circuited on the FIRST matching verdict
+    line and never read the counters, so a clean summary followed by a
+    CRITICAL summary released the plugin with three CRITICALs in the output.
+    EVERY verdict line is read, and the LAST one is the run's verdict, so
+    the run blocks. The exit code here is 0, which the last line's CRITICAL
+    counters contradict, so the run is refused as a disagreement and NO
+    severity is named - naming one would send the operator hunting a
+    finding the exit code says does not exist.
+    """
+    status, console = _run_gate_verdict(
+        0,
+        stdout="SUMMARY: CRITICAL=0 MAJOR=0 MINOR=0 NIT=0 WARNING=0\n"
+               "SUMMARY: CRITICAL=3 MAJOR=0 MINOR=0 NIT=0 WARNING=0\n")
+    assert status == 1, "a run carrying a CRITICAL verdict was released"
+    assert "Validation passed" not in console, (
+        f"a run with a CRITICAL verdict was reported as a pass:\n{console}")
+    assert "issues found" not in _verdict_lines(console), (
+        f"a severity the exit code contradicts was named:\n{console}")
+
+
+def test_a_critical_verdict_with_the_matching_exit_code_is_labelled_critical():
+    """A verdict whose severity and exit code AGREE is reported with that severity.
+
+    This is a regression guard on the severity precedence and on the exit
+    code for CRITICAL: the cross-check has already established that the
+    verdict's counters and the exit code agree, so the run is blocked and
+    the severity is CRITICAL.
+    """
+    status, console = _run_gate_verdict(
+        1, stdout="SUMMARY: CRITICAL=3 MAJOR=0 MINOR=0 NIT=0 WARNING=0\n")
+    assert status == 1
+    assert "BLOCKED: CRITICAL issues found" in console
+
+
+def test_a_clean_verdict_followed_by_a_major_verdict_is_not_a_pass():
+    """The same false pass for MAJOR.
+
+    The exit code 0 contradicts the last line's MAJOR counters, so the run
+    is refused as a disagreement and no severity is named.
+    """
+    status, console = _run_gate_verdict(
+        0,
+        stdout="SUMMARY: CRITICAL=0 MAJOR=0 MINOR=0 NIT=0 WARNING=0\n"
+               "SUMMARY: CRITICAL=0 MAJOR=2 MINOR=0 NIT=0 WARNING=0\n")
+    assert status == 1, "a run carrying a MAJOR verdict was released"
+    assert "Validation passed" not in console
+    assert "issues found" not in _verdict_lines(console), (
+        f"a severity the exit code contradicts was named:\n{console}")
+
+
+def test_a_verdict_with_critical_and_major_is_labelled_critical():
+    """CRITICAL outranks MAJOR, and the label follows the precedence."""
+    status, console = _run_gate_verdict(
+        1, stdout="SUMMARY: CRITICAL=1 MAJOR=2 MINOR=0 NIT=0 WARNING=0\n")
+    assert status == 1
+    assert "BLOCKED: CRITICAL issues found" in console, (
+        f"the severity precedence was not applied:\n{console}")
+
+
+def test_a_nit_only_verdict_blocks_and_is_labelled_nit():
+    """A NIT-only verdict is a finding, and its label is NIT, not UNKNOWN.
+
+    CPV's strict exit code for a NIT-only run is 4, and the gate must block
+    on the VERDICT. This is a regression guard on the severity precedence
+    and on the exit code for NIT: the verdict's counters and the exit code
+    agree, so the run is blocked and the severity is NIT.
+    """
+    status, console = _run_gate_verdict(
+        4, stdout="SUMMARY: CRITICAL=0 MAJOR=0 MINOR=0 NIT=1 WARNING=0\n")
+    assert status == 1, "a NIT-only verdict was released"
+    assert "Validation passed" not in console
+    assert "BLOCKED: NIT issues found" in console, (
+        f"the NIT verdict was not labelled NIT:\n{console}")
+
+
+def test_a_single_all_zero_verdict_line_passes():
+    """The ordinary clean case still passes, and says so."""
+    status, console = _run_gate_verdict(
+        0, stdout="SUMMARY: CRITICAL=0 MAJOR=0 MINOR=0 NIT=0 WARNING=0\n")
+    assert status == 0
+    assert "Validation passed" in console
+
+
+def test_a_verdict_line_without_counters_is_refused():
+    """A verdict with no counters at all is not a verdict - fail closed."""
+    status, console = _run_gate_verdict(0, stdout="SUMMARY:\n")
+    assert status == 1, "a verdict with no counters was read as a pass"
+    assert "Validation passed" not in console
+    assert "no verdict" in console, (
+        f"a run with no usable verdict was not reported as such:\n{console}")
+
+
+def test_the_abort_token_yields_no_severity_label():
+    """An abort is an abort: it never carries a severity name."""
+    status, console = _run_gate_verdict(
+        2, stderr="[CPV integrity] CRITICAL: integrity manifest mismatch\n")
+    assert status == 1
+    assert "issues found" not in _verdict_lines(console), (
+        f"the abort was labelled with a severity:\n{console}")
+    assert "could not run" in console
+
+
+def test_zero_counters_with_a_nonzero_exit_code_is_refused():
+    """The exit code CROSS-CHECKS the counters: a disagreement is refused.
+
+    CPV derives its strict exit code from the same counts that produce the
+    counters, so "all counters zero but exit 4" means the output and the
+    code came from different places. Neither is trusted and the run is
+    refused, rather than the code being overridden in the verdict's favour.
+    """
+    status, console = _run_gate_verdict(
+        4, stdout="SUMMARY: CRITICAL=0 MAJOR=0 MINOR=0 NIT=0 WARNING=0\n")
+    assert status == 1, "a verdict that disagrees with the exit code passed"
+    assert "Validation passed" not in console
+    assert "disagree" in console, (
+        f"the disagreement was not reported as one:\n{console}")
+
+
+def test_nonzero_counters_with_a_zero_exit_code_is_refused():
+    """The other direction of the disagreement: counters say CRITICAL, code says 0.
+
+    And the disagreement must NOT name a severity. The counters say CRITICAL
+    and the exit code says the run found nothing, so the two accounts
+    contradict each other and neither is trusted. Naming CRITICAL here would
+    send the operator hunting a finding that the exit code says does not
+    exist - the exact defect this classifier exists to remove (TRDD-UD8EC4FK).
+    """
+    status, console = _run_gate_verdict(
+        0, stdout="SUMMARY: CRITICAL=3 MAJOR=0 MINOR=0 NIT=0 WARNING=0\n")
+    assert status == 1, "a verdict that disagrees with the exit code passed"
+    assert "Validation passed" not in console
+    assert "disagree" in console, (
+        f"the disagreement was not reported as one:\n{console}")
+    assert "CRITICAL issues found" not in _verdict_lines(console), (
+        f"the disagreement named a severity the exit code contradicts:\n{console}")
+
+
+def test_the_timeout_path_re_emits_partial_output_that_arrived_as_bytes(monkeypatch):
+    """The timeout path hands over BYTES, and the evidence still reaches the console.
+
+    CPython's timeout path raises subprocess.TimeoutExpired with the raw
+    captured bytes and does NOT decode them, even when the subprocess was run
+    in text mode - MEASURED on this machine with the validator invoked
+    exactly as the gate invokes it (capture_output=True, text=True). The
+    normal path's CompletedProcess carries str. The re-emit accepts both, so
+    the operator still sees what the validator printed before it was killed.
+    """
+    def fake_run(cmd, **kwargs):
+        raise subprocess.TimeoutExpired(cmd, 600.0, output=b"partial stdout\n",
+                                        stderr=b"partial stderr\n")
+
+    monkeypatch.setattr(publish.subprocess, "run", fake_run)
+    buffer = io.StringIO()
+    with contextlib.redirect_stdout(buffer):
+        status = publish._cpv_gate_step(_REPO_ROOT)
+    console = buffer.getvalue()
+
+    assert status == 1, "a timeout must block the release"
+    assert "timed out" in console
+    assert "partial stdout" in console, "the partial stdout was swallowed"
+    assert "partial stderr" in console, "the partial stderr was swallowed"
+
+
+def test_a_critical_verdict_with_a_majors_exit_code_is_refused_without_naming_a_severity():
+    """The severity and the exit code can never disagree on the findings path.
+
+    The cross-check compares the verdict's counters against the exit code and
+    refuses any run where they do not agree, so the "findings" path is only
+    ever reached with a severity and a code that MATCH. This test pins that
+    from the other side: a CRITICAL verdict carried by MAJOR's exit code is
+    NOT reported as "BLOCKED: CRITICAL issues found" - it is refused as a
+    disagreement, and no severity is named, because a severity named here
+    sends the operator hunting a finding the exit code says does not exist.
+    """
+    status, console = _run_gate_verdict(
+        2, stdout="SUMMARY: CRITICAL=3 MAJOR=0 MINOR=0 NIT=0 WARNING=0\n")
+    assert status == 1, "a verdict that disagrees with the exit code passed"
+    assert "Validation passed" not in console
+    assert "disagree" in console, (
+        f"the disagreement was not reported as one:\n{console}")
+    for severity in ("CRITICAL", "MAJOR", "MINOR", "NIT"):
+        assert f"{severity} issues found" not in _verdict_lines(console), (
+            f"the disagreement named a severity:\n{console}")
+
+
+def test_a_nit_only_verdict_with_a_zero_exit_code_is_a_nit_finding_not_a_disagreement():
+    """A NIT with exit 0 is a NIT that does not block, not two accounts disagreeing.
+
+    CPV's strict exit code for a NIT-only run is 4, but WITHOUT --strict it
+    exits 0, and the gate then sees a NIT verdict and a 0 code. Calling that
+    a disagreement would block the release with a message carrying no
+    actionable severity; the run is really a NIT finding, so the gate names
+    NIT and says nothing about a disagreement.
+    """
+    status, console = _run_gate_verdict(
+        0, stdout="SUMMARY: CRITICAL=0 MAJOR=0 MINOR=0 NIT=1 WARNING=0\n")
+    assert status == 1, "a NIT-only verdict was released"
+    assert "Validation passed" not in console
+    assert "disagree" not in console, (
+        f"a NIT that does not block was reported as a disagreement:\n{console}")
+    assert "BLOCKED: NIT issues found" in console, (
+        f"the NIT verdict was not labelled NIT:\n{console}")
+
+
+def test_a_dirty_first_summary_followed_by_a_clean_final_summary_is_not_a_pass():
+    """The LAST verdict line is the run's verdict, and a clean one does not clear the rest.
+
+    The defect: a validator that prints a per-phase summary and then a final
+    total would have had the per-phase line's MINOR count read as a finding
+    belonging to no verdict line, and the run blocked as a disagreement. The
+    LAST whole-line verdict is the run's verdict, and the MAXIMUM count per
+    severity is a BLOCKING FLOOR: an earlier line reporting a severity the
+    final total does not has blocks the run, so a clean final total never
+    clears a dirty earlier line.
+    """
+    status, console = _run_gate_verdict(
+        0,
+        stdout="SUMMARY: CRITICAL=0 MAJOR=0 MINOR=1 NIT=0 WARNING=0\n"
+               "SUMMARY: CRITICAL=0 MAJOR=0 MINOR=0 NIT=0 WARNING=0\n")
+    assert status == 1, (
+        f"a run with an earlier dirty summary was released:\n{console}")
+    assert "Validation passed" not in console, (
+        f"a run with an earlier dirty summary was reported as a pass:\n{console}")
+    assert "issues found" not in _verdict_lines(console), (
+        f"a severity the final total does not carry was named:\n{console}")
