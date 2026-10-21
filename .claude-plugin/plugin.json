@@ -1,6 +1,6 @@
 {
   "name": "mods-expert-developer-plugin",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Expert agent plus 60 preserved Claude Code documentation chapters (mods, plugins, hooks, skills, subagents, marketplaces, settings) for creating, fixing, improving and evaluating Claude Code mods and plugins.",
   "author": {
     "name": "Emasoft",
@@ -9,10 +9,23 @@
   "license": "MIT",
   "repository": "https://github.com/Emasoft/mods-expert-developer-plugin",
   "homepage": "https://github.com/Emasoft/mods-expert-developer-plugin",
-  "keywords": ["claude-code", "plugins", "mods", "plugin-development", "documentation", "hooks", "skills", "subagents"],
+  "keywords": [
+    "claude-code",
+    "plugins",
+    "mods",
+    "plugin-development",
+    "documentation",
+    "hooks",
+    "skills",
+    "subagents"
+  ],
   "cpv": {
     "pipeline": {
-      "intentional_divergence": ["cliff.toml", ".github/workflows/notify-marketplace.yml", "scripts/publish.py"]
+      "intentional_divergence": [
+        "cliff.toml",
+        ".github/workflows/notify-marketplace.yml",
+        "scripts/publish.py"
+      ]
     }
   }
 }
