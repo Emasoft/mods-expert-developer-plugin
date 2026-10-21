@@ -205,6 +205,20 @@ _DEFAULT_TEST_SUITE_TIMEOUT = 1800.0
 # the tightest one silently sits on the publish path. A cold `uvx` build + a full
 # remote validate was measured at ~76s, so 600s is ample headroom, not a stall.
 _CPV_TIMEOUT_SEC = 600.0
+# CPV's own integrity-abort heading. The GitHub-integrity check ABORTS the run
+# before any validation happens, and its exit code lands INSIDE CPV's 0..4
+# verdict range, so the exit code alone cannot tell an abort from a finding of
+# that severity (TRDD-UD8EC4FK). This heading is the only stable marker of the
+# abort that CPV prints verbatim; the surrounding error text is CPV's prose and
+# may change. It is CPV's string, not this repository's, so a CPV release that
+# changes it shows up as the gate refusing a run with no recognisable verdict
+# — the fail-closed direction, and the test in tests/test_publish_gate_verdict.py
+# is what turns that into a caught failure rather than a silent pass.
+_CPV_ABORT_TOKEN = "[CPV integrity] CRITICAL: integrity manifest mismatch"
+# CPV's verdict line, printed by a run that actually validated. Its presence is
+# what distinguishes "the validator ran and found something" from "the
+# validator produced no verdict at all".
+_CPV_SUMMARY_TOKEN = "SUMMARY:"
 # The suite is budgeted TWICE: the branch-aware pre-push hook runs the full test
 # suite at G4 and again at G4b (the fork-parity probe re-runs it under a forced
 # `fork` start method), both inside the push's own clock. Budgeting one suite run
@@ -1251,6 +1265,179 @@ def _fork_parity_probe(root: Path, suite_timeout: float) -> int:
         shutil.rmtree(_site, ignore_errors=True)
 
 
+def _cpv_gate_step(root: Path) -> int:
+    """Gate 3's validator step: run CPV, report, and return the gate status.
+
+    Returns 0 only when the validator PASSED; every other outcome returns 1.
+    A timeout is its own path: the capture swallows the validator's partial
+    output, so it is re-emitted explicitly — before this change the streams
+    were inherited and the operator saw whatever the validator had printed
+    before it was killed, and the capture must not take that away.
+    """
+    try:
+        proc = _run_cpv_validator(root)
+    except subprocess.TimeoutExpired as exc:
+        _reemit_cpv_output(exc.stdout, exc.stderr)
+        cprint(f"  {RED}BLOCKED: the validator timed out after {_CPV_TIMEOUT_SEC:g}s "
+               f"— it did not finish, so the verdict is UNKNOWN (not clean).{NC}")
+        return 1
+    return _emit_cpv_result(proc)
+
+
+def _run_cpv_validator(root: Path) -> "subprocess.CompletedProcess[str]":
+    """Run CPV's remote validator and CAPTURE its stdout and stderr.
+
+    The capture is the whole point of this function: without it the gate has
+    no string to inspect and can only read an exit code, which cannot tell a
+    validator ABORT from a finding of the same severity (TRDD-UD8EC4FK). The
+    captured streams are re-emitted by _emit_cpv_result before the verdict, so
+    the operator still sees the validator's own report.
+
+    It is a separate function, not an inline call, so a test can assert the
+    capture arguments: the classification logic is only correct while the
+    capture is in place, and a unit test of the classifier alone would not
+    notice the capture being dropped.
+    """
+    return subprocess.run(
+        ["uvx", "--from",
+         "git+https://github.com/Emasoft/claude-plugins-validation@v5.22.0",
+         "--with", "pyyaml",
+         "cpv-remote-validate", "plugin", ".", "--strict"],
+        cwd=str(root), timeout=_CPV_TIMEOUT_SEC,
+        capture_output=True, text=True)
+
+
+def _reemit_cpv_output(stdout: str | None, stderr: str | None) -> None:
+    """Print captured validator output, unchanged, to the console.
+
+    Used both by the normal path and by the timeout path, where the capture
+    would otherwise swallow the partial output the operator used to see.
+    """
+    for stream in (stdout, stderr):
+        if stream:
+            cprint(stream if stream.endswith("\n") else stream + "\n")
+
+
+def _emit_cpv_result(proc: "subprocess.CompletedProcess[str]") -> int:
+    """Re-emit the validator's captured output, then print the gate's verdict.
+
+    The output is re-emitted BEFORE the verdict so the evidence sits above the
+    conclusion rather than below it: the operator must be able to read what the
+    validator actually said before reading what the gate concluded from it.
+    Capturing the output without re-emitting it would hide the very evidence
+    the operator needs (TRDD-UD8EC4FK).
+
+    Returns the gate's exit status: 0 only for a pass, 1 for every refusal.
+    FAIL-CLOSED (audit row 1): CPV's verdict vocabulary is 0..4 (0=pass,
+    1=CRITICAL, 2=MAJOR, 3=MINOR, 4=NIT); WARNING never gets its own exit
+    code. So anything >= 5 is not a verdict at all — it is the validator
+    FAILING TO RUN (127 = entrypoint missing, 137 = OOM-kill, ...). The old
+    `ve != 0 and ve < 5` test let every one of those fall through and print
+    "Validation passed", which is the exact RC-8 fail-open the CI workflows
+    were fixed for and this gate was not.
+
+    The exit code alone is NOT a verdict, though: CPV's integrity check
+    ABORTS the run before any validation happens, and that abort's exit code
+    lands inside the 1..4 range, so the old mapping told the operator that a
+    MAJOR finding existed when nothing had been validated at all. The
+    classification therefore comes from the captured output as well as the
+    code — see _cpv_verdict.
+    """
+    stdout = proc.stdout or ""
+    stderr = proc.stderr or ""
+    _reemit_cpv_output(stdout, stderr)
+
+    verdict, status = _cpv_verdict(proc.returncode, stdout, stderr)
+    if verdict == "pass":
+        cprint(f"  {GREEN}Validation passed (0 blocking issues).{NC}")
+        return status
+    if verdict == "findings":
+        labels = {1: "CRITICAL", 2: "MAJOR", 3: "MINOR", 4: "NIT"}
+        label = labels.get(proc.returncode, "UNKNOWN")
+        cprint(f"  {RED}BLOCKED: {label} issues found{NC}")
+        return status
+    if verdict == "aborted":
+        cprint(f"  {RED}BLOCKED: the validator could not run "
+               f"(integrity check aborted) — UNKNOWN is not clean.{NC}")
+        cprint(f"  {RED}Nothing was validated, so there is no finding to fix.{NC}")
+        return status
+    if verdict == "no_verdict":
+        cprint(f"  {RED}BLOCKED: the validator produced no verdict "
+               f"(exit {proc.returncode}).{NC}")
+        cprint(f"  {RED}Nothing was validated, so there is no finding to fix —"
+               f" UNKNOWN is not clean.{NC}")
+        return status
+    cprint(f"  {RED}BLOCKED: the validator FAILED TO RUN (exit {proc.returncode}).{NC}")
+    cprint(f"  {RED}That is outside CPV's 0-4 verdict range, so nothing was"
+           f" validated — UNKNOWN is not clean.{NC}")
+    return status
+
+
+def _cpv_verdict(exit_code: int, stdout: str, stderr: str) -> tuple[str, int]:
+    """Classify a CPV validator run from its exit code AND its captured output.
+
+    Returns (verdict, exit_status) where verdict is one of "pass",
+    "findings", "aborted", "no_verdict" or "failed_to_run", and exit_status is
+    0 for a pass and 1 for everything else. The caller re-emits the captured
+    output before printing the verdict, so the operator still sees the
+    validator's report.
+
+    The exit code ALONE is not a verdict. CPV's vocabulary is 0..4 (0=pass,
+    1=CRITICAL, 2=MAJOR, 3=MINOR, 4=NIT) but the integrity check ABORTS the
+    run before any validation happens, and that abort's exit code lands
+    INSIDE the 1..4 range. A gate that maps the code to a severity name
+    therefore tells the operator that a MAJOR finding exists when nothing was
+    validated at all (TRDD-UD8EC4FK).
+
+    So the exit code is consulted only AFTER the output says the run
+    produced a verdict:
+
+    - the abort token in EITHER stream means the run produced no verdict, and
+      is reported as an abort, never with a severity name;
+    - a 0..4 code with no SUMMARY line in EITHER stream means the run
+      produced no verdict either ("no_verdict"), and is likewise not a finding;
+    - only a run that actually printed a SUMMARY can be a finding;
+    - an exit code outside 0..4 is "failed_to_run": the validator did not get
+      far enough to have a verdict at all.
+
+    Both streams are searched because the two cases put their marker on
+    DIFFERENT streams: the completed run's SUMMARY is on stdout, and the
+    observed abort's heading is on stderr. A single-stream read sees one of
+    them and misses the other. The token is CPV's own string, so a CPV
+    release that changes it shows up as this gate refusing a run that
+    produced no recognisable verdict - which is the fail-closed direction.
+    """
+    stdout = stdout or ""
+    stderr = stderr or ""
+    combined = f"{stdout}\n{stderr}"
+
+    if _CPV_ABORT_TOKEN in combined:
+        return "aborted", 1
+
+    produced_verdict = _CPV_SUMMARY_TOKEN in combined
+
+    if exit_code == 0:
+        if produced_verdict:
+            return "pass", 0
+        # Exit 0 with no verdict line: the validator exited cleanly without
+        # reporting anything, so there is no verdict to trust.
+        return "no_verdict", 1
+
+    if exit_code < 0:
+        # A NEGATIVE code is the process being killed by a signal (SIGKILL,
+        # SIGTERM, ...), not a severity code. It is a death, not a verdict.
+        return "failed_to_run", 1
+
+    if exit_code < 5:
+        if produced_verdict:
+            return "findings", 1
+        # A 1..4 code with no verdict line is an abort that happens to carry
+        # a severity-shaped code, not a finding of that severity.
+        return "no_verdict", 1
+
+    return "failed_to_run", 1
+
+
 def run_gate(root: Path) -> int:
     """Quality gate. Blocks on any quality issue; returns 0 if clean.
 
@@ -1614,35 +1801,12 @@ def run_gate(root: Path) -> int:
     if not shutil.which("uvx"):
         cprint(f"  {RED}BLOCKED: uvx not found on PATH.{NC}")
         return 1
-    try:
-        ve = subprocess.run(
-            ["uvx", "--from",
-             "git+https://github.com/Emasoft/claude-plugins-validation@v5.22.0",
-             "--with", "pyyaml",
-             "cpv-remote-validate", "plugin", ".", "--strict"],
-            cwd=str(root), timeout=_CPV_TIMEOUT_SEC).returncode
-    except subprocess.TimeoutExpired:
-        cprint(f"  {RED}BLOCKED: the validator timed out after {_CPV_TIMEOUT_SEC:g}s "
-               f"— it did not finish, so the verdict is UNKNOWN (not clean).{NC}")
-        return 1
-    # FAIL-CLOSED (audit row 1). CPV's verdict vocabulary is 0..4 (0=pass,
-    # 1=CRITICAL, 2=MAJOR, 3=MINOR, 4=NIT); WARNING never gets its own exit
-    # code. So anything >= 5 is not a verdict at all — it is the validator
-    # FAILING TO RUN (127 = entrypoint missing, 137 = OOM-kill, ...). The old
-    # `ve != 0 and ve < 5` test let every one of those fall through and print
-    # "Validation passed", which is the exact RC-8 fail-open the CI workflows
-    # were fixed for and this gate was not.
-    if ve == 0:
-        cprint(f"  {GREEN}Validation passed (0 blocking issues).{NC}")
-    elif ve < 5:
-        labels = {1: "CRITICAL", 2: "MAJOR", 3: "MINOR", 4: "NIT"}
-        cprint(f"  {RED}BLOCKED: {labels[ve]} issues found{NC}")
-        return 1
-    else:
-        cprint(f"  {RED}BLOCKED: the validator FAILED TO RUN (exit {ve}).{NC}")
-        cprint(f"  {RED}That is outside CPV's 0-4 verdict range, so nothing was"
-               f" validated — UNKNOWN is not clean.{NC}")
-        return 1
+    status = _cpv_gate_step(root)
+    if status != 0:
+        return status
+    # A clean validator run FALLS THROUGH to the gates below (the original
+    # code printed "Validation passed" and continued), so a pass must not
+    # return here.
 
     # Gate 3s: Secret scan. A leak BLOCKS the release. Body lives in
     # `_secret_scan` because it is ALSO a pipeline stage (audit row 6): a plugin
