@@ -1,7 +1,7 @@
 NOTICE
 
 The MIT license in LICENSE applies to every file in this repository authored by Emasoft, that is,
-every file except skills/*/references/chapter.md. This includes:
+every file except skills/*/references/chapter.md, with the one exception noted below. This includes:
   - .claude-plugin/plugin.json
   - agents/mods-expert-developer-agent.md
   - each skills/*/SKILL.md wrapper
@@ -15,3 +15,6 @@ contents added, section titles reworded to describe what each section covers, on
 promoted to a section, website-only components rewritten as plain Markdown, and a few passages
 reworded for the agent), included for reference
 only. These files are NOT licensed under MIT and remain subject to Anthropic's own terms.
+
+The one exception is skills/mods-doc-run-background-sessions/references/chapter.md: it is original
+Emasoft text, a community how-to and not adapted Anthropic documentation, and it is licensed under MIT.

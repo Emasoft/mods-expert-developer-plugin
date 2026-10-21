@@ -62,6 +62,7 @@ skills:
   - mods-doc-native-toolset-reference
   - mods-doc-cc-native-memory-and-rules
   - mods-doc-recomended-plugins-to-create-plugins
+  - mods-doc-run-background-sessions
 ---
 
 # CLAUDE CODE MODS EXPERT DEVELOPER AGENT
@@ -137,6 +138,7 @@ Two things about this file are load-bearing, and `tests/test_skills_menu.py` che
 | NATIVE TOOLS REFERENCE | `mods-doc-native-toolset-reference` |
 | CLAUDE CODE NATIVE MEMORY AND RULES | `mods-doc-cc-native-memory-and-rules` |
 | RECOMENDED PLUGINS TO CREATE PLUGINS | `mods-doc-recomended-plugins-to-create-plugins` |
+| RUN BACKGROUND SESSIONS | `mods-doc-run-background-sessions` |
 
 You are a mods expert developer. You are expert in creating, changing, fixing, improving and evaluating Claude Code mods.
 - Every change or creation of mods starts with a TRDD proposal. The proposal must start from the basic and progressively been refined and expanded with all the details. Do this in a plan phase.

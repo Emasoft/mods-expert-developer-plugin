@@ -5,13 +5,13 @@
 ![License](https://img.shields.io/badge/license-MIT-green)
 <!--BADGES-END-->
 
-A Claude Code plugin that bundles an expert agent and 60 preserved Claude Code documentation chapters (mods, plugins, hooks, skills, subagents, marketplaces, settings). Use it to create, fix, improve and evaluate Claude Code mods and plugins.
+A Claude Code plugin that bundles an expert agent and 60 Claude Code documentation chapters plus one how-to (mods, plugins, hooks, skills, subagents, marketplaces, settings). Use it to create, fix, improve and evaluate Claude Code mods and plugins.
 
 ## Components
 
 Agent: `mods-expert-developer-plugin:mods-expert-developer-agent`
 
-Skills: plugin skills are namespaced `mods-expert-developer-plugin:<skill>` and are reference-only (`user-invocable: false`).
+Skills: plugin skills are namespaced `mods-expert-developer-plugin:<skill>` and are reference-only (`user-invocable: false`). Sixty wrap a documentation chapter; `mods-doc-run-background-sessions` wraps an original community how-to.
 
 | Skill | SKILL.md heading |
 |---|---|
@@ -65,6 +65,7 @@ Skills: plugin skills are namespaced `mods-expert-developer-plugin:<skill>` and 
 | mods-doc-prompt-caching-reference | PROMPT CACHING REFERENCE |
 | mods-doc-publish-a-plugin | PUBLISH A PLUGIN |
 | mods-doc-recomended-plugins-to-create-plugins | RECOMENDED PLUGINS TO CREATE PLUGINS |
+| mods-doc-run-background-sessions | RUN BACKGROUND SESSIONS |
 | mods-doc-sessions-reference | SESSIONS REFERENCE |
 | mods-doc-settings-precedence-and-scopes | SETTINGS PRECEDENCE AND SCOPES |
 | mods-doc-skills-reference | SKILLS REFERENCE |

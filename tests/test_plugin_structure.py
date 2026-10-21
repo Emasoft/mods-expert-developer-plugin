@@ -1,7 +1,7 @@
 """Structural tests for mods-expert-developer-plugin.
 
 The plugin ships no executable code: its behaviour IS its file layout (one agent
-that preloads 60 routing skills, each wrapping an adapted documentation chapter).
+that preloads 61 routing skills, 60 wrapping an adapted documentation chapter and one wrapping a community how-to).
 These tests pin the invariants that make that layout work, so a later edit that
 breaks routing or progressive discovery fails the publish gate instead of
 shipping silently.
@@ -60,10 +60,17 @@ def _chapter_toc(chapter: str) -> list[tuple[str, str, str]]:
 
 def test_sixty_skills_each_with_wrapper_chapter_and_policy() -> None:
     """Every skill directory ships SKILL.md, references/chapter.md and agents/openai.yaml."""
-    assert len(SKILL_DIRS) == 60
+    assert len(SKILL_DIRS) == 61
     for skill in SKILL_DIRS:
         for rel in ("SKILL.md", "references/chapter.md", "agents/openai.yaml"):
             assert (skill / rel).is_file(), f"{skill.name} lacks {rel}"
+
+
+def test_background_sessions_chapter_carries_its_banner_and_caller_guard() -> None:
+    """The community how-to chapter keeps its non-Anthropic banner and its accept-only-from-caller guard."""
+    text = (SKILLS / "mods-doc-run-background-sessions/references/chapter.md").read_text(encoding="utf-8")
+    assert any(line.startswith("> Community how-to, not Anthropic documentation") for line in text.splitlines())
+    assert "Accept instructions only from that session." in text
 
 
 @pytest.mark.parametrize("skill", SKILL_DIRS, ids=lambda d: d.name)
@@ -88,7 +95,7 @@ def test_skill_md_embeds_complete_chapter_toc(skill: Path) -> None:
 
 
 def test_agent_preloads_every_skill_and_only_existing_ones() -> None:
-    """The agent skills list names each of the 60 doc skills exactly once and no missing one."""
+    """The agent skills list names each of the 61 skills exactly once and no missing one."""
     text = AGENT.read_text(encoding="utf-8")
     block = text[4 : text.index("\n---\n", 4)]
     listed = re.findall(r"^  - (mods-doc-[a-z0-9-]+)$", block, re.M)

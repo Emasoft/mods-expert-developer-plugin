@@ -1,6 +1,6 @@
 """Tests for the skills menus and the agent's preload budget.
 
-Three artifacts describe the same 60 skills: the agent's `skills:` frontmatter (what
+Three artifacts describe the same 61 skills: the agent's `skills:` frontmatter (what
 the harness preloads), the agent body's "Chapter skill index" table (what a reader
 follows), and the README's Components table (the catalogue). They are edited by
 hand, so they drift. These tests pin the invariants that make the three agree.
@@ -306,7 +306,7 @@ def test_the_tool_skills_are_not_preloaded() -> None:
 
 
 def test_every_shipped_skill_is_still_declared() -> None:
-    """All 60 documentation chapters remain declared in the frontmatter.
+    """All 61 skills remain declared in the frontmatter.
 
     The property that matters is not "which 32" but that no skill absent from the
     plugin is preloaded AND every shipped chapter is still declared. Dropping the
