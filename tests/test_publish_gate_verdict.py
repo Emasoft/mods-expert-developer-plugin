@@ -47,9 +47,17 @@ def _verdict_lines(console):
     The re-emitted output legitimately contains the words "CRITICAL",
     "MAJOR", "MINOR" and "NIT" (CPV's counters), so a whole-console search
     for a severity name matches the EVIDENCE rather than the CONCLUSION.
+
+    It ASSERTS that a verdict line was found, so a regression that printed
+    something else entirely cannot make a negative assertion vacuous: a
+    missing verdict line fails here rather than silently satisfying "the
+    bad text is absent".
     """
-    return "\n".join(line for line in console.splitlines()
-                      if "BLOCKED:" in line or "Validation passed" in line)
+    lines = [line for line in console.splitlines()
+             if "BLOCKED:" in line or "Validation passed" in line]
+    assert lines, ("the gate printed no verdict line, so a negative assertion "
+                   "about it would be vacuous:\n" + console)
+    return "\n".join(lines)
 
 
 def _run_gate_verdict(returncode, stdout="", stderr=""):
@@ -263,10 +271,7 @@ def test_an_abort_that_also_prints_a_verdict_is_still_an_abort():
     # contains the words "CRITICAL", "MAJOR", "MINOR" and "NIT", so a
     # whole-console search for them would match the evidence, not the
     # conclusion.
-    verdict_lines = [line for line in console.splitlines()
-                     if "BLOCKED:" in line or "Validation passed" in line]
-    assert verdict_lines, "the gate printed no verdict line:\n" + console
-    assert "MAJOR issues found" not in "\n".join(verdict_lines)
+    assert "MAJOR issues found" not in _verdict_lines(console)
     assert "could not run" in console
 
 
@@ -275,3 +280,53 @@ def test_the_verdict_line_must_carry_the_severity_counters():
     status, console = _run_gate_verdict(0, stdout="SUMMARY:\n")
     assert status == 1, "a summary line with no counters was read as a verdict"
     assert "Validation passed" not in console
+
+
+def test_a_quoted_partial_verdict_line_is_not_a_verdict():
+    """A quoted, PARTIAL verdict-shaped line does not stand in for a verdict.
+
+    The verdict check requires CPV's whole line shape with numeric counters,
+    so a quoted example that happens to start with "SUMMARY:" and carry
+    "CRITICAL=" and "MAJOR=" does not satisfy it.
+    """
+    status, console = _run_gate_verdict(
+        0, stdout='the docs quote "SUMMARY: CRITICAL=0 MAJOR=0" as an example\n')
+    assert status == 1, "a quoted partial verdict line was read as a verdict"
+    assert "Validation passed" not in console
+
+
+def test_a_verdict_line_with_a_prefix_is_not_a_verdict():
+    """A prefixed verdict line is a FORMAT CHANGE, and is refused.
+
+    CPV owns this format, so a release that prefixes its verdict line is a
+    release this gate no longer recognises. The refusal is the fail-closed
+    direction, and it is pinned here so the behaviour is deliberate rather
+    than incidental.
+    """
+    status, console = _run_gate_verdict(
+        0, stdout="[cpv] SUMMARY: CRITICAL=0 MAJOR=0 MINOR=0 NIT=0 WARNING=0\n")
+    assert status == 1
+    assert "Validation passed" not in console
+
+
+def test_a_colourised_verdict_line_is_still_a_verdict():
+    """ANSI escapes do not defeat the verdict check.
+
+    The capture's pipe normally makes CPV disable colour, and the measured
+    outputs carry no escape sequences, but a CPV release that colourises
+    unconditionally would otherwise turn a clean run into a refusal.
+    """
+    status, console = _run_gate_verdict(
+        0, stdout="\x1b[1mSUMMARY: CRITICAL=0 MAJOR=0 MINOR=0 NIT=0 "
+                  "WARNING=0\x1b[0m\n")
+    assert status == 0, "a colourised verdict line was not recognised"
+    assert "Validation passed" in console
+
+
+def test_a_colourised_abort_heading_is_still_an_abort():
+    """The same for the abort heading: colour must not hide the abort."""
+    status, console = _run_gate_verdict(
+        2, stderr="\x1b[1;31m[CPV integrity] CRITICAL: integrity manifest "
+                  "mismatch\x1b[0m\n")
+    assert status == 1
+    assert "could not run" in console

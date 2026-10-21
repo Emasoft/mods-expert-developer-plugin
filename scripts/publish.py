@@ -238,7 +238,20 @@ _CPV_ABORT_TOKEN = "[CPV integrity] CRITICAL: integrity manifest mismatch"
 # changes it shows up as the gate refusing a run with no recognisable verdict
 # - the fail-closed direction.
 _CPV_SUMMARY_PREFIX = "SUMMARY:"
-_CPV_SUMMARY_COUNTERS = ("CRITICAL=", "MAJOR=")
+# ALL FOUR severity counters CPV's verdict line carries, and not a chosen
+# subset: a subset would be an arbitrary guess at which of them matters, and
+# a CPV release that dropped one of them would look like a missing field
+# rather than like the format change it is. WARNING= is deliberately NOT
+# required: it is not a severity, and a validator that found only warnings
+# still produced a verdict.
+_CPV_SUMMARY_COUNTERS = ("CRITICAL=", "MAJOR=", "MINOR=", "NIT=")
+# CPV's verdict line, matched as a WHOLE line and with NUMERIC values. A
+# partial or prose mention of the shape ("SUMMARY: CRITICAL=0 MAJOR=0", or
+# "SUMMARY: CRITICAL=0" inside a quoted example) does not match, so a run
+# whose output merely QUOTES a verdict-shaped line is not read as having
+# produced a verdict.
+_CPV_SUMMARY_LINE_RE = re.compile(
+    r"^SUMMARY: CRITICAL=\d+ MAJOR=\d+ MINOR=\d+ NIT=\d+ WARNING=\d+$")
 # The suite is budgeted TWICE: the branch-aware pre-push hook runs the full test
 # suite at G4 and again at G4b (the fork-parity probe re-runs it under a forced
 # `fork` start method), both inside the push's own clock. Budgeting one suite run
@@ -1393,6 +1406,22 @@ def _emit_cpv_result(proc: "subprocess.CompletedProcess[str]") -> int:
     return status
 
 
+# ANSI escape sequences. CPV colourises its output when it believes it is
+# talking to a terminal; the gate captures the output through a PIPE, so CPV
+# normally disables colour - and the MEASURED outputs carry no escape
+# sequences at all. The stripping is here because the capture's pipe is not a
+# guarantee: if a CPV release colourises unconditionally, an unstripped
+# heading would fail the whole-line comparison and the real abort would be
+# reported as "produced no verdict" instead of as an abort.
+_CPV_ANSI_RE = re.compile(r"\x1b\[[0-9;]*[A-Za-z]")
+
+
+def _cpv_lines(stdout: str, stderr: str) -> list[str]:
+    """The captured output's lines, ANSI escapes stripped, from both streams."""
+    combined = _CPV_ANSI_RE.sub("", stdout) + "\n" + _CPV_ANSI_RE.sub("", stderr)
+    return combined.splitlines()
+
+
 def _cpv_verdict(exit_code: int, stdout: str, stderr: str) -> tuple[str, int]:
     """Classify a CPV validator run from its exit code AND its captured output.
 
@@ -1443,20 +1472,18 @@ def _cpv_verdict(exit_code: int, stdout: str, stderr: str) -> tuple[str, int]:
     """
     stdout = stdout or ""
     stderr = stderr or ""
-    lines = (stdout + "\n" + stderr).splitlines()
+    lines = _cpv_lines(stdout, stderr)
 
     # The abort heading is recognised only as a WHOLE LINE, so a run that
     # quotes the heading in its prose is not read as an abort.
     if any(line.strip() == _CPV_ABORT_TOKEN for line in lines):
         return "aborted", 1
 
-    # The verdict is recognised only as a verdict LINE - a line that starts
-    # with CPV's "SUMMARY:" and carries the severity counters - so a stray
-    # mention of the word cannot stand in for a verdict.
+    # The verdict is recognised only as a WHOLE verdict line - CPV's exact
+    # shape, with numeric counters - so a stray mention of the word, or a
+    # quoted partial example, cannot stand in for a verdict.
     produced_verdict = any(
-        line.strip().startswith(_CPV_SUMMARY_PREFIX)
-        and all(counter in line for counter in _CPV_SUMMARY_COUNTERS)
-        for line in lines)
+        _CPV_SUMMARY_LINE_RE.match(line.strip()) for line in lines)
 
     if exit_code == 0:
         if produced_verdict:
