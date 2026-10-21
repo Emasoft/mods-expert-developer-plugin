@@ -41,6 +41,17 @@ def _load_publish():
 publish = _load_publish()
 
 
+def _verdict_lines(console):
+    """The gate's OWN verdict lines - not the re-emitted validator output.
+
+    The re-emitted output legitimately contains the words "CRITICAL",
+    "MAJOR", "MINOR" and "NIT" (CPV's counters), so a whole-console search
+    for a severity name matches the EVIDENCE rather than the CONCLUSION.
+    """
+    return "\n".join(line for line in console.splitlines()
+                      if "BLOCKED:" in line or "Validation passed" in line)
+
+
 def _run_gate_verdict(returncode, stdout="", stderr=""):
     """Run the gate's validator reporting and return (exit_status, console)."""
     proc = subprocess.CompletedProcess(
@@ -56,7 +67,7 @@ def test_abort_inside_the_verdict_range_is_not_reported_as_a_finding():
     status, console = _run_gate_verdict(
         2, stderr="[CPV integrity] CRITICAL: integrity manifest mismatch\n")
     assert status == 1, "an abort must still block the release"
-    assert "MAJOR" not in console, (
+    assert "MAJOR issues found" not in _verdict_lines(console), (
         f"the abort was mislabelled as a MAJOR finding:\n{console}")
     assert "could not run" in console, (
         f"the abort was not reported as an abort:\n{console}")
@@ -67,7 +78,7 @@ def test_abort_carrying_the_token_on_stdout_is_also_an_abort():
     status, console = _run_gate_verdict(
         2, stdout="[CPV integrity] CRITICAL: integrity manifest mismatch\n")
     assert status == 1
-    assert "MAJOR" not in console
+    assert "MAJOR issues found" not in _verdict_lines(console)
     assert "could not run" in console
 
 
@@ -92,7 +103,7 @@ def test_a_severity_shaped_code_with_no_verdict_line_is_refused():
     """
     status, console = _run_gate_verdict(2, stdout="some output\n")
     assert status == 1, "a run with no verdict must be refused"
-    assert "MAJOR" not in console, (
+    assert "issues found" not in _verdict_lines(console), (
         f"a run with no verdict was labelled with a severity:\n{console}")
     assert "no verdict" in console
 
@@ -203,3 +214,64 @@ def test_the_timeout_path_re_emits_the_partial_output(monkeypatch):
     assert "partial stderr" in console, "the partial stderr was swallowed"
     assert console.index("partial stdout") < console.index("timed out"), (
         "the evidence must appear BEFORE the verdict:\n" + console)
+
+
+def test_a_run_quoting_the_abort_heading_is_not_an_abort():
+    """A mention of the heading is not the heading.
+
+    The abort is recognised only when the heading is the WHOLE of a line, so a
+    run that completes and merely QUOTES the heading in some prose is not
+    reported as an abort. A bare substring match would false-block here.
+    """
+    status, console = _run_gate_verdict(
+        0,
+        stdout="A finding quoted the old error: [CPV integrity] CRITICAL: "
+               "integrity manifest mismatch\n"
+               "SUMMARY: CRITICAL=0 MAJOR=0 MINOR=0 NIT=0 WARNING=0\n")
+    assert status == 0, (
+        "a passing run that quotes the heading was refused:\n" + console)
+    assert "Validation passed" in console
+
+
+def test_a_stray_mention_of_summary_is_not_a_verdict():
+    """The word "SUMMARY:" alone does not stand in for a verdict line.
+
+    A bare substring match on "SUMMARY:" is satisfied by a section header or a
+    quoted example. With exit 0 that would let a run that produced no verdict
+    be read as a pass - the same defect the card exists to fix, in the
+    opposite direction.
+    """
+    status, console = _run_gate_verdict(
+        0, stdout="SUMMARY: see the section titled SUMMARY: below\n")
+    assert status == 1, "a stray mention of SUMMARY: was read as a verdict"
+    assert "Validation passed" not in console
+
+
+def test_an_abort_that_also_prints_a_verdict_is_still_an_abort():
+    """The abort check wins over the verdict check.
+
+    The order matters and is pinned here: an abort run that also emitted a
+    verdict line must be reported as an abort, never as a finding or a pass.
+    """
+    status, console = _run_gate_verdict(
+        2,
+        stdout="SUMMARY: CRITICAL=0 MAJOR=0 MINOR=0 NIT=0 WARNING=0\n",
+        stderr="[CPV integrity] CRITICAL: integrity manifest mismatch\n")
+    assert status == 1
+    # The severity names are asserted on the GATE'S OWN verdict line, not on
+    # the console as a whole: the re-emitted validator output legitimately
+    # contains the words "CRITICAL", "MAJOR", "MINOR" and "NIT", so a
+    # whole-console search for them would match the evidence, not the
+    # conclusion.
+    verdict_lines = [line for line in console.splitlines()
+                     if "BLOCKED:" in line or "Validation passed" in line]
+    assert verdict_lines, "the gate printed no verdict line:\n" + console
+    assert "MAJOR issues found" not in "\n".join(verdict_lines)
+    assert "could not run" in console
+
+
+def test_the_verdict_line_must_carry_the_severity_counters():
+    """A "SUMMARY:" line without the counters is not CPV's verdict line."""
+    status, console = _run_gate_verdict(0, stdout="SUMMARY:\n")
+    assert status == 1, "a summary line with no counters was read as a verdict"
+    assert "Validation passed" not in console

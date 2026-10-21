@@ -215,10 +215,30 @@ _CPV_TIMEOUT_SEC = 600.0
 # — the fail-closed direction, and the test in tests/test_publish_gate_verdict.py
 # is what turns that into a caught failure rather than a silent pass.
 _CPV_ABORT_TOKEN = "[CPV integrity] CRITICAL: integrity manifest mismatch"
+# CPV prints the abort heading as a HEADING - a line of its own. Matching it
+# as a bare substring also matched a run that merely QUOTED the heading in
+# some prose, which is a false BLOCK: the gate would report an abort for a run
+# that completed. The abort is therefore recognised only when the heading is
+# the WHOLE of a line, which is the shape CPV emits it in.
 # CPV's verdict line, printed by a run that actually validated. Its presence is
 # what distinguishes "the validator ran and found something" from "the
 # validator produced no verdict at all".
-_CPV_SUMMARY_TOKEN = "SUMMARY:"
+#
+# The token is the verdict line's SHAPE, not the bare word "SUMMARY:". A bare
+# substring match on "SUMMARY:" is satisfied by a section header, a quoted
+# example, or any line of a report that happens to contain the word, and with
+# exit 0 that would let a run that produced no verdict be read as a pass -
+# the same class of defect this card exists to fix (TRDD-UD8EC4FK). CPV's
+# measured verdict line is exactly
+#
+#     SUMMARY: CRITICAL=0 MAJOR=0 MINOR=0 NIT=0 WARNING=72
+#
+# so the check below requires a line that STARTS with "SUMMARY:" and carries
+# the severity counters. CPV owns this format too, so a CPV release that
+# changes it shows up as the gate refusing a run with no recognisable verdict
+# - the fail-closed direction.
+_CPV_SUMMARY_PREFIX = "SUMMARY:"
+_CPV_SUMMARY_COUNTERS = ("CRITICAL=", "MAJOR=")
 # The suite is budgeted TWICE: the branch-aware pre-push hook runs the full test
 # suite at G4 and again at G4b (the fork-parity probe re-runs it under a forced
 # `fork` start method), both inside the push's own clock. Budgeting one suite run
@@ -1403,18 +1423,40 @@ def _cpv_verdict(exit_code: int, stdout: str, stderr: str) -> tuple[str, int]:
     Both streams are searched because the two cases put their marker on
     DIFFERENT streams: the completed run's SUMMARY is on stdout, and the
     observed abort's heading is on stderr. A single-stream read sees one of
-    them and misses the other. The token is CPV's own string, so a CPV
-    release that changes it shows up as this gate refusing a run that
-    produced no recognisable verdict - which is the fail-closed direction.
+    them and misses the other.
+
+    BOTH tokens are matched LINE-SHAPED, not as bare substrings, because a
+    bare substring is satisfied by a mention: a run whose prose QUOTES the
+    abort heading would be read as an abort (a false block), and a run whose
+    output merely contains the word "SUMMARY:" would be read as having
+    produced a verdict (a false pass, with exit 0). Both are the same class
+    of defect this card exists to fix, so both are excluded by construction.
+
+    What this classifier CANNOT do is detect an abort whose heading CPV has
+    changed, if that run also prints a verdict line. The token is CPV's own
+    string, and a CPV release that changes it makes this gate refuse a run
+    with no recognisable verdict - the fail-closed direction - UNLESS the run
+    also prints a verdict, which the upstream release would have to do for
+    this to become a false pass. Detecting that case needs a machine-readable
+    signal from CPV (a distinct exit code for an abort), not a string match,
+    and no such signal exists yet.
     """
     stdout = stdout or ""
     stderr = stderr or ""
-    combined = f"{stdout}\n{stderr}"
+    lines = (stdout + "\n" + stderr).splitlines()
 
-    if _CPV_ABORT_TOKEN in combined:
+    # The abort heading is recognised only as a WHOLE LINE, so a run that
+    # quotes the heading in its prose is not read as an abort.
+    if any(line.strip() == _CPV_ABORT_TOKEN for line in lines):
         return "aborted", 1
 
-    produced_verdict = _CPV_SUMMARY_TOKEN in combined
+    # The verdict is recognised only as a verdict LINE - a line that starts
+    # with CPV's "SUMMARY:" and carries the severity counters - so a stray
+    # mention of the word cannot stand in for a verdict.
+    produced_verdict = any(
+        line.strip().startswith(_CPV_SUMMARY_PREFIX)
+        and all(counter in line for counter in _CPV_SUMMARY_COUNTERS)
+        for line in lines)
 
     if exit_code == 0:
         if produced_verdict:
