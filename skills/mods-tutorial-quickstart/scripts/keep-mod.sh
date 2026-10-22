@@ -46,12 +46,19 @@ for entry in "$src"/*; do
 	esac
 done
 # Claim the destination atomically: mkdir fails if $dest appeared after the check above, so the
-# move below can never nest $tmp inside an existing folder.
+# move below can never nest $tmp inside an existing folder. The cause decides the message: an
+# existing $dest is a refusal, anything else (permissions, full disk) is a creation failure.
 if ! mkdir "$dest" 2>/dev/null; then
-	echo "keep-mod.sh: refusing to overwrite existing $dest; the finished copy is kept at $tmp" >&2
 	trap - ERR
+	if [ -e "$dest" ]; then
+		echo "keep-mod.sh: refusing to overwrite existing $dest; the finished copy is kept at $tmp" >&2
+	else
+		echo "keep-mod.sh: cannot create $dest; the finished copy is kept at $tmp" >&2
+	fi
 	exit 1
 fi
+# From here a failure leaves files in both folders, so the copy-failed message would be false.
+trap 'echo "keep-mod.sh: move failed; files are split between $tmp and $dest" >&2' ERR
 for entry in "$tmp"/*; do mv "$entry" "$dest/"; done
 rmdir "$tmp"
 trap - ERR
