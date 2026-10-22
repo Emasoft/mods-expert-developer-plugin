@@ -1,10 +1,10 @@
 ---
 trdd-id: BNBDNR2V
 title: Adopt mod-builder ideas into the tutorials and agents
-column: dev
+column: human_review
 status: tasked
 created: 2026-10-22T21:16:56+0200
-updated: 2026-10-23T00:40:59+0200
+updated: 2026-10-23T01:11:01+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -15,14 +15,14 @@ mandated-by: none
 approved: true
 approval-judge: main-agent@emasoft-mods-expert-developer
 approval-datetime: 2026-10-22T21:16:56+0200
-implementation-commits: [7c3a79e, 19ad443, 79515d5, c31a84b, 5b0ff02, 5076bbf, 233b5ab, ea55896, d5ed2ce, 02fc9ce, d82c1e0, 6b430f9, 203c938, 858047c, 929f92b]
+implementation-commits: [7c3a79e, 19ad443, 79515d5, c31a84b, 5b0ff02, 5076bbf, 233b5ab, ea55896, d5ed2ce, 02fc9ce, d82c1e0, 6b430f9, 203c938, 858047c, 929f92b, e8c9347, 71ed400]
 ---
 
 # Adopt mod-builder ideas into the tutorials and agents
 
 ## ⏵ STATE — READ THIS FIRST ON RESUME (authoritative; supersedes the body) — 2026-10-23
 
-CURRENT STATE 2026-10-23: increments 1 to 3 committed (D 203c938, E 6b430f9, F 858047c, no-copy rewrites 929f92b); boxes A to F and the no-copy box ticked; next is the 0.4.0 publish (the git-cliff dry run and cspell on its changelog section already passed), then verify the ${CLAUDE_SKILL_DIR} expansion after install; the two owner-run boxes stay open (login expired).
+CURRENT STATE 2026-10-23: 0.4.0 published (d9f6af3) and installed; every agent-run box is ticked and the ${CLAUDE_SKILL_DIR} expansion is verified. Open: the two owner-run boxes (tsc after a live load, hello-mod == PASS), which need a logged-in build. NEXT ACTION: when the owner runs them, tick them with their output and move the card to complete; until then it waits in human_review.
 
 ## User directive
 
@@ -33,11 +33,12 @@ CURRENT STATE 2026-10-23: increments 1 to 3 committed (D 203c938, E 6b430f9, F 8
 reports/mod-builder-comparison/20261022_210944+0200-comparison.md. The source has NO licence, so only ideas are reused: every script, example and sentence is rewritten independently, and NOTICE gains one idea-credit line only (no licence text, nothing copied).
 2026-10-23 increment 3: E 6b430f9 (verify-before-you-report section in both agents, check-mod.sh named by ${CLAUDE_SKILL_DIR}); D 203c938; F 858047c; no-copy rewrites 929f92b (new-mod.sh name rule is now kebab-case of 2 to 64 characters, a behaviour change). pytest 281 passed.
 2026-10-23 fresh claude plugin validate and test on protect-files, turn-timer and git-poller: validate passed for all three, each with the plugin-directory warning every mod with a hooks module gets and one advice line that the README has no marketplace install line; claude plugin test passed protect-files 21, turn-timer 14, git-poller 28, 0 fail, no authentication error.
-UNVERIFIED: whether ${CLAUDE_SKILL_DIR} expands in a loaded skill on this harness; check after 0.4.0 is installed (the installed cache is 0.1.1).
+VERIFIED 2026-10-23 after installing 0.4.0: loading mods-tutorial-quickstart expanded ${CLAUDE_SKILL_DIR} in step 7 to the installed skill folder .../mods-expert-developer-plugin/0.4.0/skills/mods-tutorial-quickstart, and its scripts folder holds check-mod.sh, keep-mod.sh and new-mod.sh, all executable by everyone (mode 755).
 INFERRED, not measured: claude plugin validate exiting 0 with an expired login; the login state was not re-checked at that moment.
 Not applied: validate advises a marketplace install line in the README of all three examples; they are reference-only examples that are never installed from a marketplace, so the advice does not apply to them.
 Note: a fresh local `uv run` lacks pyyaml because it is in the dev extra; CI and release run `uv sync --extra dev`, so only local runs need `--extra dev`.
 Note for TRDD-GF5UDFWI: its planned command-name pattern has a 40-character bound similar to the unlicensed source's pattern; use this plugin's own kebab-case rule there.
+2026-10-23 release: 0.4.0 published at d9f6af3 (tags v0.4.0 and mods-expert-developer-plugin--v0.4.0); CI, Release and Notify Marketplace all passed. Two fixes landed before it: e8c9347 cleared six CPV v5.22.3 strict findings by fixing our own text (the REGEX_DOS one on new-mod.sh was a detector false positive, reported as Emasoft/claude-plugins-validation issue 264), and 71ed400 dropped a report filename the CI spell-check rejected. Moving the CPV pin to v5.23.0 is tracked on TRDD-0QXYIABR.
 
 ## Decisions
 
