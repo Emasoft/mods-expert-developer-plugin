@@ -779,6 +779,40 @@ def test_forge_agent_names_the_menu_and_its_heading() -> None:
     assert "Plugin Skills" in body and "not self-verifiable" in body
 
 
+_VERIFY_HEADING = "\n## Verify before you report\n"
+
+
+def _verify_section(agent: Path) -> str:
+    """Return the agent's "Verify before you report" section, up to the next H2 heading."""
+    text = agent.read_text(encoding="utf-8")
+    assert _VERIFY_HEADING in text, f"{agent.name} has no verify section"
+    return text.split(_VERIFY_HEADING, 1)[1].split("\n## ", 1)[0]
+
+
+def test_both_agents_carry_the_same_verify_section() -> None:
+    """The two agents must give identical verify rules, and the failure lines they quote must match what check-mod.sh prints."""
+    forge, expert = _verify_section(FORGE_AGENT), _verify_section(AGENT)
+    assert forge == expert
+    assert "check-mod.sh" in forge and "Mutation-check" in forge
+    script_text = (SKILLS / "mods-tutorial-quickstart" / "scripts" / "check-mod.sh").read_text(encoding="utf-8")
+    for quoted in ("tsc (types not generated yet:", "claude not found"):
+        assert quoted in forge, f"verify section does not quote {quoted!r}"
+        assert quoted in script_text, f"check-mod.sh does not print {quoted!r}"
+
+
+def test_quickstart_names_the_check_script_by_skill_dir() -> None:
+    """The quickstart must name the script through ${CLAUDE_SKILL_DIR} and git must record it executable, or the agents' path cannot resolve."""
+    quickstart = SKILLS / "mods-tutorial-quickstart"
+    assert "${CLAUDE_SKILL_DIR}/scripts/check-mod.sh" in (quickstart / "SKILL.md").read_text(encoding="utf-8")
+    staged = subprocess.run(
+        ["git", "-C", str(ROOT), "ls-files", "-s", "skills/mods-tutorial-quickstart/scripts/check-mod.sh"],
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout
+    assert staged.startswith("100755"), f"check-mod.sh is not recorded executable in git: {staged!r}"
+
+
 # The only sentences allowed to pair [BLOCKED] with a tool name: the expert agent's Node prerequisite
 # (Node is not a tool skill) and the "Never report [BLOCKED] only because ..." prohibitions.
 _BLOCKED_ALLOWED = (

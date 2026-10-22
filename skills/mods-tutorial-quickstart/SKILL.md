@@ -33,7 +33,7 @@ The example mods live in two sibling tutorials: `mods-tutorial-call-intercept-mo
 4. Write the hook. One plain hook per event per module, a refusal before `next`, and a `.catch` on every hook that can refuse. Facts: `mods-doc-mods-and-events`, "How a hook handles an event" and "Mod ordering and failed hooks".
 5. Run `claude plugin validate <mod>` and read what it lists. Facts: `mods-doc-mods-development`, "Change and test a mod".
 6. Write `tests/*.test.ts` and run `claude plugin test` in the mod folder. Facts: `mods-doc-mods-testing`, "Write a mod test".
-7. Type-check with `npx -p typescript@5 tsc -p <mod> --noEmit` once the types are written. This command comes from the source and is not in the chapters. The script `scripts/check-mod.sh <mod>` runs this type-check, step 5 and step 6 in one go and prints `== PASS` or `== FAIL: <step>`.
+7. Type-check with `npx -p typescript@5 tsc -p <mod> --noEmit` once the types are written. This command comes from the source and is not in the chapters. The script `${CLAUDE_SKILL_DIR}/scripts/check-mod.sh <mod-dir>` (this skill's own folder; Claude Code fills in the path when the skill is loaded) runs this type-check, step 5 and step 6 in one go and prints `== PASS` or `== FAIL: <step>`.
 8. Run it live with `claude --plugin-dir <mod>`; saving a file reloads it. Facts: `mods-doc-mods-troubleshooting`, "Find out why a mod does nothing" and "Read the debug log".
 9. Ship it from a repository you keep, and bump `version` on every release. Facts: `mods-doc-mods-development`, "Share your mod", and `mods-doc-publish-a-plugin`.
 

@@ -61,7 +61,15 @@ If the Agent tool is available in your context, bounded read-only scans may go t
 
 - Never commit, stage or push; never publish; never hard-delete a file. If something must go, use the `safe-delete` skill when it is installed; otherwise leave the file in place and list it in your report under "To remove" with the reason, for the orchestrator or user to decide.
 - Leave the tree valid: tests and validators at least as green as before your change.
-- A verification that needs a live login (`claude plugin test .`, `/plugin-types`) is reported as `[BLOCKED: login expired]` when the login has expired, not as a failure of the increment.
+- A verification that cannot run because the login expired, shown by an authentication error you quote, is reported as `[BLOCKED: login expired]`, not as a failure of the increment.
+
+## Verify before you report
+
+1. Load the `mods-tutorial-quickstart` skill and run the `check-mod.sh` path it gives (it expands `${CLAUDE_SKILL_DIR}`) on the mod folder. If the path does not resolve to an existing file, report `[BLOCKED: check-mod.sh not found]`; never use a copy from anywhere else.
+2. Only `== PASS` passes. Besides point 1, report `[BLOCKED: <reason>]` only in these cases, and quote the output line that shows the reason: the last line is `== FAIL: tsc (types not generated yet: ...)`, because the types appear only after Claude Code has loaded the mod once (record that load in your report as a step for the human and mark the type-check as not verified; then still run `claude plugin validate <mod-dir>` and, in the mod folder, `claude plugin test` yourself and report their raw results); the last line is `== FAIL: claude not found`; npx could not fetch typescript; or `claude` printed an authentication error. Any other `== FAIL` is a failure of the mod.
+3. Mutation-check each new guard and each new test on a scratch copy in a temporary directory outside the project tree: break the guarded line, confirm the test goes red, then remove that temporary directory. It is not part of the project, so removing it is allowed.
+4. The report lists each check with its raw result, and what still needs a human, such as the live Desktop check.
+5. For a mod the user keeps, follow the house conventions of the `mods-tutorial-quickstart` skill (its `references/house-conventions.md`).
 
 ## Report
 
