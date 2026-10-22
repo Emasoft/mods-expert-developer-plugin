@@ -4,7 +4,7 @@ title: The agent loads chapter skills at runtime instead of preloading 28 of the
 column: approval
 status: tasked
 created: 2026-10-20T13:38:55+0200
-updated: 2026-10-21T01:13:13+0200
+updated: 2026-10-22T21:20:38+0200
 current-owner: user
 created-by: user
 task-type: feature
@@ -41,6 +41,7 @@ WHAT THIS DOES NOT CHANGE. The chapters still ship, still are reachable, and sti
 
 - 2026-10-20T13:38:55+0200 — MANDATE issued by user (min-approval-requirement: none). Pre-approved: issuer authority >= required approver. No approval request was sent.
 - 2026-10-20T20:59:09+0200 — column → approval by main-agent@emasoft-mods-expert-developer.
+- 2026-10-22 owner directive: tool skills optional but recommended (native fallback) — supersedes "missing means BLOCKED" in the body above (lines 52/59 stay as a historical record).
 
 ## A CORRECTION TO THE CLOSED DECISION CARD, recorded here because that card is archived
 

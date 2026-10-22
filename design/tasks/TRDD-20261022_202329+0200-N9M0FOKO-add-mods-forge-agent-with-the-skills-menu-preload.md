@@ -4,7 +4,7 @@ title: Add mods-forge-agent with the skills-menu preload
 column: dev
 status: tasked
 created: 2026-10-22T20:23:29+0200
-updated: 2026-10-22T21:15:18+0200
+updated: 2026-10-22T21:20:38+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -21,7 +21,7 @@ approval-datetime: 2026-10-22T20:23:29+0200
 
 ## STATE
 
-CURRENT STATE 2026-10-22: in implementation by a dispatched worker (build spec docs_dev/20261022-forge-agent-build-spec.md, plus the orchestrator's amendment to section 2). NEXT ACTION: orchestrator reviews the worker report under reports/mods-forge-agent/, then commits.
+CURRENT STATE 2026-10-22: built (dd4e8e1), review fixes f5e0779; round 2 applied by a worker, pending orchestrator verification and commit. NEXT ACTION: verify + commit round 2, publish 0.3.0, restart, then tick the two post-install acceptance boxes.
 
 ## User directive
 
@@ -47,7 +47,7 @@ CURRENT STATE 2026-10-22: in implementation by a dispatched worker (build spec d
 - [ ] ruff and cspell clean on changed files
 - [ ] CPV strict (the publish.py command, CPV v5.22.3) shows no new finding against the CRITICAL=0 MAJOR=0 MINOR=0 NIT=0 baseline, output saved under reports/cpv/
 - [ ] README, plugin.json and DELEGATION.md updated
-- [ ] After install, one dispatch's first report line names the menu's Plugin Skills domains correctly (proves the preload resolved to this plugin's menu, not CPV's same-named skill); if it does not, rename the menu to a plugin-unique name and re-measure CPV D9.
+- [ ] After install, one dispatch's first report line names the menu's Plugin Skills domains correctly — expected answer: seven groups, Mods; Plugins; Marketplaces; Hooks, Subagents and Skills; Settings and Configuration; Sessions and Runtime; Troubleshooting (Tutorials excluded) — (proves the preload resolved to this plugin's menu, not CPV's same-named skill); if it does not, rename the menu to a plugin-unique name and re-measure CPV D9.
 - [ ] The model actually used is confirmed from the harness side (debug log or session metadata), not from the agent's own claim.
 
 ## Approval log
@@ -62,3 +62,4 @@ CURRENT STATE 2026-10-22: in implementation by a dispatched worker (build spec d
 - 2026-10-22T20:23:37+0200 — column → plan by main-agent@emasoft-mods-expert-developer. user directive 2026-10-22
 - 2026-10-22T20:23:37+0200 — column → dispatch by main-agent@emasoft-mods-expert-developer. user directive 2026-10-22
 - 2026-10-22T20:23:38+0200 — column → dev by main-agent@emasoft-mods-expert-developer. user directive 2026-10-22
+- 2026-10-22 owner directive: tool skills optional but recommended (native fallback) — supersedes "missing means BLOCKED" in the body above.

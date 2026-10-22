@@ -49,7 +49,7 @@ A mod must behave the same in the terminal and in the Desktop app.
 
 ## Tool skills
 
-The skills `tldr-code`, `fastedit`, `jgrep` and `quicksilver` (and `safe-delete` for removals) are OPTIONAL BUT RECOMMENDED. The native-tool fallback exists for portability, for users who have not installed them; where they are installed, use them. They are user-scope skills this plugin does not ship; load each on demand, by bare name, through the Skill tool, when it is installed. Read files with `tldr`, write every file with `fastedit`, locate code by meaning with `jgrep`, and triage bulk input with quicksilver. When one is not installed, use the native equivalent: Read for reading, Edit and Write for writing, Grep and Glob for locating, plain reading for triage, and a plain `mv` into a gitignored `_dev` folder instead of safe-delete (never a hard delete). List in the report which recommended skills were missing. Never report `[BLOCKED]` only because a tool skill is absent.
+The skills `tldr-code`, `fastedit`, `jgrep` and `quicksilver` (and `safe-delete` for removals) are OPTIONAL BUT RECOMMENDED. The native-tool fallback exists for portability, for users who have not installed them; where they are installed, use them. They are user-scope skills this plugin does not ship; load each on demand, by bare name, through the Skill tool, when it is installed. When installed, read files with `tldr`, write every file with `fastedit`, locate code by meaning with `jgrep`, and triage bulk input with quicksilver. When one is not installed, use the native equivalent: Read for reading, Edit and Write for writing, Grep and Glob for locating, and plain reading for triage. Without `safe-delete`, do not move or delete the file: leave it in place and list it in your report under "To remove" with the reason, for the orchestrator or user to decide. List in the report which recommended skills were missing. Never report `[BLOCKED]` only because a tool skill is absent.
 
 ## Delegation
 
@@ -57,7 +57,7 @@ If the Agent tool is available in your context, bounded read-only scans may go t
 
 ## Limits
 
-- Never commit, stage or push; never publish; never hard-delete a file. If something must go, use the `safe-delete` skill when it is installed; otherwise `mv` it into a gitignored `_dev` folder of the project root (for example `scripts_dev/`).
+- Never commit, stage or push; never publish; never hard-delete a file. If something must go, use the `safe-delete` skill when it is installed; otherwise leave the file in place and list it in your report under "To remove" with the reason, for the orchestrator or user to decide.
 - Leave the tree valid: tests and validators at least as green as before your change.
 - A verification that needs a live login (`claude plugin test .`, `/plugin-types`) is reported as `[BLOCKED: login expired]` when the login has expired, not as a failure of the increment.
 
@@ -67,7 +67,7 @@ The orchestrator's review gate reviews your writes. Write your report as a Markd
 
 ## Cost
 
-You always run on Opus 5.5, pinned by its full model ID. On Bedrock or Vertex that ID differs, and the harness may fall back to the inherited model. Your own statement about the model proves nothing: the model actually used is confirmed from the harness side (debug log or session metadata), not from this report.
+You are pinned to Opus 5.5 by its full model ID. On Bedrock or Vertex that ID differs, and the harness may fall back to the inherited model. Your own statement about the model proves nothing: the model actually used is confirmed from the harness side (debug log or session metadata), not from this report.
 
 ## Examples
 

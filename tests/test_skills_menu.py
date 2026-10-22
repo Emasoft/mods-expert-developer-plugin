@@ -730,13 +730,16 @@ def test_forge_agent_first_paragraph_is_the_dynamic_loading_instruction() -> Non
 
 
 def test_forge_agent_names_the_menu_and_its_heading() -> None:
-    """The report-first-line rule is unfakeable: the body names the preloaded skill but quotes none of the menu's own text.
+    """The report-first-line rule is checkable: the body names the preloaded skill but quotes none of the menu's own text.
 
     The agent must copy the Plugin Skills domain groups out of the menu it actually received. If the
     body already contained the menu H1 or a domain name, an agent that never got this plugin's menu
     (the preload resolved to another plugin's same-named skill) could still write a correct first line
     from the body alone. The model ID is likewise absent: an agent's claim about its own model proves
     nothing. "Mods" and "Plugins" are skipped: they are plain words the body legitimately uses.
+
+    The check discriminates against CPV's same-named menu (whose Plugin Skills section has no domain
+    groups, measured 2026-10-22 on claude-plugins-validation 5.22.5). It proves nothing more than that.
     The domain set is read from the menu file (every ### heading under "## Plugin Skills"), never pinned
     by hand. "Tutorials (reference only)" is OUT of the set: it is a reference-only section, not a
     chapter domain, so the body may say "tutorial" (a later increment adds a mods-tutorial-quickstart path).
@@ -755,12 +758,62 @@ def test_forge_agent_names_the_menu_and_its_heading() -> None:
     assert "Plugin Skills" in body and "not self-verifiable" in body
 
 
+# The only sentences allowed to pair [BLOCKED] with a tool name: the expert agent's Node prerequisite
+# (Node is not a tool skill) and the "Never report [BLOCKED] only because ..." prohibitions.
+_BLOCKED_ALLOWED = (
+    "a missing Node means `[BLOCKED]` naming it",
+    "Never report `[BLOCKED]` only because",
+)
+_TOOL_NAME = re.compile(r"\btldr\b|tldr-code|fastedit|jgrep|quicksilver|qs\.mjs|safe-delete")
+
+
+def _blocked_tool_sentences(text: str) -> list[str]:
+    """Sentences naming a `[BLOCKED` marker (bare, or with a reason such as `[BLOCKED: tool missing]`) and a tool skill, split on line ends and sentence ends so two bullets never merge."""
+    sentences = [s for line in text.splitlines() for s in re.split(r"(?<=[.!?])\s+", line)]
+    return [
+        s
+        for s in sentences
+        if "[BLOCKED" in s and _TOOL_NAME.search(s) and not any(ok in s for ok in _BLOCKED_ALLOWED)
+    ]
+
+
+def test_no_sentence_says_a_missing_tool_skill_means_blocked() -> None:
+    """No agent, menu, catalog, ledger or README sentence makes a missing tool skill or CLI a [BLOCKED] cause."""
+    files = [
+        *sorted((ROOT / "agents").glob("*.md")),
+        MENU / "SKILL.md",
+        MENU_CATALOG,
+        ROOT / "DELEGATION.md",
+        ROOT / "README.md",
+    ]
+    found = {f.name: bad for f in files if (bad := _blocked_tool_sentences(f.read_text(encoding="utf-8")))}
+    assert not found, f"a missing tool skill is called [BLOCKED]: {found}"
+
+
+@pytest.mark.parametrize(
+    "text, expected",
+    [
+        ("A missing `tldr-code` means `[BLOCKED]`.", 1),
+        ("- keep going\n- `fastedit` absent: report `[BLOCKED]`", 1),
+        ("Never report `[BLOCKED]` only because `jgrep` is absent.", 0),
+        ("a missing Node means `[BLOCKED]` naming it. Then check `tldr-code`.", 0),
+        ("`[BLOCKED]` on login. `quicksilver` is optional.", 0),
+        ("A missing `tldr` CLI means `[BLOCKED]`.", 1),
+        ("No `qs.mjs`: report `[BLOCKED: quicksilver missing]`.", 1),
+        ("Without `fastedit` stop with `[BLOCKED: fastedit absent]`.", 1),
+    ],
+)
+def test_blocked_tool_sentence_detection(text: str, expected: int) -> None:
+    """The absence-test helper flags a [BLOCKED] tool sentence and spares the allowed ones and split bullets."""
+    assert len(_blocked_tool_sentences(text)) == expected
+
+
 def test_menu_frontmatter_follows_the_cpv_spec() -> None:
     """The menu is a reference skill: CPV's name, not user-invocable, read-only tools, an accurate description.
 
     The description deviates from the CPV spec's literal tail ("Used by every agent in this plugin via
     cpv-the-skills-menu method.") on purpose: it would be false here, because only mods-forge-agent
-    preloads this menu; mods-expert-developer-agent keeps its own preload list (TRDD-CO536FX9). Every
+    preloads this menu; mods-expert-developer-agent keeps its own preload list. Every
     other word is the spec's.
     """
     fields, _ = _split(MENU / "SKILL.md")
@@ -771,7 +824,7 @@ def test_menu_frontmatter_follows_the_cpv_spec() -> None:
         "Dynamic skill menu for this plugin. Teaches agents which skills are available, when to use them, "
         "and how to load them with the Skill() tool. Use when an agent needs to pick a downstream skill at "
         "runtime. Used by mods-forge-agent via cpv-the-skills-menu method; mods-expert-developer-agent "
-        "keeps its own preload list (TRDD-CO536FX9)."
+        "keeps its own preload list."
     )
 
 
