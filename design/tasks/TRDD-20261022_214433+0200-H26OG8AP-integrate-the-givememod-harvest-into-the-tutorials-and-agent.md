@@ -4,7 +4,7 @@ title: Integrate the givememod harvest into the tutorials and agents
 column: todo
 status: tasked
 created: 2026-10-22T21:44:33+0200
-updated: 2026-10-22T22:47:38+0200
+updated: 2026-10-22T23:46:58+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: user
 task-type: feature
@@ -20,7 +20,7 @@ approval-datetime: 2026-10-22T21:44:33+0200
 # Integrate the givememod harvest into the tutorials and agents
 
 ## STATE
-CURRENT STATE 2026-10-22: harvest done (report: reports/givememod-harvest/20261022_213641+0200-harvest.md); not started. Sequenced AFTER TRDD-BNBDNR2V (mod-builder adoption, 0.4.0) and TRDD-JFB5E98B (lint exclusions), because the increments add files to the same tutorial folders. NEXT ACTION: increment I-1 (engine-traps.md). Order: TRDD-JFB5E98B, then TRDD-BNBDNR2V, then this card. Before I-1, extend tests/test_plugin_structure.py so the quickstart tutorial may hold references/. Line references FORGE:nn/QS:nn date from the harvest; re-locate by text (the menu is now skills/mods-the-skills-menu). Identity fields created-by/approval-judge read `user` only because trddgrep cannot change them; the main agent minted this card.
+CURRENT STATE 2026-10-22: harvest done (report: reports/givememod-harvest/20261022_213641+0200-harvest.md); not started. Sequenced AFTER TRDD-BNBDNR2V (mod-builder adoption, 0.4.0) and TRDD-JFB5E98B (lint exclusions), because the increments add files to the same tutorial folders. NEXT ACTION (after TRDD-71SH1V5W): increment I-1 (engine-traps.md). Order: TRDD-JFB5E98B, then TRDD-BNBDNR2V, then TRDD-71SH1V5W, then this card. Before I-1, extend tests/test_plugin_structure.py so the quickstart tutorial may hold references/. Line references FORGE:nn/QS:nn date from the harvest; re-locate by text (the menu is now skills/mods-the-skills-menu). Identity fields created-by/approval-judge read `user` only because trddgrep cannot change them; the main agent minted this card.
 
 ## User directive (verbatim)
 > here is another plugin with a treasure trove of techniues, ideas, skills, informations, tricks, etc. I'm not interested in the skill per se (the ability to automatically create a custom mod based on the analysis of the session , to improve the workflow next time the same issues are encountered). Instead i'm interested in all the ideas that are included  and used to achieve such feat. there are many precius things scattered all across all the files and scripts and skills/reference/templates/examples/etc. I want you to harvest the best ones and to integrate those into our plugin.
@@ -74,3 +74,4 @@ CURRENT STATE 2026-10-22: harvest done (report: reports/givememod-harvest/202610
 - 2026-10-22 orchestrator: the pre-I-1 extension of tests/test_plugin_structure.py also applies the two pre-existing ruff format hunks in test_load_guard_detects_references_and_stray_manifests.
 - 2026-10-22 orchestrator: correction. The CI-parity follow-up for new example files moved to TRDD-BNBDNR2V increment 2. What stays here: the verbatim BeLazy167 copies (hello-mod, redact-output, dice-tool, branch-band, notes-pane) are linted in CI only when one of them is edited. The first increment here that edits one must confirm SPELL_CSPELL, MARKDOWN_MARKDOWNLINT and BASH_SHFMT ran on it.
 - 2026-10-22 orchestrator: the two ruff format hunks are already applied in 7c3a79e; nothing left to do.
+- 2026-10-22 — queue order: this card now waits for TRDD-71SH1V5W (karanb192 mod-builder harvest), which waits for TRDD-BNBDNR2V; the order is the main agent's reading of the user's directive, offered to the user for veto.
