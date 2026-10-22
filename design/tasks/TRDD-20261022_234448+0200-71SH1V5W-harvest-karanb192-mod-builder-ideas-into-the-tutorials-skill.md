@@ -19,8 +19,6 @@ approval-datetime: 2026-10-22T23:44:48+0200
 
 # Harvest karanb192 mod-builder ideas into the tutorials, skills and agents
 
-
-
 ## ⏵ STATE — READ THIS FIRST ON RESUME (authoritative; supersedes the body) — 2026-10-22
 
 CURRENT STATE 2026-10-22: card minted, nothing started. Order (the main agent's reading of the directive, told to the user with a veto offer on 2026-10-22): start only after TRDD-BNBDNR2V reaches a terminal column (0.4.0 published); TRDD-H26OG8AP (givememod) runs after this card. NEXT ACTION: checklist item 1 (download and inventory) once BNBDNR2V is terminal.
