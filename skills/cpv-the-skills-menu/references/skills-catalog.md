@@ -11,7 +11,7 @@
 - [Troubleshooting](#troubleshooting)
 - [Tutorials (reference only)](#tutorials-reference-only)
 
-Full entries for the chapter skills of `mods-expert-developer-plugin`, grouped by domain. Each entry is derived from the skill's own SKILL.md: its description, its H1 and its section table of contents. The standalone tool skills are described in the menu's SKILL.md, not here.
+Full entries for the chapter skills of `mods-expert-developer-plugin`, grouped by domain. Each entry is derived from the skill's own SKILL.md: its description, its H1 and its section table of contents. The four standalone tool skills (optional, recommended; user-scope, not shipped by this plugin) are described in the menu's SKILL.md, not here.
 
 ## Mods
 

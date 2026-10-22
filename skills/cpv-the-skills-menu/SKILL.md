@@ -1,6 +1,6 @@
 ---
 name: cpv-the-skills-menu
-description: "Dynamic skill menu for this plugin. Teaches agents which skills are available, when to use them, and how to load them with the Skill() tool. Use when an agent needs to pick a downstream skill at runtime. Used by every agent in this plugin via cpv-the-skills-menu method."
+description: "Dynamic skill menu for this plugin. Teaches agents which skills are available, when to use them, and how to load them with the Skill() tool. Use when an agent needs to pick a downstream skill at runtime. Used by mods-forge-agent via cpv-the-skills-menu method; mods-expert-developer-agent keeps its own preload list (TRDD-CO536FX9)."
 user-invocable: false
 allowed-tools: Read
 ---
@@ -9,13 +9,13 @@ allowed-tools: Read
 
 ## Overview
 
-This menu lists every skill an agent of `mods-expert-developer-plugin` can load at runtime: the four user-scope tool skills the agents use but the plugin does not ship, the 61 chapter skills the plugin ships (60 adapted Claude Code documentation chapters and one community how-to), and three reference-only tutorials with example mods. It names each skill once, says what it covers, and shows how to load it. It holds no chapter content itself.
+This menu lists every skill an agent of `mods-expert-developer-plugin` can load at runtime: the four optional, recommended user-scope tool skills the agents use but the plugin does not ship, the 61 chapter skills the plugin ships (60 adapted Claude Code documentation chapters and one community how-to), and three reference-only tutorials with example mods. It names each skill once, says what it covers, and shows how to load it. It holds no chapter content itself.
 
 ## Prerequisites
 
 - The calling agent can call the `Skill` tool.
 - The chapter skills ship with `mods-expert-developer-plugin` and load under its namespace.
-- The four standalone skills are user-scope and installed separately; this plugin does not ship them.
+- The four standalone skills are user-scope, optional and recommended; they are installed separately and this plugin does not ship them.
 
 ## Instructions
 
@@ -32,7 +32,7 @@ The menu returns nothing itself. The chosen skill puts its content into context;
 ## Error Handling
 
 - A chapter skill does not resolve: `mods-expert-developer-plugin` is not installed or is another version; report `[BLOCKED]` naming the skill.
-- A standalone tool skill does not resolve: report `[BLOCKED]` naming it; never substitute another tool for it.
+- A standalone tool skill (optional, recommended) does not resolve: use the native tool for the job (Read for reading, Edit and Write for writing, Grep and Glob for locating, plain reading for triage) and say in the report that the skill was missing; never report `[BLOCKED]` only because it is absent.
 - No skill matches the topic: say so and name the closest domain; do not load skills speculatively.
 - A section anchor inside a chapter misses: follow that chapter skill's own Error Handling.
 
@@ -51,6 +51,8 @@ Input: a step must read lines 1 to 80 of the hooks module before editing it.
 - [the skills catalog](references/skills-catalog.md): the full entry of every chapter skill and every tutorial (Use when, Do not use when, Load with, Inputs, Outputs, Dependencies), grouped by the same domains as the tables below.
 
 ## Standalone Skills
+
+These four user-scope tool skills are optional, recommended. Load each on demand when it is installed; when one is not, use the native tool for the job (Read, Edit and Write, Grep and Glob, plain reading).
 
 ### tldr-code
 

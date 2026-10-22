@@ -128,7 +128,7 @@ PINNED_PRELOAD_SKILLS = {
 # skill that resolves in no skill search root of THIS plugin is a MAJOR finding
 # (Claude Code skips a missing preload and only logs a warning, so the agent silently
 # runs without it), and these four resolve only in a developer's own `~/.claude/skills`.
-# The agent loads them on demand instead and reports `[BLOCKED]` when one is missing.
+# The agent loads them on demand instead; they are optional but recommended, with a native fallback.
 #
 # Pinned so that a fifth tool skill is caught and a dropped one is not silently
 # tolerated. This constant is now a NEGATIVE list - the tool skills are what must NOT
@@ -302,9 +302,9 @@ def test_the_tool_skills_are_not_preloaded() -> None:
     agent that lacks four of its tools, while CI (where the user scope is empty)
     reports MAJOR=4 and turns the build red.
 
-    The agent loads these four on demand instead, and reports `[BLOCKED]` when one is
-    not installed. That behaviour lives in the agent body, not here; this test pins
-    the frontmatter side of it.
+    The agent loads these four on demand instead (they are optional but recommended, and the
+    agent falls back to native tools when one is not installed). That behaviour lives in the
+    agent body, not here; this test pins the frontmatter side of it.
     """
     listed = _frontmatter_skills()
     present = [name for name in TOOL_SKILLS if name in listed]
@@ -730,15 +730,39 @@ def test_forge_agent_first_paragraph_is_the_dynamic_loading_instruction() -> Non
 
 
 def test_forge_agent_names_the_menu_and_its_heading() -> None:
-    """The body names the preloaded skill in prose and quotes the menu's real H1 for the report's first line."""
-    _, body = _split(FORGE_AGENT)
+    """The report-first-line rule is unfakeable: the body names the preloaded skill but quotes none of the menu's own text.
+
+    The agent must copy the Plugin Skills domain groups out of the menu it actually received. If the
+    body already contained the menu H1 or a domain name, an agent that never got this plugin's menu
+    (the preload resolved to another plugin's same-named skill) could still write a correct first line
+    from the body alone. The model ID is likewise absent: an agent's claim about its own model proves
+    nothing. "Mods" and "Plugins" are skipped: they are plain words the body legitimately uses.
+    The domain set is read from the menu file (every ### heading under "## Plugin Skills"), never pinned
+    by hand. "Tutorials (reference only)" is OUT of the set: it is a reference-only section, not a
+    chapter domain, so the body may say "tutorial" (a later increment adds a mods-tutorial-quickstart path).
+    """
+    fields, body = _split(FORGE_AGENT)
     prose = re.sub(r"```.*?```", "", body, flags=re.DOTALL)
     assert "cpv-the-skills-menu" in prose
-    assert _h1(MENU) in body, "the report first-line example quotes a heading the menu no longer has"
+    menu_text = (MENU / "SKILL.md").read_text(encoding="utf-8")
+    domains = re.findall(r"^### (.+)$", menu_text.split("\n## Plugin Skills\n", 1)[1], re.M)
+    domains = [d for d in domains if d != "Tutorials (reference only)"]  # Tutorials is OUT of the set
+    assert len(domains) >= 7, "the menu's Plugin Skills chapter domains were not found"
+    assert _h1(MENU) not in body, "the body quotes the menu H1, so the first-line check can be faked"
+    leaked = [d for d in domains if d not in ("Mods", "Plugins") and d in body]
+    assert not leaked, f"the body names the menu domain headings {leaked}, so the first-line check can be faked"
+    assert fields["model"] not in body, "the body spells out the model ID"
+    assert "Plugin Skills" in body and "not self-verifiable" in body
 
 
 def test_menu_frontmatter_follows_the_cpv_spec() -> None:
-    """The menu is a reference skill: CPV's name and description, not user-invocable, read-only tools."""
+    """The menu is a reference skill: CPV's name, not user-invocable, read-only tools, an accurate description.
+
+    The description deviates from the CPV spec's literal tail ("Used by every agent in this plugin via
+    cpv-the-skills-menu method.") on purpose: it would be false here, because only mods-forge-agent
+    preloads this menu; mods-expert-developer-agent keeps its own preload list (TRDD-CO536FX9). Every
+    other word is the spec's.
+    """
     fields, _ = _split(MENU / "SKILL.md")
     assert fields["name"] == "cpv-the-skills-menu"
     assert fields["user-invocable"] is False
@@ -746,8 +770,47 @@ def test_menu_frontmatter_follows_the_cpv_spec() -> None:
     assert fields["description"] == (
         "Dynamic skill menu for this plugin. Teaches agents which skills are available, when to use them, "
         "and how to load them with the Skill() tool. Use when an agent needs to pick a downstream skill at "
-        "runtime. Used by every agent in this plugin via cpv-the-skills-menu method."
+        "runtime. Used by mods-forge-agent via cpv-the-skills-menu method; mods-expert-developer-agent "
+        "keeps its own preload list (TRDD-CO536FX9)."
     )
+
+
+def test_tool_skills_are_optional_but_recommended_with_a_native_fallback() -> None:
+    """Every place that names the four tool skills says optional-but-recommended and gives the native fallback.
+
+    User directive 2026-10-22: the tool skills are optional but recommended. An agent that reports
+    [BLOCKED] only because one is absent would stall a run the native tools can finish. Each pin below
+    is a sentence whose removal would silently bring the stall back.
+    """
+    forge = FORGE_AGENT.read_text(encoding="utf-8")
+    forge_tools = forge.split("\n## Tool skills\n", 1)[1].split("\n## ", 1)[0]
+    assert "OPTIONAL BUT RECOMMENDED" in forge_tools
+    assert "use the native equivalent: Read for reading" in forge_tools
+    assert "Never report `[BLOCKED]` only because a tool skill is absent." in forge_tools
+    assert "which recommended skills were missing" in forge_tools
+
+    expert = (ROOT / "agents/mods-expert-developer-agent.md").read_text(encoding="utf-8")
+    assert "OPTIONAL BUT RECOMMENDED" in expert
+    assert "use the native equivalent (Read for reading" in expert
+    assert "Never report `[BLOCKED]` only because an optional tool is absent." in expert
+    assert "report `[BLOCKED]` naming the missing prerequisite" not in expert
+
+    menu = (MENU / "SKILL.md").read_text(encoding="utf-8")
+    errors = menu.split("\n## Error Handling\n", 1)[1].split("\n## ", 1)[0]
+    assert "(optional, recommended) does not resolve: use the native tool for the job" in errors
+    assert "never report `[BLOCKED]` only because it is absent" in errors
+    standalone = menu.split("\n## Standalone Skills\n", 1)[1].split("\n## Plugin Skills\n", 1)[0]
+    assert "optional, recommended" in standalone
+    assert "optional, recommended" in menu.split("\n## Overview\n", 1)[1].split("\n## ", 1)[0]
+    assert "optional, recommended" in MENU_CATALOG.read_text(encoding="utf-8")
+
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    prerequisites = readme.split("\n## Prerequisites\n", 1)[1].split("\n## ", 1)[0]
+    assert "optional but recommended" in prerequisites
+    assert "the agents fall back to the native tools" in prerequisites
+    assert "Every `mods-forge-agent` dispatch runs at Opus price." in prerequisites
+    for name in (*TOOL_SKILLS, "safe-delete"):
+        assert f"`{name}`" in prerequisites, f"README Prerequisites does not describe {name}"
 
 
 def test_menu_skill_md_names_every_chapter_exactly_once() -> None:

@@ -92,7 +92,17 @@ Three tutorial skills are reference only: they hold worked examples for agents, 
 
 ## Prerequisites
 
-Both agents use the user-scope skills `tldr-code`, `fastedit`, `jgrep` and `quicksilver`, and the expert agent delegates to the user-scope agents `fast-worker` and `cheap-worker`. These are NOT bundled with this plugin, and they are NOT preloaded: each agent loads them on demand, because a preload of a skill this plugin does not ship is silently skipped by Claude Code. Without them an agent reports `[BLOCKED]`. Node is also required.
+The expert agent delegates to the user-scope agents `fast-worker` and `cheap-worker`, which are NOT bundled with this plugin. Node is required for the `quicksilver` skill.
+
+Both agents also use these user-scope skills. They are optional but recommended, they are NOT bundled with this plugin, and they are NOT preloaded (a preload of a skill this plugin does not ship is silently skipped by Claude Code): each agent loads them on demand when installed.
+
+- `tldr-code`: token-efficient reading of files, line ranges and symbols.
+- `fastedit`: verified, validated edits with backups.
+- `jgrep`: search for code by what it does, not by name.
+- `quicksilver`: bulk triage of many files, lines or items without reading them all.
+- `safe-delete`: recoverable deletion.
+
+Without them the agents fall back to the native tools (Read, Edit and Write, Grep and Glob, plain reading, and a plain `mv` into a gitignored `_dev` folder instead of a deletion) and list the missing skills in their report. Every `mods-forge-agent` dispatch runs at Opus price.
 
 ## Installation
 

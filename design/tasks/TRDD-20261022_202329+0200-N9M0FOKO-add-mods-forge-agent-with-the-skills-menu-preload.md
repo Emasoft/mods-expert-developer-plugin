@@ -4,7 +4,7 @@ title: Add mods-forge-agent with the skills-menu preload
 column: dev
 status: tasked
 created: 2026-10-22T20:23:29+0200
-updated: 2026-10-22T20:23:38+0200
+updated: 2026-10-22T21:15:18+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -47,6 +47,8 @@ CURRENT STATE 2026-10-22: in implementation by a dispatched worker (build spec d
 - [ ] ruff and cspell clean on changed files
 - [ ] CPV strict (the publish.py command, CPV v5.22.3) shows no new finding against the CRITICAL=0 MAJOR=0 MINOR=0 NIT=0 baseline, output saved under reports/cpv/
 - [ ] README, plugin.json and DELEGATION.md updated
+- [ ] After install, one dispatch's first report line names the menu's Plugin Skills domains correctly (proves the preload resolved to this plugin's menu, not CPV's same-named skill); if it does not, rename the menu to a plugin-unique name and re-measure CPV D9.
+- [ ] The model actually used is confirmed from the harness side (debug log or session metadata), not from the agent's own claim.
 
 ## Approval log
 
