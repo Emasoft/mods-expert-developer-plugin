@@ -8,7 +8,7 @@ metadata:
 
 # MODS TUTORIAL QUICKSTART
 
-Tutorial and reference example only. The mods-doc-* chapter skills of this plugin are authoritative and win on any disagreement. The example code under examples/ is for reading and copying into your own project; it is never installed or loaded as part of this plugin. Do not point --plugin-dir at a copy inside the plugin cache.
+Tutorial and reference example only. The mods-doc-* chapter skills of this plugin are authoritative and win on any disagreement, with one exception: for API names and shapes, the type files your running build generates win, because events and methods change across releases (chapter skill mods-doc-mods-development, chapter.md line 291). The example code under examples/ is for reading and copying into your own project; it is never installed or loaded as part of this plugin. Do not point --plugin-dir at a copy inside the plugin cache.
 
 ## Overview
 
@@ -27,6 +27,7 @@ The example mods live in two sibling tutorials: `mods-tutorial-call-intercept-mo
 ## Instructions
 
 0. Clarify before you build. Read [house conventions](references/house-conventions.md) and answer five questions about the mod: which surface it uses (status line, band, pane, tool hook), how often it updates, whether it starts on or off, what scope it covers (one project or every session), and its name. If the user has not said, ask. `scripts/new-mod.sh` accepts only a kebab-case name: lowercase letters and digits in words joined by single hyphens, starting with a letter (2 to 64 characters).
+   - Check that a mod suits the job before you build one. In `mods-doc-mods-overview`, the section that sets mods beside settings hooks, skills and MCP servers has a "Pick it when" row for each. When another of those already covers the job, build that instead. Replacing a working settings hook with a mod? Keep the hook until the mod has run on your build (this plugin's advice, not a chapter rule).
 1. Load the `plugin-authoring` skill and follow where it says to write the mod. Facts: `mods-doc-mods-development`, "Ask Claude for a mod".
 2. Copy the closest example from the index below into your folder and rename it in `.claude-plugin/plugin.json`. A name that starts with `claude-`, `anthropic-`, `anthropics-` or `cc-plugin-` is refused. Facts: `mods-doc-plugin-manifest-reference`.
 3. Read the types for the event you hook. Claude Code writes them under `.claude-plugin/types/` on each load, with a root `tsconfig.json`; never edit or commit `.claude-plugin/types/`. Facts: `mods-doc-mods-development`, "Change and test a mod".
@@ -49,6 +50,9 @@ The example mods live in two sibling tutorials: `mods-tutorial-call-intercept-mo
 | A `Client` module path must be a string literal | UNVERIFIED. |
 | `tsc` rejects a mount target unless `props` are the site's full props; copy the `PANE` constant of `notes-pane` | UNVERIFIED. |
 | `claude plugin test` reports `the rollout switch served off` for users on an LLM gateway | UNVERIFIED. |
+| A `*` hook also fires while the mods API is being built at `engine.create`, when `$` has no members yet | UNVERIFIED. The reference lists the `engine.create` event (`mods-doc-mods-reference`, chapter.md line 176) but says nothing about `*` hooks there. |
+| Testing a mod that relies on a second mod requires the second plugin to be installed and seated first | UNVERIFIED. The events chapter says only that dependency order follows the manifest `dependencies` list (`mods-doc-mods-and-events`, chapter.md line 311). |
+| Loading the built-in `plugin-authoring` skill starts the dev-mods watch | UNVERIFIED. The development chapter says only that the first saved file prompts to enable hot reloading (`mods-doc-mods-development`, chapter.md line 45), so step 1 stays. |
 
 ### Example index
 
@@ -76,7 +80,8 @@ A mod folder of your own that passes `claude plugin validate` and `claude plugin
 
 ## Error Handling
 
-- A chapter and this tutorial disagree: follow the chapter, and treat the tutorial line as stale.
+- A chapter and this tutorial disagree: follow the chapter, and treat the tutorial line as stale. The one exception is API names and shapes: there the type files your running build generates win (see the notice at the top of this skill).
+- The early-access flag `CLAUDE_CODE_ENABLE_FUNCTION_HOOKS` is still set: Claude Code v2.1.287 and later ignores it at any value, so `0` does not turn mods off; remove it (`mods-doc-mods-overview`, chapter.md line 131; `mods-doc-manage-mods-for-organizations`, chapter.md line 65).
 - A step fails or a hook never fires: load `mods-doc-mods-troubleshooting` and start at "Find out why a mod does nothing".
 - An UNVERIFIED trap matters to your mod: test it on your build before you rely on it, and prefer the documented call the Status column names.
 

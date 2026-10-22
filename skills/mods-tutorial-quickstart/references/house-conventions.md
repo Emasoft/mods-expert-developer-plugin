@@ -82,6 +82,7 @@ Every rule is tagged **House convention**. A convention is a choice that makes a
 - Verified: what you ran and saw (validate, test, type-check, a live load) and the command for each.
 - Needs human eyes: layout, colours, placement, wording, the behaviour of a key on the person's own terminal. A test cannot see these.
 - Name anything from the UNVERIFIED table below that the mod relies on.
+- For a clean experiment, launch with `CLAUDE_CONFIG_DIR` set to a fresh folder and `--setting-sources user`, so your real config and project settings stay out of it (`mods-doc-cc-debug-mode`, chapter.md line 129).
 
 ## The three quickstart scripts
 
