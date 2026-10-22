@@ -1,10 +1,11 @@
 NOTICE
 
 The MIT license in LICENSE applies to every file in this repository authored by Emasoft, that is,
-every file except skills/*/references/chapter.md, with the one exception noted below. This includes:
+every file except skills/*/references/chapter.md and the example code under skills/*/examples/,
+with the one exception noted below. This includes:
   - .claude-plugin/plugin.json
   - agents/mods-expert-developer-agent.md
-  - each skills/*/SKILL.md wrapper
+  - each skills/*/SKILL.md wrapper and tutorial
   - skills/*/agents/openai.yaml
   - README.md, CHANGELOG.md and NOTICE
   - the pipeline files: scripts/, git-hooks/, .github/, pyproject.toml, cliff.toml and the lint configuration files
@@ -18,3 +19,33 @@ only. These files are NOT licensed under MIT and remain subject to Anthropic's o
 
 The one exception is skills/mods-doc-run-background-sessions/references/chapter.md: it is original
 Emasoft text, a community how-to and not adapted Anthropic documentation, and it is licensed under MIT.
+
+The example mods under skills/mods-tutorial-call-intercept-mods/examples/ and
+skills/mods-tutorial-interface-mods/examples/ are copied from BeLazy167/claude-mods-skill
+(https://github.com/BeLazy167/claude-mods-skill, commit 396f0d4), and the three
+skills/mods-tutorial-*/SKILL.md tutorials adapt its creating-mods skill. The copies are verbatim,
+except three lines of examples/hello-mod/smoke.sh that Emasoft rewrote as if/then/else. They are
+included for reference only, are never loaded as part of this plugin, and are licensed under the
+MIT license of that repository, reproduced here:
+
+MIT License
+
+Copyright (c) 2026 BeLazy167
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

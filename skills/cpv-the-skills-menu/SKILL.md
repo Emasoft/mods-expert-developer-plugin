@@ -9,7 +9,7 @@ allowed-tools: Read
 
 ## Overview
 
-This menu lists every skill an agent of `mods-expert-developer-plugin` can load at runtime: the four user-scope tool skills the agents use but the plugin does not ship, and the 61 chapter skills the plugin ships (60 adapted Claude Code documentation chapters and one community how-to). It names each skill once, says what it covers, and shows how to load it. It holds no chapter content itself.
+This menu lists every skill an agent of `mods-expert-developer-plugin` can load at runtime: the four user-scope tool skills the agents use but the plugin does not ship, the 61 chapter skills the plugin ships (60 adapted Claude Code documentation chapters and one community how-to), and three reference-only tutorials with example mods. It names each skill once, says what it covers, and shows how to load it. It holds no chapter content itself.
 
 ## Prerequisites
 
@@ -48,7 +48,7 @@ Input: a step must read lines 1 to 80 of the hooks module before editing it.
 
 ## Resources
 
-- [the skills catalog](references/skills-catalog.md): the full entry of every chapter skill (Use when, Do not use when, Load with, Inputs, Outputs, Dependencies), grouped by the same domains as the table below.
+- [the skills catalog](references/skills-catalog.md): the full entry of every chapter skill and every tutorial (Use when, Do not use when, Load with, Inputs, Outputs, Dependencies), grouped by the same domains as the tables below.
 
 ## Standalone Skills
 
@@ -207,3 +207,13 @@ Every skill below loads as `mods-expert-developer-plugin:<skill>`. Its full entr
 | mods-expert-developer-plugin:mods-doc-tracing-the-origin-of-a-plugin | Plugin loading reference |
 | mods-expert-developer-plugin:mods-doc-troubleshooting-cc-setup | Troubleshoot installation and login |
 | mods-expert-developer-plugin:mods-doc-cc-debug-mode | Debug your configuration |
+
+### Tutorials (reference only)
+
+Worked examples for reading and copying, not chapters: the chapter skills above are authoritative and win on any disagreement, and the example code a tutorial carries is never loaded as part of the plugin.
+
+| Skill | Covers |
+|---|---|
+| mods-expert-developer-plugin:mods-tutorial-quickstart | Checklist for a first mod; traps the chapters do not settle; example index |
+| mods-expert-developer-plugin:mods-tutorial-call-intercept-mods | Example mods that block, rewrite and answer tool calls, and add a tool |
+| mods-expert-developer-plugin:mods-tutorial-interface-mods | Example mods that draw a band above the prompt and a pane |

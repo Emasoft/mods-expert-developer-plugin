@@ -5,7 +5,7 @@
 ![License](https://img.shields.io/badge/license-MIT-green)
 <!--BADGES-END-->
 
-A Claude Code plugin that bundles two agents (an expert agent that plans and evaluates, and a forge agent that builds), a skills menu, and 60 Claude Code documentation chapters plus one how-to (mods, plugins, hooks, skills, subagents, marketplaces, settings). Use it to create, fix, improve and evaluate Claude Code mods and plugins.
+A Claude Code plugin that bundles two agents (an expert agent that plans and evaluates, and a forge agent that builds), a skills menu, 60 Claude Code documentation chapters plus one how-to (mods, plugins, hooks, skills, subagents, marketplaces, settings), and three reference-only mod tutorials with example code. Use it to create, fix, improve and evaluate Claude Code mods and plugins.
 
 ## Components
 
@@ -14,7 +14,7 @@ Agents:
 - `mods-expert-developer-plugin:mods-expert-developer-agent` plans, evaluates and drives mod work: TRDD proposals, the PLAN, IMPLEMENT, VERIFY loop, delegation. It declares all 61 chapter skills in its frontmatter; Claude Code preloads the first 32.
 - `mods-expert-developer-plugin:mods-forge-agent` is the hands-on builder: it creates, edits, fixes and debugs mods (hooks modules, commands, panes), one planned TRDD increment or one concrete fix/debug request per dispatch, tests them on both the terminal and Desktop surfaces, and returns a report path. It never commits, publishes or deletes. It preloads only the skills menu and loads each chapter on demand. It is pinned to Opus 5.5 (`model: claude-opus-5-5`), so every dispatch is billed at Opus rates whatever model the calling session runs; on Bedrock or Vertex that model ID differs and the harness may fall back to the inherited model.
 
-Skills menu: the `cpv-the-skills-menu` skill (`skills/cpv-the-skills-menu/SKILL.md`) is the forge agent's only preload. It names every chapter skill once with its namespaced name, grouped by domain, plus the four user-scope tool skills; the full per-skill entries are in `skills/cpv-the-skills-menu/references/skills-catalog.md`. It is a catalogue of the chapters, not a chapter, so it has no row in the table below.
+Skills menu: the `cpv-the-skills-menu` skill (`skills/cpv-the-skills-menu/SKILL.md`) is the forge agent's only preload. It names every chapter skill once with its namespaced name, grouped by domain, plus the three reference-only tutorials in a group of their own and the four user-scope tool skills; the full per-skill entries are in `skills/cpv-the-skills-menu/references/skills-catalog.md`. It is a catalogue of the chapters, not a chapter, so it has no row in the table below.
 
 Skills: plugin skills are namespaced `mods-expert-developer-plugin:<skill>` and are reference-only (`user-invocable: false`). Sixty wrap a documentation chapter; `mods-doc-run-background-sessions` wraps an original community how-to.
 
@@ -82,6 +82,14 @@ Skills: plugin skills are namespaced `mods-expert-developer-plugin:<skill>` and 
 | mods-doc-troubleshooting-plugins | TROUBLESHOOTING PLUGINS |
 | mods-doc-worktrees-reference | WORKTREES REFERENCE |
 
+## Tutorials
+
+Three tutorial skills are reference only: they hold worked examples for agents, and they do not replace the chapter skills, which stay authoritative and win on any disagreement. They are adapted from BeLazy167/claude-mods-skill (MIT, see NOTICE). The example code under each tutorial's `examples/` folder is for reading and copying into your own project; it is never installed or loaded as part of this plugin.
+
+- `mods-tutorial-quickstart`: a step-by-step checklist for a first mod that names the chapter skill for each step, the traps the chapters do not settle (marked UNVERIFIED where they do not confirm them), and an index of the example mods.
+- `mods-tutorial-call-intercept-mods`: the `hello-mod`, `redact-output` and `dice-tool` example mods, which block, rewrite and answer tool calls.
+- `mods-tutorial-interface-mods`: the `branch-band` and `notes-pane` example mods, which draw a band above the prompt and a pane opened by a command.
+
 ## Prerequisites
 
 Both agents use the user-scope skills `tldr-code`, `fastedit`, `jgrep` and `quicksilver`, and the expert agent delegates to the user-scope agents `fast-worker` and `cheap-worker`. These are NOT bundled with this plugin, and they are NOT preloaded: each agent loads them on demand, because a preload of a skill this plugin does not ship is silently skipped by Claude Code. Without them an agent reports `[BLOCKED]`. Node is also required.
@@ -126,7 +134,7 @@ claude plugin validate .
 
 ## Adding or reordering a skill
 
-Five artifacts list the skills, and the plugin's tests require specific relationships
+Five artifacts list the chapter skills, and the plugin's tests require specific relationships
 between them. A skill addition is not one edit:
 
 1. `skills/<name>/SKILL.md` — the wrapper, with its `skills/<name>/references/chapter.md` and `skills/<name>/agents/openai.yaml`.
@@ -134,6 +142,7 @@ between them. A skill addition is not one edit:
 3. `agents/mods-expert-developer-agent.md` — an entry in the `skills:` frontmatter AND a row in the "Chapter skill index" table, at the same position in the same order, so the two copies of the routing order agree. The body table must cover every skill exactly once, and its label column must match each SKILL.md's H1.
 4. `PINNED_PRELOAD_SKILLS` in `tests/test_skills_menu.py` — the set of skills occupying the first 32 frontmatter entries, which are the ones Claude Code preloads in full. It is mirrored as a set, not a list: reordering within the window does not change it, but adding a skill at position 30 or earlier pushes another skill out, and the set must be updated to match. Read the frontmatter's own diff too, since the set records the membership and not which member was displaced. The user-scope tool skills are deliberately NOT in the frontmatter, so they never occupy a window slot; `tests/test_skills_menu.py` asserts their absence.
 5. `skills/cpv-the-skills-menu/` — a row in the right domain table of its `SKILL.md` and a full entry in `skills/cpv-the-skills-menu/references/skills-catalog.md`, both under the namespaced name `mods-expert-developer-plugin:<name>` and derived only from the new skill's own `SKILL.md`. The tests require each chapter skill exactly once in both files. A skill that catalogues the chapters instead of wrapping one goes into `CATALOG_SKILLS`, which both test files define and assert equal.
+6. A tutorial skill is reference-only and is not a chapter: its name contains `tutorial`, it skips steps 2 to 4, and it goes into `TUTORIAL_SKILLS`, which both test files define and assert equal. It needs a row in the "Tutorials (reference only)" group of the menu's `SKILL.md`, an entry in the "Tutorials (reference only)" section of the catalog, and a line in the Tutorials section above. Its first body paragraph is the reference-only notice, and its example code lives only under `skills/<name>/examples/<example>/`.
 
 Then run the tests:
 
@@ -143,4 +152,4 @@ uv run --project . pytest -q tests/
 
 ## License
 
-The plugin's own files are licensed under MIT (see LICENSE). The reference chapters are Anthropic documentation and are not covered by MIT; see NOTICE.
+The plugin's own files are licensed under MIT (see LICENSE). The reference chapters are Anthropic documentation and are not covered by MIT. The tutorial example mods are copied from BeLazy167/claude-mods-skill under its own MIT license. See NOTICE for both.

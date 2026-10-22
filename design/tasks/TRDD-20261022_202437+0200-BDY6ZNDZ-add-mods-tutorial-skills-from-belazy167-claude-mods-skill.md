@@ -4,7 +4,7 @@ title: Add mods tutorial skills from BeLazy167 claude-mods-skill
 column: todo
 status: tasked
 created: 2026-10-22T20:24:37+0200
-updated: 2026-10-22T20:28:56+0200
+updated: 2026-10-22T20:36:14+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -39,6 +39,7 @@ If the measurement forces renaming the nested manifest or hooks.json, each tutor
 Reading list: keep only Anthropic's own sources (the mods docs and the built-in mods source); drop the community catalogue and third-party mod links, per the earlier directive to remove references to other external mods or plugins.
 API claims from the source (for example $.command.run({command:'compact'}), atom/read/update from 'claude-code', one plain hook per event per module, types laid under .claude-plugin/types/) are checked against the mods-doc chapters; a claim the chapters do not confirm is marked UNVERIFIED or dropped, never stated as fact.
 Executor: the plugin's own agents - mods-forge-agent once installed, mods-expert-developer-agent until then; the orchestrator commits a checkpoint before each dispatch.
+MEASURED 2026-10-22 (reports/measure/20261022_202816+0200-nested-example-manifests.md): Claude Code ignores nested plugin.json/hooks.json under skills/; renaming them changes nothing for CPV strict. DECISION: example manifests stay unrenamed (copy-runnable); smoke.sh's three SC2015 lines become if/then/else with identical exit behaviour; skills/[^/]+/examples/ is excluded from the cosmetic linters only (jscpd, cspell, shfmt, markdownlint) to keep upstream code faithful, and stays under shellcheck, jsonlint and CPV strict. This scoped exclusion is a design rule, not a waiver.
 
 ## Acceptance checklist
 - [ ] Measurement report on nested manifests saved under reports/measure/.
@@ -47,9 +48,10 @@ Executor: the plugin's own agents - mods-forge-agent once installed, mods-expert
 - [ ] Overlap stripped; each removed topic links its chapter skill.
 - [ ] NOTICE carries the MIT text for BeLazy167/claude-mods-skill.
 - [ ] Menu and README list the tutorials as reference-only.
-- [ ] uv run pytest, claude plugin validate ., CI-parity linters and cpv-remote-validate plugin . --strict at v5.22.3 pass with no waiver.
+- [ ] uv run pytest, claude plugin validate ., the CI-parity linters (examples excluded only from the cosmetic linters named in Design) and cpv-remote-validate plugin . --strict at v5.22.3 pass with no waiver.
 - [ ] claude plugin test . at the plugin root does not collect the example tests (measured).
 - [ ] tests/test_plugin_structure.py's skill-folder count is updated deliberately to the final number.
+- [ ] CPV strict re-run on the final tree with all five examples in place (not inferred), saved under reports/cpv/.
 
 ## Approval log
 

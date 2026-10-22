@@ -214,7 +214,11 @@ SKILL_DIRS = sorted(d for d in SKILLS.iterdir() if d.is_dir())
 # fails if the two drift. A catalog skill indexes the chapters instead of wrapping one, so it is not
 # routed by the expert agent and is not a row of the README Components table.
 CATALOG_SKILLS = {"cpv-the-skills-menu"}
-DOC_SKILLS = [d.name for d in SKILL_DIRS if d.name not in CATALOG_SKILLS]
+# Identical copy of TUTORIAL_SKILLS in tests/test_plugin_structure.py; test_tutorial_skills_copies_agree fails if the
+# two drift. A tutorial is reference-only (TRDD-BDY6ZNDZ): it is listed by the menu in its own group, but it is not a
+# chapter, so it is not routed by the expert agent and is not a row of the README Components table.
+TUTORIAL_SKILLS = {"mods-tutorial-quickstart", "mods-tutorial-call-intercept-mods", "mods-tutorial-interface-mods"}
+DOC_SKILLS = [d.name for d in SKILL_DIRS if d.name not in CATALOG_SKILLS | TUTORIAL_SKILLS]
 
 
 def test_preload_window_is_exactly_the_pinned_roster() -> None:
@@ -670,8 +674,18 @@ def _menu_table_skills(text: str) -> list[str]:
     return rows
 
 
-def _expected_chapter_names() -> list[str]:
-    return sorted(f"{_namespace()}:{name}" for name in DOC_SKILLS)
+def _expected_menu_names() -> list[str]:
+    """Every name the menu tables and the catalog list: the chapters plus the reference-only tutorials."""
+    return sorted(f"{_namespace()}:{name}" for name in [*DOC_SKILLS, *TUTORIAL_SKILLS])
+
+
+def test_tutorial_skills_copies_agree() -> None:
+    """TUTORIAL_SKILLS here equals the copy in test_plugin_structure.py, so the two files exclude the same skills."""
+    spec = importlib.util.spec_from_file_location("_structure", ROOT / "tests" / "test_plugin_structure.py")
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    assert module.TUTORIAL_SKILLS == TUTORIAL_SKILLS
 
 
 def test_catalog_skills_copies_agree() -> None:
@@ -737,29 +751,33 @@ def test_menu_frontmatter_follows_the_cpv_spec() -> None:
 
 
 def test_menu_skill_md_names_every_chapter_exactly_once() -> None:
-    """The SKILL.md summary tables list each chapter skill once, by its namespaced name."""
+    """The SKILL.md summary tables list each chapter skill and each tutorial once, by its namespaced name."""
     rows = _menu_table_skills((MENU / "SKILL.md").read_text(encoding="utf-8"))
     assert len(rows) == len(set(rows)), "a chapter appears twice in the menu tables"
-    assert sorted(rows) == _expected_chapter_names()
+    assert sorted(rows) == _expected_menu_names()
 
 
 def test_menu_catalog_names_every_chapter_exactly_once() -> None:
-    """The full catalog has exactly one `### <namespace>:<chapter>` entry per chapter skill."""
+    """The full catalog has exactly one `### <namespace>:<skill>` entry per chapter skill and per tutorial."""
     headings = re.findall(r"^### (.+)$", MENU_CATALOG.read_text(encoding="utf-8"), re.M)
     assert len(headings) == len(set(headings)), "a chapter has two catalog entries"
-    assert sorted(headings) == _expected_chapter_names()
+    assert sorted(headings) == _expected_menu_names()
 
 
 def test_every_menu_skill_call_uses_the_manifest_namespace() -> None:
-    """Every Skill() call in the menu loads a chapter as <plugin.json name>:<chapter> or a tool skill by bare name."""
+    """Every Skill() call loads a chapter or tutorial as <plugin.json name>:<skill>, or a tool skill by bare name."""
     namespace = _namespace()
     # The Instructions step shows the generic form with a `<skill>` placeholder; it must carry the namespace too.
-    allowed = {f"{namespace}:{name}" for name in DOC_SKILLS} | set(TOOL_SKILLS) | {f"{namespace}:<skill>"}
+    allowed = (
+        {f"{namespace}:{name}" for name in [*DOC_SKILLS, *TUTORIAL_SKILLS]}
+        | set(TOOL_SKILLS)
+        | {f"{namespace}:<skill>"}
+    )
     skill_text = (MENU / "SKILL.md").read_text(encoding="utf-8")
     catalog_text = MENU_CATALOG.read_text(encoding="utf-8")
     bad = sorted({target for text in (skill_text, catalog_text) for target in SKILL_CALL.findall(text)} - allowed)
     assert not bad, f"Skill() calls with an unknown or wrongly namespaced target: {bad}"
-    assert sorted(LOAD_WITH.findall(catalog_text)) == _expected_chapter_names(), "a catalog entry lacks its Load with line"
+    assert sorted(LOAD_WITH.findall(catalog_text)) == _expected_menu_names(), "a catalog entry lacks its Load with line"
     assert sorted(LOAD_WITH.findall(skill_text)) == sorted(TOOL_SKILLS), "the standalone entries lack Load with lines"
 
 
@@ -791,3 +809,17 @@ def test_menu_skill_body_is_under_500_lines() -> None:
     """CPV rejects a SKILL.md over 500 lines (MAJOR); the full entries belong in the catalog reference."""
     _, body = _split(MENU / "SKILL.md")
     assert len(body.splitlines()) < 500
+
+
+def test_menu_groups_the_tutorials_as_reference_only() -> None:
+    """The tutorials, and only them, sit under a "Tutorials (reference only)" heading in SKILL.md and in the catalog."""
+    expected = sorted(f"{_namespace()}:{name}" for name in TUTORIAL_SKILLS)
+    skill_text = (MENU / "SKILL.md").read_text(encoding="utf-8")
+    assert "\n### Tutorials (reference only)\n" in skill_text, "SKILL.md has no Tutorials (reference only) group"
+    group = skill_text.split("\n### Tutorials (reference only)\n", 1)[1].split("\n#", 1)[0]
+    rows = [m.group(1) for line in group.splitlines() if (m := TABLE_ROW.match(line)) and m.group(1) != "Skill"]
+    assert sorted(rows) == expected, "the SKILL.md Tutorials group does not list exactly the tutorials"
+    catalog = MENU_CATALOG.read_text(encoding="utf-8")
+    assert "\n## Tutorials (reference only)\n" in catalog, "the catalog has no Tutorials (reference only) section"
+    section = catalog.split("\n## Tutorials (reference only)\n", 1)[1].split("\n## ", 1)[0]
+    assert sorted(re.findall(r"^### (.+)$", section, re.M)) == expected, "the catalog Tutorials section is wrong"

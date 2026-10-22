@@ -9,6 +9,7 @@
 - [Settings and Configuration](#settings-and-configuration)
 - [Sessions and Runtime](#sessions-and-runtime)
 - [Troubleshooting](#troubleshooting)
+- [Tutorials (reference only)](#tutorials-reference-only)
 
 Full entries for the chapter skills of `mods-expert-developer-plugin`, grouped by domain. Each entry is derived from the skill's own SKILL.md: its description, its H1 and its section table of contents. The standalone tool skills are described in the menu's SKILL.md, not here.
 
@@ -879,3 +880,49 @@ Full entries for the chapter skills of `mods-expert-developer-plugin`, grouped b
 **Outputs:** that section of the chapter read into context; nothing is written.
 
 **Dependencies:** the chapter file in the skill's own references folder.
+
+## Tutorials (reference only)
+
+These three skills are worked examples for reading and copying, not chapters. The mods-doc-* chapter skills are authoritative and win on any disagreement, and the example code a tutorial carries under its examples folder is never installed or loaded as part of the plugin. They are adapted from BeLazy167/claude-mods-skill (MIT).
+
+### mods-expert-developer-plugin:mods-tutorial-quickstart
+
+**Use when:** building a first mod and you want a step-by-step checklist that names the chapter skill for each step, the traps the chapters do not settle (UNVERIFIED where they do not confirm them), an index of the example mods, and the Anthropic mods to read next. Sections: Instructions; Traps the chapters do not settle; Example index; Anthropic mods to read next.
+
+**Do not use when:** the task needs the authoritative facts of a step: load the chapter skill the step names instead. Also not for example code: it carries none.
+
+**Load with:** `Skill({skill: "mods-expert-developer-plugin:mods-tutorial-quickstart", args: "<section title>"})`
+
+**Inputs:** one section title from the list above, or the mod you want to build.
+
+**Outputs:** that section read into context; nothing is written.
+
+**Dependencies:** none beyond the chapter skills it names.
+
+### mods-expert-developer-plugin:mods-tutorial-call-intercept-mods
+
+**Use when:** writing a mod that blocks, rewrites or answers tool calls, or adds a tool the model can call, and you want a complete example to copy: `hello-mod` (a guard that fails closed), `redact-output` (rewrite a result after `next`) or `dice-tool` (`$.tool.register` and a `tool.call` hook on `mcp__<plugin>__<tool>`). Sections: Instructions; About smoke.sh; Where the examples differ from the chapters.
+
+**Do not use when:** the task needs the authoritative semantics of `tool.call`, `next` or `.catch`: load `mods-expert-developer-plugin:mods-doc-mods-and-events` instead. Never run the example code from inside the plugin.
+
+**Load with:** `Skill({skill: "mods-expert-developer-plugin:mods-tutorial-call-intercept-mods", args: "<section title>"})`
+
+**Inputs:** one section title from the list above, or the tool-call behaviour you want.
+
+**Outputs:** that section read into context, and the example files it links read on demand; nothing is written.
+
+**Dependencies:** the example mods under the skill's own examples folder.
+
+### mods-expert-developer-plugin:mods-tutorial-interface-mods
+
+**Use when:** writing a mod that draws a band above the prompt or a pane opened by a slash command, and you want a complete example to copy: `branch-band` (a timer, `$.process.run` and `$.state` atoms) or `notes-pane` (commands, a `Pane` with a `Button`, and `$.store`). Sections: Instructions; Where the examples differ from the chapters.
+
+**Do not use when:** the task needs the authoritative facts on render sites, elements or state: load `mods-expert-developer-plugin:mods-doc-mods-interfaces` instead. Never run the example code from inside the plugin.
+
+**Load with:** `Skill({skill: "mods-expert-developer-plugin:mods-tutorial-interface-mods", args: "<section title>"})`
+
+**Inputs:** one section title from the list above, or what you want to draw.
+
+**Outputs:** that section read into context, and the example files it links read on demand; nothing is written.
+
+**Dependencies:** the example mods under the skill's own examples folder.

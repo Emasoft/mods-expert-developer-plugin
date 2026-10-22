@@ -3,7 +3,9 @@
 The plugin ships no executable code: its behaviour IS its file layout (an expert agent
 that declares 61 routing chapter skills, 60 wrapping an adapted documentation chapter and
 one wrapping a community how-to; a forge agent that preloads only the skills menu,
-skills/cpv-the-skills-menu, which catalogues those 61 chapters and is not itself a chapter).
+skills/cpv-the-skills-menu, which catalogues those 61 chapters and is not itself a chapter;
+and three reference-only tutorial skills whose example mods live under their examples/
+folders and are never loaded as part of the plugin).
 These tests pin the invariants that make that layout work, so a later edit that
 breaks routing or progressive discovery fails the publish gate instead of
 shipping silently.
@@ -27,7 +29,40 @@ SKILL_DIRS = sorted(d for d in SKILLS.iterdir() if d.is_dir())
 # are not routed by the expert agent and have no README Components row. Every chapter-enumerating
 # test iterates CHAPTER_DIRS. tests/test_skills_menu.py keeps an identical copy and asserts the two agree.
 CATALOG_SKILLS = {"cpv-the-skills-menu"}
-CHAPTER_DIRS = [d for d in SKILL_DIRS if d.name not in CATALOG_SKILLS]
+# Tutorial skills (TRDD-BDY6ZNDZ): reference-only walkthroughs adapted from BeLazy167/claude-mods-skill (MIT). They are
+# not chapters: no references/chapter.md, not routed by the expert agent, no README Components row, so every
+# chapter-enumerating test skips them through CHAPTER_DIRS. tests/test_skills_menu.py keeps an identical copy.
+TUTORIAL_SKILLS = {"mods-tutorial-quickstart", "mods-tutorial-call-intercept-mods", "mods-tutorial-interface-mods"}
+CHAPTER_DIRS = [d for d in SKILL_DIRS if d.name not in CATALOG_SKILLS | TUTORIAL_SKILLS]
+TUTORIAL_DIRS = [d for d in SKILL_DIRS if d.name in TUTORIAL_SKILLS]
+# The example mods each tutorial carries under its examples/ folder, by folder name.
+TUTORIAL_EXAMPLES = {
+    "mods-tutorial-quickstart": set(),
+    "mods-tutorial-call-intercept-mods": {"hello-mod", "redact-output", "dice-tool"},
+    "mods-tutorial-interface-mods": {"branch-band", "notes-pane"},
+}
+# The first body paragraph of every tutorial, verbatim: it tells an agent the chapters win and the examples never load.
+TUTORIAL_NOTICE = (
+    "Tutorial and reference example only. The mods-doc-* chapter skills of this plugin are authoritative and win on"
+    " any disagreement. The example code under examples/ is for reading and copying into your own project; it is never"
+    " installed or loaded as part of this plugin. Do not point --plugin-dir at a copy inside the plugin cache."
+)
+# File types that count as example code for the placement rule.
+CODE_SUFFIXES = {".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".mts", ".cts", ".sh", ".json"}
+# The MIT permission text of BeLazy167/claude-mods-skill, whitespace-normalised, that NOTICE must reproduce in full.
+MIT_PERMISSION_SENTENCES = (
+    "Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated"
+    ' documentation files (the "Software"), to deal in the Software without restriction, including without limitation'
+    " the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and"
+    " to permit persons to whom the Software is furnished to do so, subject to the following conditions:",
+    "The above copyright notice and this permission notice shall be included in all copies or substantial portions of"
+    " the Software.",
+    'THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO'
+    " THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE"
+    " AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF"
+    " CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER"
+    " DEALINGS IN THE SOFTWARE.",
+)
 # Chapter TOCs use "* " (the marker of the Anthropic body, so markdownlint MD004 stays consistent);
 # the SKILL.md copy keeps "- ". Entries are compared by indent, title and anchor, not by marker.
 CHAPTER_TOC_ENTRY = re.compile(r"^( *)[-*] \[(.+)\]\(#([^)\s]+)\)$")
@@ -67,8 +102,9 @@ def _chapter_toc(chapter: str) -> list[tuple[str, str, str]]:
 
 def test_every_skill_ships_wrapper_chapter_and_policy() -> None:
     """Every skill ships SKILL.md and agents/openai.yaml; every chapter skill also ships references/chapter.md."""
-    assert len(SKILL_DIRS) == 62
+    assert len(SKILL_DIRS) == 65
     assert len(CHAPTER_DIRS) == 61
+    assert len(TUTORIAL_DIRS) == 3
     for skill in SKILL_DIRS:
         for rel in ("SKILL.md", "agents/openai.yaml"):
             assert (skill / rel).is_file(), f"{skill.name} lacks {rel}"
@@ -185,6 +221,8 @@ PINNED_CSPELL_IGNORE_PATHS = [
     "**/__fixtures__/**",
     "**/testdata/**",
     "**/fixtures/**",
+    # TRDD-BDY6ZNDZ DECISION: cspell skips the verbatim tutorial example mods; see .mega-linter.yml.
+    "**/skills/*/examples/**",
 ]
 
 
@@ -210,6 +248,8 @@ PINNED_JSCPD_IGNORE = [
     "**/__fixtures__/**",
     "**/testdata/**",
     "**/fixtures/**",
+    # TRDD-BDY6ZNDZ DECISION: jscpd skips the verbatim tutorial example mods; see .mega-linter.yml.
+    "**/skills/*/examples/**",
     "**/node_modules/**",
     "**/.git/**",
 ]
@@ -246,3 +286,106 @@ def test_mega_linter_filter_matches_pinned_regex() -> None:
     """.mega-linter.yml FILTER_REGEX_EXCLUDE equals the pinned CPV canon string exactly."""
     config = yaml.safe_load((ROOT / ".mega-linter.yml").read_text(encoding="utf-8"))
     assert config["FILTER_REGEX_EXCLUDE"] == CANON_MEGALINTER_FILTER_REGEX_EXCLUDE
+
+
+# --- tutorial skills (TRDD-BDY6ZNDZ) --------------------------------------------
+#
+# The user's directive: the tutorials are reference examples for agents, never a replacement for the
+# mods-doc-* chapters, every tutorial name contains "tutorial", and the example code lives in subfolders
+# of its tutorial skill so it reads as code to read, not as part of the plugin. These tests pin each of
+# those properties, so a later edit that blurs the line between a tutorial and a chapter fails here.
+
+
+def _misplaced_example_code(skills_root: Path, tutorials: set[str]) -> list[str]:
+    """Code files and nested .claude-plugin folders under `skills_root` that are not inside a tutorial's examples/<example>/."""
+    misplaced: list[str] = []
+    for path in sorted(skills_root.rglob("*")):
+        is_code = path.is_file() and path.suffix in CODE_SUFFIXES
+        is_manifest_dir = path.is_dir() and path.name == ".claude-plugin"
+        if not (is_code or is_manifest_dir):
+            continue
+        parts = path.relative_to(skills_root).parts
+        if not (len(parts) >= 4 and parts[0] in tutorials and parts[1] == "examples"):
+            misplaced.append("/".join(parts))
+    return misplaced
+
+
+def test_every_tutorial_skill_ships_and_is_named_as_a_tutorial() -> None:
+    """The shipped skills whose name contains "tutorial" are exactly TUTORIAL_SKILLS, and every member is shipped."""
+    assert all("tutorial" in name for name in TUTORIAL_SKILLS)
+    assert {d.name for d in SKILL_DIRS if "tutorial" in d.name} == TUTORIAL_SKILLS
+    assert {d.name for d in TUTORIAL_DIRS} == TUTORIAL_SKILLS
+    assert set(TUTORIAL_EXAMPLES) == TUTORIAL_SKILLS
+
+
+@pytest.mark.parametrize("name", sorted(TUTORIAL_SKILLS))
+def test_tutorial_opens_with_the_reference_only_notice(name: str) -> None:
+    """The body is the H1 line, then the notice verbatim, then ## Overview: the notice is the first thing an agent reads."""
+    text = (SKILLS / name / "SKILL.md").read_text(encoding="utf-8")
+    body = text[text.index("\n---\n", 4) + 5 :]
+    paragraphs = [p.strip() for p in body.strip().split("\n\n")]
+    assert paragraphs[0].startswith("# ") and "\n" not in paragraphs[0], f"{name} does not open with an H1 line"
+    assert paragraphs[1] == TUTORIAL_NOTICE, f"{name}: the first body paragraph is not the notice verbatim"
+    assert paragraphs[2].split("\n", 1)[0] == "## Overview", f"{name}: ## Overview does not follow the notice"
+
+
+def test_example_code_lives_only_under_a_tutorial_examples_folder() -> None:
+    """Every code file and nested .claude-plugin folder under skills/ sits in skills/<tutorial>/examples/<example>/."""
+    misplaced = _misplaced_example_code(SKILLS, TUTORIAL_SKILLS)
+    assert not misplaced, f"example code outside a tutorial's examples/ folder: {misplaced}"
+
+
+@pytest.mark.parametrize(
+    ("rel", "expected"),
+    [
+        ("mods-tutorial-x/examples/demo/hooks/register.ts", []),
+        ("mods-tutorial-x/examples/demo/.claude-plugin/plugin.json", []),
+        ("mods-tutorial-x/register.ts", ["mods-tutorial-x/register.ts"]),
+        ("mods-doc-x/examples/demo/hooks/register.ts", ["mods-doc-x/examples/demo/hooks/register.ts"]),
+        ("mods-tutorial-x/references/demo.sh", ["mods-tutorial-x/references/demo.sh"]),
+    ],
+)
+def test_misplaced_example_code_detection(tmp_path: Path, rel: str, expected: list[str]) -> None:
+    """Counter-examples for the placement rule: code outside a tutorial's examples/ is reported, code inside is not."""
+    target = tmp_path / rel
+    target.parent.mkdir(parents=True)
+    target.write_text("x", encoding="utf-8")
+    assert _misplaced_example_code(tmp_path, {"mods-tutorial-x"}) == expected
+
+
+def test_each_tutorial_carries_exactly_its_example_mods() -> None:
+    """Each tutorial's examples/ holds exactly its pinned examples, each a complete mod under its original file names.
+
+    The manifests keep their names by a measured decision recorded on TRDD-BDY6ZNDZ: Claude Code does not load a
+    plugin.json or hooks.json nested under skills/, and renaming them changed nothing for CPV, so they keep the
+    names that make a copied example runnable.
+    """
+    for name, expected in TUTORIAL_EXAMPLES.items():
+        folder = SKILLS / name / "examples"
+        found = {d.name for d in folder.iterdir() if d.is_dir()} if folder.is_dir() else set()
+        assert found == expected, f"{name}: examples/ holds {sorted(found)}, expected {sorted(expected)}"
+        for example in sorted(expected):
+            root = folder / example
+            for rel in (".claude-plugin/plugin.json", "hooks/hooks.json"):
+                assert (root / rel).is_file(), f"{name}/examples/{example} lacks {rel}"
+            assert sorted((root / "tests").glob("*.test.ts")), f"{name}/examples/{example} has no tests/*.test.ts"
+
+
+def test_notice_carries_the_mit_text_of_the_tutorial_source() -> None:
+    """NOTICE names BeLazy167/claude-mods-skill with its MIT copyright line and the full permission text."""
+    text = " ".join((ROOT / "NOTICE").read_text(encoding="utf-8").split())
+    assert "BeLazy167/claude-mods-skill" in text
+    assert "Copyright (c) 2026 BeLazy167" in text
+    for sentence in MIT_PERMISSION_SENTENCES:
+        assert sentence in text, f"NOTICE lacks the MIT sentence starting {sentence[:40]!r}"
+
+
+def test_readme_lists_the_tutorials_as_reference_only() -> None:
+    """README has a Tutorials section that names every tutorial and says they are reference-only, never a replacement."""
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    assert "\n## Tutorials\n" in readme, "README has no ## Tutorials section"
+    section = readme.split("\n## Tutorials\n", 1)[1].split("\n## ", 1)[0]
+    assert "reference only" in section
+    assert "do not replace the chapter skills" in section
+    for name in sorted(TUTORIAL_SKILLS):
+        assert f"`{name}`" in section, f"README Tutorials section misses {name}"
