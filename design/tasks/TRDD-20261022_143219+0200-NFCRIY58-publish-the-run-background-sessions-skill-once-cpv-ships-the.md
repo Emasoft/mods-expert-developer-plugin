@@ -4,7 +4,7 @@ title: Publish the run-background-sessions skill once CPV ships the issue 260 fi
 column: blocked
 status: tasked
 created: 2026-10-22T14:32:19+0200
-updated: 2026-10-22T14:36:08+0200
+updated: 2026-10-22T14:37:35+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -16,7 +16,7 @@ approved: true
 approval-judge: main-agent@emasoft-mods-expert-developer
 approval-datetime: 2026-10-22T14:32:19+0200
 pre-block-column: todo
-blocked-by: [gh:Emasoft/claude-plugins-validation#260]
+blocked-by: [gh:Emasoft/claude-plugins-validation#260, decision:owner-confirms-CPV-tag-with-260-fix-exists]
 blocker-probe: [gh, release, view, v5.22.4, --repo, Emasoft/claude-plugins-validation, --json, tagName, --jq, .tagName]
 blocker-holds-if: not-match:^v5\.22\.4$
 implementation-commits: [a523c7c, 6891472, c15499a, 1f3c287, 890e4a1]
@@ -37,4 +37,4 @@ NEXT on the tag: (1) a worker bumps the CPV pin v5.22.1 -> the new tag in script
 Owner rules: no consent entries in .cpv-audit-consent.json, no rewording to dodge the scanner, no bypass.
 Correction 2026-10-22: the CPV fix commits 3eaa6553 and aab9b092 are REPORTED by the CPV session, not verified here (GitHub returns 422 for both). Step (2) gate condition: the strict run under the new tag has no CRITICAL/MAJOR/MINOR/NIT finding.
 Note: scripts/publish.py:3928 CANON_VERSION = "5.22.0" is the canon-template version, not the validator pin; leave it to the CPV upgrade flow.
-Known lint ERROR BLOCKER-RELEASED: blocked-by uses the supported gh: external form, but the doctor (lib/trdd-doctor.ts ~1366-1384) skips external blockers and treats the empty local set as all released. That is a tool bug, so the card must STAY blocked. Ignore any fix or drift pass that moves it to todo. blocker-probe is a version guess (v5.22.4); the decision: unblock-when predicate governs.
+Blocker form (verified in lib/trdd-doctor.ts ~1340-1390): the doctor drops gh: entries before its release check, so a gh:-only blocked-by reads as released (BLOCKER-RELEASED, a doctor bug). The decision: entry is the designed human-gated form; it yields a WARN BLOCKER-DECISION-PENDING and keeps the card blocked. The doctor never auto-moves a card. blocker-probe is a version guess (v5.22.4); the decision governs.
