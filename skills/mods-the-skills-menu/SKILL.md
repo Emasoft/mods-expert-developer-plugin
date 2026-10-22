@@ -1,6 +1,6 @@
 ---
-name: cpv-the-skills-menu
-description: "Dynamic skill menu for this plugin. Teaches agents which skills are available, when to use them, and how to load them with the Skill() tool. Use when an agent needs to pick a downstream skill at runtime. Used by mods-forge-agent via cpv-the-skills-menu method; mods-expert-developer-agent keeps its own preload list."
+name: mods-the-skills-menu
+description: "Dynamic skill menu for this plugin. Teaches agents which skills are available, when to use them, and how to load them with the Skill() tool. Use when an agent needs to pick a downstream skill at runtime. Used by mods-forge-agent as its preloaded menu; mods-expert-developer-agent keeps its own preload list."
 user-invocable: false
 allowed-tools: Read
 ---

@@ -4,7 +4,7 @@ title: Add mods-forge-agent with the skills-menu preload
 column: dev
 status: tasked
 created: 2026-10-22T20:23:29+0200
-updated: 2026-10-22T21:40:40+0200
+updated: 2026-10-22T21:48:20+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -22,7 +22,7 @@ implementation-commits: [dd4e8e1, f5e0779, ca81806, 92e99d5]
 
 ## STATE
 
-CURRENT STATE 2026-10-22: published in 0.3.0 (44fd88a). NEXT ACTION: owner restarts Claude Code; then verify mods-forge-agent spawns, its first report line names the seven chapter groups (Tutorials excluded), and confirm its model from the harness side; then tick the two post-install acceptance boxes.
+CURRENT STATE 2026-10-22: 0.3.0 post-install smoke FAILED — the bare preload `cpv-the-skills-menu` injected claude-plugins-validation's menu (reports/mods-forge-agent/20261022_214153+0200-post-install-smoke.md); the first-line check caught it as designed. Fix: menu renamed to mods-the-skills-menu plus a self-heal line (0.3.1). NEXT ACTION: release 0.3.1, re-run the smoke check via the Agent tool, then tick the two post-install boxes. Caveat: a forced CPV standardize_plugin.py or generate_plugin_repo.py run writes the bare `cpv-the-skills-menu` back into agents; re-check the preload after any such run.
 
 ## User directive
 
@@ -64,3 +64,4 @@ CURRENT STATE 2026-10-22: published in 0.3.0 (44fd88a). NEXT ACTION: owner resta
 - 2026-10-22T20:23:37+0200 — column → dispatch by main-agent@emasoft-mods-expert-developer. user directive 2026-10-22
 - 2026-10-22T20:23:38+0200 — column → dev by main-agent@emasoft-mods-expert-developer. user directive 2026-10-22
 - 2026-10-22 owner directive: tool skills optional but recommended (native fallback) — supersedes "missing means BLOCKED" in the body above.
+- 2026-10-22 orchestrator: Caveat: a forced CPV standardize_plugin.py or generate_plugin_repo.py run writes the bare `cpv-the-skills-menu` back into agents; re-check the preload after any such run.

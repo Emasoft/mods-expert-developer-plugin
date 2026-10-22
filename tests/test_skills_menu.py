@@ -213,7 +213,7 @@ SKILL_DIRS = sorted(d for d in SKILLS.iterdir() if d.is_dir())
 # Identical copy of CATALOG_SKILLS in tests/test_plugin_structure.py; test_catalog_skills_copies_agree
 # fails if the two drift. A catalog skill indexes the chapters instead of wrapping one, so it is not
 # routed by the expert agent and is not a row of the README Components table.
-CATALOG_SKILLS = {"cpv-the-skills-menu"}
+CATALOG_SKILLS = {"mods-the-skills-menu"}
 # Identical copy of TUTORIAL_SKILLS in tests/test_plugin_structure.py; test_tutorial_skills_copies_agree fails if the
 # two drift. A tutorial is reference-only (TRDD-BDY6ZNDZ): it is listed by the menu in its own group, but it is not a
 # chapter, so it is not routed by the expert agent and is not a row of the README Components table.
@@ -636,7 +636,7 @@ def test_readme_skill_relative_paths_are_qualified() -> None:
 # hardcoded, so renaming the plugin without regenerating the menu fails here.
 
 FORGE_AGENT = ROOT / "agents/mods-forge-agent.md"
-MENU = SKILLS / "cpv-the-skills-menu"
+MENU = SKILLS / "mods-the-skills-menu"
 MENU_CATALOG = MENU / "references/skills-catalog.md"
 
 # CPV's mandatory dynamic-loading paragraph, verbatim (the-skills-menu spec, "Agent body instruction rule").
@@ -714,7 +714,26 @@ def test_forge_agent_is_pinned_to_opus_5_5() -> None:
 def test_forge_agent_preloads_only_the_menu() -> None:
     """The forge agent preloads exactly one skill, the menu, and reaches every chapter through it."""
     fields, _ = _split(FORGE_AGENT)
-    assert fields["skills"] == ["cpv-the-skills-menu"]
+    assert fields["skills"] == ["mods-the-skills-menu"]
+
+
+def test_every_agent_preload_is_mods_prefixed() -> None:
+    """Every `skills:` entry of every agent starts with `mods-`.
+
+    Naming rule, not collision detection; real collision coverage is the post-install smoke check.
+    """
+    for agent in sorted((ROOT / "agents").glob("*.md")):
+        fields, _ = _split(agent)
+        bad = [s for s in fields.get("skills", []) if not s.startswith("mods-")]
+        assert not bad, f"{agent.name} preloads skills without the mods- prefix: {bad}"
+
+
+def test_no_file_calls_the_old_bare_name_this_plugins_menu() -> None:
+    """No agent, skill or README text refers to the retired bare name as this plugin's menu."""
+    old = "cpv" + "-the-skills-menu"
+    files = [ROOT / "README.md", *(ROOT / "agents").glob("*.md"), *SKILLS.rglob("*.md")]
+    hits = [str(f.relative_to(ROOT)) for f in files if old in f.read_text(encoding="utf-8")]
+    assert not hits, f"files still use the retired bare menu name: {hits}"
 
 
 def test_forge_agent_declares_no_tools_field() -> None:
@@ -748,7 +767,7 @@ def test_forge_agent_names_the_menu_and_its_heading() -> None:
     """
     fields, body = _split(FORGE_AGENT)
     prose = re.sub(r"```.*?```", "", body, flags=re.DOTALL)
-    assert "cpv-the-skills-menu" in prose
+    assert "mods-the-skills-menu" in prose
     menu_text = (MENU / "SKILL.md").read_text(encoding="utf-8")
     domains = re.findall(r"^### (.+)$", menu_text.split("\n## Plugin Skills\n", 1)[1], re.M)
     domains = [d for d in domains if d != "Tutorials (reference only)"]  # Tutorials is OUT of the set
@@ -819,13 +838,13 @@ def test_menu_frontmatter_follows_the_cpv_spec() -> None:
     other word is the spec's.
     """
     fields, _ = _split(MENU / "SKILL.md")
-    assert fields["name"] == "cpv-the-skills-menu"
+    assert fields["name"] == "mods-the-skills-menu"
     assert fields["user-invocable"] is False
     assert fields["allowed-tools"] == "Read"
     assert fields["description"] == (
         "Dynamic skill menu for this plugin. Teaches agents which skills are available, when to use them, "
         "and how to load them with the Skill() tool. Use when an agent needs to pick a downstream skill at "
-        "runtime. Used by mods-forge-agent via cpv-the-skills-menu method; mods-expert-developer-agent "
+        "runtime. Used by mods-forge-agent as its preloaded menu; mods-expert-developer-agent "
         "keeps its own preload list."
     )
 
@@ -910,9 +929,9 @@ def test_menu_does_not_list_itself() -> None:
     """The menu is not an entry of its own catalog: loading it from itself would be a no-op loop."""
     for path in (MENU / "SKILL.md", MENU_CATALOG):
         text = path.read_text(encoding="utf-8")
-        assert f"{_namespace()}:cpv-the-skills-menu" not in text, f"{path.name} lists the menu"
-        assert not re.search(r"^### cpv-the-skills-menu$", text, re.M), f"{path.name} lists the menu"
-        assert not re.search(r'Skill\(\{skill: "cpv-the-skills-menu"', text), f"{path.name} loads the menu"
+        assert f"{_namespace()}:mods-the-skills-menu" not in text, f"{path.name} lists the menu"
+        assert not re.search(r"^### mods-the-skills-menu$", text, re.M), f"{path.name} lists the menu"
+        assert not re.search(r'Skill\(\{skill: "mods-the-skills-menu"', text), f"{path.name} loads the menu"
 
 
 def test_menu_resources_link_the_catalog_and_it_exists() -> None:

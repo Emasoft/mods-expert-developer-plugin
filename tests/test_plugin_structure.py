@@ -3,7 +3,7 @@
 The plugin ships no executable code: its behaviour IS its file layout (an expert agent
 that declares 61 routing chapter skills, 60 wrapping an adapted documentation chapter and
 one wrapping a community how-to; a forge agent that preloads only the skills menu,
-skills/cpv-the-skills-menu, which catalogues those 61 chapters and is not itself a chapter;
+skills/mods-the-skills-menu, which catalogues those 61 chapters and is not itself a chapter;
 and three reference-only tutorial skills whose example mods live under their examples/
 folders and are never loaded as part of the plugin).
 These tests pin the invariants that make that layout work, so a later edit that
@@ -28,7 +28,7 @@ SKILL_DIRS = sorted(d for d in SKILLS.iterdir() if d.is_dir())
 # Skills that CATALOGUE the chapters instead of wrapping one: they ship no references/chapter.md,
 # are not routed by the expert agent and have no README Components row. Every chapter-enumerating
 # test iterates CHAPTER_DIRS. tests/test_skills_menu.py keeps an identical copy and asserts the two agree.
-CATALOG_SKILLS = {"cpv-the-skills-menu"}
+CATALOG_SKILLS = {"mods-the-skills-menu"}
 # Tutorial skills (TRDD-BDY6ZNDZ): reference-only walkthroughs adapted from BeLazy167/claude-mods-skill (MIT). They are
 # not chapters: no references/chapter.md, not routed by the expert agent, no README Components row, so every
 # chapter-enumerating test skips them through CHAPTER_DIRS. tests/test_skills_menu.py keeps an identical copy.
