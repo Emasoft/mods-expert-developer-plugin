@@ -33,8 +33,8 @@ types_missing() {
 	echo "$mod_dir/$extends"
 }
 
-# Step 1: type-check. Same form the mods-doc-mods-development chapter documents:
-# npx -p typescript@5 tsc. --listFiles lets us prove the hooks were actually checked,
+# Step 1: type-check. The form npx -p typescript@5 tsc comes from the source material and is not in the
+# chapters (mods-doc-mods-development documents only tsc -p ./first-mod). --listFiles lets us prove the hooks were actually checked,
 # because a tsconfig that matches no hook file makes tsc pass on zero files.
 if [ -f "$mod_dir/tsconfig.json" ]; then
 	if missing="$(types_missing)"; then

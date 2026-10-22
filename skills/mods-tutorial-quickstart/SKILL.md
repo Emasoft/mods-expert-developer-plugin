@@ -26,13 +26,14 @@ The example mods live in two sibling tutorials: `mods-tutorial-call-intercept-mo
 
 ## Instructions
 
+0. Clarify before you build. Read [house conventions](references/house-conventions.md) and answer five questions about the mod: which surface it uses (status line, band, pane, tool hook), how often it updates, whether it starts on or off, what scope it covers (one project or every session), and its name. If the user has not said, ask. `scripts/new-mod.sh` accepts only lowercase letters, digits and hyphens, starting with a letter (2 to 41 characters).
 1. Load the `plugin-authoring` skill and follow where it says to write the mod. Facts: `mods-doc-mods-development`, "Ask Claude for a mod".
 2. Copy the closest example from the index below into your folder and rename it in `.claude-plugin/plugin.json`. A name that starts with `claude-`, `anthropic-`, `anthropics-` or `cc-plugin-` is refused. Facts: `mods-doc-plugin-manifest-reference`.
 3. Read the types for the event you hook. Claude Code writes them under `.claude-plugin/types/` on each load, with a root `tsconfig.json`; never edit or commit `.claude-plugin/types/`. Facts: `mods-doc-mods-development`, "Change and test a mod".
 4. Write the hook. One plain hook per event per module, a refusal before `next`, and a `.catch` on every hook that can refuse. Facts: `mods-doc-mods-and-events`, "How a hook handles an event" and "Mod ordering and failed hooks".
 5. Run `claude plugin validate <mod>` and read what it lists. Facts: `mods-doc-mods-development`, "Change and test a mod".
 6. Write `tests/*.test.ts` and run `claude plugin test` in the mod folder. Facts: `mods-doc-mods-testing`, "Write a mod test".
-7. Type-check with `npx -p typescript@5 tsc -p <mod> --noEmit` once the types are written. This command comes from the source and is not in the chapters.
+7. Type-check with `npx -p typescript@5 tsc -p <mod> --noEmit` once the types are written. This command comes from the source and is not in the chapters. The script `scripts/check-mod.sh <mod>` runs this type-check, step 5 and step 6 in one go and prints `== PASS` or `== FAIL: <step>`.
 8. Run it live with `claude --plugin-dir <mod>`; saving a file reloads it. Facts: `mods-doc-mods-troubleshooting`, "Find out why a mod does nothing" and "Read the debug log".
 9. Ship it from a repository you keep, and bump `version` on every release. Facts: `mods-doc-mods-development`, "Share your mod", and `mods-doc-publish-a-plugin`.
 
@@ -86,4 +87,16 @@ Input: "show the test status above the prompt". Output: copy `branch-band` from 
 
 - `mods-tutorial-call-intercept-mods`: `hello-mod`, `redact-output` and `dice-tool`, with their code under its examples folder.
 - `mods-tutorial-interface-mods`: `branch-band` and `notes-pane`, with their code under its examples folder.
+- [house-conventions](references/house-conventions.md): this plugin's own conventions for mods you keep (not Anthropic rules), the `check-mod.sh`, `new-mod.sh` and `keep-mod.sh` scripts, and a table of claims to test on a real build.
+  - [How to read this file](references/house-conventions.md#how-to-read-this-file)
+  - [An on/off switch](references/house-conventions.md#an-onoff-switch)
+  - [Keyboard first](references/house-conventions.md#keyboard-first)
+  - [Pure logic in logic.ts, thin register](references/house-conventions.md#pure-logic-in-logicts-thin-register)
+  - [Pollers](references/house-conventions.md#pollers)
+  - [Toasts on transitions only](references/house-conventions.md#toasts-on-transitions-only)
+  - [Mutation-check every guard test](references/house-conventions.md#mutation-check-every-guard-test)
+  - [Honest hand-over](references/house-conventions.md#honest-hand-over)
+  - [The three quickstart scripts](references/house-conventions.md#the-three-quickstart-scripts)
+  - [UNVERIFIED — test on a real build before relying on it](references/house-conventions.md#unverified--test-on-a-real-build-before-relying-on-it)
+  - [A premise this plugin rejects](references/house-conventions.md#a-premise-this-plugin-rejects)
 - Chapter skills used above: `mods-doc-mods-development`, `mods-doc-mods-and-events`, `mods-doc-mods-testing`, `mods-doc-mods-troubleshooting`, `mods-doc-mods-overview`, `mods-doc-plugin-manifest-reference` and `mods-doc-publish-a-plugin`.
