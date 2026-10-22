@@ -7,7 +7,7 @@ packages = ["scripts"]
 
 [project]
 name = "mods-expert-developer-plugin"
-version = "0.2.0"
+version = "0.2.1"
 description = "Expert agent plus 60 Claude Code documentation chapters and one how-to (mods, plugins, hooks, skills, subagents, marketplaces, settings) for creating, fixing, improving and evaluating Claude Code mods and plugins."
 readme = "README.md"
 requires-python = ">=3.12"

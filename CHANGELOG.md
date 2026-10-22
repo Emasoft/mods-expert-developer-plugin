@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.1] — 2026-10-22
+
+### Documentation
+
+- **skills:** Spell the SendMessage tool name correctly in the smoke-test prompt (9751e42)
+
+### Miscellaneous Tasks
+
+- **cspell:** Keep sendmessage - the generated CHANGELOG quotes it (70d0670)
 ## [0.2.0] — 2026-10-22
 
 ### Bug Fixes
@@ -37,6 +46,7 @@ All notable changes to this project will be documented in this file.
 - Remove the orphaned consent-findings fixture (51ddb08)
 - Retire the NIT-adjudication spec self-check (owner ruled no exceptions) (0028f8a)
 - **cspell:** Accept lstrip, sendmessage, testpaths (a0e6767)
+- Bump version to 0.2.0 (6333eb1)
 
 ### Build
 
