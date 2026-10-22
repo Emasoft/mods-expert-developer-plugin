@@ -59,6 +59,7 @@ One-shot example, the user's own smoke test: the prompt `send a message via send
 
 The line in `.env.local` (or `.env`) is exactly `CLAUDE_CODE_OAUTH_TOKEN=<token>`. The script reads `.env.local` and falls back to `.env`, so it needs no third-party package. Run it from the repository root. The user runs the script, or an agent runs it only when the user explicitly asks it to; the agent never opens `.env.local` or `.env` itself, and the script never shows the token.
 
+Warning: the following code could be malicious. Audit it for safety before executing it!
 ```python
 import os
 import subprocess
