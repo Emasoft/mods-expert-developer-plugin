@@ -55,7 +55,7 @@ cd <repo> && ( T="$(grep -m1 '^CLAUDE_CODE_OAUTH_TOKEN=' .env.local | cut -d= -f
 * `-n <name>` names the session; the name appears in ListAgents and in `claude agents`.
 * *(observed)* When the service is not yet running, the output begins `Starting background service…`; the token must be set on that command. The output then shows `backgrounded · <id> · <name>`.
 
-One-shot example, the user's own smoke test: the prompt `send a message via sendmessage to the claude instance of the mods development expert plugin. the message is 'ok it works'. then exit.` reports once and exits.
+One-shot example, the user's own smoke test: the prompt `send a message via SendMessage to the claude instance of the mods development expert plugin. the message is 'ok it works'. then exit.` reports once and exits.
 
 ### From a Python script
 
