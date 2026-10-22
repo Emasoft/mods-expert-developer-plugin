@@ -4,7 +4,7 @@ title: Add mods tutorial skills from BeLazy167 claude-mods-skill
 column: todo
 status: tasked
 created: 2026-10-22T20:24:37+0200
-updated: 2026-10-22T21:40:39+0200
+updated: 2026-10-22T21:42:50+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -60,4 +60,5 @@ MEASURED 2026-10-22 (reports/measure/20261022_202816+0200-nested-example-manifes
 - 2026-10-22T20:24:41+0200 — column → todo by main-agent@emasoft-mods-expert-developer. user directive 2026-10-22
 - 2026-10-22 - authority: the user's directive quoted verbatim under User directive; mandated-by stays none because trddgrep set refuses that field.
 - 2026-10-22 orchestrator: review of ed3dc13 — verbatim claim verified for all five examples, notice pin exists; accepted: narrow lint exclusion to mods-tutorial-*, MIT LICENSE copy in each examples/, isDeferred note at dice-tool, load-guard test, broken-copy proofs; rejected: renaming example plugin.json (examples stay verbatim and copy-and-run; loader measured to ignore nested manifests). Spec: docs_dev/20261022-tutorial-review-fixes-spec.md.
-2026-10-22: shipped in 0.3.0 (44fd88a).
+- 2026-10-22 orchestrator: shipped in 0.3.0 (44fd88a).
+- 2026-10-22 orchestrator: box 9 verified — ed3dc13 changed the count 62→65 and added an explicit TUTORIAL_DIRS == 3 assertion. Box 7 (examples excluded from cosmetic linters) is SUPERSEDED by TRDD-JFB5E98B, which removes those exclusions under the owner's no-suppression policy; box 7 will not be ticked as worded.
