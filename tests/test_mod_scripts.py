@@ -277,6 +277,20 @@ def test_keep_mod_refusal_leaves_no_nested_folder(tmp_path: Path) -> None:
     assert list(dest.iterdir()) == []
 
 
+def test_keep_mod_refuses_a_dangling_symlink_destination(tmp_path: Path) -> None:
+    """A destination that is a symlink to a missing path counts as existing: exit 1, 'refusing to overwrite', symlink untouched."""
+    src = _make_mod(tmp_path / "session")
+    dest = tmp_path / "kept/demo-mod"
+    dest.parent.mkdir()
+    dest.symlink_to(tmp_path / "missing-target")
+    result = _run("keep-mod.sh", src, tmp_path / "kept")
+    assert result.returncode == 1
+    assert "refusing to overwrite" in result.stderr
+    assert dest.is_symlink()
+    assert os.readlink(dest) == str(tmp_path / "missing-target")
+    assert not dest.exists()
+
+
 @pytest.mark.parametrize(
     "extends",
     [["./.claude-plugin/types/tsconfig.json"], "./vendor/.claude-plugin/types/tsconfig.json"],

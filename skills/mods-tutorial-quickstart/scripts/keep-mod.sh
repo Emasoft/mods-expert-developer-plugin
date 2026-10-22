@@ -47,19 +47,23 @@ for entry in "$src"/*; do
 done
 # Claim the destination atomically: mkdir fails if $dest appeared after the check above, so the
 # move below can never nest $tmp inside an existing folder. The cause decides the message: an
-# existing $dest is a refusal, anything else (permissions, full disk) is a creation failure.
-if ! mkdir "$dest" 2>/dev/null; then
+# existing $dest (or a dangling symlink, which -e misses) is a refusal, anything else is a
+# creation failure. mkdir's own error is kept so the real cause (permissions, read-only) shows.
+if ! mkdir_err=$(mkdir "$dest" 2>&1); then
+	# The copy-failed trap would be false here: the finished copy is intact at $tmp.
 	trap - ERR
-	if [ -e "$dest" ]; then
-		echo "keep-mod.sh: refusing to overwrite existing $dest; the finished copy is kept at $tmp" >&2
+	if [ -e "$dest" ] || [ -L "$dest" ]; then
+		echo "keep-mod.sh: refusing to overwrite existing $dest; the finished copy is kept at $tmp: $mkdir_err" >&2
 	else
-		echo "keep-mod.sh: cannot create $dest; the finished copy is kept at $tmp" >&2
+		echo "keep-mod.sh: cannot create $dest; the finished copy is kept at $tmp: $mkdir_err" >&2
 	fi
 	exit 1
 fi
-# From here a failure leaves files in both folders, so the copy-failed message would be false.
-trap 'echo "keep-mod.sh: move failed; files are split between $tmp and $dest" >&2' ERR
+# From here a failure in the loop leaves files in both folders, so the copy-failed message would be false.
+trap 'echo "keep-mod.sh: move failed; files are split between $tmp and $dest; remove or empty $dest before rerunning, since a rerun refuses an existing destination" >&2' ERR
 for entry in "$tmp"/*; do mv "$entry" "$dest/"; done
+# The move is complete, so a rmdir failure must not claim the files are split.
+trap 'echo "keep-mod.sh: the copy is complete at $dest; only the empty folder $tmp could not be removed" >&2' ERR
 rmdir "$tmp"
 trap - ERR
 
