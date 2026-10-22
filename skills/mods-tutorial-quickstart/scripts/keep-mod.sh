@@ -2,7 +2,9 @@
 # keep-mod.sh <session-mod-dir> <dest-root>: copy a mod out of the session mods folder
 # (deleted after cleanupPeriodDays) into <dest-root>/<name>. Never deletes, never overwrites.
 # Left out of the copy: .claude-plugin/types/ and the root tsconfig.json, which Claude Code
-# writes on every load. Usage errors exit 64.
+# writes on every load. Usage errors exit 64. A failed copy leaves .keep-mod.<pid> in <dest-root>
+# (kept, never deleted) and the error message names it.
+set -E
 set -euo pipefail
 shopt -s dotglob nullglob
 
@@ -43,7 +45,15 @@ for entry in "$src"/*; do
 	*) cp -R "$entry" "$tmp/" ;;
 	esac
 done
-mv "$tmp" "$dest"
+# Claim the destination atomically: mkdir fails if $dest appeared after the check above, so the
+# move below can never nest $tmp inside an existing folder.
+if ! mkdir "$dest" 2>/dev/null; then
+	echo "keep-mod.sh: refusing to overwrite existing $dest; the finished copy is kept at $tmp" >&2
+	trap - ERR
+	exit 1
+fi
+for entry in "$tmp"/*; do mv "$entry" "$dest/"; done
+rmdir "$tmp"
 trap - ERR
 
 echo "kept: $dest"

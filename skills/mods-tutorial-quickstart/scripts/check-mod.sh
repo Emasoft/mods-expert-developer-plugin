@@ -22,10 +22,12 @@ fail() {
 
 # The generated types folder exists only after Claude Code has loaded the mod once (chapter
 # mods-doc-mods-development, "Get type definitions for your version"); no command writes it without a load.
-# Prints the missing path and returns 0 when the tsconfig extends a .claude-plugin/types file that is absent.
+# Prints the missing path and returns 0 when the tsconfig extends a string path that starts at
+# .claude-plugin/types/ (with or without ./) and the file is absent. An array-form extends or a
+# look-alike path is not matched here and falls through to tsc.
 types_missing() {
 	local extends
-	extends="$(grep -o "\"extends\"[[:space:]]*:[[:space:]]*\"[^\"]*\.claude-plugin/types[^\"]*\"" "$mod_dir/tsconfig.json" | sed "s/.*:[[:space:]]*\"//; s/\"\$//" || true)"
+	extends="$(grep -oE "\"extends\"[[:space:]]*:[[:space:]]*\"(\./)?\.claude-plugin/types/[^\"]*\"" "$mod_dir/tsconfig.json" | sed "s/.*:[[:space:]]*\"//; s/\"\$//" || true)"
 	[ -n "$extends" ] || return 1
 	[ -e "$mod_dir/$extends" ] && return 1
 	echo "$mod_dir/$extends"

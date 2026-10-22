@@ -4,7 +4,7 @@ title: Integrate the givememod harvest into the tutorials and agents
 column: todo
 status: tasked
 created: 2026-10-22T21:44:33+0200
-updated: 2026-10-22T22:26:19+0200
+updated: 2026-10-22T22:47:38+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: user
 task-type: feature
@@ -72,3 +72,5 @@ CURRENT STATE 2026-10-22: harvest done (report: reports/givememod-harvest/202610
 - 2026-10-22 orchestrator: created-by and approval-judge still read `user`: trddgrep refuses to change them (write-once / create-path only); current-owner and assignee were changed.
 - 2026-10-22 orchestrator: follow-up from TRDD-JFB5E98B — CI lints changed files only, so the first increment here that adds or edits a file under skills/mods-tutorial-*/examples is the first CI run of SPELL_CSPELL, MARKDOWN_MARKDOWNLINT and BASH_SHFMT on the examples; read that run's MegaLinter log and confirm those three ran and passed.
 - 2026-10-22 orchestrator: the pre-I-1 extension of tests/test_plugin_structure.py also applies the two pre-existing ruff format hunks in test_load_guard_detects_references_and_stray_manifests.
+- 2026-10-22 orchestrator: correction. The CI-parity follow-up for new example files moved to TRDD-BNBDNR2V increment 2. What stays here: the verbatim BeLazy167 copies (hello-mod, redact-output, dice-tool, branch-band, notes-pane) are linted in CI only when one of them is edited. The first increment here that edits one must confirm SPELL_CSPELL, MARKDOWN_MARKDOWNLINT and BASH_SHFMT ran on it.
+- 2026-10-22 orchestrator: the two ruff format hunks are already applied in 7c3a79e; nothing left to do.

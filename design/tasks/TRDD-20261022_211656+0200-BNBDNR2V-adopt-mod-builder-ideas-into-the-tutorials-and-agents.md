@@ -4,7 +4,7 @@ title: Adopt mod-builder ideas into the tutorials and agents
 column: dev
 status: tasked
 created: 2026-10-22T21:16:56+0200
-updated: 2026-10-22T22:39:08+0200
+updated: 2026-10-22T22:47:37+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -48,6 +48,7 @@ reports/mod-builder-comparison/20261022_210944+0200-comparison.md. The source ha
 - [ ] E: mods-forge-agent and mods-expert-developer-agent verification sections gain check-mod.sh as the mod gate and mutation checks
 - [ ] F: menu, catalog and README tutorial rows and entries updated for the scripts, new examples and conventions reference
 - [ ] Owner-run: check-mod.sh PASS path on a real logged-in build
+- [ ] Owner-run: check-mod.sh prints == PASS on hello-mod after one load; capture the real expired-login text when it next occurs and add the BLOCKED branch
 - [ ] No-copy proof (identifier grep, jscpd, 8-word prose check) recorded for each increment
 
 ## Approval log
@@ -55,3 +56,5 @@ reports/mod-builder-comparison/20261022_210944+0200-comparison.md. The source ha
 - 2026-10-22T21:16:56+0200 — MANDATE issued by main-agent@emasoft-mods-expert-developer (min-approval-requirement: none). Pre-approved: issuer authority >= required approver. No approval request was sent.
 - 2026-10-22 — NO-COPY PROOF increment 1a: grep -rnwE parseToggle|paneAction|changesBetween|CLAUDE_MODS_HOME and grep -rn tpl- over skills, tests, agents gave zero hits; jscpd --min-lines 5 with an empty config over the mod-builder source and skills/mods-tutorial-quickstart/scripts found 4 clones, all inside the source's own templates, none between the two trees (0 clones in bash). The 8-word prose check applies from increment 1b.
 - 2026-10-22 — increment 1a follow-up: the PASS capture moved to samples_dev/claude-plugin-test-pass.txt (no test uses it); check-mod.sh now fails early with a load-once hint when the types folder is absent; no-copy proof above is unchanged.
+- 2026-10-22 orchestrator: 7c3a79e (increment 1a). Untested: the BLOCKED (login expired) path, since the live claude plugin test passed and no real message was seen, so check-mod.sh has no BLOCKED branch yet; the PASS line of check-mod.sh on a loaded mod has not been observed. Review finding 'run validate before tsc' declined: tsc first keeps the tsc failure paths testable in CI, which has no claude CLI. The captured PASS output is in gitignored samples_dev/, not a durable artifact.
+- 2026-10-22 orchestrator: follow-up from TRDD-JFB5E98B. CI lints changed files only, so increment 2 (three new examples) is the first CI run of SPELL_CSPELL, MARKDOWN_MARKDOWNLINT and BASH_SHFMT on example files of each type; read that run's MegaLinter log and record that those three ran and passed.

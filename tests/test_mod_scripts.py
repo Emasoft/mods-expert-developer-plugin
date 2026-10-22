@@ -7,6 +7,7 @@ invokes the claude CLI: CI has none, so only the branches that never reach it ar
 from __future__ import annotations
 
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -239,3 +240,63 @@ def test_keep_mod_warns_about_symlinks_and_states_what_it_left_out(tmp_path: Pat
 def test_other_scripts_exit_64_on_a_usage_error(script: str) -> None:
     """keep-mod.sh and new-mod.sh with no arguments exit 64, leaving 2 free."""
     assert _run(script).returncode == 64
+
+
+def test_keep_mod_failed_copy_leaves_partial_folder_and_no_destination(tmp_path: Path) -> None:
+    """An unreadable source file makes keep-mod.sh exit non-zero, name the partial folder, create no destination and leave the source as it was (as root the copy succeeds, since root ignores the mode)."""
+    src = _make_mod(tmp_path / "session")
+    locked = src / "secret.txt"
+    locked.write_text("s", encoding="utf-8")
+    before = sorted(p.relative_to(src).as_posix() for p in src.rglob("*"))
+    dest_root = tmp_path / "kept"
+    locked.chmod(0o000)
+    try:
+        result = _run("keep-mod.sh", src, dest_root)
+        dest = dest_root / "demo-mod"
+        if os.access(locked, os.R_OK):  # still readable after chmod 000: running as root
+            assert result.returncode == 0, result.stderr
+            assert dest.is_dir()
+        else:
+            assert result.returncode != 0
+            assert not dest.exists()
+            partial = list(dest_root.glob(".keep-mod.*"))
+            assert len(partial) == 1
+            assert f"partial copy left at {partial[0].resolve()}" in result.stderr
+    finally:
+        locked.chmod(0o644)
+    assert sorted(p.relative_to(src).as_posix() for p in src.rglob("*")) == before
+
+
+def test_keep_mod_refusal_leaves_no_nested_folder(tmp_path: Path) -> None:
+    """A destination that already exists is refused with exit 1 and no folder is nested inside it (the check-then-move race is simulated by creating the destination first)."""
+    src = _make_mod(tmp_path / "session")
+    dest = tmp_path / "kept/demo-mod"
+    dest.mkdir(parents=True)
+    result = _run("keep-mod.sh", src, tmp_path / "kept")
+    assert result.returncode == 1
+    assert list(dest.iterdir()) == []
+
+
+@pytest.mark.parametrize(
+    "extends",
+    [["./.claude-plugin/types/tsconfig.json"], "./vendor/.claude-plugin/types/tsconfig.json"],
+    ids=["array-form", "look-alike-path"],
+)
+def test_check_mod_types_check_ignores_array_and_look_alike_extends(tmp_path: Path, extends: object) -> None:
+    """An array-form extends or a path that only contains .claude-plugin/types/ is not reported as types-not-generated; it falls through to tsc."""
+    mod = tmp_path / "odd-mod"
+    mod.mkdir()
+    (mod / "tsconfig.json").write_text(json.dumps({"extends": extends}), encoding="utf-8")
+    result = _run("check-mod.sh", mod, path="/usr/bin:/bin")
+    assert "types not generated yet" not in result.stdout
+    assert "missing:" not in result.stdout
+
+
+def test_check_mod_types_check_accepts_the_bare_generated_form(tmp_path: Path) -> None:
+    """The extends form without ./ is also reported as types-not-generated when the file is absent."""
+    mod = tmp_path / "bare-mod"
+    mod.mkdir()
+    (mod / "tsconfig.json").write_text(json.dumps({"extends": ".claude-plugin/types/tsconfig.json"}), encoding="utf-8")
+    result = _run("check-mod.sh", mod, path="/usr/bin:/bin")
+    assert result.returncode == 1
+    assert "types not generated yet" in result.stdout.splitlines()[-1]
