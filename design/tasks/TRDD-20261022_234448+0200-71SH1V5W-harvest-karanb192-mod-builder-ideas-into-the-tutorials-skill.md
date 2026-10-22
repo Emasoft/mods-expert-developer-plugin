@@ -4,7 +4,7 @@ title: Harvest karanb192 mod-builder ideas into the tutorials, skills and agents
 column: dev
 status: tasked
 created: 2026-10-22T23:44:48+0200
-updated: 2026-10-23T01:51:10+0200
+updated: 2026-10-23T01:57:59+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -39,7 +39,7 @@ Checked 2026-10-22 with the GitHub API: repo karanb192/claude-code-mods, licence
 - Before adopting any API claim, check it against our chapter references (skills/mods-doc-*/references/chapter.md).
 - The load guard still holds: agents, hooks, commands and the manifest never name skills/*/examples paths.
 - Per increment, no-copy proof: 0 shared 8-word runs between the changed prose or comments and the source; shared 6-word runs listed and judged in a reports_dev report; a list restructured from a source list is shown beside the source list, both in their orders, in that report.
-- Per increment, API claims: each one cites a chapter file:line or is marked UNVERIFIED; numeric limits follow the mods-reference chapter, not the source.
+- Per increment, API claims: each one cites a chapter by skill name and section title in shipped text, with the chapter file:line in the increment report, or is marked UNVERIFIED (line numbers drift when chapters are refreshed); numeric limits follow the mods-reference chapter, not the source.
 - Per increment, TOC: a new or renamed heading in any referenced .md means re-embedding that file's full TOC after its link in the SKILL.md that links it.
 - Per increment, checks: uv run pytest; cspell with repo-relative paths; markdownlint on changed .md; shellcheck and shfmt on changed .sh; claude plugin validate . when skills or agents change, recorded as static checks only while the login is expired.
 - Per increment, CPV: strict at the pinned v5.22.3 shows CRITICAL, MAJOR, MINOR and NIT all 0; strict at v5.23.0 exactly on a clean clone shows no CRITICAL, MAJOR, MINOR or NIT finding outside the six present at 694d70d (the skills-menu TOC MINOR on skills/mods-the-skills-menu/SKILL.md, and the five chapter example-path MAJORs listed on TRDD-0QXYIABR; local exact copy in reports_dev). The TOC MINOR still counts as the same finding when its numbers change, as long as the number of missing headings (total minus embedded) does not grow. Once TRDD-0QXYIABR moves the pin to v5.23.0, this subset gate is replaced by: strict at the new pin shows CRITICAL, MAJOR, MINOR and NIT all 0.
