@@ -864,7 +864,7 @@ def install_branch_rules(root: Path) -> int:
             [
                 "uvx",
                 "--from",
-                "git+https://github.com/Emasoft/claude-plugins-validation@v5.22.1",
+                "git+https://github.com/Emasoft/claude-plugins-validation@v5.22.3",
                 "--with",
                 "pyyaml",
                 "cpv-setup-branch-rules",
@@ -1370,7 +1370,7 @@ def _run_cpv_validator(root: Path) -> "subprocess.CompletedProcess[str]":
     """
     return subprocess.run(
         ["uvx", "--from",
-         "git+https://github.com/Emasoft/claude-plugins-validation@v5.22.1",
+         "git+https://github.com/Emasoft/claude-plugins-validation@v5.22.3",
          "--with", "pyyaml",
          "cpv-remote-validate", "plugin", ".", "--strict"],
         cwd=str(root), timeout=_CPV_TIMEOUT_SEC,
@@ -2383,7 +2383,7 @@ def stage_validate(root: Path) -> None:
 
     Cornerstone rule: a plugin cannot be pushed unless validation passes
     with 0 issues (WARNING allowed). The validator is ALWAYS fetched from
-    GitHub (git+https://github.com/Emasoft/claude-plugins-validation@v5.22.1) via
+    GitHub (git+https://github.com/Emasoft/claude-plugins-validation@v5.22.3) via
     uvx so a local tampered copy cannot weaken the rules. No exceptions.
 
     Order: runs AFTER lint + tests so behavioral regressions fail fast
@@ -2403,7 +2403,7 @@ def stage_validate(root: Path) -> None:
     # publish path.
     run([
         "uvx", "--from",
-        "git+https://github.com/Emasoft/claude-plugins-validation@v5.22.1",
+        "git+https://github.com/Emasoft/claude-plugins-validation@v5.22.3",
         "--with", "pyyaml",
         "cpv-remote-validate", "plugin", ".", "--strict",
     ], cwd=root, timeout=_CPV_TIMEOUT_SEC)
@@ -2473,7 +2473,7 @@ def stage_ci_preflight(root: Path) -> None:
     try:
         rc = subprocess.run([
             "uvx", "--from",
-            "git+https://github.com/Emasoft/claude-plugins-validation@v5.22.1",
+            "git+https://github.com/Emasoft/claude-plugins-validation@v5.22.3",
             "--with", "pyyaml",
             "cpv-remote-validate", "ci-preflight", ".",
         ], cwd=str(root), timeout=_CPV_TIMEOUT_SEC).returncode
