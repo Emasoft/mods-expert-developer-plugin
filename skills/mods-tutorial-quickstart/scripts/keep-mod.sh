@@ -21,7 +21,8 @@ mkdir -p "$2"
 dest_root="$(cd "$2" && pwd -P)"
 dest="$dest_root/$(basename "$src")"
 
-if [ -e "$dest" ]; then
+# -e follows a symlink and misses a dangling one, which would be copied first and refused only at mkdir.
+if [ -e "$dest" ] || [ -L "$dest" ]; then
 	echo "keep-mod.sh: refusing to overwrite existing $dest" >&2
 	exit 1
 fi
