@@ -4,7 +4,7 @@ title: Integrate the givememod harvest into the tutorials and agents
 column: todo
 status: tasked
 created: 2026-10-22T21:44:33+0200
-updated: 2026-10-22T21:59:22+0200
+updated: 2026-10-22T22:26:19+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: user
 task-type: feature
@@ -70,3 +70,5 @@ CURRENT STATE 2026-10-22: harvest done (report: reports/givememod-harvest/202610
 - 2026-10-22T21:44:33+0200 — MANDATE issued by user (min-approval-requirement: none). Pre-approved: issuer authority >= required approver. No approval request was sent.
 - 2026-10-22 orchestrator: identity fields corrected from `user`; the card was minted by the main agent under the owner's directive quoted above and the owner's 'decide yourself' instruction; the owner has not reviewed this plan and may veto.
 - 2026-10-22 orchestrator: created-by and approval-judge still read `user`: trddgrep refuses to change them (write-once / create-path only); current-owner and assignee were changed.
+- 2026-10-22 orchestrator: follow-up from TRDD-JFB5E98B — CI lints changed files only, so the first increment here that adds or edits a file under skills/mods-tutorial-*/examples is the first CI run of SPELL_CSPELL, MARKDOWN_MARKDOWNLINT and BASH_SHFMT on the examples; read that run's MegaLinter log and confirm those three ran and passed.
+- 2026-10-22 orchestrator: the pre-I-1 extension of tests/test_plugin_structure.py also applies the two pre-existing ruff format hunks in test_load_guard_detects_references_and_stray_manifests.
