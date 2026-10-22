@@ -46,6 +46,18 @@ Four small, complete mods that draw with `ui.render`, each with its manifest, `h
 - `branch-band` recovers after `/clear` only when its timer next fires, up to 15 seconds later.
 - The `notes-pane` test stubs `command.register` to return `{ value: { command } }`. The testing chapter's stub table gives `() => ({ value: undefined })` for `$.command.register`; follow the chapter in your own tests.
 
+### Where the copied examples differ from the house conventions
+
+The house conventions are this plugin's own, not Anthropic rules. `branch-band` and `notes-pane` are copied MIT code and are kept unchanged, so they differ from the conventions in these ways:
+
+- `notes-pane` opens its pane with `$.ui.open({ id: PANE, title: 'Notes' })` and passes no `focus` field. The interfaces chapter says `focus` requests keyboard focus. It passes no `closeOnEscape` either.
+- The Clear `Button` in `notes-pane` has no `hotkey`.
+- Neither example has an on/off command; `branch-band`'s band cannot be hidden without disabling the plugin.
+- Both examples keep their logic inside `hooks/register.tsx`. Neither has a `hooks/logic.ts`.
+- When `git branch` fails, `branch-band` blanks the band, and it takes the changed count from `git status` without checking its exit code; it keeps no last good value for either. Its timer starts a refresh every 15 seconds without waiting for the previous one, so a refresh that runs longer than that can overlap the next, and nothing in the code stops the older result from overwriting the newer one.
+
+`turn-timer` and `git-poller` were written to follow the conventions, which are in the `mods-tutorial-quickstart` skill's `references/house-conventions.md`.
+
 ## Output
 
 A copy of one example in your own folder, renamed everywhere the plugin name appears, drawing what your task needs, that passes `claude plugin validate` and `claude plugin test`.
