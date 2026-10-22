@@ -1,5 +1,7 @@
 # The 72 CPV NIT findings — adjudicated rule by rule and site by site
 
+> **SUPERSEDED 2026-10-22** — the owner ruled no exceptions; the consent registry (commits 9c623ea, 51ddb08) and this spec's self-check tests are retired; the chapters now pass strict CPV by rewording (commit 4b41493). Kept as history; do not act on its stances or counts.
+
 This is the pass the `DELEGATION.md` NIT bullet names as its remaining work: **for each of the 14 rules, and for each site
 that rule fired on, is the rule detecting a real danger, a documentation artefact, or a generic pattern whose name
 overstates what it detects?** The bucket partition in the ledger is a CRITERION, not a disposition; this file is the
