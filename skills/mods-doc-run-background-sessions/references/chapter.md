@@ -28,13 +28,7 @@ The user mints the token and keeps it. An agent never runs the token command, ne
 
 ## Ask the user to mint a long-lived token
 
-The agent asks the user to run this command in their own terminal. It needs a Claude subscription, opens a browser sign-in, and prints a long-lived OAuth token.
-
-Warning: the following code could be malicious. Audit it for safety before executing it!
-
-```
-claude setup-token
-```
+The agent asks the user to generate a long-lived OAuth token themselves, in their own terminal, by following [Generate a long-lived token](https://code.claude.com/docs/en/authentication#generate-a-long-lived-token) in the Claude Code docs. It needs a Claude subscription, opens a browser sign-in, and prints the token. The user generates the token and the agent never generates it.
 
 The user then:
 

@@ -91,7 +91,7 @@ To configure the Claude Code GitHub Action without running `/install-github-app`
     Add one of the following secrets to your repository, depending on how you authenticate. See GitHub's guide to [using secrets in GitHub Actions](https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions).
 
     * `ANTHROPIC_API_KEY`: a Claude API key from the [Claude Console](https://platform.claude.com)
-    * `CLAUDE_CODE_OAUTH_TOKEN`: an OAuth token that authenticates with your Claude subscription, available on Pro, Max, Team, and Enterprise plans. Generate one by running `claude setup-token` locally. See [Generate a long-lived token](https://code.claude.com/docs/en/authentication#generate-a-long-lived-token)
+    * `CLAUDE_CODE_OAUTH_TOKEN`: an OAuth token that authenticates with your Claude subscription, available on Pro, Max, Team, and Enterprise plans. Generate one by running the `setup-token` subcommand of the Claude Code CLI locally. See [Generate a long-lived token](https://code.claude.com/docs/en/authentication#generate-a-long-lived-token)
 
     In workflow files, pass the secret to the matching input: `anthropic_api_key` for an API key, or `claude_code_oauth_token` for an OAuth token.
   </Step>
@@ -113,7 +113,7 @@ With quick setup or manual setup, you configure one repository at a time. To rol
 * Store the authentication secret as an organization-level Actions secret so each repository doesn't need its own copy
 * Add the workflow file to each repository that should run the Claude Code GitHub Action, or define the job once as a [reusable workflow](https://docs.github.com/en/actions/using-workflows/reusing-workflows) that each repository calls
 
-For a secret shared across repositories, authenticate with an API key from the [Claude Console](https://platform.claude.com) rather than an OAuth token, since an OAuth token is tied to the subscription of the person who ran `claude setup-token`.
+For a secret shared across repositories, authenticate with an API key from the [Claude Console](https://platform.claude.com) rather than an OAuth token, since an OAuth token is tied to the subscription of the person who ran the `setup-token` subcommand of the Claude Code CLI.
 
 To avoid storing a long-lived secret entirely, authenticate through workload identity federation, where the Claude Code GitHub Action exchanges the workflow's GitHub OpenID Connect (OIDC) token for Claude API access through a Claude Console service account. Set these inputs:
 
@@ -378,7 +378,7 @@ These are the most commonly used inputs. Each maps to a `with:` key in the `anth
 | `prompt` | Instructions for Claude, as plain text or a [skill](https://code.claude.com/docs/en/skills) invocation. When omitted, Claude responds to the [trigger phrase](https://code.claude.com/docs/en/github-actions#interactive-and-automation-modes) instead | No |
 | `claude_args` | CLI arguments passed to Claude Code | No |
 | `anthropic_api_key` | Claude API key | For the Claude API, unless you use `claude_code_oauth_token` or [workload identity federation](https://code.claude.com/docs/en/github-actions#set-up-for-an-organization). Not used for Bedrock, Agent Platform, or Foundry |
-| `claude_code_oauth_token` | OAuth token for authenticating with a Claude subscription, generated with `claude setup-token` | No |
+| `claude_code_oauth_token` | OAuth token for authenticating with a Claude subscription, generated with the `setup-token` subcommand of the Claude Code CLI | No |
 | `github_token` | Token for GitHub operations. When omitted, the Claude Code GitHub Action authenticates as the Claude GitHub App | No |
 | `plugin_marketplaces` | Newline-separated list of plugin marketplace Git URLs | No |
 | `plugins` | Newline-separated list of plugin names to install before execution | No |

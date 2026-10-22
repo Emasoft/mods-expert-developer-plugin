@@ -23,7 +23,7 @@
 
 Each Claude Code session begins with a fresh context window. Two mechanisms carry knowledge across sessions:
 
-* **CLAUDE.md files**: instructions you write to give Claude persistent context. Claude can also read a repository's [`AGENTS.md` files](https://code.claude.com/docs/en/memory#agents-md) in place of CLAUDE.md
+* **CLAUDE.md files**: instructions you author to give Claude persistent context. Claude can also read a repository's [`AGENTS.md` files](https://code.claude.com/docs/en/memory#agents-md) in place of CLAUDE.md
 * **Auto memory**: notes Claude writes itself based on your corrections and preferences
 
 This page covers how to:
@@ -52,7 +52,7 @@ Subagents can also maintain their own auto memory. See [subagent configuration](
 
 #### CLAUDE.md files and rules
 
-CLAUDE.md files are markdown files that give Claude persistent instructions for a project, your personal workflow, or your entire organization. You write these files in plain text; Claude reads them at the start of every session. If your repository uses `AGENTS.md` instead, see [AGENTS.md](https://code.claude.com/docs/en/memory#agents-md).
+CLAUDE.md files are markdown files that give Claude persistent instructions for a project, your personal workflow, or your entire organization. You author these files in plain text; Claude reads them at the start of every session. If your repository uses `AGENTS.md` instead, see [AGENTS.md](https://code.claude.com/docs/en/memory#agents-md).
 
 ##### When to add to CLAUDE.md
 
@@ -471,7 +471,7 @@ ln -s AGENTS.md CLAUDE.md
 
 The command prints no output on success. Before you choose the symlink over the import, check these constraints:
 
-* **Editing**: Claude reads `CLAUDE.md` through the link, but the Edit and Write tools [refuse to write through a symlink](https://code.claude.com/docs/en/errors#refusing-after-a-symlink-changed), and the refusal directs Claude to edit the link's target, `AGENTS.md`, instead
+* **Making changes**: Claude reads `CLAUDE.md` through the link, but Claude's file-changing tools [refuse to save through a symlink](https://code.claude.com/docs/en/errors#refusing-after-a-symlink-changed), and the refusal message names `AGENTS.md`, the link's target, as the file to use
 * **Windows**: if you or anyone who clones the repository works on Windows, use the `@AGENTS.md` import instead. Creating a symlink there needs Administrator privileges or Developer Mode, and Git checks a committed symlink out as a plain text file unless `core.symlinks` is enabled, which leaves that clone with a one-line `CLAUDE.md` in place of your instructions
 
 With either approach, run `/context` in your next session and confirm `CLAUDE.md` appears under **Memory files**.
@@ -550,7 +550,7 @@ The directory contains a `MEMORY.md` index and one topic file per memory:
 └── ...                 # Any other topic files Claude creates
 ```
 
-`MEMORY.md` acts as an index of the memory directory. Claude reads and writes files in this directory throughout your session, using `MEMORY.md` to keep track of what's stored where.
+`MEMORY.md` acts as an index of the memory directory. Claude reads and updates the files in this directory throughout your session, using `MEMORY.md` to keep track of what's stored where.
 
 Auto memory is machine-local. All worktrees and subdirectories within the same git repository share one auto memory directory. Files are not shared across machines or cloud environments.
 
@@ -560,7 +560,7 @@ Claude Code deletes old session transcripts after the [`cleanupPeriodDays`](http
 
 The first 200 lines of `MEMORY.md`, or the first 25KB, whichever comes first, are loaded at the start of every conversation. Content beyond that threshold is not loaded at session start. Claude keeps `MEMORY.md` concise by moving detailed notes into separate topic files.
 
-After Claude writes to `MEMORY.md`, Claude Code measures the file against the 200-line and 25KB read limits. If the file is near a limit, Claude Code reminds Claude to shorten it: keep one line per entry, move detail into topic files, and merge or drop stale entries. If the file is over a limit, the write still succeeds, but Claude Code returns an [error telling Claude to rewrite the index](https://code.claude.com/docs/en/errors#memory-index-is-over-its-read-limit), because everything past the limit is dropped on the next load.
+After Claude updates `MEMORY.md`, Claude Code measures the file against the 200-line and 25KB read limits. If the file is near a limit, Claude Code reminds Claude to shorten it: keep one line per entry, move detail into topic files, and merge or drop stale entries. If the file is over a limit, the write still succeeds, but Claude Code returns an [error telling Claude to rewrite the index](https://code.claude.com/docs/en/errors#memory-index-is-over-its-read-limit), because everything past the limit is dropped on the next load.
 
 This limit applies only to `MEMORY.md`. Claude Code loads a CLAUDE.md file of up to 4 MiB in full and skips a larger file. Shorter files produce better adherence.
 

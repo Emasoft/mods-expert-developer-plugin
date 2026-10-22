@@ -26,7 +26,7 @@ Claude Code reads instructions, settings, skills, subagents, and memory from you
 
 On Windows, `~/.claude` resolves to `%USERPROFILE%\.claude`. If you set [`CLAUDE_CONFIG_DIR`](https://code.claude.com/docs/en/env-vars), every `~/.claude` path on this page lives under that directory instead.
 
-Most users only edit `CLAUDE.md` and `settings.json`. If your repository already has an `AGENTS.md` for other coding agents, Claude Code [can read that](https://code.claude.com/docs/en/memory#agents-md) in place of a `CLAUDE.md`. The rest of the directory is optional: add skills, rules, or subagents as you need them.
+Most users only change `CLAUDE.md` and `settings.json`. If your repository already has an `AGENTS.md` for other coding agents, Claude Code [can read that](https://code.claude.com/docs/en/memory#agents-md) in place of a `CLAUDE.md`. The rest of the directory is optional: add skills, rules, or subagents as you need them.
 
 #### Explore the directory
 
@@ -67,7 +67,7 @@ your-project/
 
 Project files:
 
-* `CLAUDE.md` (committed): project-specific instructions Claude reads every session, loaded into context at the start of every session. Put conventions, common commands and architectural context here so Claude operates with the same assumptions your team does. Target under 200 lines; longer files still load in full but may reduce adherence. CLAUDE.md loads into every session, so if something matters only for specific tasks, move it to a skill or a path-scoped rule so it loads only when needed. List the commands run most (build, test, format) so Claude knows them without being told each time. Run `/memory` to open and edit CLAUDE.md from within a session. It also works at `.claude/CLAUDE.md` to keep the project root clean. If the repository already has an `AGENTS.md` for other coding agents, Claude Code can read that in place of a `CLAUDE.md`.
+* `CLAUDE.md` (committed): project-specific instructions Claude reads every session, loaded into context at the start of every session. Put conventions, common commands and architectural context here so Claude operates with the same assumptions your team does. Target under 200 lines; longer files still load in full but may reduce adherence. CLAUDE.md loads into every session, so if something matters only for specific tasks, move it to a skill or a path-scoped rule so it loads only when needed. List the commands run most (build, test, format) so Claude knows them without being told each time. Run `/memory` to open and change CLAUDE.md from within a session. It also works at `.claude/CLAUDE.md` to keep the project root clean. If the repository already has an `AGENTS.md` for other coding agents, Claude Code can read that in place of a `CLAUDE.md`.
 
   Example for a TypeScript and React project: it lists the build and test commands, the framework conventions Claude should follow, and project-specific rules such as export style and file layout.
 
@@ -284,7 +284,7 @@ Project files:
     ```
 
 * `.claude/workflows/`: dynamic workflow scripts that orchestrate many subagents. Each `.js` file is a dynamic workflow, a script the runtime executes to spawn and coordinate many subagents. Workflows are written by Claude and saved here from `/workflows` (press `s` on a run) rather than authored from scratch. Loaded at startup; each file becomes a `/<name>` command. A project workflow takes precedence over a personal one in `~/.claude/workflows/` with the same name.
-* `.claude/agent-memory/` (committed; written by Claude): subagent persistent memory, separate from your main session auto memory. Subagents with `memory: project` in their frontmatter get a dedicated directory here; the first 200 lines (capped at 25KB) of `MEMORY.md` are loaded into the subagent system prompt when it runs. It is created only for subagents that set the `memory:` frontmatter field. This directory holds project-scoped subagent memory, meant to be shared with the team. It is distinct from the main session auto memory at `~/.claude/projects/` (see below): each subagent reads and writes its own `MEMORY.md`, not yours. To keep memory out of version control use `memory: local`, which writes to `.claude/agent-memory-local/`; for cross-project memory use `memory: user`, which writes to `~/.claude/agent-memory/`.
+* `.claude/agent-memory/` (committed; written by Claude): subagent persistent memory, separate from your main session auto memory. Subagents with `memory: project` in their frontmatter get a dedicated directory here; the first 200 lines (capped at 25KB) of `MEMORY.md` are loaded into the subagent system prompt when it runs. It is created only for subagents that set the `memory:` frontmatter field. This directory holds project-scoped subagent memory, meant to be shared with the team. It is distinct from the main session auto memory at `~/.claude/projects/` (see below): each subagent keeps its own `MEMORY.md`, not yours. To keep memory out of version control use `memory: local`, which writes to `.claude/agent-memory-local/`; for cross-project memory use `memory: user`, which writes to `~/.claude/agent-memory/`.
   * `<agent-name>/` (written by Claude), containing `MEMORY.md` (committed; written by Claude): loaded into the subagent system prompt when the subagent starts. It works the same as your main auto memory: the subagent creates and updates this file itself, you do not write it. The subagent reads it at the start of each task and writes back what it learns.
 
     ```markdown
@@ -391,7 +391,7 @@ Global files (in your home directory, never committed):
       - [debugging.md](debugging.md): auth token rotation and DB connection troubleshooting
       ```
 
-    * `debugging.md` (local only; written by Claude): topic notes Claude writes when `MEMORY.md` gets long. An example of a topic file; Claude picks the filename based on what it splits out (`debugging.md`, `architecture.md`, `build-commands.md` or similar). You never create these yourself. Claude reads a topic file back only when the current task relates to it.
+    * `debugging.md` (local only; written by Claude): topic notes Claude saves when `MEMORY.md` gets long. An example of a topic file; Claude picks the filename based on what it splits out (`debugging.md`, `architecture.md`, `build-commands.md` or similar). You never create these yourself. Claude reads a topic file back only when the current task relates to it.
 
       ```markdown
       ---

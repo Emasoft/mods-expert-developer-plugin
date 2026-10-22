@@ -977,7 +977,7 @@ Keep these constraints in mind when designing hooks:
 
 ##### Hooks and permission modes
 
-`PreToolUse` hooks fire before any permission-mode check, in every [permission mode](https://code.claude.com/docs/en/permission-modes), including `dontAsk`. A hook that returns `permissionDecision: "deny"` blocks the tool even in `bypassPermissions` mode or with `--dangerously-skip-permissions`. This lets you enforce policy that users can't bypass by changing their permission mode.
+`PreToolUse` hooks fire before any permission-mode check, in every [permission mode](https://code.claude.com/docs/en/permission-modes), including `dontAsk`. A hook that returns `permissionDecision: "deny"` blocks the tool even in `bypassPermissions` mode or with the flag that skips all permission checks. This lets you enforce policy that users can't bypass by changing their permission mode.
 
 The reverse is not true: a hook returning `"allow"` doesn't bypass deny rules from settings, and it can't suppress the prompt for reads from [network paths](https://code.claude.com/docs/en/permissions#network-paths), for MCP tools marked [`requiresUserInteraction`](https://code.claude.com/docs/en/mcp#require-approval-for-a-specific-tool), or for connector tools [your organization set to `ask`](https://code.claude.com/docs/en/mcp#organization-controls-on-connector-tools) in sessions where that setting reaches Claude Code. Hooks in settings files and in a plugin's `hooks/hooks.json` can tighten restrictions but not loosen them past what permission rules allow.
 
@@ -1052,7 +1052,7 @@ Shell ready on arm64
 Unless the hook is [async](https://code.claude.com/docs/en/hooks#how-async-hooks-execute), Claude Code reads output that doesn't start with `{` as plain text, so your JSON is ignored. Because the hook exited 0, the transcript shows no error either. To check for this cause, start Claude Code with `claude --debug`, trigger the hook, and search the [debug log](https://code.claude.com/docs/en/hooks#debug-hooks) for `Hook output does not start with {`. To fix it, wrap the `echo` statements in your profile so they run only in interactive shells:
 
 ```bash theme={null}
-# In ~/.zshrc or ~/.bashrc
+# In your zsh or bash startup file in your home directory
 if [[ $- == *i* ]]; then
   echo "Shell ready"
 fi

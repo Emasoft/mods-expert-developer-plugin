@@ -250,7 +250,7 @@ Before v2.1.251, a mid-session style switch kept the cache but didn't apply unti
 
 ##### Invoking skills and commands
 
-[Skills](https://code.claude.com/docs/en/skills) and [commands](https://code.claude.com/docs/en/commands) inject their instructions as user messages at the point of invocation. Nothing earlier in the conversation changes. A skill or command whose frontmatter names a `model` can be a [model switch](https://code.claude.com/docs/en/prompt-caching#switching-models) for that turn.
+[Skills](https://code.claude.com/docs/en/skills) and [commands](https://code.claude.com/docs/en/commands) add their instructions as user messages at the point of invocation. Nothing earlier in the conversation changes. A skill or command whose frontmatter names a `model` can be a [model switch](https://code.claude.com/docs/en/prompt-caching#switching-models) for that turn.
 
 ##### Running `/recap`
 

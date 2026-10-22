@@ -88,13 +88,13 @@ The installer downloads from `downloads.claude.ai`. Verify you can reach it:
 
 <Tabs>
   <Tab title="macOS/Linux">
-    ```bash theme={null}
+    ```bash
     curl -sI https://downloads.claude.ai/claude-code-releases/latest
     ```
   </Tab>
 
   <Tab title="Windows PowerShell">
-    ```powershell theme={null}
+    ```powershell
     curl.exe -sI https://downloads.claude.ai/claude-code-releases/latest
     ```
 
@@ -119,7 +119,8 @@ This example sets both proxy variables, then runs the installer through your pro
 
 <Tabs>
   <Tab title="macOS/Linux">
-    ```bash theme={null}
+    Warning: the following code could be malicious. Audit it for safety before executing it!
+    ```bash
     export HTTP_PROXY=http://proxy.example.com:8080
     export HTTPS_PROXY=http://proxy.example.com:8080
     curl -fsSL https://claude.ai/install.sh | bash
@@ -127,7 +128,7 @@ This example sets both proxy variables, then runs the installer through your pro
   </Tab>
 
   <Tab title="Windows PowerShell">
-    ```powershell theme={null}
+    ```powershell
     $env:HTTP_PROXY = 'http://proxy.example.com:8080'
     $env:HTTPS_PROXY = 'http://proxy.example.com:8080'
     irm https://claude.ai/install.ps1 | iex
@@ -151,7 +152,7 @@ First check that the program is there at all, then check whether its folder is i
   <Tab title="macOS/Linux">
     Check that the installer put the program in place:
 
-    ```bash theme={null}
+    ```bash
     ls -la ~/.local/bin/claude
     ```
 
@@ -160,7 +161,7 @@ First check that the program is there at all, then check whether its folder is i
 
     List your PATH entries and filter for the install folder:
 
-    ```bash theme={null}
+    ```bash
     echo $PATH | tr ':' '\n' | grep -Fx "$HOME/.local/bin"
     ```
 
@@ -168,21 +169,24 @@ First check that the program is there at all, then check whether its folder is i
 
     For Zsh, the default on macOS:
 
-    ```bash theme={null}
+    Warning: the following code could be malicious. Audit it for safety before executing it!
+    ```bash
     echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
     source ~/.zshrc
     ```
 
     For Bash on Linux, where it's the default on most distributions:
 
-    ```bash theme={null}
+    Warning: the following code could be malicious. Audit it for safety before executing it!
+    ```bash
     echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
     source ~/.bashrc
     ```
 
     For Bash on macOS, add the line to `~/.bash_profile` instead. Terminal on macOS starts Bash as a login shell, which ignores `~/.bashrc` and reads only the first of `~/.bash_profile`, `~/.bash_login`, or `~/.profile` that exists. If you already have a `~/.bash_login` or `~/.profile` and no `~/.bash_profile`, put the line in that file rather than creating `~/.bash_profile`:
 
-    ```bash theme={null}
+    Warning: the following code could be malicious. Audit it for safety before executing it!
+    ```bash
     echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bash_profile
     source ~/.bash_profile
     ```
@@ -195,7 +199,7 @@ First check that the program is there at all, then check whether its folder is i
 
     Verify the fix worked:
 
-    ```bash theme={null}
+    ```bash
     claude --version
     ```
 
@@ -209,7 +213,7 @@ First check that the program is there at all, then check whether its folder is i
   <Tab title="Windows PowerShell">
     Check that the installer put the program in place:
 
-    ```powershell theme={null}
+    ```powershell
     Test-Path "$env:USERPROFILE\.local\bin\claude.exe"
     ```
 
@@ -218,13 +222,13 @@ First check that the program is there at all, then check whether its folder is i
 
     List your PATH entries and filter for the install folder:
 
-    ```powershell theme={null}
+    ```powershell
     $env:PATH -split ';' | Select-String '\.local\\bin'
     ```
 
     If this prints `C:\Users\you\.local\bin`, the directory is in your PATH and you can skip to [Check for conflicting installations](https://code.claude.com/docs/en/troubleshoot-install#check-for-conflicting-installations). If there's no output, add the install directory to your User PATH:
 
-    ```powershell theme={null}
+    ```powershell
     $currentPath = [Environment]::GetEnvironmentVariable('PATH', 'User')
     [Environment]::SetEnvironmentVariable('PATH', "$currentPath;$env:USERPROFILE\.local\bin", 'User')
     ```
@@ -233,7 +237,7 @@ First check that the program is there at all, then check whether its folder is i
 
     Verify the fix worked:
 
-    ```powershell theme={null}
+    ```powershell
     claude --version
     ```
 
@@ -246,7 +250,7 @@ First check that the program is there at all, then check whether its folder is i
   <Tab title="Windows CMD">
     Check that the installer put the program in place:
 
-    ```batch theme={null}
+    ```batch
     dir "%USERPROFILE%\.local\bin\claude.exe"
     ```
 
@@ -255,7 +259,7 @@ First check that the program is there at all, then check whether its folder is i
 
     List your PATH entries and filter for the install folder:
 
-    ```batch theme={null}
+    ```batch
     echo %PATH% | findstr /i "local\bin"
     ```
 
@@ -263,7 +267,7 @@ First check that the program is there at all, then check whether its folder is i
 
     Verify the fix worked:
 
-    ```batch theme={null}
+    ```batch
     claude --version
     ```
 
@@ -279,7 +283,7 @@ Multiple Claude Code installations can cause version mismatches or unexpected be
   <Tab title="macOS/Linux">
     List all `claude` binaries found in your PATH:
 
-    ```bash theme={null}
+    ```bash
     which -a claude
     ```
 
@@ -287,7 +291,7 @@ Multiple Claude Code installations can cause version mismatches or unexpected be
 
     Check the three locations a `claude` binary can come from. `~/.local/bin/claude` is the native installer, `~/.claude/local/` is a legacy local npm install created by older versions of Claude Code, and the npm global list shows a `-g` install:
 
-    ```bash theme={null}
+    ```bash
     ls -la ~/.local/bin/claude
     ```
 
@@ -295,11 +299,11 @@ Multiple Claude Code installations can cause version mismatches or unexpected be
 
     If either `ls` command prints `No such file or directory`, that's not an error. It means nothing is installed at that location, so move on to the next check.
 
-    ```bash theme={null}
+    ```bash
     ls -la ~/.claude/local/
     ```
 
-    ```bash theme={null}
+    ```bash
     npm -g ls @anthropic-ai/claude-code 2>/dev/null
     ```
 
@@ -309,7 +313,7 @@ Multiple Claude Code installations can cause version mismatches or unexpected be
   <Tab title="Windows PowerShell">
     List all `claude` binaries found in your PATH:
 
-    ```powershell theme={null}
+    ```powershell
     where.exe claude
     ```
 
@@ -317,7 +321,7 @@ Multiple Claude Code installations can cause version mismatches or unexpected be
 
     Check whether the native installer placed a binary:
 
-    ```powershell theme={null}
+    ```powershell
     Test-Path "$env:USERPROFILE\.local\bin\claude.exe"
     ```
 
@@ -330,7 +334,7 @@ If you find multiple installations, keep only one. The native install at `~/.loc
 
 Uninstall an npm global install:
 
-```bash theme={null}
+```bash
 npm uninstall -g @anthropic-ai/claude-code
 ```
 
@@ -338,13 +342,13 @@ Remove the legacy local npm install:
 
 <Tabs>
   <Tab title="macOS/Linux">
-    ```bash theme={null}
+    ```bash
     rm -rf ~/.claude/local
     ```
   </Tab>
 
   <Tab title="Windows PowerShell">
-    ```powershell theme={null}
+    ```powershell
     Remove-Item -Recurse -Force "$env:USERPROFILE\.claude\local"
     ```
   </Tab>
@@ -352,13 +356,13 @@ Remove the legacy local npm install:
 
 Remove a Homebrew install on macOS. If you installed the `claude-code@latest` cask, substitute that name:
 
-```bash theme={null}
+```bash
 brew uninstall --cask claude-code
 ```
 
 Remove a WinGet install on Windows:
 
-```powershell theme={null}
+```powershell
 winget uninstall Anthropic.ClaudeCode
 ```
 
@@ -379,14 +383,15 @@ If you set `XDG_DATA_HOME`, `XDG_STATE_HOME`, or `XDG_CACHE_HOME`, the install u
 
 Check whether the directories are writable:
 
-```bash theme={null}
+```bash
 test -w ~/.local/bin && echo "writable" || echo "not writable"
 test -w ~/.claude && echo "writable" || echo "not writable"
 ```
 
 If either directory isn't writable, create the install directory and set your user as the owner:
 
-```bash theme={null}
+Warning: the following code could be malicious. Audit it for safety before executing it!
+```bash
 sudo mkdir -p ~/.local/bin
 sudo chown -R $(whoami) ~/.local
 ```
@@ -399,13 +404,13 @@ Confirm the binary exists and is executable:
 
 <Tabs>
   <Tab title="macOS/Linux">
-    ```bash theme={null}
+    ```bash
     ls -la "$(command -v claude)"
     ```
   </Tab>
 
   <Tab title="Windows PowerShell">
-    ```powershell theme={null}
+    ```powershell
     Get-Command claude | Select-Object Source
     ```
   </Tab>
@@ -413,13 +418,13 @@ Confirm the binary exists and is executable:
 
 On Linux, check for missing shared libraries. If `ldd` shows missing libraries, you may need to install system packages. On Alpine Linux and other musl-based distributions, see [Alpine Linux setup](https://code.claude.com/docs/en/setup#alpine-linux-and-musl-based-distributions).
 
-```bash theme={null}
+```bash
 ldd "$(command -v claude)" | grep "not found"
 ```
 
 Confirm the binary can execute:
 
-```bash theme={null}
+```bash
 claude --version
 ```
 
@@ -433,14 +438,14 @@ The install command fails with one of these errors when what it downloaded isn't
 
 **Bash or Zsh**: the error quotes the first line of the returned page.
 
-```text theme={null}
+```text
 bash: line 1: syntax error near unexpected token `<'
 bash: line 1: `<!DOCTYPE html>'
 ```
 
 **PowerShell, parse errors**: the errors point into the returned page, with `iex` trying to run HTML and CSS as PowerShell.
 
-```text theme={null}
+```text
 iex : At line:1 char:2310
 + ... igin="anonymous"/><script type="text/javascript">!function(o,c){var n ...
 Missing argument in parameter list.
@@ -451,7 +456,7 @@ The wording varies with the PowerShell version and system language: you may see 
 
 **PowerShell, `System.Xml.XmlDocument`**: the error names this type instead of quoting the page.
 
-```text theme={null}
+```text
 System.Xml.XmlDocument : The term 'System.Xml.XmlDocument' is not recognized as the name of a cmdlet, function, script
 file, or operable program.
 ```
@@ -460,7 +465,7 @@ When `irm` can parse the response as XML, it returns an XML object instead of te
 
 **CMD**: you see this error, followed by the HTML of the returned page.
 
-```text theme={null}
+```text
 < was unexpected at this time.
 
 C:\Users\you><!DOCTYPE html>...
@@ -470,7 +475,7 @@ The first line appears in your system language, so look for the HTML that follow
 
 **A 403 with no page**: depending on how the request was routed, curl reports a 403 status with no HTML body.
 
-```text theme={null}
+```text
 curl: (22) The requested URL returned error: 403
 ```
 
@@ -488,13 +493,13 @@ Otherwise, this can happen due to network issues, regional routing, or a tempora
 
    On macOS, install via Homebrew:
 
-   ```bash theme={null}
+   ```bash
    brew install --cask claude-code
    ```
 
    On Windows, install via WinGet:
 
-   ```powershell theme={null}
+   ```powershell
    winget install Anthropic.ClaudeCode
    ```
 
@@ -519,20 +524,27 @@ Otherwise, see [Verify your PATH](https://code.claude.com/docs/en/troubleshoot-i
 
 If the `echo` command that adds `~/.local/bin` to your PATH prints `zsh: permission denied: /Users/you/.zshrc` or `bash: /home/you/.bashrc: Permission denied`, your user can't write to that file and nothing was saved. In your terminal, check who owns the file, using your shell's file name in place of `~/.zshrc`:
 
-```bash theme={null}
+Warning: the following code could be malicious. Audit it for safety before executing it!
+```bash
 ls -l ~/.zshrc
 ```
 
 The third field of the output is the owner.
 
-* **The owner is another user, such as `root`**: take ownership with `sudo chown $(whoami) ~/.zshrc`, which requires administrator rights.
+* **The owner is another user, such as `root`**: take ownership of the file, which requires administrator rights:
+
+  Warning: the following code could be malicious. Audit it for safety before executing it!
+
+  ```bash
+  sudo chown $(whoami) ~/.zshrc
+  ```
 * **The owner is you**: the file is read-only. Make it writable with `chmod u+w ~/.zshrc`.
 
 Then run the two PATH commands for your shell in [Verify your PATH](https://code.claude.com/docs/en/troubleshoot-install#verify-your-path) again.
 
 ##### `curl: (56) Failure writing output to destination`
 
-The `curl ... | bash` command downloads the script and pipes it to Bash for execution. This error, and the related `curl: (23) Failure writing output to destination`, means Bash did not receive the complete script. Exit code 56 indicates the download itself was interrupted, and exit code 23 indicates curl could not write what it received to the pipe, usually because Bash exited early.
+The curl-based install command downloads the script and pipes it to Bash for execution. This error, and the related `curl: (23) Failure writing output to destination`, means Bash did not receive the complete script. Exit code 56 indicates the download itself was interrupted, and exit code 23 indicates curl could not write what it received to the pipe, usually because Bash exited early.
 
 Test that you can reach `downloads.claude.ai` with the check in [Check network connectivity](https://code.claude.com/docs/en/troubleshoot-install#check-network-connectivity). If you reached the server, the original failure was likely intermittent; retry the install command. You can also [try an alternative install method](https://code.claude.com/docs/en/setup#install-claude-code).
 
@@ -540,7 +552,7 @@ Test that you can reach `downloads.claude.ai` with the check in [Check network c
 
 Homebrew reports `Error: Cask 'claude-code' is unavailable: No Cask with this name exists` when your local copy of the Homebrew cask index predates the cask's publication. Refresh the index and retry:
 
-```bash theme={null}
+```bash
 brew update
 brew install --cask claude-code
 ```
@@ -553,7 +565,7 @@ If Homebrew installs an older Claude Code version than you expect, the same stal
 
 Homebrew offers two casks, `claude-code` and `claude-code@latest`. Running `brew upgrade --cask claude-code@latest` when that cask isn't the one installed prints `Error: Cask 'claude-code@latest' is not installed.` To see which cask you have, run this in your terminal:
 
-```bash theme={null}
+```bash
 brew list --cask | grep claude-code
 ```
 
@@ -576,18 +588,18 @@ For `CRYPT_E_NO_REVOCATION_CHECK` or `CRYPT_E_REVOCATION_OFFLINE`, go to step 4.
 
    On Ubuntu/Debian:
 
-   ```bash theme={null}
+   ```bash
    sudo apt-get update && sudo apt-get install ca-certificates
    ```
 
    On macOS, the system curl uses the Keychain trust store; updating macOS itself updates the root certificates.
 
 2. **In Windows PowerShell 5.1, enable TLS 1.2**:
-   ```powershell theme={null}
+   ```powershell
    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
    ```
    Then run the installer in the same window:
-   ```powershell theme={null}
+   ```powershell
    irm https://claude.ai/install.ps1 | iex
    ```
 
@@ -595,7 +607,8 @@ For `CRYPT_E_NO_REVOCATION_CHECK` or `CRYPT_E_REVOCATION_OFFLINE`, go to step 4.
 
    <Tabs>
      <Tab title="macOS/Linux">
-       ```bash theme={null}
+       Warning: the following code could be malicious. Audit it for safety before executing it!
+       ```bash
        curl --cacert /path/to/corporate-ca.pem -fsSL https://claude.ai/install.sh | bash
        ```
      </Tab>
@@ -603,7 +616,7 @@ For `CRYPT_E_NO_REVOCATION_CHECK` or `CRYPT_E_REVOCATION_OFFLINE`, go to step 4.
      <Tab title="Windows PowerShell">
        The PowerShell installer downloads through .NET, which validates TLS against the Windows certificate store. Ask your IT team to add the proxy's CA certificate to the Windows store if it isn't already there, then run the installer:
 
-       ```powershell theme={null}
+       ```powershell
        irm https://claude.ai/install.ps1 | iex
        ```
      </Tab>
@@ -613,13 +626,13 @@ For `CRYPT_E_NO_REVOCATION_CHECK` or `CRYPT_E_REVOCATION_OFFLINE`, go to step 4.
 
    <Tabs>
      <Tab title="macOS/Linux">
-       ```bash theme={null}
+       ```bash
        export NODE_EXTRA_CA_CERTS=/path/to/corporate-ca.pem
        ```
      </Tab>
 
      <Tab title="Windows PowerShell">
-       ```powershell theme={null}
+       ```powershell
        $env:NODE_EXTRA_CA_CERTS = 'C:\path\to\corporate-ca.pem'
        ```
      </Tab>
@@ -628,11 +641,11 @@ For `CRYPT_E_NO_REVOCATION_CHECK` or `CRYPT_E_REVOCATION_OFFLINE`, go to step 4.
    Ask your IT team for the certificate file if you don't have it. You can also try on a direct connection to confirm the proxy is the cause.
 
 4. **On Windows, work around blocked revocation checks**. The errors `CRYPT_E_NO_REVOCATION_CHECK (0x80092012)` and `CRYPT_E_REVOCATION_OFFLINE (0x80092013)` mean curl reached the server but your network blocks the certificate revocation lookup, which is common behind corporate firewalls. If the failing command is the `curl` that downloads `install.cmd`, rerun it from a Command Prompt with `--ssl-revoke-best-effort` added:
-   ```batch theme={null}
+   ```batch
    curl --ssl-revoke-best-effort -fsSL https://claude.ai/install.cmd -o install.cmd && install.cmd && del install.cmd
    ```
    When the script's own downloads hit the same errors, it retries them with best-effort revocation checking automatically, so the flag is only needed on the command you run yourself. Best-effort checking tolerates an unreachable revocation server but still rejects a certificate that is known to be revoked, matching how browsers handle revocation. You can also avoid curl's revocation check entirely by running the PowerShell installer from PowerShell, which downloads through .NET and doesn't fail when the revocation server is unreachable:
-   ```powershell theme={null}
+   ```powershell
    irm https://claude.ai/install.ps1 | iex
    ```
    You can also install with `winget install Anthropic.ClaudeCode`, which avoids curl entirely.
@@ -645,7 +658,7 @@ The installer couldn't reach the download server. This typically means `download
 
 The connection to the download server closed while `claude install` or `claude update` was fetching the Claude Code binary, and the retries didn't recover. Claude Code retries the download when the connection drops, the transfer stalls, or the downloaded file fails its checksum, up to three attempts in total. A completed HTTP error, such as a 404, isn't retried because the server already answered. Before v2.1.202, a single dropped connection failed the download immediately with the bare error `aborted` instead of retrying.
 
-```text theme={null}
+```text
 The connection dropped while downloading the update (attempt 3/3: aborted). Check your network — proxies sometimes cut off large downloads.
 ```
 
@@ -670,40 +683,40 @@ If you see `'irm' is not recognized`, `The token '&&' is not a valid statement s
 
   Open PowerShell by searching for "PowerShell" in the Start menu, then run the original install command:
 
-  ```powershell theme={null}
+  ```powershell
   irm https://claude.ai/install.ps1 | iex
   ```
 
   Or stay in CMD and use the CMD installer instead:
 
-  ```batch theme={null}
+  ```batch
   curl -fsSL https://claude.ai/install.cmd -o install.cmd && install.cmd && del install.cmd
   ```
 
 * **`&&` not a valid statement separator**: you're in PowerShell but ran the CMD installer command. Use the PowerShell installer:
-  ```powershell theme={null}
+  ```powershell
   irm https://claude.ai/install.ps1 | iex
   ```
 
-* **`A parameter cannot be found that matches parameter name 'fsSL'`**: you ran the macOS/Linux `curl -fsSL ... | bash` installer in Windows PowerShell, where `curl` is an alias for `Invoke-WebRequest` and rejects the `-fsSL` flags. Use the PowerShell installer instead:
-  ```powershell theme={null}
+* **`A parameter cannot be found that matches parameter name 'fsSL'`**: you ran the macOS/Linux curl-based installer, which pipes the download to Bash, in Windows PowerShell, where `curl` is an alias for `Invoke-WebRequest` and rejects the `-fsSL` flags. Use the PowerShell installer instead:
+  ```powershell
   irm https://claude.ai/install.ps1 | iex
   ```
 
 * **`bash` not recognized**: you ran the macOS/Linux installer on Windows. Use the PowerShell installer instead:
-  ```powershell theme={null}
+  ```powershell
   irm https://claude.ai/install.ps1 | iex
   ```
 
 * **The command prints script text instead of installing**: you ran the download half of the command without the part that executes it. `irm https://claude.ai/install.ps1` on its own prints the downloaded script to the terminal. Pipe it to `iex` to run it:
 
-  ```powershell theme={null}
+  ```powershell
   irm https://claude.ai/install.ps1 | iex
   ```
 
-  In CMD, `curl -fsSL https://claude.ai/install.cmd` without `-o` prints the batch script instead of saving it. Run the complete command:
+  In CMD, downloading `https://claude.ai/install.cmd` with curl and no `-o` option prints the batch script instead of saving it. Run the complete command:
 
-  ```batch theme={null}
+  ```batch
   curl -fsSL https://claude.ai/install.cmd -o install.cmd && install.cmd && del install.cmd
   ```
 
@@ -715,7 +728,7 @@ Whichever installer you use, confirm it worked: open a new terminal and run `cla
 
 Installing or running Claude Code through npm on Windows can fail with a `SecurityError`:
 
-```text theme={null}
+```text
 npm : File C:\Program Files\nodejs\npm.ps1 cannot be loaded because running scripts is disabled on this system. For more information, see about_Execution_Policies at https:/go.microsoft.com/fwlink/?LinkID=135170.
 ...
     + CategoryInfo          : SecurityError: (:) [], PSSecurityException
@@ -726,7 +739,7 @@ The same error names `claude.ps1` when you run `claude` after an npm install. Po
 **Solutions:**
 
 1. **Allow locally created scripts for your user**, then retry:
-   ```powershell theme={null}
+   ```powershell
    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
    ```
 2. **Call the `.cmd` launcher instead**: `npm.cmd` and `claude.cmd` do the same job, and the policy doesn't cover them.
@@ -738,7 +751,7 @@ If the PowerShell installer fails with `Failed to download binary: The process c
 
 Close any other PowerShell windows running the installer and wait for antivirus scans to release the file. Then delete the downloads folder and run the installer again:
 
-```powershell theme={null}
+```powershell
 Remove-Item -Recurse -Force "$env:USERPROFILE\.claude\downloads"
 irm https://claude.ai/install.ps1 | iex
 ```
@@ -751,7 +764,7 @@ If your terminal reports `'claude' is not recognized` right after Claude Code up
 
 The backup is a file in the same directory whose name begins with `claude.exe.old.` followed by a numeric timestamp. Run the following in PowerShell to rename the newest backup back to `claude.exe`:
 
-```powershell theme={null}
+```powershell
 Get-ChildItem "$env:USERPROFILE\.local\bin\claude.exe.old.*" | Sort-Object Name | Select-Object -Last 1 | Rename-Item -NewName claude.exe
 ```
 
@@ -759,7 +772,7 @@ Then run `claude --version` to confirm the fix. A restored `claude.exe` prints a
 
 If there's no `claude.exe.old.*` file, or `claude` still fails after the rename, reinstall instead:
 
-```powershell theme={null}
+```powershell
 irm https://claude.ai/install.ps1 | iex
 ```
 
@@ -769,7 +782,7 @@ Before v2.1.281, Claude Code could delete the backup while `claude.exe` was stil
 
 A `Killed` message during install usually means the Linux out-of-memory (OOM) killer terminated the `claude install` step because the system ran out of free memory. This is common on small VPS and cloud instances. The install script reports the cause and exits with code 137. In this example, the line number and process ID vary by release and run:
 
-```text theme={null}
+```text
 Setting up Claude Code...
 bash: line 183: 34803 Killed    "$binary_path" install ${TARGET:+"$TARGET"}
 Installation was killed before it could finish (exit code 137). This usually means the system ran out of memory.
@@ -784,7 +797,8 @@ Installing needs roughly 512 MB of free memory, and running Claude Code needs mo
 
    Create a 2 GB swap file and enable it:
 
-   ```bash theme={null}
+   Warning: the following code could be malicious. Audit it for safety before executing it!
+   ```bash
    sudo fallocate -l 2G /swapfile
    sudo chmod 600 /swapfile
    sudo mkswap /swapfile
@@ -793,7 +807,8 @@ Installing needs roughly 512 MB of free memory, and running Claude Code needs mo
 
    Then retry the installation:
 
-   ```bash theme={null}
+   Warning: the following code could be malicious. Audit it for safety before executing it!
+   ```bash
    curl -fsSL https://claude.ai/install.sh | bash
    ```
 
@@ -805,7 +820,7 @@ Installing needs roughly 512 MB of free memory, and running Claude Code needs mo
 
 The install script reports when the `claude install` step is terminated by a signal. On Linux, exit code 137 means the process received SIGKILL, and on a low-memory host that's usually the kernel out-of-memory (OOM) killer. The script prints this explanation and exits with code 137:
 
-```text theme={null}
+```text
 Installation was killed before it could finish (exit code 137). This usually means the system ran out of memory.
 Claude Code needs roughly 512MB of free memory to install. Free up memory, then run this script again.
 ```
@@ -824,7 +839,9 @@ When installing Claude Code in a Docker container, installing as root into `/` c
 **Solutions:**
 
 1. **Set a working directory** before running the installer. When run from `/`, the installer scans the entire filesystem, which causes excessive memory usage. Setting `WORKDIR` limits the scan to a small directory:
-   ```dockerfile theme={null}
+
+   Warning: the following code could be malicious. Audit it for safety before executing it!
+   ```text
    WORKDIR /tmp
    RUN curl -fsSL https://claude.ai/install.sh | bash
    ```
@@ -833,7 +850,7 @@ When installing Claude Code in a Docker container, installing as root into `/` c
 
 ##### `Raw mode is not supported` during install
 
-When your organization's [server-managed settings](https://code.claude.com/docs/en/server-managed-settings) include changes that need [security approval](https://code.claude.com/docs/en/server-managed-settings#security-approval-dialogs), Claude Code versions before 2.1.246 try to show the approval dialog during `claude install`. The dialog needs a terminal on stdin. When the installer runs `claude install` from a pipe, as `curl -fsSL https://claude.ai/install.sh | bash` does, stdin is the pipe rather than a terminal, so the install fails with an error containing `Raw mode is not supported`.
+When your organization's [server-managed settings](https://code.claude.com/docs/en/server-managed-settings) include changes that need [security approval](https://code.claude.com/docs/en/server-managed-settings#security-approval-dialogs), Claude Code versions before 2.1.246 try to show the approval dialog during `claude install`. The dialog needs a terminal on stdin. When the installer runs `claude install` from a pipe, as the official macOS/Linux install command does when it pipes the downloaded script to Bash, stdin is the pipe rather than a terminal, so the install fails with an error containing `Raw mode is not supported`.
 
 Claude Code v2.1.246 and later don't show the dialog during `claude install` or `claude update`. The command runs with the settings you last approved, and Claude Code shows the dialog in your next interactive session. If your organization's startup configuration [waits for the settings fetch](https://code.claude.com/docs/en/server-managed-settings#enforce-fail-closed-startup), such as when it sets `forceRemoteSettingsRefresh`, the dialog still appears during these commands, and an install run from a pipe still fails.
 
@@ -841,13 +858,14 @@ In every other configuration, rerunning the installer gets past this error, beca
 
 <Tabs>
   <Tab title="macOS/Linux">
-    ```bash theme={null}
+    Warning: the following code could be malicious. Audit it for safety before executing it!
+    ```bash
     curl -fsSL https://claude.ai/install.sh | bash
     ```
   </Tab>
 
   <Tab title="Windows PowerShell">
-    ```powershell theme={null}
+    ```powershell
     irm https://claude.ai/install.ps1 | iex
     ```
   </Tab>
@@ -861,7 +879,8 @@ In every other configuration, rerunning the installer gets past this error, beca
 
 If you hit the hang on an earlier version, find the directory. In this command's output, a line starting with `d` marks that path as a directory. A `No such file or directory` line means nothing exists at that path and isn't the cause:
 
-```bash theme={null}
+Warning: the following code could be malicious. Audit it for safety before executing it!
+```bash
 ls -ld ~/.zshrc ~/.bashrc ~/.bash_profile ~/.bash_login ~/.profile ~/.config/fish/config.fish
 ```
 
@@ -890,7 +909,7 @@ In step 2, Claude Code skips a `git` that sits in the folder you launched Claude
 
 **To point Claude Code at a specific Git installation**, find it by running `where.exe git` in PowerShell, then set the `bin\bash.exe` path from that installation as `CLAUDE_CODE_GIT_BASH_PATH` in your [settings.json file](https://code.claude.com/docs/en/settings):
 
-```json theme={null}
+```json
 {
   "env": {
     "CLAUDE_CODE_GIT_BASH_PATH": "C:\\Program Files\\Git\\bin\\bash.exe"
@@ -906,7 +925,7 @@ If the file's name is right, endpoint security software such as AppLocker, Group
 
 Windows includes two PowerShell entries in the Start menu: `Windows PowerShell` and `Windows PowerShell (x86)`. The x86 entry runs as a 32-bit process and triggers this error even on a 64-bit machine. To check which case you're in, run this in the same window that produced the error:
 
-```powershell theme={null}
+```powershell
 [Environment]::Is64BitOperatingSystem
 ```
 
@@ -918,7 +937,7 @@ If this prints `False`, you are on a 32-bit edition of Windows. Claude Code requ
 
 If you see errors about missing shared libraries like `libstdc++.so.6` or `libgcc_s.so.1` after installation, the installer may have downloaded the wrong binary variant for your system.
 
-```text theme={null}
+```text
 Error loading shared library libstdc++.so.6: No such file or directory
 ```
 
@@ -927,7 +946,7 @@ This can happen on glibc-based systems that have musl cross-compilation packages
 **Solutions:**
 
 1. **Check which libc your system uses**:
-   ```bash theme={null}
+   ```bash
    ldd --version 2>&1 | head -1
    ```
    Output mentioning `GNU libc` or `GLIBC` means glibc. Output mentioning `musl` means musl.
@@ -935,7 +954,7 @@ This can happen on glibc-based systems that have musl cross-compilation packages
 2. **If you're on glibc but got the musl binary**, remove the installation and reinstall. You can also manually download the correct binary using the manifest at `https://downloads.claude.ai/claude-code-releases/{VERSION}/manifest.json`. File a [GitHub issue](https://github.com/anthropics/claude-code/issues) with the output of `ldd --version` and `ls /lib/libc.musl*`.
 
 3. **If you're actually on musl**, such as Alpine Linux, install the required packages:
-   ```bash theme={null}
+   ```bash
    apk add libgcc libstdc++ ripgrep
    ```
    On Alpine, `ripgrep` is in the community repository. If `apk` reports that the package is missing, see [Alpine Linux setup](https://code.claude.com/docs/en/setup#alpine-linux-and-musl-based-distributions).
@@ -960,7 +979,7 @@ If you see `dyld: Symbol not found`, `dyld: cannot load`, or `Abort trap: 6` dur
 
 A `Symbol not found` error that references `libicucore` means your macOS version is older than the binary supports:
 
-```text theme={null}
+```text
 dyld: Symbol not found: _ubrk_clone
   Referenced from: claude-darwin-x64 (which was built for Mac OS X 13.0)
   Expected in: /usr/lib/libicucore.A.dylib
@@ -968,7 +987,7 @@ dyld: Symbol not found: _ubrk_clone
 
 The loader can instead reject the binary's load commands, which also means your macOS version is too old:
 
-```text theme={null}
+```text
 dyld: cannot load 'claude-2.1.42-darwin-x64' (load command 0x80000034 is unknown)
 Abort trap: 6
 ```
@@ -993,13 +1012,13 @@ If running `claude` in WSL prints `cannot execute binary file: Exec format error
 
 The cleanest fix is to convert your distribution to WSL2 from PowerShell:
 
-```powershell theme={null}
+```powershell
 wsl --set-version <DistroName> 2
 ```
 
 If you need to stay on WSL1, invoke the binary through the dynamic linker. Add this function to `~/.bashrc` inside WSL, replacing the path if your home directory differs:
 
-```bash theme={null}
+```bash
 claude() {
   /lib64/ld-linux-x86-64.so.2 "$(readlink -f "$HOME/.local/bin/claude")" "$@"
 }
@@ -1017,7 +1036,7 @@ These issues apply if you installed Claude Code with `npm install -g` inside WSL
 
 **nvm version conflicts.** If you have nvm installed in both WSL and Windows, switching Node versions in WSL may break because WSL imports the Windows PATH by default and the Windows nvm takes priority. The most common cause is that nvm isn't loaded in your shell. Add the nvm loader to `~/.bashrc` or `~/.zshrc`:
 
-```bash theme={null}
+```bash
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
@@ -1025,13 +1044,13 @@ export NVM_DIR="$HOME/.nvm"
 
 Or load it in your current session:
 
-```bash theme={null}
+```bash
 source ~/.nvm/nvm.sh
 ```
 
 If nvm is loaded but Windows paths still take priority, prepend your Linux Node path explicitly:
 
-```bash theme={null}
+```bash
 export PATH="$HOME/.nvm/versions/node/$(node -v)/bin:$PATH"
 ```
 
@@ -1045,7 +1064,8 @@ If the native installer fails with permission errors, the target directory may n
 
 If you previously installed with npm and are hitting npm-specific permission errors, switch to the native installer:
 
-```bash theme={null}
+Warning: the following code could be malicious. Audit it for safety before executing it!
+```bash
 curl -fsSL https://claude.ai/install.sh | bash
 ```
 
@@ -1053,7 +1073,7 @@ curl -fsSL https://claude.ai/install.sh | bash
 
 The `@anthropic-ai/claude-code` npm package downloads the native binary as a per-platform optional dependency, such as `@anthropic-ai/claude-code-darwin-arm64`. npm then runs the package's postinstall script, which copies that binary into place as the `claude` command; until it runs, `claude` is a placeholder script. If either the download or the postinstall step is skipped, the placeholder stays in place, and running `claude` on macOS and Linux prints:
 
-```text theme={null}
+```text
 Error: claude native binary not installed.
 
 Either postinstall did not run (--ignore-scripts, some pnpm configs)
@@ -1081,7 +1101,7 @@ Check the following causes:
 
 When you run `npm install -g @anthropic-ai/claude-code` over an existing installation, npm can fail while moving the old package directory aside:
 
-```text theme={null}
+```text
 npm error code ENOTEMPTY
 npm error syscall rename
 npm error path /home/you/.nvm/versions/node/v22.13.1/lib/node_modules/@anthropic-ai/claude-code
@@ -1094,19 +1114,19 @@ The `npm error path` line names the directory npm couldn't move. Delete that dir
 
 <Tabs>
   <Tab title="macOS/Linux">
-    ```bash theme={null}
+    ```bash
     rm -rf "$(npm root -g)/@anthropic-ai/claude-code"
     ```
 
     Then remove any leftover temp directories. If Zsh prints `no matches found`, there were none to remove:
 
-    ```bash theme={null}
+    ```bash
     rm -rf "$(npm root -g)/@anthropic-ai/.claude-code-"*
     ```
   </Tab>
 
   <Tab title="Windows PowerShell">
-    ```powershell theme={null}
+    ```powershell
     Remove-Item -Recurse -Force "$(npm root -g)/@anthropic-ai/claude-code", "$(npm root -g)/@anthropic-ai/.claude-code-*"
     ```
   </Tab>
@@ -1114,7 +1134,7 @@ The `npm error path` line names the directory npm couldn't move. Delete that dir
 
 Then reinstall:
 
-```bash theme={null}
+```bash
 npm install -g @anthropic-ai/claude-code
 ```
 
@@ -1171,21 +1191,21 @@ To use your subscription instead, unset the environment variable and remove it f
 
 <Tabs>
   <Tab title="macOS/Linux">
-    ```bash theme={null}
+    ```bash
     unset ANTHROPIC_API_KEY
     claude
     ```
   </Tab>
 
   <Tab title="Windows PowerShell">
-    ```powershell theme={null}
+    ```powershell
     Remove-Item Env:ANTHROPIC_API_KEY
     claude
     ```
   </Tab>
 </Tabs>
 
-Check `~/.zshrc`, `~/.bashrc`, or `~/.profile` for `export ANTHROPIC_API_KEY=...` lines and remove them to make the change permanent. On Windows, check your PowerShell profile at `$PROFILE` and your User environment variables for `ANTHROPIC_API_KEY`. Run `/status` inside Claude Code to confirm which authentication method is active.
+Check `~/.zshrc`, `~/.bashrc`, or `~/.profile` for lines that set the `ANTHROPIC_API_KEY` variable and remove them to make the change permanent. On Windows, check your PowerShell profile at `$PROFILE` and your User environment variables for `ANTHROPIC_API_KEY`. Run `/status` inside Claude Code to confirm which authentication method is active.
 
 ##### OAuth login fails in WSL2, SSH, or containers
 
@@ -1193,7 +1213,7 @@ When Claude Code runs in WSL2, on a remote machine over SSH, or inside a contain
 
 If the browser doesn't open at all from WSL2, set the `BROWSER` environment variable to your Windows browser path:
 
-```bash theme={null}
+```bash
 export BROWSER="/mnt/c/Program Files/Google/Chrome/Application/chrome.exe"
 claude
 ```
@@ -1202,7 +1222,7 @@ Alternatively, press `c` at the interactive login prompt to copy the OAuth URL, 
 
 If pasting the code into the interactive prompt does nothing, your terminal's paste binding likely isn't reaching the input field. Try your terminal's alternate paste shortcut, often right-click or Shift+Insert in Windows Terminal, or use `claude auth login` instead, which reads the pasted code from standard input:
 
-```bash theme={null}
+```bash
 claude auth login
 ```
 
@@ -1228,7 +1248,7 @@ To make the Keychain writable again and move your login back into the encrypted 
   </Step>
 
   <Step title="Unlock the Keychain">
-    ```bash theme={null}
+    ```bash
     security unlock-keychain ~/Library/Keychains/login.keychain-db
     ```
 
@@ -1250,19 +1270,19 @@ If you configured Claude Code to use a cloud provider and see `Could not load cr
 
 For Amazon Bedrock, confirm your AWS credentials are valid:
 
-```bash theme={null}
+```bash
 aws sts get-caller-identity
 ```
 
 For Google Cloud's Agent Platform, confirm `ANTHROPIC_VERTEX_PROJECT_ID` and `CLOUD_ML_REGION` are set in your shell, then set application default credentials:
 
-```bash theme={null}
+```bash
 gcloud auth application-default login
 ```
 
 For Microsoft Foundry, confirm `ANTHROPIC_FOUNDRY_API_KEY` is set, or sign in with the Azure CLI so the default credential chain can find your account:
 
-```bash theme={null}
+```bash
 az login
 ```
 

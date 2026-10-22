@@ -73,7 +73,7 @@ Permission modes decide whether Claude asks before an action, and the [Bash sand
 | Explore before changing anything | `claude --permission-mode plan` | None | Claude Code blocks edits until you [approve a plan](https://code.claude.com/docs/en/permission-modes#review-and-approve-a-plan) |
 | Work hands-off in auto mode | `claude --permission-mode auto`, the [built-in starting permission mode](https://code.claude.com/docs/en/permission-modes#which-mode-a-session-starts-in) with v2.1.283 or later | None; a sandbox or container adds defense in depth | Requires a [supported model](https://code.claude.com/docs/en/permission-modes#eliminate-prompts-with-auto-mode), and your organization can [turn auto mode off](https://code.claude.com/docs/en/permission-modes#eliminate-prompts-with-auto-mode) |
 | Run in CI with an exact allowlist | `claude -p "run the test suite" --permission-mode dontAsk --allowedTools "Bash(npm test)" "Read"` | None beyond what your CI runner provides | [Cloud sessions](https://code.claude.com/docs/en/claude-code-on-the-web) ignore `dontAsk` from settings files |
-| Run fully unattended inside a container | `claude -p "<prompt>" --dangerously-skip-permissions` | Required: a container, VM, or the [sandbox runtime](https://code.claude.com/docs/en/sandbox-environments#sandbox-runtime); on Linux and macOS, run it as a [non-root user](https://code.claude.com/docs/en/permission-modes#skip-all-checks-with-bypasspermissions-mode) | Cloud sessions ignore this mode from settings files. In this `-p` run, the [few calls that would still prompt](https://code.claude.com/docs/en/permission-modes#skip-all-checks-with-bypasspermissions-mode) are denied instead |
+| Run fully unattended inside a container | `claude -p "<prompt>" --permission-mode bypassPermissions` | Required: a container, VM, or the [sandbox runtime](https://code.claude.com/docs/en/sandbox-environments#sandbox-runtime); on Linux and macOS, run it as a [non-root user](https://code.claude.com/docs/en/permission-modes#skip-all-checks-with-bypasspermissions-mode) | Cloud sessions ignore this mode from settings files. In this `-p` run, the [few calls that would still prompt](https://code.claude.com/docs/en/permission-modes#skip-all-checks-with-bypasspermissions-mode) are denied instead |
 
 The Bash sandbox and auto mode work independently and combine, with the exceptions listed under [Sandbox modes](https://code.claude.com/docs/en/sandboxing#sandbox-modes). For the full interaction, see [How sandboxing relates to permissions and permission modes](https://code.claude.com/docs/en/sandboxing#how-sandboxing-relates-to-permissions-and-permission-modes) and [How isolation relates to permission modes](https://code.claude.com/docs/en/sandbox-environments#how-isolation-relates-to-permission-modes).
 
@@ -379,7 +379,7 @@ The classifier trusts your working directory and the remotes that were configure
 
 **Blocked by default**:
 
-* Downloading and executing code, like `curl | bash`
+* Downloading and executing code, like piping a downloaded script straight into a shell
 * Sending sensitive data to external endpoints
 * Production deploys and migrations
 * Mass deletion on cloud storage

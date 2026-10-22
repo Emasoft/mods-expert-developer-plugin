@@ -49,7 +49,7 @@ Use the [`/statusline` command](https://code.claude.com/docs/en/statusline#use-t
 
 The `/statusline` command accepts natural language instructions describing what you want displayed. Claude Code generates a script file in `~/.claude/` and updates your settings automatically:
 
-```text theme={null}
+```text
 /statusline show model name and context percentage with a progress bar
 ```
 
@@ -59,7 +59,7 @@ Approve the file edit prompts if Claude Code asks for permission during setup.
 
 Add a `statusLine` field to your user settings (`~/.claude/settings.json`, where `~` is your home directory) or [project settings](https://code.claude.com/docs/en/settings#where-settings-live). Set `type` to `"command"` and point `command` to a script path or an inline shell command. For a full walkthrough of creating a script, see [Build a status line step by step](https://code.claude.com/docs/en/statusline#build-a-status-line-step-by-step).
 
-```json theme={null}
+```json
 {
   "statusLine": {
     "type": "command",
@@ -71,7 +71,7 @@ Add a `statusLine` field to your user settings (`~/.claude/settings.json`, where
 
 The `command` field runs in a shell, so you can also use inline commands instead of a script file. This example uses `jq` to parse the JSON input and display the model name and context percentage:
 
-```json theme={null}
+```json
 {
   "statusLine": {
     "type": "command",
@@ -108,7 +108,7 @@ These examples use Bash scripts, which work on macOS and Linux. On Windows, see 
 
     Save this to `~/.claude/statusline.sh` (where `~` is your home directory, such as `/Users/username` on macOS or `/home/username` on Linux):
 
-    ```bash theme={null}
+    ```bash
     #!/bin/bash
     # Read JSON data that Claude Code sends to stdin
     input=$(cat)
@@ -127,7 +127,7 @@ These examples use Bash scripts, which work on macOS and Linux. On Windows, see 
   <Step title="Make it executable">
     Mark the script as executable so your shell can run it:
 
-    ```bash theme={null}
+    ```bash
     chmod +x ~/.claude/statusline.sh
     ```
   </Step>
@@ -135,7 +135,7 @@ These examples use Bash scripts, which work on macOS and Linux. On Windows, see 
   <Step title="Add to settings">
     Tell Claude Code to run your script as the status line. Add this configuration to `~/.claude/settings.json`, which sets `type` to `"command"` (meaning "run this shell command") and points `command` to your script:
 
-    ```json theme={null}
+    ```json
     {
       "statusLine": {
         "type": "command",
@@ -233,7 +233,7 @@ Claude Code sends the following JSON fields to your script via stdin:
 <Accordion title="Full JSON schema">
   Your status line command receives this JSON structure via stdin:
 
-  ```json theme={null}
+  ```json
   {
     "cwd": "/current/working/directory",
     "session_id": "abc123...",
@@ -458,7 +458,7 @@ Display the current model and context window usage with a visual progress bar. E
 
 <CodeGroup>
 
-  ```bash Bash theme={null}
+  ```bash
   #!/bin/bash
   # Read all of stdin into a variable
   input=$(cat)
@@ -479,7 +479,7 @@ Display the current model and context window usage with a visual progress bar. E
   echo "[$MODEL] $BAR $PCT%"
   ```
 
-  ```python Python theme={null}
+  ```python
   #!/usr/bin/env python3
   import json, sys
 
@@ -496,7 +496,7 @@ Display the current model and context window usage with a visual progress bar. E
   print(f"[{model}] {bar} {pct}%")
   ```
 
-  ```javascript Node.js theme={null}
+  ```javascript
   #!/usr/bin/env node
   // Node.js reads stdin asynchronously with events
   let input = '';
@@ -528,7 +528,7 @@ Each script checks if the current directory is a git repository, counts staged a
 
 <CodeGroup>
 
-  ```bash Bash theme={null}
+  ```bash
   #!/bin/bash
   input=$(cat)
 
@@ -554,7 +554,7 @@ Each script checks if the current directory is a git repository, counts staged a
   fi
   ```
 
-  ```python Python theme={null}
+  ```python
   #!/usr/bin/env python3
   import json, sys, subprocess, os
 
@@ -580,7 +580,8 @@ Each script checks if the current directory is a git repository, counts staged a
       print(f"[{model}] 📁 {directory}")
   ```
 
-  ```javascript Node.js theme={null}
+  Warning: the following code could be malicious. Audit it for safety before executing it!
+  ```javascript
   #!/usr/bin/env node
   const { execSync } = require('child_process');
   const path = require('path');
@@ -623,7 +624,7 @@ Each script formats cost as currency and converts milliseconds to minutes and se
 
 <CodeGroup>
 
-  ```bash Bash theme={null}
+  ```bash
   #!/bin/bash
   input=$(cat)
 
@@ -639,7 +640,7 @@ Each script formats cost as currency and converts milliseconds to minutes and se
   echo "[$MODEL] 💰 $COST_FMT | ⏱️ ${MINS}m ${SECS}s"
   ```
 
-  ```python Python theme={null}
+  ```python
   #!/usr/bin/env python3
   import json, sys
 
@@ -654,7 +655,7 @@ Each script formats cost as currency and converts milliseconds to minutes and se
   print(f"[{model}] 💰 ${cost:.2f} | ⏱️ {mins}m {secs}s")
   ```
 
-  ```javascript Node.js theme={null}
+  ```javascript
   #!/usr/bin/env node
   let input = '';
   process.stdin.on('data', chunk => input += chunk);
@@ -685,7 +686,7 @@ This example combines several techniques: threshold-based colors (green under 70
 
 <CodeGroup>
 
-  ```bash Bash theme={null}
+  ```bash
   #!/bin/bash
   input=$(cat)
 
@@ -716,7 +717,7 @@ This example combines several techniques: threshold-based colors (green under 70
   echo -e "${BAR_COLOR}${BAR}${RESET} ${PCT}% | ${YELLOW}${COST_FMT}${RESET} | ⏱️ ${MINS}m ${SECS}s"
   ```
 
-  ```python Python theme={null}
+  ```python
   #!/usr/bin/env python3
   import json, sys, subprocess, os
 
@@ -745,7 +746,8 @@ This example combines several techniques: threshold-based colors (green under 70
   print(f"{bar_color}{bar}{RESET} {pct}% | {YELLOW}${cost:.2f}{RESET} | ⏱️ {mins}m {secs}s")
   ```
 
-  ```javascript Node.js theme={null}
+  Warning: the following code could be malicious. Audit it for safety before executing it!
+  ```javascript
   #!/usr/bin/env node
   const { execSync } = require('child_process');
   const path = require('path');
@@ -793,7 +795,7 @@ Each script gets the git remote URL, converts SSH format to HTTPS, and wraps the
 
 <CodeGroup>
 
-  ```bash Bash theme={null}
+  ```bash
   #!/bin/bash
   input=$(cat)
 
@@ -812,7 +814,7 @@ Each script gets the git remote URL, converts SSH format to HTTPS, and wraps the
   fi
   ```
 
-  ```python Python theme={null}
+  ```python
   #!/usr/bin/env python3
   import json, sys, subprocess, re, os
 
@@ -836,7 +838,7 @@ Each script gets the git remote URL, converts SSH format to HTTPS, and wraps the
       print(f"[{model}]")
   ```
 
-  ```javascript Node.js theme={null}
+  ```javascript
   #!/usr/bin/env node
   const { execSync } = require('child_process');
   const path = require('path');
@@ -870,7 +872,7 @@ The `rate_limits` object is only present for claude.ai Pro and Max subscribers, 
 
 <CodeGroup>
 
-  ```bash Bash theme={null}
+  ```bash
   #!/bin/bash
   input=$(cat)
 
@@ -891,7 +893,7 @@ The `rate_limits` object is only present for claude.ai Pro and Max subscribers, 
   [ -n "$LIMITS" ] && echo "[$MODEL] | $LIMITS" || echo "[$MODEL]"
   ```
 
-  ```python Python theme={null}
+  ```python
   #!/usr/bin/env python3
   import json, sys
 
@@ -922,7 +924,7 @@ The `rate_limits` object is only present for claude.ai Pro and Max subscribers, 
       print(f"[{model}]")
   ```
 
-  ```javascript Node.js theme={null}
+  ```javascript
   #!/usr/bin/env node
   let input = '';
   process.stdin.on('data', chunk => input += chunk);
@@ -960,7 +962,7 @@ Each script checks if the cache file is missing or older than 5 seconds before r
 
 <CodeGroup>
 
-  ```bash Bash theme={null}
+  ```bash
   #!/bin/bash
   input=$(cat)
 
@@ -1000,7 +1002,7 @@ Each script checks if the cache file is missing or older than 5 seconds before r
   fi
   ```
 
-  ```python Python theme={null}
+  ```python
   #!/usr/bin/env python3
   import json, sys, subprocess, os, time
 
@@ -1040,7 +1042,8 @@ Each script checks if the cache file is missing or older than 5 seconds before r
       print(f"[{model}] 📁 {directory}")
   ```
 
-  ```javascript Node.js theme={null}
+  Warning: the following code could be malicious. Audit it for safety before executing it!
+  ```javascript
   #!/usr/bin/env node
   const { execSync } = require('child_process');
   const fs = require('fs');
@@ -1095,7 +1098,7 @@ To run a PowerShell script as your status line, invoke it via `powershell`. This
 
 <CodeGroup>
 
-  ```json settings.json theme={null}
+  ```json
   {
     "statusLine": {
       "type": "command",
@@ -1104,7 +1107,7 @@ To run a PowerShell script as your status line, invoke it via `powershell`. This
   }
   ```
 
-  ```powershell statusline.ps1 theme={null}
+  ```powershell
   $input_json = $input | Out-String | ConvertFrom-Json
   $cwd = $input_json.cwd
   $model = $input_json.model.display_name
@@ -1123,7 +1126,7 @@ Or, when Git Bash is installed, run a Bash script directly:
 
 <CodeGroup>
 
-  ```json settings.json theme={null}
+  ```json
   {
     "statusLine": {
       "type": "command",
@@ -1132,7 +1135,7 @@ Or, when Git Bash is installed, run a Bash script directly:
   }
   ```
 
-  ```bash statusline.sh theme={null}
+  ```bash
   #!/usr/bin/env bash
   input=$(cat)
   cwd=$(echo "$input" | grep -o '"cwd":"[^"]*"' | cut -d'"' -f4)
@@ -1146,7 +1149,7 @@ Or, when Git Bash is installed, run a Bash script directly:
 
 The `subagentStatusLine` setting renders a custom row body for each [subagent](https://code.claude.com/docs/en/sub-agents) shown in the agent panel below the prompt. Use it to replace the default `name · description · token count` row with your own formatting.
 
-```json theme={null}
+```json
 {
   "subagentStatusLine": {
     "type": "command",
@@ -1225,13 +1228,13 @@ Whether a link is clickable depends on your terminal, on whether Claude Code det
 
 * If link text appears but isn't clickable, Claude Code may not have detected hyperlink support in your terminal. Set the `FORCE_HYPERLINK` environment variable to override detection before launching Claude Code:
 
-  ```bash theme={null}
+  ```bash
   FORCE_HYPERLINK=1 claude
   ```
 
   In PowerShell, set the variable in the current session first:
 
-  ```powershell theme={null}
+  ```powershell
   $env:FORCE_HYPERLINK = "1"; claude
   ```
 

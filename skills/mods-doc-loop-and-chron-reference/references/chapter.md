@@ -204,7 +204,7 @@ Find your schedule in the first column of this table to see when each of its run
 | Every 30 minutes | 0 to 15 minutes late |
 | Every hour, or less often such as daily | 0 to 30 minutes late |
 
-For example, `7,37 * * * *` schedules a task for `:07` and `:37`, which are 30 minutes apart, so its delay is somewhere between 0 and 15 minutes. If this task's delay is 14 minutes, it runs at `:21` and `:51` every hour. Changing the schedule to a different minute moves the run time, and a delay is still added on top.
+For example, `7,37 * * * *` schedules a task for `:07` and `:37`, which are 30 minutes apart, so its delay is somewhere between 0 and 15 minutes. With a 14-minute delay, the task runs at `:21` and `:51` every hour. Changing the schedule to a different minute moves the run time, and a delay is still added on top.
 
 ###### When a one-shot task runs early
 

@@ -1311,7 +1311,8 @@ SessionStart hooks have access to the `CLAUDE_ENV_FILE` environment variable, wh
 
 To set individual environment variables, write `export` statements to `CLAUDE_ENV_FILE`. Use append (`>>`) to preserve variables set by other hooks:
 
-```bash theme={null}
+Warning: the following code could be malicious. Audit it for safety before executing it!
+```bash
 #!/bin/bash
 
 if [ -n "$CLAUDE_ENV_FILE" ]; then
@@ -2030,7 +2031,7 @@ If the deferred tool is no longer available when you resume, the process exits w
 <Note>
   To resume a deferred session in plan mode, pass [`--permission-prompt-tool`](https://code.claude.com/docs/en/cli-reference#cli-flags) along with `--resume` so that Claude Code can present the plan for approval. For the other conditions, see [Resume in plan mode with `-p`](https://code.claude.com/docs/en/sessions#resume-in-plan-mode-with-p). Requires Claude Code v2.1.246 or later.
 
-  When you resume with `-p`, Claude Code doesn't restore any other stored permission mode. It starts the run in the permission mode a new `claude -p` run would start in, so pass `--permission-mode` or `--dangerously-skip-permissions` again if the deferred session used one. When you resume with `claude --resume <session-id>` without `-p`, Claude Code restores the stored permission mode, with the exceptions listed in [permission mode on resume](https://code.claude.com/docs/en/sessions#permission-mode-on-resume).
+  When you resume with `-p`, Claude Code doesn't restore any other stored permission mode. It starts the run in the permission mode a new `claude -p` run would start in, so pass `--permission-mode` or the flag that skips all permission checks again if the deferred session used one. When you resume with `claude --resume <session-id>` without `-p`, Claude Code restores the stored permission mode, with the exceptions listed in [permission mode on resume](https://code.claude.com/docs/en/sessions#permission-mode-on-resume).
 </Note>
 
 ##### PermissionRequest
@@ -2535,7 +2536,7 @@ SubagentStart hooks can't block subagent creation, but they can inject context i
 }
 ```
 
-When the hook runs again for the same subagent, Claude Code injects the returned context only when the subagent's context doesn't already hold the copy from an earlier run. The copy injected at launch stays in place, leaving the subagent's [prompt cache](https://code.claude.com/docs/en/prompt-caching#subagents-and-the-cache) intact. After [auto-compaction](https://code.claude.com/docs/en/sub-agents#auto-compaction) discards that copy, Claude Code injects the next run's context again.
+When the hook runs again for the same subagent, Claude Code adds the returned context only when the subagent's context doesn't already hold the copy from an earlier run. The copy added at launch stays in place, leaving the subagent's [prompt cache](https://code.claude.com/docs/en/prompt-caching#subagents-and-the-cache) intact. After [auto-compaction](https://code.claude.com/docs/en/sub-agents#auto-compaction) discards that copy, Claude Code adds the next run's context again.
 
 ##### SubagentStop
 

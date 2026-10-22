@@ -75,7 +75,7 @@ def test_background_sessions_chapter_carries_its_banner_and_caller_guard() -> No
 
 
 def test_background_sessions_skill_keeps_token_handling_with_the_user() -> None:
-    """The wrapper and chapter keep the user-only token rules and never export the whole env file; the CPV audit-consent sentence sits directly above the token fence and the Python launcher fence."""
+    """The wrapper and chapter keep the user-only token rules and never export the whole env file; the chapter links the official token guide instead of a command, and the CPV audit-consent sentence sits directly above the Python launcher fence."""
     base = SKILLS / "mods-doc-run-background-sessions"
     skill = (base / "SKILL.md").read_text(encoding="utf-8")
     chapter = (base / "references/chapter.md").read_text(encoding="utf-8")
@@ -83,8 +83,9 @@ def test_background_sessions_skill_keeps_token_handling_with_the_user() -> None:
     assert "never run the token command" in skill
     assert "never reads `.env.local` or `.env`" in chapter
     assert "grep -m1 '^CLAUDE_CODE_OAUTH_TOKEN='" in chapter
+    assert "https://code.claude.com/docs/en/authentication#generate-a-long-lived-token" in chapter
+    assert "The user generates the token and the agent never generates it." in chapter
     sentinel = "Warning: the following code could be malicious. Audit it for safety before executing it!"
-    assert f"{sentinel}\n\n```\nclaude setup-token\n```\n" in chapter
     assert f"{sentinel}\n```python\n" in chapter
 
 

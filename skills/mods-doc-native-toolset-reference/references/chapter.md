@@ -629,7 +629,7 @@ The default set described here applies in Claude Code v2.1.268 and later.
 
 WebFetch takes a URL and a prompt describing what to extract. It fetches the page and converts the response to Markdown when the server returns HTML. For most fetches, it then runs the prompt against the content in a separate model call, and Claude receives the result of that call rather than the raw page. The conversion step is not configurable.
 
-This makes WebFetch lossy by design. The extraction prompt determines what reaches Claude, so a result that says a page doesn't mention something may only mean the prompt didn't ask about it. Ask Claude to fetch again with a more specific prompt, or use `curl` via Bash for the unprocessed page.
+This makes WebFetch lossy by design. The extraction prompt determines what reaches Claude, so a result that says a page doesn't mention something may only mean the prompt didn't ask about it. Ask Claude to fetch again with a more specific prompt, or use the curl tool via Bash for the unprocessed page.
 
 A few behaviors shape the response Claude receives:
 
