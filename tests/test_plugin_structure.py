@@ -34,6 +34,7 @@ CATALOG_SKILLS = {"mods-the-skills-menu"}
 # not chapters: no references/chapter.md, not routed by the expert agent, no README Components row, so every
 # chapter-enumerating test skips them through CHAPTER_DIRS. tests/test_skills_menu.py keeps an identical copy.
 TUTORIAL_SKILLS = {"mods-tutorial-quickstart", "mods-tutorial-call-intercept-mods", "mods-tutorial-interface-mods"}
+QUICKSTART_TOOLS_SKILL = "mods-tutorial-quickstart"
 CHAPTER_DIRS = [d for d in SKILL_DIRS if d.name not in CATALOG_SKILLS | TUTORIAL_SKILLS]
 TUTORIAL_DIRS = [d for d in SKILL_DIRS if d.name in TUTORIAL_SKILLS]
 # The example mods each tutorial carries under its examples/ folder, by folder name.
@@ -294,7 +295,7 @@ def test_mega_linter_filter_matches_pinned_regex() -> None:
 
 
 def _misplaced_example_code(skills_root: Path, tutorials: set[str]) -> list[str]:
-    """Code files and nested .claude-plugin folders under `skills_root` that are not inside a tutorial's examples/<example>/."""
+    """Code files and nested .claude-plugin folders under `skills_root` outside a tutorial's examples/<example>/ and outside the quickstart's scripts/*.sh tools."""
     misplaced: list[str] = []
     for path in sorted(skills_root.rglob("*")):
         is_code = path.is_file() and path.suffix in CODE_SUFFIXES
@@ -302,7 +303,12 @@ def _misplaced_example_code(skills_root: Path, tutorials: set[str]) -> list[str]
         if not (is_code or is_manifest_dir):
             continue
         parts = path.relative_to(skills_root).parts
-        if not (len(parts) >= 4 and parts[0] in tutorials and parts[1] == "examples"):
+        in_examples = len(parts) >= 4 and parts[0] in tutorials and parts[1] == "examples"
+        # The quickstart ships three shell tools an agent runs (TRDD-BNBDNR2V); exactly this folder, one level, .sh only.
+        is_quickstart_tool = (
+            len(parts) == 3 and parts[0] == QUICKSTART_TOOLS_SKILL and parts[1] == "scripts" and path.suffix == ".sh"
+        )
+        if not (in_examples or is_quickstart_tool):
             misplaced.append("/".join(parts))
     return misplaced
 
@@ -340,6 +346,9 @@ def test_example_code_lives_only_under_a_tutorial_examples_folder() -> None:
         ("mods-tutorial-x/register.ts", ["mods-tutorial-x/register.ts"]),
         ("mods-doc-x/examples/demo/hooks/register.ts", ["mods-doc-x/examples/demo/hooks/register.ts"]),
         ("mods-tutorial-x/references/demo.sh", ["mods-tutorial-x/references/demo.sh"]),
+        ("mods-tutorial-quickstart/scripts/x.sh", []),
+        ("mods-tutorial-interface-mods/scripts/x.sh", ["mods-tutorial-interface-mods/scripts/x.sh"]),
+        ("mods-tutorial-quickstart/scripts/sub/x.sh", ["mods-tutorial-quickstart/scripts/sub/x.sh"]),
     ],
 )
 def test_misplaced_example_code_detection(tmp_path: Path, rel: str, expected: list[str]) -> None:
@@ -548,7 +557,9 @@ def test_example_manifests_live_only_at_the_copy_and_run_depth() -> None:
 def test_load_guard_detects_references_and_stray_manifests(tmp_path: Path) -> None:
     """Counter-examples: a root file naming an example path, and manifests at the wrong depth, are reported."""
     (tmp_path / ".claude-plugin").mkdir()
-    (tmp_path / ".claude-plugin" / "plugin.json").write_text('{"hooks": "skills/mods-tutorial-x/examples/d/hooks.json"}', encoding="utf-8")
+    (tmp_path / ".claude-plugin" / "plugin.json").write_text(
+        '{"hooks": "skills/mods-tutorial-x/examples/d/hooks.json"}', encoding="utf-8"
+    )
     (tmp_path / "agents").mkdir()
     (tmp_path / "agents" / "a.md").write_text("see skills/mods-tutorial-x/examples/d/", encoding="utf-8")
     assert _example_path_references(tmp_path) == [".claude-plugin/plugin.json", "agents/a.md"]
@@ -556,7 +567,11 @@ def test_load_guard_detects_references_and_stray_manifests(tmp_path: Path) -> No
     good.mkdir(parents=True)
     (good / "plugin.json").write_text("{}", encoding="utf-8")
     assert _stray_manifests(tmp_path / "skills") == []
-    for bad in ("skills/mods-tutorial-x/.claude-plugin", "skills/mods-doc-y/examples/d/.claude-plugin", "skills/mods-tutorial-x/examples/d/sub/.claude-plugin"):
+    for bad in (
+        "skills/mods-tutorial-x/.claude-plugin",
+        "skills/mods-doc-y/examples/d/.claude-plugin",
+        "skills/mods-tutorial-x/examples/d/sub/.claude-plugin",
+    ):
         (tmp_path / bad).mkdir(parents=True)
         (tmp_path / bad / "plugin.json").write_text("{}", encoding="utf-8")
     assert _stray_manifests(tmp_path / "skills") == [

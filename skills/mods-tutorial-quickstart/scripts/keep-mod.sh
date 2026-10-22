@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+# keep-mod.sh <session-mod-dir> <dest-root>: copy a mod out of the session mods folder
+# (deleted after cleanupPeriodDays) into <dest-root>/<name>. Never deletes, never overwrites.
+# Left out of the copy: .claude-plugin/types/ and the root tsconfig.json, which Claude Code
+# writes on every load. Usage errors exit 64.
+set -euo pipefail
+shopt -s dotglob nullglob
+
+if [ "$#" -ne 2 ]; then
+	echo "usage: keep-mod.sh <session-mod-dir> <dest-root>" >&2
+	exit 64
+fi
+if [ ! -d "$1" ]; then
+	echo "keep-mod.sh: not a directory: $1" >&2
+	exit 64
+fi
+src="$(cd "$1" && pwd -P)"
+mkdir -p "$2"
+dest_root="$(cd "$2" && pwd -P)"
+dest="$dest_root/$(basename "$src")"
+
+if [ -e "$dest" ]; then
+	echo "keep-mod.sh: refusing to overwrite existing $dest" >&2
+	exit 1
+fi
+
+# Copy into a temporary folder and move it into place last, so a failed copy never leaves a
+# half-filled destination that would block a retry. On failure the folder is kept, not deleted.
+tmp="$dest_root/.keep-mod.$$"
+trap 'echo "keep-mod.sh: copy failed; partial copy left at $tmp" >&2' ERR
+mkdir "$tmp"
+for entry in "$src"/*; do
+	name="$(basename "$entry")"
+	case "$name" in
+	tsconfig.json) continue ;;
+	.claude-plugin)
+		mkdir "$tmp/.claude-plugin"
+		for inner in "$entry"/*; do
+			[ "$(basename "$inner")" = "types" ] && continue
+			cp -R "$inner" "$tmp/.claude-plugin/"
+		done
+		;;
+	*) cp -R "$entry" "$tmp/" ;;
+	esac
+done
+mv "$tmp" "$dest"
+trap - ERR
+
+echo "kept: $dest"
+echo "left out: tsconfig.json, .claude-plugin/types/ (Claude Code regenerates them on load)"
+links="$(find "$dest" -type l)"
+if [ -n "$links" ]; then
+	echo "warning: symlinks in the copy may point into the session folder:"
+	echo "$links"
+fi
+echo "Add it to the colon-separated list of mod folders:"
+echo "export CLAUDE_CODE_PLUGIN_DIRS=\"\${CLAUDE_CODE_PLUGIN_DIRS:+\$CLAUDE_CODE_PLUGIN_DIRS:}$dest\""

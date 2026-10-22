@@ -66,6 +66,7 @@ warn_unused_configs = true
 # while publish.py and CI run `pytest tests/` and pass. Pinning testpaths
 # makes the local command and the publish gate collect the same tests.
 testpaths = ["tests"]
+markers = ["slow: needs network access (real npx fetch of typescript)"]
 
 [tool.pyright]
 pythonVersion = "3.12"

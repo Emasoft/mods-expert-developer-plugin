@@ -1,10 +1,10 @@
 ---
 trdd-id: BNBDNR2V
 title: Adopt mod-builder ideas into the tutorials and agents
-column: todo
+column: dev
 status: tasked
 created: 2026-10-22T21:16:56+0200
-updated: 2026-10-22T21:16:56+0200
+updated: 2026-10-22T22:39:08+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -21,7 +21,7 @@ approval-datetime: 2026-10-22T21:16:56+0200
 
 ## ⏵ STATE — READ THIS FIRST ON RESUME (authoritative; supersedes the body) — 2026-10-22
 
-Queued; runs after 0.3.0 ships, as three increments (A+C, B, D+E+F), released as 0.4.0. Spec: docs_dev/20261022-mod-builder-adoption-spec.md (scratch copy; this card is authoritative).
+CURRENT STATE 2026-10-22: increment 1a (item A, scripts) written, uncommitted; next 1b (item C), then 2 (B), then 3 (D+E+F); 0.4.0 after increment 3.
 
 ## User directive
 
@@ -53,3 +53,5 @@ reports/mod-builder-comparison/20261022_210944+0200-comparison.md. The source ha
 ## Approval log
 
 - 2026-10-22T21:16:56+0200 — MANDATE issued by main-agent@emasoft-mods-expert-developer (min-approval-requirement: none). Pre-approved: issuer authority >= required approver. No approval request was sent.
+- 2026-10-22 — NO-COPY PROOF increment 1a: grep -rnwE parseToggle|paneAction|changesBetween|CLAUDE_MODS_HOME and grep -rn tpl- over skills, tests, agents gave zero hits; jscpd --min-lines 5 with an empty config over the mod-builder source and skills/mods-tutorial-quickstart/scripts found 4 clones, all inside the source's own templates, none between the two trees (0 clones in bash). The 8-word prose check applies from increment 1b.
+- 2026-10-22 — increment 1a follow-up: the PASS capture moved to samples_dev/claude-plugin-test-pass.txt (no test uses it); check-mod.sh now fails early with a load-once hint when the types folder is absent; no-copy proof above is unchanged.
