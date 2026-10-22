@@ -21,7 +21,7 @@ approval-datetime: 2026-10-22T20:23:29+0200
 
 ## STATE
 
-CURRENT STATE 2026-10-22: built (dd4e8e1), review fixes f5e0779; round 2 applied by a worker, pending orchestrator verification and commit. NEXT ACTION: verify + commit round 2, publish 0.3.0, restart, then tick the two post-install acceptance boxes.
+CURRENT STATE 2026-10-22: built (dd4e8e1); review fixes f5e0779 and ca81806 committed. NEXT ACTION: publish 0.3.0, ask the owner to restart, then tick the two post-install acceptance boxes.
 
 ## User directive
 

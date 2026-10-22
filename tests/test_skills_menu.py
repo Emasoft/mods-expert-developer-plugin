@@ -652,7 +652,9 @@ LOAD_WITH = re.compile(r'^\*\*Load with:\*\* `Skill\(\{skill: "([^"]+)"', re.M)
 
 def _namespace() -> str:
     """The plugin namespace, read from the manifest so no test hardcodes it."""
-    return json.loads((ROOT / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8"))["name"]
+    name = json.loads((ROOT / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8"))["name"]
+    assert isinstance(name, str)
+    return name
 
 
 def _split(path: Path) -> tuple[dict, str]:
