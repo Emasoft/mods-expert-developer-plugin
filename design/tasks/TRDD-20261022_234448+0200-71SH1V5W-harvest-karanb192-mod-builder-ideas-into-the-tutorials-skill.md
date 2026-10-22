@@ -1,10 +1,10 @@
 ---
 trdd-id: 71SH1V5W
 title: Harvest karanb192 mod-builder ideas into the tutorials, skills and agents
-column: todo
+column: dev
 status: tasked
 created: 2026-10-22T23:44:48+0200
-updated: 2026-10-22T23:47:55+0200
+updated: 2026-10-23T01:27:39+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -21,7 +21,7 @@ approval-datetime: 2026-10-22T23:44:48+0200
 
 ## ⏵ STATE — READ THIS FIRST ON RESUME (authoritative; supersedes the body) — 2026-10-22
 
-CURRENT STATE 2026-10-22: card minted, nothing started. Order (the main agent's reading of the directive, told to the user with a veto offer on 2026-10-22): start only after TRDD-BNBDNR2V reaches a terminal column (0.4.0 published); TRDD-H26OG8AP (givememod) runs after this card. NEXT ACTION: checklist item 1 (download and inventory) once BNBDNR2V is terminal.
+CURRENT STATE 2026-10-23: start gate met: 0.4.0 is published, and TRDD-BNBDNR2V waits only on owner-run boxes in human_review. Box 1 done: source at commit fb1f9c0 downloaded to downloads_dev/karanb192-mod-builder-src/ and inventoried in reports_dev. NEXT ACTION: box 2, the idea map.
 
 ## Goal
 
@@ -41,7 +41,7 @@ Checked 2026-10-22 with the GitHub API: repo karanb192/claude-code-mods, licence
 
 ## Checklist
 
-- [ ] 1. Download and inventory the source: only karanb192/claude-code-mods/plugins/mod-builder, on the user's directive of 2026-10-22, into downloads_dev/karanb192-mod-builder-src/; the inventory goes to reports_dev/<date>-karanb-inventory.md.
+- [x] 1. Download and inventory the source: only karanb192/claude-code-mods/plugins/mod-builder, on the user's directive of 2026-10-22, into downloads_dev/karanb192-mod-builder-src/; the inventory goes to reports_dev/<date>-karanb-inventory.md.
 - [ ] 2. Idea map at docs_dev/<date>-karanb-idea-map.md: each source idea marked already covered / adopt / reject, with the reason.
 - [ ] 3. Spec in docs_dev listing the increments, and one box per increment added to this card.
 - [ ] 4. NOTICE credits karanb192/claude-code-mods (MIT).
