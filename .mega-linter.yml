@@ -45,7 +45,6 @@ COPYPASTE_JSCPD_ARGUMENTS: "--threshold 5"
 # Checkov — skip workflow-level permission checks (we set permissions per-job)
 REPOSITORY_CHECKOV_ARGUMENTS: "--skip-check CKV2_GHA_1"
 
-# TRDD-JFB5E98B: no linter excludes skills/*/examples; fix the file or the detector (tests/test_plugin_structure.py guards this).
 # Markdown settings — allow long lines in README (badges).
 # Single-quoted so the regex \. is read literally by yamllint.
 MARKDOWN_MARKDOWNLINT_FILTER_REGEX_EXCLUDE: 'CHANGELOG\.md'

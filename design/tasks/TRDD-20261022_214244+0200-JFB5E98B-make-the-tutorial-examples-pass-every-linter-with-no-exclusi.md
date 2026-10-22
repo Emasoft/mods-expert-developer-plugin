@@ -4,7 +4,7 @@ title: Make the tutorial examples pass every linter with no exclusion
 column: todo
 status: tasked
 created: 2026-10-22T21:42:44+0200
-updated: 2026-10-22T22:13:08+0200
+updated: 2026-10-22T22:16:07+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: refactor
@@ -54,5 +54,6 @@ Also the owner's standing constraint in this project: no CPV consent or waiver f
 
 - 2026-10-22T21:42:44+0200 — MANDATE issued by main-agent@emasoft-mods-expert-developer (min-approval-requirement: none). Pre-approved: issuer authority >= required approver. No approval request was sent.
 - 2026-10-22 orchestrator: approved by the main agent under the owner's 'decide yourself' instruction; it reverses TRDD-BDY6ZNDZ box 7; the owner may veto. The policy quote was copied from Emasoft/claude-plugins-validation issue 257's body as read on 2026-10-22.
-- 2026-10-22 orchestrator: measurement reports/measure/20261022_220536+0200-jscpd-examples-unexcluded.md: jscpd 0 new clones, markdownlint 0, shfmt 0, cspell 1 (AKIA, added to words); the examples stay verbatim except smoke.sh's prior shfmt reformat.
+- 2026-10-22 orchestrator: measurement reports/measure/20261022_220536+0200-jscpd-examples-no-exclusions.md: jscpd 0 new clones, markdownlint 0, shfmt 0, cspell 1 (AKIA, added to words); the examples stay verbatim except smoke.sh's prior shfmt reformat.
 - 2026-10-22 orchestrator: review of daa20cf applied — guard tests now probe every example file in three path forms and match ignore globs; TS/JS ban dropped as beyond rationale; CPV 26->25 warnings: RC-PIPELINE-DRIFT-001 (.mega-linter.yml differs from the canonical CPV standard) disappeared. No ticked box claims CI, MegaLinter or all-linters-pass, so none was unticked. Spell-check .json files stay out of the example probe because the pinned canon skips every .json repo-wide.
+- 2026-10-22 orchestrator: 0.3.2 publish blocked by cspell on a word in the report filename; report renamed to ...-no-exclusions.md. Review of d4760f2 applied: .json exemption narrowed to the canon pattern, ADDITIONAL_EXCLUDED_DIRECTORIES checked by path segment, empty-list guards; the .mega-linter.yml comment moved to the test because it re-triggered RC-PIPELINE-DRIFT-001.

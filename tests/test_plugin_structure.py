@@ -406,8 +406,9 @@ def _ignore_hits(cspell: dict, jscpd: dict) -> list[str]:
     cspell_patterns = list(cspell.get("ignorePaths", []))
     for override in cspell.get("overrides", []):
         cspell_patterns += override.get("ignorePaths", [])
-    # JSON is excluded from spell checking by the pinned CPV canon for every file in the repo, not for the examples.
-    pairs = [(p, [f for f in EXAMPLE_FILES if not f.endswith(".json")]) for p in cspell_patterns]
+    # The pinned CPV canon pattern **/*.json skips every JSON file in the repo, not the examples in particular, so only
+    # that exact pattern is exempt; every other cspell pattern is checked against all example files, .json included.
+    pairs = [(p, EXAMPLE_FILES) for p in cspell_patterns if p != "**/*.json"]
     pairs += [(p, EXAMPLE_FILES) for p in jscpd.get("ignore", [])]
     hits = []
     for pattern, files in pairs:
@@ -418,24 +419,38 @@ def _ignore_hits(cspell: dict, jscpd: dict) -> list[str]:
     return hits
 
 
+def _excluded_dir_hits(excluded_dirs: list[str]) -> list[str]:
+    """List every ADDITIONAL_EXCLUDED_DIRECTORIES entry that equals a path segment or leading prefix of an example file."""
+    hits = []
+    for entry in excluded_dirs:
+        name = entry.removeprefix("./").rstrip("/")
+        for rel in EXAMPLE_FILES:
+            if name in rel.split("/") or rel.startswith(f"{name}/"):
+                hits.append(f"{entry} excludes {rel}")
+    return hits
+
+
+# TRDD-JFB5E98B: no linter excludes skills/*/examples; fix the file or the detector.
 def test_no_mega_linter_exclude_skips_the_tutorial_examples() -> None:
     """No *FILTER_REGEX_EXCLUDE in .mega-linter.yml matches any tutorial example file, in any path form."""
     config = yaml.safe_load((ROOT / ".mega-linter.yml").read_text(encoding="utf-8"))
-    assert len({Path(rel).suffix for rel in EXAMPLE_FILES} & {".md", ".ts", ".json", ".sh"}) >= 4, EXAMPLE_FILES
+    assert EXAMPLE_FILES
     for key, value in config.items():
         if key.endswith("FILTER_REGEX_EXCLUDE"):
-            # The canon spell-check regex skips every .json file in the repo, not the examples in particular.
-            forms = [f for f in EXAMPLE_PATH_FORMS if not (key.startswith("SPELL_CSPELL") and f.endswith(".json"))]
-            for form in forms:
+            # The canon spell-check regex skips every .json file in the repo; a .json match is allowed only when
+            # the same regex also matches an unrelated .json path, which proves the exclusion is repo-wide.
+            repo_wide_json = key.startswith("SPELL_CSPELL") and re.search(value, "docs/unrelated.json")
+            for form in EXAMPLE_PATH_FORMS:
+                if repo_wide_json and form.endswith(".json"):
+                    continue
                 assert not re.search(value, form), f"{key} excludes the tutorial example {form}"
     excluded_dirs = config.get("ADDITIONAL_EXCLUDED_DIRECTORIES", [])
-    assert not [d for d in excluded_dirs if "skills" in d], (
-        f"ADDITIONAL_EXCLUDED_DIRECTORIES names skills: {excluded_dirs}"
-    )
+    assert not _excluded_dir_hits(excluded_dirs), f"ADDITIONAL_EXCLUDED_DIRECTORIES hits examples: {excluded_dirs}"
 
 
 def test_cspell_and_jscpd_do_not_ignore_the_tutorial_examples() -> None:
     """No .cspell.json ignorePaths glob and no .jscpd.json ignore glob matches a tutorial example file."""
+    assert EXAMPLE_FILES
     cspell = json.loads((ROOT / ".cspell.json").read_text(encoding="utf-8"))
     jscpd = json.loads((ROOT / ".jscpd.json").read_text(encoding="utf-8"))
     assert not _ignore_hits(cspell, jscpd)
@@ -447,6 +462,16 @@ def test_ignore_hit_detection_reports_an_examples_glob() -> None:
     assert _ignore_hits(broken, {}), "an examples glob in cspell was not detected"
     assert _ignore_hits({}, {"ignore": ["**/examples/**"]}), "an examples glob in jscpd was not detected"
     assert _ignore_hits({"overrides": [{"ignorePaths": ["**/examples/**"]}]}, {}), "override glob not detected"
+    assert not _ignore_hits({"ignorePaths": ["**/*.json"]}, {}), "the exempt canon pattern was reported"
+    assert _ignore_hits({"ignorePaths": ["**/skills/mods-tutorial-*/examples/**/*.json"]}, {}), "json-only glob missed"
+
+
+def test_excluded_directory_detection_reports_examples() -> None:
+    """The ADDITIONAL_EXCLUDED_DIRECTORIES check catches examples, skills and a tutorial folder, not an unrelated dir."""
+    assert _excluded_dir_hits(["examples"]), "examples was not detected"
+    assert _excluded_dir_hits(["./skills/"]), "skills was not detected"
+    assert _excluded_dir_hits(["/".join(EXAMPLE_FILES[0].split("/")[:2])]), "a leading-prefix entry was not detected"
+    assert not _excluded_dir_hits(["docs_dev"])
 
 
 def test_megalinter_runs_an_explicit_linter_list() -> None:
