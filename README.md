@@ -84,11 +84,11 @@ Skills: plugin skills are namespaced `mods-expert-developer-plugin:<skill>` and 
 
 ## Tutorials
 
-Three tutorial skills are reference only: they hold worked examples for agents, and they do not replace the chapter skills, which stay authoritative and win on any disagreement. They are adapted from BeLazy167/claude-mods-skill (MIT, see NOTICE). The example code under each tutorial's `examples/` folder is for reading and copying into your own project; it is never installed or loaded as part of this plugin.
+Three tutorial skills are reference only: they hold worked examples for agents, and they do not replace the chapter skills, which stay authoritative and win on any disagreement. The copied examples (`hello-mod`, `redact-output`, `dice-tool`, `branch-band`, `notes-pane`) and the upstream tutorial text are adapted from BeLazy167/claude-mods-skill (MIT, see NOTICE). The `turn-timer`, `git-poller` and `protect-files` examples, the house conventions, the quickstart scripts and the text that describes them were written for this plugin. The example code under each tutorial's `examples/` folder is for reading and copying into your own project; it is never installed or loaded as part of this plugin. The quickstart scripts are tools to run, not examples to read; the example code stays reference only.
 
-- `mods-tutorial-quickstart`: a step-by-step checklist for a first mod that names the chapter skill for each step, the traps the chapters do not settle (marked UNVERIFIED where they do not confirm them), and an index of the example mods.
-- `mods-tutorial-call-intercept-mods`: the `hello-mod`, `redact-output` and `dice-tool` example mods, which block, rewrite and answer tool calls.
-- `mods-tutorial-interface-mods`: the `branch-band` and `notes-pane` example mods, which draw a band above the prompt and a pane opened by a command.
+- `mods-tutorial-quickstart`: a step-by-step checklist for a first mod that names the chapter skill for each step, the traps the chapters do not settle (marked UNVERIFIED where they do not confirm them), an index of the example mods, the house conventions, and the `check-mod.sh`, `new-mod.sh` and `keep-mod.sh` scripts.
+- `mods-tutorial-call-intercept-mods`: the `hello-mod`, `redact-output`, `dice-tool` and `protect-files` example mods, which block, rewrite and answer tool calls, add a tool, and guard paths.
+- `mods-tutorial-interface-mods`: the `branch-band`, `notes-pane`, `turn-timer` and `git-poller` example mods, which draw a band above the prompt, a pane opened by a command, a status line, and a band kept current by a git poller.
 
 ## Prerequisites
 

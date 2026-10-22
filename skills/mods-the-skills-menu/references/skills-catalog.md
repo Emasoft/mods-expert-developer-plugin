@@ -883,11 +883,11 @@ Full entries for the chapter skills of `mods-expert-developer-plugin`, grouped b
 
 ## Tutorials (reference only)
 
-These three skills are worked examples for reading and copying, not chapters. The mods-doc-* chapter skills are authoritative and win on any disagreement, and the example code a tutorial carries under its examples folder is never installed or loaded as part of the plugin. They are adapted from BeLazy167/claude-mods-skill (MIT).
+These three skills are worked examples for reading and copying, not chapters. The mods-doc-* chapter skills are authoritative and win on any disagreement, and the example code a tutorial carries under its examples folder is never installed or loaded as part of the plugin. The scripts the quickstart carries are tools to run, not examples to read; the example code stays reference only. The copied examples (`hello-mod`, `redact-output`, `dice-tool`, `branch-band`, `notes-pane`) and the upstream tutorial text are adapted from BeLazy167/claude-mods-skill (MIT, see NOTICE). The `turn-timer`, `git-poller` and `protect-files` examples, the house conventions, the quickstart scripts and the text that describes them were written for this plugin.
 
 ### mods-expert-developer-plugin:mods-tutorial-quickstart
 
-**Use when:** building a first mod and you want a step-by-step checklist that names the chapter skill for each step, the traps the chapters do not settle (UNVERIFIED where they do not confirm them), an index of the example mods, and the Anthropic mods to read next. Sections: Instructions; Traps the chapters do not settle; Example index; Anthropic mods to read next.
+**Use when:** building a first mod and you want a step-by-step checklist that names the chapter skill for each step, the traps the chapters do not settle (UNVERIFIED where they do not confirm them), an index of the example mods, the house conventions for mods you keep, the check-mod, new-mod and keep-mod scripts, and the Anthropic mods to read next. Sections: Instructions; Traps the chapters do not settle; Example index; Anthropic mods to read next.
 
 **Do not use when:** the task needs the authoritative facts of a step: load the chapter skill the step names instead. Also not for example code: it carries none.
 
@@ -895,13 +895,13 @@ These three skills are worked examples for reading and copying, not chapters. Th
 
 **Inputs:** one section title from the list above, or the mod you want to build.
 
-**Outputs:** that section read into context; nothing is written.
+**Outputs:** that section read into context, and the house conventions file read on demand. When an agent runs the scripts: `new-mod.sh` copies a tutorial example to a new folder under its own plugin name and never deletes anything, `check-mod.sh` type-checks, validates and tests a mod and prints `== PASS` or `== FAIL: <step>`, and `keep-mod.sh` copies a mod out of the session mods folder and never deletes or overwrites anything.
 
-**Dependencies:** none beyond the chapter skills it names.
+**Dependencies:** the chapter skills it names. All three scripts need bash and standard POSIX tools; `check-mod.sh` also needs the `claude` CLI and npx from Node.js (npx fetches typescript over the network when it is not in its cache), and `new-mod.sh` needs perl.
 
 ### mods-expert-developer-plugin:mods-tutorial-call-intercept-mods
 
-**Use when:** writing a mod that blocks, rewrites or answers tool calls, or adds a tool the model can call, and you want a complete example to copy: `hello-mod` (a guard that fails closed), `redact-output` (rewrite a result after `next`) or `dice-tool` (`$.tool.register` and a `tool.call` hook on `mcp__<plugin>__<tool>`). Sections: Instructions; About smoke.sh; Where the examples differ from the chapters.
+**Use when:** writing a mod that blocks, rewrites or answers tool calls, or adds a tool the model can call, and you want a complete example to copy: `hello-mod` (a guard that fails closed), `redact-output` (rewrite a result after `next`), `dice-tool` (`$.tool.register` and a `tool.call` hook on `mcp__<plugin>__<tool>`) or `protect-files` (a fail-closed path guard with a stored list). Sections: Instructions; About smoke.sh; Where the examples differ from the chapters.
 
 **Do not use when:** the task needs the authoritative semantics of `tool.call`, `next` or `.catch`: load `mods-expert-developer-plugin:mods-doc-mods-and-events` instead. Never run the example code from inside the plugin.
 
@@ -915,7 +915,7 @@ These three skills are worked examples for reading and copying, not chapters. Th
 
 ### mods-expert-developer-plugin:mods-tutorial-interface-mods
 
-**Use when:** writing a mod that draws a band above the prompt or a pane opened by a slash command, and you want a complete example to copy: `branch-band` (a timer, `$.process.run` and `$.state` atoms) or `notes-pane` (commands, a `Pane` with a `Button`, and `$.store`). Sections: Instructions; Where the examples differ from the chapters.
+**Use when:** writing a mod that draws a band above the prompt, a status line, or a pane opened by a slash command, and you want a complete example to copy: `branch-band` (a timer, `$.process.run` and `$.state` atoms), `notes-pane` (commands, a `Pane` with a `Button`, and `$.store`), `turn-timer` (a status line and a toast on a transition) or `git-poller` (a band with the branch and change counts, a Refresh button and an on/off command). Sections: Instructions; Where the examples differ from the chapters; Where the copied examples differ from the house conventions.
 
 **Do not use when:** the task needs the authoritative facts on render sites, elements or state: load `mods-expert-developer-plugin:mods-doc-mods-interfaces` instead. Never run the example code from inside the plugin.
 

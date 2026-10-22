@@ -395,6 +395,13 @@ def test_readme_lists_the_tutorials_as_reference_only() -> None:
     assert "do not replace the chapter skills" in section
     for name in sorted(TUTORIAL_SKILLS):
         assert f"`{name}`" in section, f"README Tutorials section misses {name}"
+    # Each example must sit in its own tutorial's bullet: the provenance sentence also names the copied
+    # examples, so a check against the whole section would stay green after a bullet lost a name.
+    for tutorial, examples in TUTORIAL_EXAMPLES.items():
+        bullets = [line for line in section.splitlines() if line.startswith(f"- `{tutorial}`")]
+        assert len(bullets) == 1, f"README Tutorials section needs exactly one bullet for {tutorial}"
+        for example in sorted(examples):
+            assert f"`{example}`" in bullets[0], f"README bullet for {tutorial} misses the example {example}"
 
 
 # --- no lint exclusion for the tutorial examples (TRDD-JFB5E98B) ---------------

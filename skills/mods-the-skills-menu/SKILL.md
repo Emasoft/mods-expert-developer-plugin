@@ -212,10 +212,10 @@ Every skill below loads as `mods-expert-developer-plugin:<skill>`. Its full entr
 
 ### Tutorials (reference only)
 
-Worked examples for reading and copying, not chapters: the chapter skills above are authoritative and win on any disagreement, and the example code a tutorial carries is never loaded as part of the plugin.
+Worked examples for reading and copying, not chapters: the chapter skills above are authoritative and win on any disagreement, and the example code a tutorial carries is never loaded as part of the plugin. The scripts the quickstart carries are tools to run, not examples to read; the example code stays reference only.
 
 | Skill | Covers |
 |---|---|
-| mods-expert-developer-plugin:mods-tutorial-quickstart | Checklist for a first mod; traps the chapters do not settle; example index |
-| mods-expert-developer-plugin:mods-tutorial-call-intercept-mods | Example mods that block, rewrite and answer tool calls, and add a tool |
-| mods-expert-developer-plugin:mods-tutorial-interface-mods | Example mods that draw a band above the prompt and a pane |
+| mods-expert-developer-plugin:mods-tutorial-quickstart | Checklist for a first mod; traps the chapters do not settle; example index; house conventions; check-mod, new-mod and keep-mod scripts |
+| mods-expert-developer-plugin:mods-tutorial-call-intercept-mods | Example mods that block, rewrite and answer tool calls, add a tool, or guard file paths fail-closed |
+| mods-expert-developer-plugin:mods-tutorial-interface-mods | Example mods that draw a band above the prompt, a pane, a status line, and a band kept current by a git poller |
