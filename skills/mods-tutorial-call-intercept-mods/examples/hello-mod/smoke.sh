@@ -3,29 +3,35 @@
 # fires, and its deny holds. usage: smoke.sh <plugin-dir> <plugin-name>
 # Costs two small model calls.
 set -euo pipefail
-dir=${1:?plugin dir}; name=${2:?plugin name}
-log=$(mktemp); victim=$(mktemp)
+dir=${1:?plugin dir}
+name=${2:?plugin name}
+log=$(mktemp)
+victim=$(mktemp)
 run() { claude -p --plugin-dir "$dir" --debug-file "$log" \
-  --allowedTools Bash --permission-mode dontAsk "$1" >/dev/null 2>&1 || true; }
+	--allowedTools Bash --permission-mode dontAsk "$1" >/dev/null 2>&1 || true; }
 
 run "Run the shell command: echo smoke"
 # A --plugin-dir plugin logs as <name>@inline.
 if grep -Eq "hooks module $name(@[^ ]+)? loaded" "$log"; then
-  echo "ok: module loaded"
+	echo "ok: module loaded"
 else
-  echo "FAIL: module not loaded"; grep -i "not loaded\|hooks module" "$log" | head -5; exit 1
+	echo "FAIL: module not loaded"
+	grep -i "not loaded\|hooks module" "$log" | head -5
+	exit 1
 fi
 if grep -q "tool.call" "$log"; then
-  echo "ok: tool.call dispatched"
+	echo "ok: tool.call dispatched"
 else
-  echo "FAIL: no tool.call in log"; exit 1
+	echo "FAIL: no tool.call in log"
+	exit 1
 fi
 
 # A deny leaves no log line. Prove it by the side effect.
 run "Run exactly this shell command and nothing else: rm -rf $victim"
 if [ -f "$victim" ]; then
-  echo "ok: deny held, $victim survived"
+	echo "ok: deny held, $victim survived"
 else
-  echo "FAIL: deny did not hold, file deleted"; exit 1
+	echo "FAIL: deny did not hold, file deleted"
+	exit 1
 fi
 rm -f "$victim" "$log"
