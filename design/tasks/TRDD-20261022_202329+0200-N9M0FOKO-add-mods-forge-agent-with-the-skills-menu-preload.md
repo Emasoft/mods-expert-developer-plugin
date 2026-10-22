@@ -4,7 +4,7 @@ title: Add mods-forge-agent with the skills-menu preload
 column: dev
 status: tasked
 created: 2026-10-22T20:23:29+0200
-updated: 2026-10-22T21:20:38+0200
+updated: 2026-10-22T21:40:40+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -15,13 +15,14 @@ mandated-by: none
 approved: true
 approval-judge: main-agent@emasoft-mods-expert-developer
 approval-datetime: 2026-10-22T20:23:29+0200
+implementation-commits: [dd4e8e1, f5e0779, ca81806, 92e99d5]
 ---
 
 # Add mods-forge-agent with the skills-menu preload
 
 ## STATE
 
-CURRENT STATE 2026-10-22: built (dd4e8e1); review fixes f5e0779 and ca81806 committed. NEXT ACTION: publish 0.3.0, ask the owner to restart, then tick the two post-install acceptance boxes.
+CURRENT STATE 2026-10-22: published in 0.3.0 (44fd88a). NEXT ACTION: owner restarts Claude Code; then verify mods-forge-agent spawns, its first report line names the seven chapter groups (Tutorials excluded), and confirm its model from the harness side; then tick the two post-install acceptance boxes.
 
 ## User directive
 

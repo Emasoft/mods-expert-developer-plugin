@@ -4,7 +4,7 @@ title: Add mods tutorial skills from BeLazy167 claude-mods-skill
 column: todo
 status: tasked
 created: 2026-10-22T20:24:37+0200
-updated: 2026-10-22T21:17:04+0200
+updated: 2026-10-22T21:40:39+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -15,6 +15,7 @@ mandated-by: none
 approved: true
 approval-judge: main-agent@emasoft-mods-expert-developer
 approval-datetime: 2026-10-22T20:24:37+0200
+implementation-commits: [ed3dc13, 48589fd, 114609b]
 ---
 
 # Add mods tutorial skills from BeLazy167 claude-mods-skill
@@ -42,15 +43,15 @@ Executor: the plugin's own agents - mods-forge-agent once installed, mods-expert
 MEASURED 2026-10-22 (reports/measure/20261022_202816+0200-nested-example-manifests.md): Claude Code ignores nested plugin.json/hooks.json under skills/; renaming them changes nothing for CPV strict. DECISION: example manifests stay unrenamed (copy-runnable); smoke.sh's three SC2015 lines become if/then/else with identical exit behaviour; skills/[^/]+/examples/ is excluded from the cosmetic linters only (jscpd, cspell, shfmt, markdownlint) to keep upstream code faithful, and stays under shellcheck, jsonlint and CPV strict. This scoped exclusion is a design rule, not a waiver.
 
 ## Acceptance checklist
-- [ ] Measurement report on nested manifests saved under reports/measure/.
-- [ ] Each tutorial skill in the final (post-merge) list exists, its name contains "tutorial", and its SKILL.md opens with the reference-only notice.
-- [ ] Example code only under skills/<tutorial>/examples/, inert per the measurement.
+- [x] Measurement report on nested manifests saved under reports/measure/.
+- [x] Each tutorial skill in the final (post-merge) list exists, its name contains "tutorial", and its SKILL.md opens with the reference-only notice.
+- [x] Example code only under skills/<tutorial>/examples/, inert per the measurement.
 - [ ] Overlap stripped; each removed topic links its chapter skill.
-- [ ] NOTICE carries the MIT text for BeLazy167/claude-mods-skill.
-- [ ] Menu and README list the tutorials as reference-only.
+- [x] NOTICE carries the MIT text for BeLazy167/claude-mods-skill.
+- [x] Menu and README list the tutorials as reference-only.
 - [ ] uv run pytest, claude plugin validate ., the CI-parity linters (examples excluded only from the cosmetic linters named in Design) and cpv-remote-validate plugin . --strict at v5.22.3 pass with no waiver.
 - [ ] claude plugin test . at the plugin root does not collect the example tests (measured).
-- [ ] tests/test_plugin_structure.py's skill-folder count is updated deliberately to the final number.
+- [x] tests/test_plugin_structure.py's skill-folder count is updated deliberately to the final number.
 - [ ] CPV strict re-run on the final tree with all five examples in place (not inferred), saved under reports/cpv/.
 
 ## Approval log
@@ -59,3 +60,4 @@ MEASURED 2026-10-22 (reports/measure/20261022_202816+0200-nested-example-manifes
 - 2026-10-22T20:24:41+0200 — column → todo by main-agent@emasoft-mods-expert-developer. user directive 2026-10-22
 - 2026-10-22 - authority: the user's directive quoted verbatim under User directive; mandated-by stays none because trddgrep set refuses that field.
 - 2026-10-22 orchestrator: review of ed3dc13 — verbatim claim verified for all five examples, notice pin exists; accepted: narrow lint exclusion to mods-tutorial-*, MIT LICENSE copy in each examples/, isDeferred note at dice-tool, load-guard test, broken-copy proofs; rejected: renaming example plugin.json (examples stay verbatim and copy-and-run; loader measured to ignore nested manifests). Spec: docs_dev/20261022-tutorial-review-fixes-spec.md.
+2026-10-22: shipped in 0.3.0 (44fd88a).
