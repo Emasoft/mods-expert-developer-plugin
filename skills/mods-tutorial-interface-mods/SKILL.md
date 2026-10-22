@@ -53,10 +53,10 @@ The house conventions are this plugin's own, not Anthropic rules. `branch-band` 
 - `notes-pane` opens its pane with `$.ui.open({ id: PANE, title: 'Notes' })` and passes no `focus` field. The interfaces chapter says `focus` requests keyboard focus. It passes no `closeOnEscape` either.
 - The Clear `Button` in `notes-pane` has no `hotkey`.
 - Neither example has an on/off command; `branch-band`'s band cannot be hidden without disabling the plugin.
-- Both examples keep their logic inside `hooks/register.tsx`. Neither has a `hooks/logic.ts`.
+- Both examples keep their logic in their `register.tsx` hooks module; neither has a separate `logic.ts` module.
 - When `git branch` fails, `branch-band` blanks the band, and it takes the changed count from `git status` without checking its exit code; it keeps no last good value for either. Its timer starts a refresh every 15 seconds without waiting for the previous one, so a refresh that runs longer than that can overlap the next, and nothing in the code stops the older result from overwriting the newer one.
 
-`turn-timer` and `git-poller` were written to follow the conventions, which are in the `mods-tutorial-quickstart` skill's `references/house-conventions.md`.
+`turn-timer` and `git-poller` were written to follow the conventions, which are in `skills/mods-tutorial-quickstart/references/house-conventions.md`.
 
 ## Output
 

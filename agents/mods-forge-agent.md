@@ -69,7 +69,7 @@ If the Agent tool is available in your context, bounded read-only scans may go t
 2. Only `== PASS` passes. Besides point 1, report `[BLOCKED: <reason>]` only in these cases, and quote the output line that shows the reason: the last line is `== FAIL: tsc (types not generated yet: ...)`, because the types appear only after Claude Code has loaded the mod once (record that load in your report as a step for the human and mark the type-check as not verified; then still run `claude plugin validate <mod-dir>` and, in the mod folder, `claude plugin test` yourself and report their raw results); the last line is `== FAIL: claude not found`; npx could not fetch typescript; or `claude` printed an authentication error. Any other `== FAIL` is a failure of the mod.
 3. Mutation-check each new guard and each new test on a scratch copy in a temporary directory outside the project tree: break the guarded line, confirm the test goes red, then remove that temporary directory. It is not part of the project, so removing it is allowed.
 4. The report lists each check with its raw result, and what still needs a human, such as the live Desktop check.
-5. For a mod the user keeps, follow the house conventions of the `mods-tutorial-quickstart` skill (its `references/house-conventions.md`).
+5. For a mod the user keeps, follow the house conventions of the `mods-tutorial-quickstart` skill, in `skills/mods-tutorial-quickstart/references/house-conventions.md`.
 
 ## Report
 

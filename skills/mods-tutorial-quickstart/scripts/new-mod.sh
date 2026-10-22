@@ -15,8 +15,9 @@ mod_name="$3"
 # Our own name rule: kebab-case (lowercase letters and digits in words joined by single hyphens, starting with a letter), as the
 # plugin manifest chapter asks (mods-doc-plugin-manifest-reference chapter.md:183; validate warns on a non-kebab name, :128). It sets no length limit; 64 is ours.
 valid_mod_name() (
+	# No nested repeat in the pattern: start letter, end letter or digit, and no doubled hyphen is checked on its own.
 	LC_ALL=C
-	[ "${#1}" -ge 2 ] && [ "${#1}" -le 64 ] && [[ "$1" =~ ^[a-z][a-z0-9]*(-[a-z0-9]+)*$ ]]
+	[ "${#1}" -ge 2 ] && [ "${#1}" -le 64 ] && [[ "$1" =~ ^[a-z][a-z0-9-]*[a-z0-9]$ ]] && [[ "$1" != *--* ]]
 )
 valid_example_name() (
 	LC_ALL=C
