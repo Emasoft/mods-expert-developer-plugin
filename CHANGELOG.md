@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.2] — 2026-10-22
+
+### Bug Fixes
+
+- **lint:** Lint the tutorial examples like every other file (TRDD-JFB5E98B) (daa20cf)
+- **lint:** Unblock 0.3.2 and tighten the example guards (TRDD-JFB5E98B) (e397753)
+
+### Documentation
+
+- Apply the review fixes to five cards, scope spell ignores per card (b792cd1)
+- Record the passing 0.3.1 post-install check (TRDD-N9M0FOKO) (c1885ed)
+
+### Testing
+
+- **lint:** Probe every tutorial example file in the no-exclusion guards (TRDD-JFB5E98B) (d4760f2)
 ## [0.3.1] — 2026-10-22
 
 ### Bug Fixes
@@ -14,6 +29,10 @@ All notable changes to this project will be documented in this file.
 - Record the 0.3.0 release on two cards, reword NOTICE (TRDD-BDY6ZNDZ) (563524d)
 - Add TRDD-JFB5E98B to drop the tutorial-example lint exclusions (c824ae4)
 - Add TRDD-H26OG8AP to integrate the givememod harvest (88f78b2)
+
+### Miscellaneous Tasks
+
+- Bump version to 0.3.1 (5e62111)
 ## [0.3.0] — 2026-10-22
 
 ### Bug Fixes
