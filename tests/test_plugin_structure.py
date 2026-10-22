@@ -13,6 +13,7 @@ shipping silently.
 
 from __future__ import annotations
 
+import fnmatch
 import json
 import re
 import tomllib
@@ -392,36 +393,74 @@ def test_readme_lists_the_tutorials_as_reference_only() -> None:
 # The tutorial examples are linted like every other file; the licence must travel with the copies, and nothing the
 # plugin loads may point into skills/*/examples/.
 
-TUTORIAL_EXAMPLE_PROBE = "skills/mods-tutorial-call-intercept-mods/examples/hello-mod/smoke.sh"
-# Linters that read TypeScript or JavaScript would lint the examples.
-TS_JS_LINTER_PREFIXES = ("TYPESCRIPT_", "JAVASCRIPT_", "JSX_", "TSX_")
-TS_JS_DESCRIPTORS = ("TYPESCRIPT", "JAVASCRIPT", "JSX", "TSX")
+# Every real example file, repo-relative: the guard tests probe each one, not a single sample.
+EXAMPLE_FILES = [
+    p.relative_to(ROOT).as_posix() for p in sorted(SKILLS.glob("mods-tutorial-*/examples/**/*")) if p.is_file()
+]
+# Each path as the linters may see it: bare relative, ./relative and the MegaLinter container absolute path.
+EXAMPLE_PATH_FORMS = [form for rel in EXAMPLE_FILES for form in (rel, f"./{rel}", f"/github/workspace/{rel}")]
+
+
+def _ignore_hits(cspell: dict, jscpd: dict) -> list[str]:
+    """List every "<pattern> ignores <file>" pair where a cspell ignorePaths or jscpd ignore glob matches an example file."""
+    cspell_patterns = list(cspell.get("ignorePaths", []))
+    for override in cspell.get("overrides", []):
+        cspell_patterns += override.get("ignorePaths", [])
+    # JSON is excluded from spell checking by the pinned CPV canon for every file in the repo, not for the examples.
+    pairs = [(p, [f for f in EXAMPLE_FILES if not f.endswith(".json")]) for p in cspell_patterns]
+    pairs += [(p, EXAMPLE_FILES) for p in jscpd.get("ignore", [])]
+    hits = []
+    for pattern, files in pairs:
+        for rel in files:
+            # fnmatch lets * cross /, so a leading **/ is also tried stripped; PurePosixPath.full_match needs Python 3.13.
+            if fnmatch.fnmatch(rel, pattern) or fnmatch.fnmatch(rel, pattern.removeprefix("**/")):
+                hits.append(f"{pattern} ignores {rel}")
+    return hits
 
 
 def test_no_mega_linter_exclude_skips_the_tutorial_examples() -> None:
-    """No FILTER_REGEX_EXCLUDE in .mega-linter.yml matches a tutorial example path."""
+    """No *FILTER_REGEX_EXCLUDE in .mega-linter.yml matches any tutorial example file, in any path form."""
     config = yaml.safe_load((ROOT / ".mega-linter.yml").read_text(encoding="utf-8"))
+    assert len({Path(rel).suffix for rel in EXAMPLE_FILES} & {".md", ".ts", ".json", ".sh"}) >= 4, EXAMPLE_FILES
     for key, value in config.items():
         if key.endswith("FILTER_REGEX_EXCLUDE"):
-            assert not re.search(value, TUTORIAL_EXAMPLE_PROBE), f"{key} excludes the tutorial examples"
+            # The canon spell-check regex skips every .json file in the repo, not the examples in particular.
+            forms = [f for f in EXAMPLE_PATH_FORMS if not (key.startswith("SPELL_CSPELL") and f.endswith(".json"))]
+            for form in forms:
+                assert not re.search(value, form), f"{key} excludes the tutorial example {form}"
+    excluded_dirs = config.get("ADDITIONAL_EXCLUDED_DIRECTORIES", [])
+    assert not [d for d in excluded_dirs if "skills" in d], (
+        f"ADDITIONAL_EXCLUDED_DIRECTORIES names skills: {excluded_dirs}"
+    )
 
 
 def test_cspell_and_jscpd_do_not_ignore_the_tutorial_examples() -> None:
-    """Neither .cspell.json ignorePaths nor .jscpd.json ignore names a mods-tutorial path."""
+    """No .cspell.json ignorePaths glob and no .jscpd.json ignore glob matches a tutorial example file."""
     cspell = json.loads((ROOT / ".cspell.json").read_text(encoding="utf-8"))
     jscpd = json.loads((ROOT / ".jscpd.json").read_text(encoding="utf-8"))
-    for pattern in cspell["ignorePaths"] + jscpd["ignore"]:
-        assert "mods-tutorial" not in pattern, f"{pattern} ignores the tutorial examples"
+    assert not _ignore_hits(cspell, jscpd)
 
 
-def test_no_ts_or_js_linter_is_enabled() -> None:
-    """No TypeScript/JavaScript linter is enabled for any file (examples included), so nothing is excluded for the examples."""
+def test_ignore_hit_detection_reports_an_examples_glob() -> None:
+    """The ignore-glob check reports a hit for a broken config that ignores **/examples/**."""
+    broken = {"ignorePaths": ["**/examples/**"]}
+    assert _ignore_hits(broken, {}), "an examples glob in cspell was not detected"
+    assert _ignore_hits({}, {"ignore": ["**/examples/**"]}), "an examples glob in jscpd was not detected"
+    assert _ignore_hits({"overrides": [{"ignorePaths": ["**/examples/**"]}]}, {}), "override glob not detected"
+
+
+def test_megalinter_runs_an_explicit_linter_list() -> None:
+    """MegaLinter runs an explicit linter list; any linter added later is covered by the no-exclusion test above."""
     config = yaml.safe_load((ROOT / ".mega-linter.yml").read_text(encoding="utf-8"))
-    # Without ENABLE_LINTERS and ENABLE, MegaLinter runs every linter of the flavor, TypeScript and JavaScript included.
     assert "ENABLE_LINTERS" in config or "ENABLE" in config, "no ENABLE_LINTERS or ENABLE: every linter would run"
-    enabled = [x for x in config.get("ENABLE_LINTERS", []) if x.startswith(TS_JS_LINTER_PREFIXES)]
-    enabled += [x for x in config.get("ENABLE", []) if x in TS_JS_DESCRIPTORS]
-    assert not enabled, f"TS/JS linters enabled: {enabled}"
+
+
+def test_markdownlint_exclude_still_skips_changelog() -> None:
+    """The markdownlint exclude regex still skips CHANGELOG.md and does not skip README.md."""
+    config = yaml.safe_load((ROOT / ".mega-linter.yml").read_text(encoding="utf-8"))
+    pattern = config["MARKDOWN_MARKDOWNLINT_FILTER_REGEX_EXCLUDE"]
+    assert re.search(pattern, "CHANGELOG.md")
+    assert not re.search(pattern, "README.md")
 
 
 @pytest.mark.parametrize("tutorial", ("mods-tutorial-call-intercept-mods", "mods-tutorial-interface-mods"))
