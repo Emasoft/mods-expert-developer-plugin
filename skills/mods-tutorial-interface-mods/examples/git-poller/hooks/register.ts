@@ -8,9 +8,13 @@ import { ENABLED_KEY, MIN_GAP_MS, MOD_NAME, POLL_INTERVAL_MS, USAGE, gitArgv, is
 // (mods-doc-mods-interfaces chapter.md:740-748 compares module variables, $.state and $.store;
 // the atom, read and update calls are shown at :789).
 // enabled is the off switch copied from the store, so ui.render reads only this atom and never the store.
-// Writers of enabled: the session.start kick (once) and command.run. Nothing else writes it, so a
-// poll that read the store before a /git-poller off cannot write a stale value back over it.
+// Writers of enabled: command.run, and the session.start kick (once), which writes only if no command ran
+// while its store read was pending (switchGen). Nothing else writes it, so a poll that read the store
+// before a /git-poller off cannot write a stale value back over it.
 const view = atom({ plugin: 'git-poller', key: 'view' } as const, { snapshot: null, stale: false, enabled: true } as View)
+
+// Counts the /git-poller commands handled. startPolling compares it before and after its store read.
+let switchGen = 0
 
 // Module variables: timers stop when the module reloads (mods-doc-mods-api chapter.md:231) and
 // module variables reset on a reload (mods-doc-mods-interfaces chapter.md:740-748), so they stay in step.
@@ -78,7 +82,11 @@ async function pollIfEnabled($: EngineInterface): Promise<void> {
 // leaves the atom at its default, so the band would otherwise ignore a stored off), then polls.
 async function startPolling($: EngineInterface): Promise<void> {
   try {
+    // A /git-poller command that runs while the store read below is held back is newer than that read:
+    // its switch must win, so the generation taken before the read gates the write and the refresh.
+    const gen = switchGen
     const enabled = await isEnabled($)
+    if (gen !== switchGen) return
     await update($, view, (v) => (v.enabled === enabled ? v : { ...v, enabled }))
     if (enabled) await refresh($)
   } catch {
@@ -109,6 +117,7 @@ export const register: Register = (on) => {
     // name throws, and a hook that throws is skipped, so nothing after this call would run.
     // The call and its fields: mods-doc-mods-api chapter.md:34.
     await $.command.register({ name: MOD_NAME, description: 'Switch the git working-tree band on or off', argumentHint: '[on|off]' })
+    // next(e) passes the event on unchanged (mods-doc-mods-reference chapter.md:69; session.start row at :136).
     return next(e)
   })
 
@@ -118,6 +127,7 @@ export const register: Register = (on) => {
     // The refresh is not awaited: turn.complete must not wait for git, so a slow git cannot delay
     // the end of the turn. pollIfEnabled catches its own errors, so nothing is left unhandled.
     if (e.agentId === undefined && isDue(await $.clock.now(), lastStartedAt, MIN_GAP_MS)) void pollIfEnabled($)
+    // next(e) passes the event on unchanged (mods-doc-mods-reference chapter.md:69; turn.complete row at :126).
     return next(e)
   })
 
@@ -126,9 +136,13 @@ export const register: Register = (on) => {
   on('command.run', { command: 'git-poller' }, async ($, e) => {
     const action = parseSwitch(e.args, await isEnabled($))
     if (action.kind === 'usage') return { text: USAGE }
+    // Taken before the store write and the atom update below (a usage answer changes nothing, so it
+    // does not count): a startPolling store read pending across this point sees the counter move
+    // and drops its answer.
+    switchGen++
     // $.store.set(key, value) takes any JSON value (mods-doc-mods-interfaces chapter.md:744).
     await $.store.set(ENABLED_KEY, action.enabled)
-    // The band reads the switch from the view atom, so write it here too: this is the only writer after start.
+    // The band reads the switch from the view atom, so write it here too (the other writer is the start kick).
     await update($, view, (v) => ({ ...v, enabled: action.enabled }))
     // $.ui.toast shows a notification with the mod's name (mods-doc-mods-api chapter.md:222).
     await $.ui.toast(MOD_NAME + (action.enabled ? ' on' : ' off'))
@@ -136,13 +150,19 @@ export const register: Register = (on) => {
     if (action.enabled) void pollIfEnabled($)
     // No $.ui.invalidate call: a ui.render hook that read an atom runs again each time the atom is
     // written (mods-doc-mods-interfaces chapter.md:798), and the update above writes the atom ui.render reads.
+    // {} answers the command with no text (mods-doc-mods-reference chapter.md:113).
     return {}
   })
 
+  // The { component: 'AbovePrompt' } matcher draws in the band above the prompt (mods-doc-mods-interfaces chapter.md:216;
+  // AbovePrompt in the render sites table: mods-doc-mods-reference chapter.md:231). A hook returns a tree, or next(e)
+  // to show nothing (mods-doc-mods-interfaces chapter.md:214).
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
     // Read the state first: the read subscribes this site to later writes. It is the only read here.
     const now = await read($, view)
     if (!now.enabled || now.snapshot === null) return next(e)
+    // $.ui.resolve(e) returns the elements (mods-doc-mods-interfaces chapter.md:361). Box, Text and Button props, with
+    // dimColor and color on Text: mods-doc-mods-reference chapter.md:260-262 and mods-doc-mods-interfaces chapter.md:436.
     const { Box, Text, Button } = $.ui.resolve(e)
     const { branch, changed, untracked } = now.snapshot
     return Box({

@@ -8,7 +8,9 @@ export const PATHS_KEY = 'protect-files.paths'
 export const SWITCH_USAGE = 'usage: /protect-files [on|off]'
 export const PATHS_USAGE = 'usage: /protect-files-paths add <path> | remove <path> | list'
 export const DAMAGED_LIST_TEXT =
-  'protect-files: the stored list is damaged, so it was left unchanged. Delete the protect-files.paths key from the plugin store to reset it.'
+  // Way out: /protect-files off lets calls through, and a mod can clear the key with $.store.delete (documented at
+  // mods-doc-mods-interfaces chapter.md:192, where the example clears a stored count).
+  'protect-files: the stored list is damaged, so it was left unchanged. Run /protect-files off to continue working, then delete the protect-files.paths key from a mod with $.store.delete.'
 
 /**
  * Normalises a path for comparison. It DOES: turn backslashes into slashes,
@@ -92,7 +94,8 @@ export function checkTarget(target: unknown, stored: unknown): string | undefine
   }
   const entries = readList(stored)
   if (entries === undefined) {
-    return 'protect-files: the protected list is damaged, so this call was not allowed'
+    // The same way out as DAMAGED_LIST_TEXT ($.store.delete: mods-doc-mods-interfaces chapter.md:192).
+    return 'protect-files: the protected list is damaged, so this call was not allowed. Run /protect-files off to continue working, then delete the protect-files.paths key from a mod with $.store.delete.'
   }
   // A relative target cannot be checked against an absolute entry: the working directory is unknown here.
   if (!normalizePath(target).startsWith('/') && entries.some((x) => normalizePath(x).startsWith('/'))) {

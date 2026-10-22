@@ -114,9 +114,11 @@ test('a stored relative entry starting with .. is a damaged list: reported, left
 
   const r = await $.command.run({ command: 'protect-files-paths', args: 'add /p/.env' })
   expect(r.text).toContain('damaged')
+  expect(r.text).toContain('/protect-files off')
   expect(writes).toEqual([])
   const denied = await $.tool.call({ tool: 'Write', file_path: '/p/.env', content: 'x' })
   expect(denied.deny).toContain('damaged')
+  expect(denied.deny).toContain('/protect-files off')
   expect(tool.ran).toBe(0)
 })
 
@@ -145,6 +147,7 @@ test('a damaged stored list is reported by the paths command and not overwritten
 
   const r = await $.command.run({ command: 'protect-files-paths', args: 'add /p/.env' })
   expect(r.text).toContain('damaged')
+  expect(r.text).toContain('/protect-files off')
   expect(saved.get('protect-files.paths')).toBe('oops')
 })
 

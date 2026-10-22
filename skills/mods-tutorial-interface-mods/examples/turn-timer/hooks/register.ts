@@ -20,6 +20,7 @@ export const register: Register = (on) => {
     // Register commands last: a throw here skips the rest of the hook.
     // $.command.register and its fields name, description, argumentHint: mods-doc-mods-api chapter.md:34.
     await $.command.register({ name: 'turn-timer', description: 'Turn the turn timer on or off', argumentHint: '[on|off]' })
+    // next(e) passes the event on unchanged (mods-doc-mods-reference chapter.md:69; session.start row at :136).
     return next(e)
   })
 
@@ -27,6 +28,7 @@ export const register: Register = (on) => {
   // e.args is the text typed after the command name, or an empty string (mods-doc-mods-api chapter.md:40).
   on('command.run', { command: 'turn-timer' }, async ($, e) => {
     const choice = parseSwitch(e.args, await isEnabled($))
+    // { text } answers the command with a line (mods-doc-mods-reference chapter.md:113).
     if (choice === null) return { text: USAGE }
     // $.store.set(key, value) takes any JSON value (mods-doc-mods-interfaces chapter.md:744).
     await $.store.set(ENABLED_KEY, choice)
@@ -36,6 +38,7 @@ export const register: Register = (on) => {
     // notification (mods-doc-mods-api chapter.md:222).
     await $.ui.status(choice ? 'on' : 'off')
     await $.ui.toast('turn-timer ' + (choice ? 'on' : 'off'))
+    // {} answers the command with no text (mods-doc-mods-reference chapter.md:113).
     return {}
   })
 
@@ -50,6 +53,7 @@ export const register: Register = (on) => {
     last = snap
     await $.ui.status(statusText(snap))
     if (toast) await $.ui.toast(slowToastText(snap))
+    // next(e) passes the event on unchanged (mods-doc-mods-reference chapter.md:69; turn.complete row at :126).
     return next(e)
   })
 }

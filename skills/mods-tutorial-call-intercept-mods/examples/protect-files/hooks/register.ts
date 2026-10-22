@@ -8,6 +8,7 @@ export const register: Register = (on) => {
     // $.command.register and its fields name, description, argumentHint: mods-doc-mods-api chapter.md:34.
     await $.command.register({ name: 'protect-files', description: 'Turn the protected-files guard on or off', argumentHint: '[on|off]' })
     await $.command.register({ name: 'protect-files-paths', description: 'Manage the protected paths', argumentHint: 'add <path> | remove <path> | list' })
+    // next(e) passes the event on unchanged (mods-doc-mods-reference chapter.md:69; session.start row at :136).
     return next(e)
   })
 
@@ -21,6 +22,7 @@ export const register: Register = (on) => {
     if ('usage' in result) return { text: result.usage }
     await $.store.set(ENABLED_KEY, result.enabled)
     await $.ui.toast(result.enabled ? 'protect-files on' : 'protect-files off')
+    // {} answers the command with no text (mods-doc-mods-reference chapter.md:113).
     return {}
   })
 
@@ -35,16 +37,21 @@ export const register: Register = (on) => {
     if ('usage' in result) return { text: result.usage }
     // An answer with no paths (a refused entry) leaves the store untouched.
     if ('paths' in result) await $.store.set(PATHS_KEY, result.paths)
+    // { text } answers the command with a line (mods-doc-mods-reference chapter.md:113).
     return { text: result.text }
   })
 
+  // The matcher { tool: ['Edit', 'Write'] } is shown at mods-doc-mods-and-events chapter.md:129.
   on('tool.call', { tool: ['Edit', 'Write'] }, async ($, e, next) => {
     // Off is a deliberate policy: every call passes untouched.
     if ((await $.store.get(ENABLED_KEY)) === false) return next(e)
     // e.file_path is documented for tool.call (mods-doc-mods-and-events chapter.md:108 and :134).
     const reason = checkTarget(e.file_path, await $.store.get(PATHS_KEY))
     // Deny BEFORE next: after next the tool has already run.
+    // Returning { deny } without calling next refuses the call: Claude reads the text as the tool's result
+    // (mods-doc-mods-and-events chapter.md:117 and :124, "Guard or change a tool call"; tool.call row: mods-doc-mods-reference chapter.md:77).
     if (reason !== undefined) return { deny: reason }
+    // next(e) runs the permission check, then the tool (mods-doc-mods-and-events chapter.md:108).
     return next(e)
   })
     // A hook that throws is skipped and the call would run. Refuse instead, unless

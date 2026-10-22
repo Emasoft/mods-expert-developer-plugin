@@ -12,7 +12,11 @@ Path matching is pure logic in `hooks/logic.ts`.
 - A Windows target such as `C:/work/a.ts` does not start with `/`, so it counts as relative. While any absolute entry exists, every `Edit` and `Write` with such a target is therefore denied.
 - An absolute entry protects itself and everything below it; an entry `/` protects everything. A relative entry protects the same whole segments wherever they appear in the target path. Matching is by whole segments, so `src` does not protect `src2/a.ts`.
 - Fail closed: a call with no string `file_path`, or a stored list that is not a list of strings, is refused. So is a relative `file_path` while any absolute entry exists, because it cannot be compared with it.
-- A damaged stored list is never overwritten: `/protect-files-paths` answers that it is damaged and leaves it as it is. A stored list counts as damaged when it is not a list of strings, and also when it holds a relative entry whose normalised form starts with `..` (for example `../x`): such an entry can never match, so every `Edit` and `Write` is refused until you delete the `protect-files.paths` key. `/..` is not such an entry: it normalises to `/`, which protects everything. `/protect-files-paths list` only shows the list and never writes it back.
+- A stored list counts as damaged when it is not a list of strings, and also when it holds a relative entry whose normalised form starts with `..` (for example `../x`): such an entry can never match.
+- While the list is damaged every `Edit` and `Write` is refused, and `/protect-files-paths` answers that the list is damaged and leaves it as it is.
+- The way out: run `/protect-files off` to continue working (off lets every call through), then delete the `protect-files.paths` key from a mod with `$.store.delete` (shown in mods-doc-mods-interfaces, chapter.md:192). Both refusal texts say so.
+- `/..` is not a damaged entry: it normalises to `/`, which protects everything.
+- `/protect-files-paths list` only shows the list and never writes it back.
 - Not covered: `MultiEdit`, `NotebookEdit`, and `Bash` (a shell command can still write a protected file). Add them to the matcher if your build names them as tool names.
 
 Off is a deliberate policy: `/protect-files off` lets every call through untouched. Default is on; a missing `protect-files.enabled` key means enabled. The protected list is stored under `protect-files.paths` and starts empty.
@@ -40,7 +44,7 @@ Constants exported from `hooks/logic.ts`:
 | `PATHS_KEY` | `'protect-files.paths'` | The `$.store` key of the protected list; a missing key means empty |
 | `SWITCH_USAGE` | `'usage: /protect-files [on\|off]'` | The answer to an unknown switch argument |
 | `PATHS_USAGE` | `'usage: /protect-files-paths add <path> \| remove <path> \| list'` | The answer to an unknown paths argument |
-| `DAMAGED_LIST_TEXT` | the damaged-list message | The answer of `/protect-files-paths` when the stored list is not a string array or holds a relative entry that starts with `..`; it tells the user to delete the `protect-files.paths` key |
+| `DAMAGED_LIST_TEXT` | the damaged-list message | The answer of `/protect-files-paths` when the stored list is not a string array or holds a relative entry that starts with `..`; it tells the user to run `/protect-files off`, then delete the `protect-files.paths` key with `$.store.delete` |
 
 ## House conventions it follows
 

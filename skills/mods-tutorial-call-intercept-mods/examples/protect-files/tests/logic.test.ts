@@ -48,6 +48,9 @@ test('a relative entry protects its segments wherever they appear', () => {
 test('checkTarget fails closed on a missing target or a damaged list', () => {
   expect(checkTarget(undefined, [])).toContain('no file path')
   expect(checkTarget('/a', 'oops')).toContain('damaged')
+  // The refusal names the way out
+  expect(checkTarget('/a', 'oops')).toContain('/protect-files off')
+  expect(checkTarget('/a', 'oops')).toContain('$.store.delete')
   expect(checkTarget('/a', [1])).toContain('damaged')
   expect(checkTarget('/a', ['../x'])).toContain('damaged')
   expect(checkTarget('/a', undefined)).toBeUndefined()
