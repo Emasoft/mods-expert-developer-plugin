@@ -34,6 +34,8 @@ and what that costs.
 
 from __future__ import annotations
 
+import importlib.util
+import json
 import re
 import subprocess
 from pathlib import Path
@@ -208,7 +210,11 @@ def _readme_table() -> list[tuple[str, str]]:
 
 
 SKILL_DIRS = sorted(d for d in SKILLS.iterdir() if d.is_dir())
-DOC_SKILLS = [d.name for d in SKILL_DIRS]
+# Identical copy of CATALOG_SKILLS in tests/test_plugin_structure.py; test_catalog_skills_copies_agree
+# fails if the two drift. A catalog skill indexes the chapters instead of wrapping one, so it is not
+# routed by the expert agent and is not a row of the README Components table.
+CATALOG_SKILLS = {"cpv-the-skills-menu"}
+DOC_SKILLS = [d.name for d in SKILL_DIRS if d.name not in CATALOG_SKILLS]
 
 
 def test_preload_window_is_exactly_the_pinned_roster() -> None:
@@ -614,3 +620,174 @@ def test_readme_skill_relative_paths_are_qualified() -> None:
     text = README.read_text(encoding="utf-8")
     bare = re.findall(r"`(references/chapter\.md|agents/openai\.yaml)`", text)
     assert not bare, f"unqualified skill-relative paths in README.md: {sorted(set(bare))}"
+
+
+
+# --- forge agent and skills menu -----------------------------------------------
+#
+# The forge agent preloads ONE skill, the menu, and loads every chapter on demand
+# through it. So the menu must name every chapter exactly once with a loadable
+# namespaced name, and the agent frontmatter must keep the user's pins (Opus 5.5,
+# the menu as its only preload). The namespace is read from plugin.json, never
+# hardcoded, so renaming the plugin without regenerating the menu fails here.
+
+FORGE_AGENT = ROOT / "agents/mods-forge-agent.md"
+MENU = SKILLS / "cpv-the-skills-menu"
+MENU_CATALOG = MENU / "references/skills-catalog.md"
+
+# CPV's mandatory dynamic-loading paragraph, verbatim (the-skills-menu spec, "Agent body instruction rule").
+DYNAMIC_LOADING_PARAGRAPH = (
+    "You must load the skills you need dynamically. Use the Skill() tool to load them. Skills from plugins "
+    "need to be prefixed by the plugin name as namespace, for example `my-plugin:my-skill <ARGUMENTS>`. "
+    "Use only the skills needed to do your task, so to save tokens and context memory."
+)
+
+SKILL_CALL = re.compile(r'Skill\(\{skill: "([^"]+)"')
+LOAD_WITH = re.compile(r'^\*\*Load with:\*\* `Skill\(\{skill: "([^"]+)"', re.M)
+
+
+def _namespace() -> str:
+    """The plugin namespace, read from the manifest so no test hardcodes it."""
+    return json.loads((ROOT / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8"))["name"]
+
+
+def _split(path: Path) -> tuple[dict, str]:
+    """(parsed frontmatter, body) of a markdown file."""
+    text = path.read_text(encoding="utf-8")
+    assert text.startswith("---\n"), f"{path.name} has no frontmatter"
+    end = text.index("\n---\n", 4)
+    return yaml.safe_load(text[4:end]), text[end + 5 :]
+
+
+def _menu_table_skills(text: str) -> list[str]:
+    """Skill cells of every table under the menu's `## Plugin Skills` section, in file order."""
+    section = text.split("\n## Plugin Skills\n", 1)[1]
+    rows: list[str] = []
+    for line in section.splitlines():
+        match = TABLE_ROW.match(line)
+        if match and match.group(1) != "Skill":
+            rows.append(match.group(1))
+    return rows
+
+
+def _expected_chapter_names() -> list[str]:
+    return sorted(f"{_namespace()}:{name}" for name in DOC_SKILLS)
+
+
+def test_catalog_skills_copies_agree() -> None:
+    """CATALOG_SKILLS here equals the copy in test_plugin_structure.py, so the two files exclude the same skills."""
+    spec = importlib.util.spec_from_file_location("_structure", ROOT / "tests" / "test_plugin_structure.py")
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    assert module.CATALOG_SKILLS == CATALOG_SKILLS
+
+
+def test_every_catalog_skill_exists() -> None:
+    """Every CATALOG_SKILLS member is a shipped skill; a stale exclusion would hide nothing and mislead."""
+    missing = [name for name in sorted(CATALOG_SKILLS) if not (SKILLS / name / "SKILL.md").is_file()]
+    assert not missing, f"CATALOG_SKILLS names skills that are not shipped: {missing}"
+
+
+def test_forge_agent_is_pinned_to_opus_5_5() -> None:
+    """The user's directive pins the forge agent to Opus 5.5, by its full model ID."""
+    fields, _ = _split(FORGE_AGENT)
+    assert fields["model"] == "claude-opus-5-5"
+
+
+def test_forge_agent_preloads_only_the_menu() -> None:
+    """The forge agent preloads exactly one skill, the menu, and reaches every chapter through it."""
+    fields, _ = _split(FORGE_AGENT)
+    assert fields["skills"] == ["cpv-the-skills-menu"]
+
+
+def test_forge_agent_declares_no_tools_field() -> None:
+    """No `tools` field: the agent inherits every tool, including Skill, which it needs to load chapters."""
+    fields, _ = _split(FORGE_AGENT)
+    assert "tools" not in fields
+
+
+def test_forge_agent_first_paragraph_is_the_dynamic_loading_instruction() -> None:
+    """The body opens with one H1 line, then CPV's mandatory dynamic-loading paragraph verbatim."""
+    _, body = _split(FORGE_AGENT)
+    paragraphs = [p.strip() for p in body.strip().split("\n\n")]
+    assert paragraphs[0].startswith("# ") and "\n" not in paragraphs[0], "the body does not open with an H1 line"
+    assert paragraphs[1] == DYNAMIC_LOADING_PARAGRAPH
+
+
+def test_forge_agent_names_the_menu_and_its_heading() -> None:
+    """The body names the preloaded skill in prose and quotes the menu's real H1 for the report's first line."""
+    _, body = _split(FORGE_AGENT)
+    prose = re.sub(r"```.*?```", "", body, flags=re.DOTALL)
+    assert "cpv-the-skills-menu" in prose
+    assert _h1(MENU) in body, "the report first-line example quotes a heading the menu no longer has"
+
+
+def test_menu_frontmatter_follows_the_cpv_spec() -> None:
+    """The menu is a reference skill: CPV's name and description, not user-invocable, read-only tools."""
+    fields, _ = _split(MENU / "SKILL.md")
+    assert fields["name"] == "cpv-the-skills-menu"
+    assert fields["user-invocable"] is False
+    assert fields["allowed-tools"] == "Read"
+    assert fields["description"] == (
+        "Dynamic skill menu for this plugin. Teaches agents which skills are available, when to use them, "
+        "and how to load them with the Skill() tool. Use when an agent needs to pick a downstream skill at "
+        "runtime. Used by every agent in this plugin via cpv-the-skills-menu method."
+    )
+
+
+def test_menu_skill_md_names_every_chapter_exactly_once() -> None:
+    """The SKILL.md summary tables list each chapter skill once, by its namespaced name."""
+    rows = _menu_table_skills((MENU / "SKILL.md").read_text(encoding="utf-8"))
+    assert len(rows) == len(set(rows)), "a chapter appears twice in the menu tables"
+    assert sorted(rows) == _expected_chapter_names()
+
+
+def test_menu_catalog_names_every_chapter_exactly_once() -> None:
+    """The full catalog has exactly one `### <namespace>:<chapter>` entry per chapter skill."""
+    headings = re.findall(r"^### (.+)$", MENU_CATALOG.read_text(encoding="utf-8"), re.M)
+    assert len(headings) == len(set(headings)), "a chapter has two catalog entries"
+    assert sorted(headings) == _expected_chapter_names()
+
+
+def test_every_menu_skill_call_uses_the_manifest_namespace() -> None:
+    """Every Skill() call in the menu loads a chapter as <plugin.json name>:<chapter> or a tool skill by bare name."""
+    namespace = _namespace()
+    # The Instructions step shows the generic form with a `<skill>` placeholder; it must carry the namespace too.
+    allowed = {f"{namespace}:{name}" for name in DOC_SKILLS} | set(TOOL_SKILLS) | {f"{namespace}:<skill>"}
+    skill_text = (MENU / "SKILL.md").read_text(encoding="utf-8")
+    catalog_text = MENU_CATALOG.read_text(encoding="utf-8")
+    bad = sorted({target for text in (skill_text, catalog_text) for target in SKILL_CALL.findall(text)} - allowed)
+    assert not bad, f"Skill() calls with an unknown or wrongly namespaced target: {bad}"
+    assert sorted(LOAD_WITH.findall(catalog_text)) == _expected_chapter_names(), "a catalog entry lacks its Load with line"
+    assert sorted(LOAD_WITH.findall(skill_text)) == sorted(TOOL_SKILLS), "the standalone entries lack Load with lines"
+
+
+def test_menu_standalone_section_lists_exactly_the_tool_skills() -> None:
+    """The Standalone Skills section names the four user-scope tool skills, by bare name, and nothing else."""
+    text = (MENU / "SKILL.md").read_text(encoding="utf-8")
+    section = text.split("\n## Standalone Skills\n", 1)[1].split("\n## Plugin Skills\n", 1)[0]
+    assert sorted(re.findall(r"^### (.+)$", section, re.M)) == sorted(TOOL_SKILLS)
+
+
+def test_menu_does_not_list_itself() -> None:
+    """The menu is not an entry of its own catalog: loading it from itself would be a no-op loop."""
+    for path in (MENU / "SKILL.md", MENU_CATALOG):
+        text = path.read_text(encoding="utf-8")
+        assert f"{_namespace()}:cpv-the-skills-menu" not in text, f"{path.name} lists the menu"
+        assert not re.search(r"^### cpv-the-skills-menu$", text, re.M), f"{path.name} lists the menu"
+        assert not re.search(r'Skill\(\{skill: "cpv-the-skills-menu"', text), f"{path.name} loads the menu"
+
+
+def test_menu_resources_link_the_catalog_and_it_exists() -> None:
+    """Resources links references/skills-catalog.md, and that file ships."""
+    text = (MENU / "SKILL.md").read_text(encoding="utf-8")
+    resources = text.split("\n## Resources\n", 1)[1].split("\n## ", 1)[0]
+    assert "](references/skills-catalog.md)" in resources
+    assert MENU_CATALOG.is_file()
+
+
+def test_menu_skill_body_is_under_500_lines() -> None:
+    """CPV rejects a SKILL.md over 500 lines (MAJOR); the full entries belong in the catalog reference."""
+    _, body = _split(MENU / "SKILL.md")
+    assert len(body.splitlines()) < 500

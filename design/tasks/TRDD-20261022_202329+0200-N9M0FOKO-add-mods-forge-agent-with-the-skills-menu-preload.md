@@ -1,0 +1,62 @@
+---
+trdd-id: N9M0FOKO
+title: Add mods-forge-agent with the skills-menu preload
+column: dev
+status: tasked
+created: 2026-10-22T20:23:29+0200
+updated: 2026-10-22T20:23:38+0200
+current-owner: main-agent@emasoft-mods-expert-developer
+created-by: main-agent@emasoft-mods-expert-developer
+task-type: feature
+min-approval-requirement: none
+assignee: main-agent@emasoft-mods-expert-developer
+mandate: true
+mandated-by: none
+approved: true
+approval-judge: main-agent@emasoft-mods-expert-developer
+approval-datetime: 2026-10-22T20:23:29+0200
+---
+
+# Add mods-forge-agent with the skills-menu preload
+
+## STATE
+
+CURRENT STATE 2026-10-22: in implementation by a dispatched worker (build spec docs_dev/20261022-forge-agent-build-spec.md, plus the orchestrator's amendment to section 2). NEXT ACTION: orchestrator reviews the worker report under reports/mods-forge-agent/, then commits.
+
+## User directive
+
+- "you must create a specialized subagent in the plugin that will be used to execute the mod forging and editing operations. it must have opus 5.5 model and must have the skill-menu as integrated skill in the frontmatter, so it can use all the knowledge it needs to create/edit/fix/debug the mods." (2026-10-22)
+
+## Design
+
+- New plugin agent agents/mods-forge-agent.md, invoked as `mods-expert-developer-plugin:mods-forge-agent`. Frontmatter: name mods-forge-agent; model claude-opus-5-5; skills [cpv-the-skills-menu] only; no tools field. Description (orchestrator amendment 2026-10-22): "Hands-on Claude Code mod builder: creates, edits, fixes and debugs mods (hooks modules, commands, panes) — one planned TRDD increment or one concrete fix/debug request per dispatch — testing on both the terminal and Desktop surfaces and returning a report path. Not for open-ended product planning; that is mods-expert-developer-agent."
+- Agent body: H1, then CPV's mandatory dynamic-loading paragraph verbatim as the first paragraph; then the report first-line rule (running model plus the H1 of the preloaded menu), one unit of work per dispatch (a planned TRDD increment, or a concrete fix/debug request: reproduce first, then fix the root cause) with a PLAN, IMPLEMENT, VERIFY loop per step, both surfaces identically (shared elements only, one render path, plain hotkeys, absolute binaries via hooks/resolve-bin.ts, pane tests on terminal and desktop at narrow and wide widths), the measured mods API constraints, on-demand tool skills (tldr-code, fastedit, jgrep, quicksilver; missing means BLOCKED), optional delegation of read-only scans, never commit/stage/push/publish/delete, live-login checks reported as BLOCKED, report under reports/mods-forge-agent/, Opus cost note.
+- New skill skills/cpv-the-skills-menu/: SKILL.md with the CPV-spec frontmatter (user-invocable false, allowed-tools Read), the structural sections, Standalone Skills (the four user-scope tool skills) and a domain-grouped Plugin Skills summary table naming each of the 61 chapter skills once with its namespaced name; full per-skill entries (Use when, Do not use when, Load with, Inputs, Outputs, Dependencies) in references/skills-catalog.md, derived from each chapter SKILL.md only. The menu does not list itself. Ships agents/openai.yaml like the chapter skills.
+- Tests: CATALOG_SKILLS = {"cpv-the-skills-menu"} in both test files (copies asserted equal); every chapter-enumerating test excludes it; new tests pin the forge agent frontmatter and first paragraph, the menu completeness in both files, the namespace read from plugin.json, no self-listing, the Resources link, the 500-line body limit.
+- Docs: README Components (forge agent, its role versus the expert agent, the menu, the Opus cost), plugin.json description without the stale chapter count, one DELEGATION.md sentence on the skills-menu bullet, .cspell.json words if needed.
+- Not touched: agents/mods-expert-developer-agent.md (owner decision open on CO536FX9 box 7). No version bump, no commit, no publish.
+
+## Acceptance checklist
+
+- [ ] agents/mods-forge-agent.md exists with model claude-opus-5-5, skills [cpv-the-skills-menu], no tools field, the amended description, and the mandatory paragraph right after the H1
+- [ ] skills/cpv-the-skills-menu/SKILL.md and references/skills-catalog.md each name every chapter skill exactly once, use the plugin.json namespace on every Load with line, and do not list the menu itself
+- [ ] SKILL.md body under 500 lines and under the 5000-token budget
+- [ ] tests updated with CATALOG_SKILLS and the new tests, each shown to fail on a broken scratch copy, then pass
+- [ ] uv run pytest passes on the whole suite
+- [ ] claude plugin validate . passes, or a login failure is reported as such
+- [ ] ruff and cspell clean on changed files
+- [ ] CPV strict (the publish.py command, CPV v5.22.3) shows no new finding against the CRITICAL=0 MAJOR=0 MINOR=0 NIT=0 baseline, output saved under reports/cpv/
+- [ ] README, plugin.json and DELEGATION.md updated
+
+## Approval log
+
+- 2026-10-22T20:23:29+0200 — MANDATE issued by main-agent@emasoft-mods-expert-developer (min-approval-requirement: none). Pre-approved: issuer authority >= required approver. No approval request was sent.
+- 2026-10-22T20:23:34+0200 — column → approval by main-agent@emasoft-mods-expert-developer. user directive 2026-10-22
+- 2026-10-22T20:23:34+0200 — column → design by main-agent@emasoft-mods-expert-developer. user directive 2026-10-22
+- 2026-10-22T20:23:35+0200 — column → design_ai_review by main-agent@emasoft-mods-expert-developer. user directive 2026-10-22
+- 2026-10-22T20:23:35+0200 — column → design_human_review by main-agent@emasoft-mods-expert-developer. user directive 2026-10-22
+- 2026-10-22T20:23:36+0200 — column → todo by main-agent@emasoft-mods-expert-developer. user directive 2026-10-22
+- 2026-10-22T20:23:36+0200 — column → verify_assumptions by main-agent@emasoft-mods-expert-developer. user directive 2026-10-22
+- 2026-10-22T20:23:37+0200 — column → plan by main-agent@emasoft-mods-expert-developer. user directive 2026-10-22
+- 2026-10-22T20:23:37+0200 — column → dispatch by main-agent@emasoft-mods-expert-developer. user directive 2026-10-22
+- 2026-10-22T20:23:38+0200 — column → dev by main-agent@emasoft-mods-expert-developer. user directive 2026-10-22

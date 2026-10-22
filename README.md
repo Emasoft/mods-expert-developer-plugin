@@ -5,11 +5,16 @@
 ![License](https://img.shields.io/badge/license-MIT-green)
 <!--BADGES-END-->
 
-A Claude Code plugin that bundles an expert agent and 60 Claude Code documentation chapters plus one how-to (mods, plugins, hooks, skills, subagents, marketplaces, settings). Use it to create, fix, improve and evaluate Claude Code mods and plugins.
+A Claude Code plugin that bundles two agents (an expert agent that plans and evaluates, and a forge agent that builds), a skills menu, and 60 Claude Code documentation chapters plus one how-to (mods, plugins, hooks, skills, subagents, marketplaces, settings). Use it to create, fix, improve and evaluate Claude Code mods and plugins.
 
 ## Components
 
-Agent: `mods-expert-developer-plugin:mods-expert-developer-agent`
+Agents:
+
+- `mods-expert-developer-plugin:mods-expert-developer-agent` plans, evaluates and drives mod work: TRDD proposals, the PLAN, IMPLEMENT, VERIFY loop, delegation. It declares all 61 chapter skills in its frontmatter; Claude Code preloads the first 32.
+- `mods-expert-developer-plugin:mods-forge-agent` is the hands-on builder: it creates, edits, fixes and debugs mods (hooks modules, commands, panes), one planned TRDD increment or one concrete fix/debug request per dispatch, tests them on both the terminal and Desktop surfaces, and returns a report path. It never commits, publishes or deletes. It preloads only the skills menu and loads each chapter on demand. It is pinned to Opus 5.5 (`model: claude-opus-5-5`), so every dispatch is billed at Opus rates whatever model the calling session runs; on Bedrock or Vertex that model ID differs and the harness may fall back to the inherited model.
+
+Skills menu: the `cpv-the-skills-menu` skill (`skills/cpv-the-skills-menu/SKILL.md`) is the forge agent's only preload. It names every chapter skill once with its namespaced name, grouped by domain, plus the four user-scope tool skills; the full per-skill entries are in `skills/cpv-the-skills-menu/references/skills-catalog.md`. It is a catalogue of the chapters, not a chapter, so it has no row in the table below.
 
 Skills: plugin skills are namespaced `mods-expert-developer-plugin:<skill>` and are reference-only (`user-invocable: false`). Sixty wrap a documentation chapter; `mods-doc-run-background-sessions` wraps an original community how-to.
 
@@ -79,7 +84,7 @@ Skills: plugin skills are namespaced `mods-expert-developer-plugin:<skill>` and 
 
 ## Prerequisites
 
-The agent uses the user-scope skills `tldr-code`, `fastedit`, `jgrep` and `quicksilver`, and delegates to the user-scope agents `fast-worker` and `cheap-worker`. These are NOT bundled with this plugin, and they are NOT preloaded: the agent resolves each one's installed location and loads it on demand, because a preload of a skill this plugin does not ship is silently skipped by Claude Code. Without them the agent reports `[BLOCKED]`. Node is also required.
+Both agents use the user-scope skills `tldr-code`, `fastedit`, `jgrep` and `quicksilver`, and the expert agent delegates to the user-scope agents `fast-worker` and `cheap-worker`. These are NOT bundled with this plugin, and they are NOT preloaded: each agent loads them on demand, because a preload of a skill this plugin does not ship is silently skipped by Claude Code. Without them an agent reports `[BLOCKED]`. Node is also required.
 
 ## Installation
 
@@ -105,6 +110,14 @@ mods-expert-developer-plugin:mods-expert-developer-agent
 
 Give it a task such as creating a new mod, fixing a broken plugin hook, or reviewing a plugin manifest. The agent plans with TRDD proposals, loads only the chapter skills it needs, and verifies each step before moving on.
 
+To execute one planned increment or one concrete fix or debug request, dispatch the forge agent instead:
+
+```text
+mods-expert-developer-plugin:mods-forge-agent
+```
+
+Give it the TRDD card or the failure to fix. Commit a checkpoint before each dispatch: the forge agent never commits, and it returns only a status line and the path of its report under `reports/mods-forge-agent/`.
+
 ## Validate
 
 ```bash
@@ -113,13 +126,14 @@ claude plugin validate .
 
 ## Adding or reordering a skill
 
-Four artifacts list the skills, and the plugin's tests require specific relationships
+Five artifacts list the skills, and the plugin's tests require specific relationships
 between them. A skill addition is not one edit:
 
 1. `skills/<name>/SKILL.md` — the wrapper, with its `skills/<name>/references/chapter.md` and `skills/<name>/agents/openai.yaml`.
 2. `README.md` — a row in the Components table above. The table must cover every skill exactly once, its heading column must match each SKILL.md's H1, and it is ordered by heading (case-insensitive) — deliberately NOT the same order as the frontmatter.
 3. `agents/mods-expert-developer-agent.md` — an entry in the `skills:` frontmatter AND a row in the "Chapter skill index" table, at the same position in the same order, so the two copies of the routing order agree. The body table must cover every skill exactly once, and its label column must match each SKILL.md's H1.
 4. `PINNED_PRELOAD_SKILLS` in `tests/test_skills_menu.py` — the set of skills occupying the first 32 frontmatter entries, which are the ones Claude Code preloads in full. It is mirrored as a set, not a list: reordering within the window does not change it, but adding a skill at position 30 or earlier pushes another skill out, and the set must be updated to match. Read the frontmatter's own diff too, since the set records the membership and not which member was displaced. The user-scope tool skills are deliberately NOT in the frontmatter, so they never occupy a window slot; `tests/test_skills_menu.py` asserts their absence.
+5. `skills/cpv-the-skills-menu/` — a row in the right domain table of its `SKILL.md` and a full entry in `skills/cpv-the-skills-menu/references/skills-catalog.md`, both under the namespaced name `mods-expert-developer-plugin:<name>` and derived only from the new skill's own `SKILL.md`. The tests require each chapter skill exactly once in both files. A skill that catalogues the chapters instead of wrapping one goes into `CATALOG_SKILLS`, which both test files define and assert equal.
 
 Then run the tests:
 

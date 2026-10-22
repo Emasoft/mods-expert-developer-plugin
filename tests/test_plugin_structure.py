@@ -1,8 +1,9 @@
 """Structural tests for mods-expert-developer-plugin.
 
-The plugin ships no executable code: its behaviour IS its file layout (one agent
-that declares 61 routing skills, 60 wrapping an adapted documentation chapter and
-one wrapping a community how-to).
+The plugin ships no executable code: its behaviour IS its file layout (an expert agent
+that declares 61 routing chapter skills, 60 wrapping an adapted documentation chapter and
+one wrapping a community how-to; a forge agent that preloads only the skills menu,
+skills/cpv-the-skills-menu, which catalogues those 61 chapters and is not itself a chapter).
 These tests pin the invariants that make that layout work, so a later edit that
 breaks routing or progressive discovery fails the publish gate instead of
 shipping silently.
@@ -22,6 +23,11 @@ ROOT = Path(__file__).resolve().parent.parent
 SKILLS = ROOT / "skills"
 AGENT = ROOT / "agents/mods-expert-developer-agent.md"
 SKILL_DIRS = sorted(d for d in SKILLS.iterdir() if d.is_dir())
+# Skills that CATALOGUE the chapters instead of wrapping one: they ship no references/chapter.md,
+# are not routed by the expert agent and have no README Components row. Every chapter-enumerating
+# test iterates CHAPTER_DIRS. tests/test_skills_menu.py keeps an identical copy and asserts the two agree.
+CATALOG_SKILLS = {"cpv-the-skills-menu"}
+CHAPTER_DIRS = [d for d in SKILL_DIRS if d.name not in CATALOG_SKILLS]
 # Chapter TOCs use "* " (the marker of the Anthropic body, so markdownlint MD004 stays consistent);
 # the SKILL.md copy keeps "- ". Entries are compared by indent, title and anchor, not by marker.
 CHAPTER_TOC_ENTRY = re.compile(r"^( *)[-*] \[(.+)\]\(#([^)\s]+)\)$")
@@ -60,11 +66,14 @@ def _chapter_toc(chapter: str) -> list[tuple[str, str, str]]:
 
 
 def test_every_skill_ships_wrapper_chapter_and_policy() -> None:
-    """Every skill directory ships SKILL.md, references/chapter.md and agents/openai.yaml."""
-    assert len(SKILL_DIRS) == 61
+    """Every skill ships SKILL.md and agents/openai.yaml; every chapter skill also ships references/chapter.md."""
+    assert len(SKILL_DIRS) == 62
+    assert len(CHAPTER_DIRS) == 61
     for skill in SKILL_DIRS:
-        for rel in ("SKILL.md", "references/chapter.md", "agents/openai.yaml"):
+        for rel in ("SKILL.md", "agents/openai.yaml"):
             assert (skill / rel).is_file(), f"{skill.name} lacks {rel}"
+    for skill in CHAPTER_DIRS:
+        assert (skill / "references/chapter.md").is_file(), f"{skill.name} lacks references/chapter.md"
 
 
 def test_background_sessions_chapter_carries_its_banner_and_caller_guard() -> None:
@@ -98,7 +107,7 @@ def test_skill_frontmatter_name_matches_directory(skill: Path) -> None:
     assert fields["user-invocable"] == "false"
 
 
-@pytest.mark.parametrize("skill", SKILL_DIRS, ids=lambda d: d.name)
+@pytest.mark.parametrize("skill", CHAPTER_DIRS, ids=lambda d: d.name)
 def test_skill_md_embeds_complete_chapter_toc(skill: Path) -> None:
     """SKILL.md carries every chapter TOC entry, in order, linked into references/chapter.md."""
     chapter_toc = _chapter_toc((skill / "references" / "chapter.md").read_text(encoding="utf-8"))
@@ -111,18 +120,18 @@ def test_skill_md_embeds_complete_chapter_toc(skill: Path) -> None:
 
 
 def test_agent_preloads_every_skill_and_only_existing_ones() -> None:
-    """The agent skills list names each of the 61 skills exactly once and no missing one."""
+    """The expert agent skills list names each of the 61 chapter skills exactly once and no missing one."""
     text = AGENT.read_text(encoding="utf-8")
     block = text[4 : text.index("\n---\n", 4)]
     listed = re.findall(r"^  - (mods-doc-[a-z0-9-]+)$", block, re.M)
     assert len(listed) == len(set(listed)), "duplicate skill in agent skills list"
-    assert sorted(listed) == [d.name for d in SKILL_DIRS]
+    assert sorted(listed) == [d.name for d in CHAPTER_DIRS]
 
 
 def test_readme_lists_every_skill() -> None:
-    """README Components table has a row for every skill directory."""
+    """README Components table has a row for every chapter skill directory."""
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
-    for skill in SKILL_DIRS:
+    for skill in CHAPTER_DIRS:
         assert f"| {skill.name} |" in readme, f"README misses {skill.name}"
 
 
