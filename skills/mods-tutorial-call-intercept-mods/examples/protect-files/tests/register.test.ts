@@ -1,11 +1,16 @@
 import { expect, test } from 'claude-code/testing'
 
-// Stub $.store with a Map, as mods-doc-mods-testing does in "Test a drawing".
-function stubStore(on: any, saved: Map<string, unknown>, writes: string[] = []) {
+// Stub $.store with a Map, as mods-doc-mods-testing does in "Test a drawing". A stub is named after the API call without `$.` (mods-doc-mods-testing chapter.md:70 and :112), so store.delete answers $.store.delete; the chapter's examples show only get and set.
+function stubStore(on: any, saved: Map<string, unknown>, writes: string[] = [], deletes: string[] = []) {
   on('store.get', (_: unknown, e: any) => ({ value: saved.get(e.key) }))
   on('store.set', (_: unknown, e: any) => {
     writes.push(e.key)
     saved.set(e.key, e.value)
+    return { value: undefined }
+  })
+  on('store.delete', (_: unknown, e: any) => {
+    deletes.push(e.key)
+    saved.delete(e.key)
     return { value: undefined }
   })
 }
@@ -114,11 +119,11 @@ test('a stored relative entry starting with .. is a damaged list: reported, left
 
   const r = await $.command.run({ command: 'protect-files-paths', args: 'add /p/.env' })
   expect(r.text).toContain('damaged')
-  expect(r.text).toContain('/protect-files off')
+  expect(r.text).toContain('/protect-files-paths reset')
   expect(writes).toEqual([])
   const denied = await $.tool.call({ tool: 'Write', file_path: '/p/.env', content: 'x' })
   expect(denied.deny).toContain('damaged')
-  expect(denied.deny).toContain('/protect-files off')
+  expect(denied.deny).toContain('/protect-files-paths reset')
   expect(tool.ran).toBe(0)
 })
 
@@ -147,8 +152,42 @@ test('a damaged stored list is reported by the paths command and not overwritten
 
   const r = await $.command.run({ command: 'protect-files-paths', args: 'add /p/.env' })
   expect(r.text).toContain('damaged')
-  expect(r.text).toContain('/protect-files off')
+  expect(r.text).toContain('/protect-files-paths reset')
   expect(saved.get('protect-files.paths')).toBe('oops')
+})
+
+test('/protect-files-paths reset deletes a damaged list and the next Write is allowed', async ($, on) => {
+  const saved = new Map<string, unknown>([['protect-files.paths', 'oops']])
+  const writes: string[] = []
+  const deletes: string[] = []
+  stubStore(on, saved, writes, deletes)
+  const tool = stubTool(on)
+
+  const before = await $.tool.call({ tool: 'Write', file_path: '/p/ok.txt', content: 'x' })
+  expect(before.deny).toContain('damaged')
+  const r = await $.command.run({ command: 'protect-files-paths', args: 'reset' })
+  expect(r.text).toBe('protect-files: the protected list was cleared')
+  expect(deletes).toEqual(['protect-files.paths'])
+  expect(writes).toEqual([])
+  expect(saved.has('protect-files.paths')).toBe(false)
+  const after = await $.tool.call({ tool: 'Write', file_path: '/p/ok.txt', content: 'x' })
+  expect(after.deny).toBeUndefined()
+  expect(tool.ran).toBe(1)
+})
+
+test('reset on a valid list deletes it and the next Write to a formerly protected path is allowed', async ($, on) => {
+  const saved = new Map<string, unknown>([['protect-files.paths', ['/p/.env']]])
+  const deletes: string[] = []
+  stubStore(on, saved, [], deletes)
+  const tool = stubTool(on)
+
+  const before = await $.tool.call({ tool: 'Write', file_path: '/p/.env', content: 'x' })
+  expect(before.deny).toBeDefined()
+  await $.command.run({ command: 'protect-files-paths', args: 'reset' })
+  expect(deletes).toEqual(['protect-files.paths'])
+  const after = await $.tool.call({ tool: 'Write', file_path: '/p/.env', content: 'x' })
+  expect(after.deny).toBeUndefined()
+  expect(tool.ran).toBe(1)
 })
 
 test('session.start registers both commands', async ($, on) => {

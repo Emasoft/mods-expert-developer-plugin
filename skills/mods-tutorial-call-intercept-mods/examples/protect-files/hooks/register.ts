@@ -7,7 +7,7 @@ export const register: Register = (on) => {
     // Register commands last: a throw here skips the rest of the hook (mods-doc-mods-api chapter.md:49).
     // $.command.register and its fields name, description, argumentHint: mods-doc-mods-api chapter.md:34.
     await $.command.register({ name: 'protect-files', description: 'Turn the protected-files guard on or off', argumentHint: '[on|off]' })
-    await $.command.register({ name: 'protect-files-paths', description: 'Manage the protected paths', argumentHint: 'add <path> | remove <path> | list' })
+    await $.command.register({ name: 'protect-files-paths', description: 'Manage the protected paths', argumentHint: 'add <path> | remove <path> | list | reset' })
     // next(e) passes the event on unchanged (mods-doc-mods-reference chapter.md:69; session.start row at :136).
     return next(e)
   })
@@ -22,7 +22,7 @@ export const register: Register = (on) => {
     if ('usage' in result) return { text: result.usage }
     await $.store.set(ENABLED_KEY, result.enabled)
     await $.ui.toast(result.enabled ? 'protect-files on' : 'protect-files off')
-    // {} answers the command with no text (mods-doc-mods-reference chapter.md:113).
+    // {} is an allowed command.run answer (mods-doc-mods-reference chapter.md:113).
     return {}
   })
 
@@ -32,12 +32,20 @@ export const register: Register = (on) => {
     // A damaged value is reported and left alone: replacing it with an empty list would silently
     // drop every protection the user thought was set.
     const current = readList(stored)
+    // A damaged list is not an empty one: parse with [] only so that reset is recognised; every other verb on a damaged list is refused below.
+    const result = parseManage(e.args, current ?? [])
+    // reset deletes the key ($.store.delete: mods-doc-mods-interfaces chapter.md:192). The store is this plugin's own, so no
+    // other mod can clear it (mods-doc-mods-api chapter.md:280). It works on a damaged list too: it is the way out of one,
+    // and a delete is explicit, unlike the overwrite that add/remove must never do.
+    if ('reset' in result) {
+      await $.store.delete(PATHS_KEY)
+      return { text: result.text }
+    }
     if (current === undefined) return { text: DAMAGED_LIST_TEXT }
-    const result = parseManage(e.args, current)
     if ('usage' in result) return { text: result.usage }
     // An answer with no paths (a refused entry) leaves the store untouched.
     if ('paths' in result) await $.store.set(PATHS_KEY, result.paths)
-    // { text } answers the command with a line (mods-doc-mods-reference chapter.md:113).
+    // { text } is an allowed command.run answer (mods-doc-mods-reference chapter.md:113).
     return { text: result.text }
   })
 

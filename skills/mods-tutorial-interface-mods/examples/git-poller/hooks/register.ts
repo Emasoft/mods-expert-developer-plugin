@@ -88,7 +88,8 @@ async function startPolling($: EngineInterface): Promise<void> {
     const enabled = await isEnabled($)
     if (gen !== switchGen) return
     await update($, view, (v) => (v.enabled === enabled ? v : { ...v, enabled }))
-    if (enabled) await refresh($)
+    // A command that ran between the update and the refresh must not get a stale poll (it would cost one wasted git call; the band stays hidden either way). No test opens this window.
+    if (enabled && gen === switchGen) await refresh($)
   } catch {
     // Same as pollIfEnabled: no caller to throw to.
   }
@@ -150,7 +151,7 @@ export const register: Register = (on) => {
     if (action.enabled) void pollIfEnabled($)
     // No $.ui.invalidate call: a ui.render hook that read an atom runs again each time the atom is
     // written (mods-doc-mods-interfaces chapter.md:798), and the update above writes the atom ui.render reads.
-    // {} answers the command with no text (mods-doc-mods-reference chapter.md:113).
+    // {} is an allowed command.run answer (mods-doc-mods-reference chapter.md:113).
     return {}
   })
 

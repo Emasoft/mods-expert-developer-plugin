@@ -6,11 +6,11 @@ export const ENABLED_KEY = 'protect-files.enabled'
 export const PATHS_KEY = 'protect-files.paths'
 
 export const SWITCH_USAGE = 'usage: /protect-files [on|off]'
-export const PATHS_USAGE = 'usage: /protect-files-paths add <path> | remove <path> | list'
+export const PATHS_USAGE = 'usage: /protect-files-paths add <path> | remove <path> | list | reset'
 export const DAMAGED_LIST_TEXT =
-  // Way out: /protect-files off lets calls through, and a mod can clear the key with $.store.delete (documented at
-  // mods-doc-mods-interfaces chapter.md:192, where the example clears a stored count).
-  'protect-files: the stored list is damaged, so it was left unchanged. Run /protect-files off to continue working, then delete the protect-files.paths key from a mod with $.store.delete.'
+  // Way out: /protect-files-paths reset clears the key with $.store.delete (mods-doc-mods-interfaces chapter.md:192;
+  // the store is this plugin's own, mods-doc-mods-api chapter.md:280), and /protect-files off lets calls through meanwhile.
+  'protect-files: the stored list is damaged, so it was left unchanged. Run /protect-files-paths reset to clear it; that removes every protected path, so add the ones you need again (or run /protect-files off to continue without the guard).'
 
 /**
  * Normalises a path for comparison. It DOES: turn backslashes into slashes,
@@ -94,8 +94,8 @@ export function checkTarget(target: unknown, stored: unknown): string | undefine
   }
   const entries = readList(stored)
   if (entries === undefined) {
-    // The same way out as DAMAGED_LIST_TEXT ($.store.delete: mods-doc-mods-interfaces chapter.md:192).
-    return 'protect-files: the protected list is damaged, so this call was not allowed. Run /protect-files off to continue working, then delete the protect-files.paths key from a mod with $.store.delete.'
+    // The same way out as DAMAGED_LIST_TEXT (reset uses $.store.delete: mods-doc-mods-interfaces chapter.md:192; own store: mods-doc-mods-api chapter.md:280).
+    return 'protect-files: the protected list is damaged, so this call was not allowed. Run /protect-files-paths reset to clear it; that removes every protected path, so add the ones you need again (or run /protect-files off to continue without the guard).'
   }
   // A relative target cannot be checked against an absolute entry: the working directory is unknown here.
   if (!normalizePath(target).startsWith('/') && entries.some((x) => normalizePath(x).startsWith('/'))) {
@@ -119,14 +119,16 @@ export function parseSwitch(args: string, current: boolean): SwitchResult {
 }
 
 /** A result with no `paths` is an answer only: the caller must not touch the store. */
-export type ManageResult = { paths: string[]; text: string } | { text: string } | { usage: string }
+export type ManageResult = { paths: string[]; text: string } | { reset: true; text: string } | { text: string } | { usage: string }
 
-/** `/protect-files-paths add|remove <path>` and `list`. */
+/** `/protect-files-paths add|remove <path>`, `list` and `reset`. */
 export function parseManage(args: string, current: readonly string[]): ManageResult {
   const trimmed = args.trim()
   const space = trimmed.search(/\s/)
   const verb = (space === -1 ? trimmed : trimmed.slice(0, space)).toLowerCase()
   const rest = space === -1 ? '' : trimmed.slice(space).trim()
+  // The caller deletes the key: an explicit delete, not an overwrite, so it also works on a damaged list.
+  if (verb === 'reset' && rest === '') return { reset: true, text: 'protect-files: the protected list was cleared' }
   if (verb === 'list' && rest === '') {
     // Text only, no paths: the caller must not write the list back on a read-only command.
     return { text: current.length === 0 ? 'No protected paths' : current.join('\n') }

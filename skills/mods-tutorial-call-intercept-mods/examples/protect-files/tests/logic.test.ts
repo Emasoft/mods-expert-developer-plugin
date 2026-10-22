@@ -49,8 +49,8 @@ test('checkTarget fails closed on a missing target or a damaged list', () => {
   expect(checkTarget(undefined, [])).toContain('no file path')
   expect(checkTarget('/a', 'oops')).toContain('damaged')
   // The refusal names the way out
+  expect(checkTarget('/a', 'oops')).toContain('/protect-files-paths reset')
   expect(checkTarget('/a', 'oops')).toContain('/protect-files off')
-  expect(checkTarget('/a', 'oops')).toContain('$.store.delete')
   expect(checkTarget('/a', [1])).toContain('damaged')
   expect(checkTarget('/a', ['../x'])).toContain('damaged')
   expect(checkTarget('/a', undefined)).toBeUndefined()
@@ -70,13 +70,16 @@ test('parseSwitch toggles, sets, and answers usage', () => {
   expect(parseSwitch('maybe', true)).toEqual({ usage: 'usage: /protect-files [on|off]' })
 })
 
-test('parseManage adds, removes, lists, and answers usage', () => {
+test('parseManage adds, removes, lists, resets, and answers usage', () => {
   expect(parseManage('add ./a/b/', [])).toMatchObject({ paths: ['a/b'] })
   expect(parseManage('add a/b', ['a/b'])).toMatchObject({ paths: ['a/b'], text: 'a/b is already protected' })
   expect(parseManage('remove a/b', ['a/b', 'c'])).toMatchObject({ paths: ['c'] })
   expect(parseManage('remove zzz', ['c'])).toMatchObject({ paths: ['c'], text: 'zzz was not in the list' })
   // list answers with text only: a result with paths would make the caller write the list back
   expect(parseManage('list', ['c'])).toEqual({ text: 'c' })
-  expect(parseManage('add', [])).toEqual({ usage: 'usage: /protect-files-paths add <path> | remove <path> | list' })
+  expect(parseManage('add', [])).toEqual({ usage: 'usage: /protect-files-paths add <path> | remove <path> | list | reset' })
+  // reset is its own kind: the caller deletes the key instead of writing paths
+  expect(parseManage('reset', ['c'])).toEqual({ reset: true, text: 'protect-files: the protected list was cleared' })
+  expect(parseManage('reset x', [])).toHaveProperty('usage')
   expect(parseManage('bogus x', [])).toHaveProperty('usage')
 })

@@ -168,10 +168,11 @@ test('a startup read that /git-poller off overtook does not switch the band back
   // The session.start kick reads the store (still on) and waits for the answer: the stub holds it back.
   s.store.slowNext = true
   await $.session.start(START)
+  // The kick really read the store before the switch: the stub cleared its hold.
+  expect(s.store.slowNext).toBe(false)
   const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
   // The user switches off while the kick's read is in flight; the held-back read still answers true.
   await $.command.run({ command: 'git-poller', args: 'off' })
-  expect(s.store.slowNext).toBe(false)
   for (let i = 0; i < 3; i++) await s.clock.advance(1000)
   await s.clock.settle()
   expect(await ui.find({ type: 'Text', text: 'main' })).toBeUndefined()

@@ -14,7 +14,7 @@ Path matching is pure logic in `hooks/logic.ts`.
 - Fail closed: a call with no string `file_path`, or a stored list that is not a list of strings, is refused. So is a relative `file_path` while any absolute entry exists, because it cannot be compared with it.
 - A stored list counts as damaged when it is not a list of strings, and also when it holds a relative entry whose normalised form starts with `..` (for example `../x`): such an entry can never match.
 - While the list is damaged every `Edit` and `Write` is refused, and `/protect-files-paths` answers that the list is damaged and leaves it as it is.
-- The way out: run `/protect-files off` to continue working (off lets every call through), then delete the `protect-files.paths` key from a mod with `$.store.delete` (shown in mods-doc-mods-interfaces, chapter.md:192). Both refusal texts say so.
+- The way out: `/protect-files-paths reset` clears the list; it removes every protected path, valid ones included, so add the ones you need again (`$.store.delete`, shown in mods-doc-mods-interfaces, chapter.md:192; the store is this plugin's own, so no other mod can clear it, mods-doc-mods-api chapter.md:280). Reset is an explicit delete, so it works on a damaged list, while add and remove never overwrite one. `/protect-files off` lets calls through meanwhile. Both refusal texts say so.
 - `/..` is not a damaged entry: it normalises to `/`, which protects everything.
 - `/protect-files-paths list` only shows the list and never writes it back.
 - Not covered: `MultiEdit`, `NotebookEdit`, and `Bash` (a shell command can still write a protected file). Add them to the matcher if your build names them as tool names.
@@ -31,6 +31,7 @@ Off is a deliberate policy: `/protect-files off` lets every call through untouch
 | `/protect-files-paths add <path>` | Add a path (stored normalised). |
 | `/protect-files-paths remove <path>` | Remove a path. |
 | `/protect-files-paths list` | Show the list. |
+| `/protect-files-paths reset` | Delete the stored list, valid entries included (also when it is damaged). |
 
 Store keys: `protect-files.enabled` (boolean), `protect-files.paths` (string array).
 
@@ -43,8 +44,8 @@ Constants exported from `hooks/logic.ts`:
 | `ENABLED_KEY` | `'protect-files.enabled'` | The `$.store` key of the switch; a missing key means on |
 | `PATHS_KEY` | `'protect-files.paths'` | The `$.store` key of the protected list; a missing key means empty |
 | `SWITCH_USAGE` | `'usage: /protect-files [on\|off]'` | The answer to an unknown switch argument |
-| `PATHS_USAGE` | `'usage: /protect-files-paths add <path> \| remove <path> \| list'` | The answer to an unknown paths argument |
-| `DAMAGED_LIST_TEXT` | the damaged-list message | The answer of `/protect-files-paths` when the stored list is not a string array or holds a relative entry that starts with `..`; it tells the user to run `/protect-files off`, then delete the `protect-files.paths` key with `$.store.delete` |
+| `PATHS_USAGE` | `'usage: /protect-files-paths add <path> \| remove <path> \| list \| reset'` | The answer to an unknown paths argument |
+| `DAMAGED_LIST_TEXT` | the damaged-list message | The answer of `/protect-files-paths` when the stored list is not a string array or holds a relative entry that starts with `..`; it tells the user to run `/protect-files-paths reset`, which removes every protected path (or `/protect-files off` to continue without the guard) |
 
 ## House conventions it follows
 
@@ -61,6 +62,7 @@ Constants exported from `hooks/logic.ts`:
 - `tests/register.test.ts`: the fail-closed test makes `$.store.get` reject with a stub `{ deny }`. The testing chapter shows `{ deny }` for any mods API call that should fail; that it reaches this hook as a rejection before `next` is not shown there.
 - The `.catch` branch that keeps the result when `next.called` is true has no test: the kit offers no deterministic way to make this hook throw after `next` was called (a stub that throws is skipped, and the test then fails instead of reaching the hook). The branch is untested.
 - Letter case is not folded and symlinks are not followed: how a given disk resolves them was not tested.
+- Whether Claude itself can run a mod's commands is not checked here. If it can, `/protect-files off` and `/protect-files-paths reset` are both ways around the guard.
 
 ## Remove it
 

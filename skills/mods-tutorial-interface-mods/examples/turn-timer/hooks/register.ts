@@ -28,7 +28,7 @@ export const register: Register = (on) => {
   // e.args is the text typed after the command name, or an empty string (mods-doc-mods-api chapter.md:40).
   on('command.run', { command: 'turn-timer' }, async ($, e) => {
     const choice = parseSwitch(e.args, await isEnabled($))
-    // { text } answers the command with a line (mods-doc-mods-reference chapter.md:113).
+    // { text } is an allowed command.run answer (mods-doc-mods-reference chapter.md:113).
     if (choice === null) return { text: USAGE }
     // $.store.set(key, value) takes any JSON value (mods-doc-mods-interfaces chapter.md:744).
     await $.store.set(ENABLED_KEY, choice)
@@ -38,7 +38,7 @@ export const register: Register = (on) => {
     // notification (mods-doc-mods-api chapter.md:222).
     await $.ui.status(choice ? 'on' : 'off')
     await $.ui.toast('turn-timer ' + (choice ? 'on' : 'off'))
-    // {} answers the command with no text (mods-doc-mods-reference chapter.md:113).
+    // {} is an allowed command.run answer (mods-doc-mods-reference chapter.md:113).
     return {}
   })
 
