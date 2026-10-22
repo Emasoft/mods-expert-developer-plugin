@@ -46,10 +46,12 @@ TUTORIAL_EXAMPLES = {
 # The first body paragraph of every tutorial, verbatim: it tells an agent the chapters win and the examples never load.
 TUTORIAL_NOTICE = (
     "Tutorial and reference example only. The mods-doc-* chapter skills of this plugin are authoritative and win on"
-    " any disagreement, with one exception: for API names and shapes, the type files your running build generates win,"
-    " because events and methods change across releases (chapter skill mods-doc-mods-development, chapter.md line"
-    " 291). The example code under examples/ is for reading and copying into your own project; it is never"
-    " installed or loaded as part of this plugin. Do not point --plugin-dir at a copy inside the plugin cache."
+    " any disagreement, with one exception: for API names and type shapes (event, method and argument names and their"
+    " TypeScript types), the type files your running build generates win, because events and methods change across"
+    " releases (chapter skill mods-doc-mods-development, section \"Change and test a mod\"); for behaviour the types"
+    " cannot express (ordering, timing, what next does) the chapters still win. The example code under examples/ is for"
+    " reading and copying into your own project; it is never installed or loaded as part of this plugin. Do not point"
+    " --plugin-dir at a copy inside the plugin cache."
 )
 # File types that count as example code for the placement rule.
 CODE_SUFFIXES = {".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".mts", ".cts", ".sh", ".json"}

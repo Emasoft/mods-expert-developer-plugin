@@ -8,7 +8,7 @@ metadata:
 
 # MODS TUTORIAL QUICKSTART
 
-Tutorial and reference example only. The mods-doc-* chapter skills of this plugin are authoritative and win on any disagreement, with one exception: for API names and shapes, the type files your running build generates win, because events and methods change across releases (chapter skill mods-doc-mods-development, chapter.md line 291). The example code under examples/ is for reading and copying into your own project; it is never installed or loaded as part of this plugin. Do not point --plugin-dir at a copy inside the plugin cache.
+Tutorial and reference example only. The mods-doc-* chapter skills of this plugin are authoritative and win on any disagreement, with one exception: for API names and type shapes (event, method and argument names and their TypeScript types), the type files your running build generates win, because events and methods change across releases (chapter skill mods-doc-mods-development, section "Change and test a mod"); for behaviour the types cannot express (ordering, timing, what next does) the chapters still win. The example code under examples/ is for reading and copying into your own project; it is never installed or loaded as part of this plugin. Do not point --plugin-dir at a copy inside the plugin cache.
 
 ## Overview
 
@@ -50,9 +50,9 @@ The example mods live in two sibling tutorials: `mods-tutorial-call-intercept-mo
 | A `Client` module path must be a string literal | UNVERIFIED. |
 | `tsc` rejects a mount target unless `props` are the site's full props; copy the `PANE` constant of `notes-pane` | UNVERIFIED. |
 | `claude plugin test` reports `the rollout switch served off` for users on an LLM gateway | UNVERIFIED. |
-| A `*` hook also fires while the mods API is being built at `engine.create`, when `$` has no members yet | UNVERIFIED. The reference lists the `engine.create` event (`mods-doc-mods-reference`, chapter.md line 176) but says nothing about `*` hooks there. |
-| Testing a mod that relies on a second mod requires the second plugin to be installed and seated first | UNVERIFIED. The events chapter says only that dependency order follows the manifest `dependencies` list (`mods-doc-mods-and-events`, chapter.md line 311). |
-| Loading the built-in `plugin-authoring` skill starts the dev-mods watch | UNVERIFIED. The development chapter says only that the first saved file prompts to enable hot reloading (`mods-doc-mods-development`, chapter.md line 45), so step 1 stays. |
+| A `*` hook also fires while the mods API is being built at `engine.create`, when `$` has no members yet | UNVERIFIED. The reference lists the `engine.create` event (`mods-doc-mods-reference`, section "Other mods") but says nothing about `*` hooks there. |
+| Testing a mod that relies on a second mod requires the second plugin to be installed and loaded first | UNVERIFIED. The events chapter says only that dependency order follows the manifest `dependencies` list (`mods-doc-mods-and-events`, section "The order mods run in"). |
+| Loading the built-in `plugin-authoring` skill starts the dev-mods watch | UNVERIFIED. The development chapter says only that the first saved file prompts to enable hot reloading (`mods-doc-mods-development`, section "Ask Claude for a mod"). Load the skill as step 1 says, and expect the hot-reload prompt on your first save. |
 
 ### Example index
 
@@ -80,8 +80,8 @@ A mod folder of your own that passes `claude plugin validate` and `claude plugin
 
 ## Error Handling
 
-- A chapter and this tutorial disagree: follow the chapter, and treat the tutorial line as stale. The one exception is API names and shapes: there the type files your running build generates win (see the notice at the top of this skill).
-- The early-access flag `CLAUDE_CODE_ENABLE_FUNCTION_HOOKS` is still set: Claude Code v2.1.287 and later ignores it at any value, so `0` does not turn mods off; remove it (`mods-doc-mods-overview`, chapter.md line 131; `mods-doc-manage-mods-for-organizations`, chapter.md line 65).
+- A chapter and this tutorial disagree: follow the chapter, and treat the tutorial line as stale. The one exception is API names and type shapes (event, method and argument names and their TypeScript types): there the type files your running build generates win (see the notice at the top of this skill), while for behaviour the types cannot express (ordering, timing, what next does) the chapters still win.
+- The early-access flag `CLAUDE_CODE_ENABLE_FUNCTION_HOOKS` is still set: Claude Code v2.1.287 and later ignores it at any value, so `0` does not turn mods off; remove it (`mods-doc-mods-overview`, section "Turn mods on or off"; `mods-doc-manage-mods-for-organizations`, section "Stop user-installed mods from loading").
 - A step fails or a hook never fires: load `mods-doc-mods-troubleshooting` and start at "Find out why a mod does nothing".
 - An UNVERIFIED trap matters to your mod: test it on your build before you rely on it, and prefer the documented call the Status column names.
 
