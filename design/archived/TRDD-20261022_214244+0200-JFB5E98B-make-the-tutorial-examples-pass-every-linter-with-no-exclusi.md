@@ -1,10 +1,10 @@
 ---
 trdd-id: JFB5E98B
 title: Make the tutorial examples pass every linter with no exclusion
-column: todo
-status: tasked
+column: complete
+status: archived
 created: 2026-10-22T21:42:44+0200
-updated: 2026-10-22T22:16:07+0200
+updated: 2026-10-22T22:24:57+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: refactor
@@ -15,12 +15,13 @@ mandated-by: none
 approved: true
 approval-judge: main-agent@emasoft-mods-expert-developer
 approval-datetime: 2026-10-22T21:42:44+0200
+implementation-commits: [daa20cf, d4760f2, e397753]
 ---
 
 # Make the tutorial examples pass every linter with no exclusion
 
 ## STATE
-CURRENT STATE 2026-10-22: exclusions removed in daa20cf; review fixes to the guard tests pending commit; NEXT ACTION: commit, publish 0.3.2, check the CI MegaLinter log, tick box 6, move to complete. Order after this card: TRDD-BNBDNR2V, then TRDD-H26OG8AP.
+CURRENT STATE 2026-10-22: complete — released in 0.3.2.
 
 ## Owner policy (verbatim, source: Emasoft/claude-plugins-validation issue 257, quoting the owner)
 > never bypass or suppress any validation. if there are false positives, improve the detection code instead, to be more precise in identifying threats.
@@ -37,7 +38,7 @@ Also the owner's standing constraint in this project: no CPV consent or waiver f
 - One increment per linter (cspell, markdownlint, shfmt, jscpd), each reviewed and committed separately.
 - No PRRD exists, so no relevant-rules.
 - Also move the four verbatim-quote misspellings (aestetically, seamlessy, precius, techniues) out of .cspell.json ignoreWords into per-card cspell:ignore comments (done 2026-10-22, see below).
-<!-- cspell:ignore aestetically seamlessy precius techniues -->
+<!-- cspell:ignore aestetically seamlessy precius techniues unexcluded -->
 - No TypeScript/JavaScript linter is enabled for any file in this repo, so none is excluded for the examples.
 - No example file was modified by this card; NOTICE's existing smoke.sh sentence stays accurate.
 
@@ -47,7 +48,7 @@ Also the owner's standing constraint in this project: no CPV consent or waiver f
 - [x] Tests that pinned the exclusions (MEGALINTER_EXAMPLES_EXCLUDES, the path-form regex test) now assert the exclusion is absent.
 - [x] TypeScript/JavaScript example files: either a TS/JS linter is enabled for them, or the card records why none applies.
 - [x] NOTICE lists every modified example file with its change.
-- [ ] uv run pytest, the CI-parity preflight (cpv-remote-validate plugin . --strict) and CI MegaLinter pass with no exclusion and no waiver.
+- [x] uv run pytest, the CI-parity preflight (cpv-remote-validate plugin . --strict) and CI MegaLinter pass with no exclusion and no waiver.
 - [x] BDY6ZNDZ's Approval log records that its box 7 is superseded by this card.
 
 ## Approval log
@@ -57,3 +58,6 @@ Also the owner's standing constraint in this project: no CPV consent or waiver f
 - 2026-10-22 orchestrator: measurement reports/measure/20261022_220536+0200-jscpd-examples-no-exclusions.md: jscpd 0 new clones, markdownlint 0, shfmt 0, cspell 1 (AKIA, added to words); the examples stay verbatim except smoke.sh's prior shfmt reformat.
 - 2026-10-22 orchestrator: review of daa20cf applied — guard tests now probe every example file in three path forms and match ignore globs; TS/JS ban dropped as beyond rationale; CPV 26->25 warnings: RC-PIPELINE-DRIFT-001 (.mega-linter.yml differs from the canonical CPV standard) disappeared. No ticked box claims CI, MegaLinter or all-linters-pass, so none was unticked. Spell-check .json files stay out of the example probe because the pinned canon skips every .json repo-wide.
 - 2026-10-22 orchestrator: 0.3.2 publish blocked by cspell on a word in the report filename; report renamed to ...-no-exclusions.md. Review of d4760f2 applied: .json exemption narrowed to the canon pattern, ADDITIONAL_EXCLUDED_DIRECTORIES checked by path segment, empty-list guards; the .mega-linter.yml comment moved to the test because it re-triggered RC-PIPELINE-DRIFT-001.
+- 2026-10-22 orchestrator: box 6 — pytest 241, CPV strict 0 errors/25 warnings, publish preflight PARITY-CLEAN, 0.3.2 released and CI run 39847748399 green; CI lints changed files only (VALIDATE_ALL_CODEBASE false), so whole-example evidence is local: markdownlint-cli2 exit 0, 0 issues (reports/measure/20261022_222344+0200-ex-markdownlint.txt); cspell exit 0, 16 files, 0 issues (reports/measure/20261022_222344+0200-ex-cspell.txt); shfmt -d exit 0, 0 diffs on 1 .sh file (reports/measure/20261022_222344+0200-ex-shfmt.txt); shellcheck exit 0, 0 findings (reports/measure/20261022_222344+0200-ex-shellcheck.txt); json.tool exit 0 on 15 .json files, 0 errors (reports/measure/20261022_222344+0200-ex-json.txt); jscpd 29 repo clones, 0 involve an examples path (reports/measure/20261022_222344+0200-ex-jscpd.txt).
+- 2026-10-22 orchestrator: commit daa20cf's message cites the report under its pre-rename name reports/measure/20261022_220536+0200-jscpd-examples-unexcluded.md; the same report is reports/measure/20261022_220536+0200-jscpd-examples-no-exclusions.md (a copy exists under both names in gitignored reports/measure/).
+- 2026-10-22T22:24:57+0200 — COMPLETE by main-agent@emasoft-mods-expert-developer. archived as complete (from column todo).
