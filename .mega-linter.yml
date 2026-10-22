@@ -47,19 +47,22 @@ REPOSITORY_CHECKOV_ARGUMENTS: "--skip-check CKV2_GHA_1"
 
 # Markdown settings — allow long lines in README (badges).
 # Single-quoted so the regex \. is read literally by yamllint.
-MARKDOWN_MARKDOWNLINT_FILTER_REGEX_EXCLUDE: '(CHANGELOG\.md|skills/[^/]+/examples/)'
+MARKDOWN_MARKDOWNLINT_FILTER_REGEX_EXCLUDE: '(CHANGELOG\.md|(^|/)skills/mods-tutorial-[^/]+/examples/)'
 
 # Spell check — single-quoted so the regex \. is read literally by yamllint.
-SPELL_CSPELL_FILTER_REGEX_EXCLUDE: '(uv\.lock|\.json|skills/[^/]+/examples/)'
+SPELL_CSPELL_FILTER_REGEX_EXCLUDE: '(uv\.lock|\.json|(^|/)skills/mods-tutorial-[^/]+/examples/)'
 
 # Tutorial example mods (TRDD-BDY6ZNDZ, DECISION in its Design section).
 # The code under skills/<tutorial>/examples/ is copied verbatim from
 # BeLazy167/claude-mods-skill and kept faithful to it, so only the cosmetic
 # linters (shfmt, jscpd, cspell, markdownlint) skip it. It stays under
 # shellcheck, jsonlint and CPV strict. .cspell.json and .jscpd.json carry the
-# same exclusion.
-BASH_SHFMT_FILTER_REGEX_EXCLUDE: 'skills/[^/]+/examples/'
-COPYPASTE_JSCPD_FILTER_REGEX_EXCLUDE: 'skills/[^/]+/examples/'
+# same exclusion. The excludes use (^|/) rather than ^ because MegaLinter
+# may hand the filter a path starting skills/, ./skills/ or an absolute
+# workspace path; (^|/) matches all three while staying narrowed to the
+# tutorials.
+BASH_SHFMT_FILTER_REGEX_EXCLUDE: '(^|/)skills/mods-tutorial-[^/]+/examples/'
+COPYPASTE_JSCPD_FILTER_REGEX_EXCLUDE: '(^|/)skills/mods-tutorial-[^/]+/examples/'
 
 # Disable reporters that create PR comments (we handle that ourselves).
 # Issue #29 (v2.97.0): the deprecated DISABLE_REPORTERS list form fails

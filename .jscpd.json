@@ -23,7 +23,7 @@
     "**/__fixtures__/**",
     "**/testdata/**",
     "**/fixtures/**",
-    "**/skills/*/examples/**",
+    "**/skills/mods-tutorial-*/examples/**",
     "**/node_modules/**",
     "**/.git/**"
   ]

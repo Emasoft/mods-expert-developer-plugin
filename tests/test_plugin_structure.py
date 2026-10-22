@@ -222,7 +222,7 @@ PINNED_CSPELL_IGNORE_PATHS = [
     "**/testdata/**",
     "**/fixtures/**",
     # TRDD-BDY6ZNDZ DECISION: cspell skips the verbatim tutorial example mods; see .mega-linter.yml.
-    "**/skills/*/examples/**",
+    "**/skills/mods-tutorial-*/examples/**",
 ]
 
 
@@ -249,7 +249,7 @@ PINNED_JSCPD_IGNORE = [
     "**/testdata/**",
     "**/fixtures/**",
     # TRDD-BDY6ZNDZ DECISION: jscpd skips the verbatim tutorial example mods; see .mega-linter.yml.
-    "**/skills/*/examples/**",
+    "**/skills/mods-tutorial-*/examples/**",
     "**/node_modules/**",
     "**/.git/**",
 ]
@@ -389,3 +389,147 @@ def test_readme_lists_the_tutorials_as_reference_only() -> None:
     assert "do not replace the chapter skills" in section
     for name in sorted(TUTORIAL_SKILLS):
         assert f"`{name}`" in section, f"README Tutorials section misses {name}"
+
+
+# --- review fixes after ed3dc13 (TRDD-BDY6ZNDZ) -------------------------------
+#
+# The lint exclusions must reach only the verbatim tutorial examples, the licence must travel with the copies, and
+# nothing the plugin loads may point into skills/*/examples/. Each assertion below was proven to fail on a broken
+# copy (see reports/mods-tutorials/*-review-fixes.md).
+
+# The tutorials' exclude regex. (^|/) rather than ^ because MegaLinter may hand the filter a path starting skills/,
+# ./skills/ or an absolute workspace path; (^|/) matches all three while staying narrowed to the tutorials.
+EXAMPLES_EXCLUDE = r"(^|/)skills/mods-tutorial-[^/]+/examples/"
+MEGALINTER_EXAMPLES_EXCLUDES = {
+    "MARKDOWN_MARKDOWNLINT_FILTER_REGEX_EXCLUDE": r"(CHANGELOG\.md|(^|/)skills/mods-tutorial-[^/]+/examples/)",
+    "SPELL_CSPELL_FILTER_REGEX_EXCLUDE": r"(uv\.lock|\.json|(^|/)skills/mods-tutorial-[^/]+/examples/)",
+    "BASH_SHFMT_FILTER_REGEX_EXCLUDE": EXAMPLES_EXCLUDE,
+    "COPYPASTE_JSCPD_FILTER_REGEX_EXCLUDE": EXAMPLES_EXCLUDE,
+}
+# Linters that read TypeScript or JavaScript would lint the examples; none may be enabled without the same exclude.
+TS_JS_LINTER_PREFIXES = ("TYPESCRIPT_", "JAVASCRIPT_", "JSX_", "TSX_")
+TS_JS_DESCRIPTORS = ("TYPESCRIPT", "JAVASCRIPT", "JSX", "TSX")
+
+def test_mega_linter_example_excludes_are_anchored_to_the_tutorials() -> None:
+    """Every per-linter examples exclude equals the pinned regex anchored on skills/mods-tutorial-*/examples/."""
+    config = yaml.safe_load((ROOT / ".mega-linter.yml").read_text(encoding="utf-8"))
+    for key, expected in MEGALINTER_EXAMPLES_EXCLUDES.items():
+        assert config[key] == expected, f"{key} is {config.get(key)!r}, expected {expected!r}"
+
+
+def test_no_ts_or_js_linter_is_enabled_without_the_tutorial_exclude() -> None:
+    """A TypeScript/JavaScript linter that MegaLinter would run needs its own (^|/)-anchored examples exclude."""
+    config = yaml.safe_load((ROOT / ".mega-linter.yml").read_text(encoding="utf-8"))
+    # Without ENABLE_LINTERS and ENABLE, MegaLinter runs every linter of the flavor, TypeScript and JavaScript included.
+    assert "ENABLE_LINTERS" in config or "ENABLE" in config, "no ENABLE_LINTERS or ENABLE: every linter would run"
+    for linter in config.get("ENABLE_LINTERS", []):
+        if linter.startswith(TS_JS_LINTER_PREFIXES):
+            key = f"{linter}_FILTER_REGEX_EXCLUDE"
+            assert config.get(key) == EXAMPLES_EXCLUDE, f"{linter} lints the examples"
+    for descriptor in config.get("ENABLE", []):
+        if descriptor in TS_JS_DESCRIPTORS:
+            key = f"{descriptor}_FILTER_REGEX_EXCLUDE"
+            assert config.get(key) == EXAMPLES_EXCLUDE, f"{descriptor} lints the examples"
+
+
+@pytest.mark.parametrize("key", sorted(MEGALINTER_EXAMPLES_EXCLUDES))
+def test_examples_exclude_regexes_match_every_path_form_and_only_the_tutorials(key: str) -> None:
+    """Each examples exclude matches skills/, ./skills/ and absolute paths of a tutorial example, and nothing else."""
+    regex = re.compile(MEGALINTER_EXAMPLES_EXCLUDES[key])
+    for hit in (
+        "skills/mods-tutorial-x/examples/a.md",
+        "./skills/mods-tutorial-x/examples/a.md",
+        "/tmp/lint/skills/mods-tutorial-x/examples/a.md",
+    ):
+        assert regex.search(hit), f"{key} misses {hit}"
+    for miss in ("skills/mods-doc-x/examples/a.md", "skills/mods-tutorial-x/SKILL.md"):
+        assert not regex.search(miss), f"{key} wrongly matches {miss}"
+
+
+@pytest.mark.parametrize("tutorial", ("mods-tutorial-call-intercept-mods", "mods-tutorial-interface-mods"))
+def test_examples_folder_carries_the_source_licence(tutorial: str) -> None:
+    """Each tutorial examples/ folder holds a LICENSE with the BeLazy167 MIT notice, so a copied example keeps it."""
+    example_root = SKILLS / tutorial / "examples"
+    assert example_root.is_dir(), f"{example_root} is missing"
+    licence = example_root / "LICENSE"
+    assert licence.is_file(), f"{licence} is missing"
+    assert "Copyright (c) 2026 BeLazy167" in licence.read_text(encoding="utf-8")
+
+
+def _root_plugin_files(root: Path) -> list[Path]:
+    """The files Claude Code loads from the plugin root: the manifest, hooks/, agents/ and commands/ (skills/ is the discovery folder)."""
+    files = [root / ".claude-plugin" / "plugin.json"]
+    for folder in ("hooks", "agents", "commands"):
+        base = root / folder
+        if base.is_dir():
+            files.extend(sorted(p for p in base.rglob("*") if p.is_file()))
+    return [f for f in files if f.is_file()]
+
+
+def _example_path_references(root: Path) -> list[str]:
+    """Root plugin files that mention a path under skills/<anything>/examples/."""
+    pattern = re.compile(r"skills/[^\s\"'`]*examples/")
+    return [str(f.relative_to(root)) for f in _root_plugin_files(root) if pattern.search(f.read_text(encoding="utf-8"))]
+
+
+def _stray_manifests(skills_root: Path) -> list[str]:
+    """plugin.json files and .claude-plugin folders under skills/ not at skills/<tutorial>/examples/<name>/.claude-plugin/."""
+    stray: list[str] = []
+    for path in sorted(skills_root.rglob("*")):
+        is_manifest = path.is_file() and path.name == "plugin.json"
+        is_manifest_dir = path.is_dir() and path.name == ".claude-plugin"
+        if not (is_manifest or is_manifest_dir):
+            continue
+        parts = path.relative_to(skills_root).parts
+        ok = (
+            len(parts) == (5 if is_manifest else 4)
+            and parts[0].startswith("mods-tutorial-")
+            and parts[1] == "examples"
+            and parts[3] == ".claude-plugin"
+            and (not is_manifest or parts[4] == "plugin.json")
+        )
+        if not ok:
+            stray.append("/".join(parts))
+    return stray
+
+
+def test_root_plugin_does_not_reference_the_examples() -> None:
+    """Nothing the plugin loads (manifest, hooks/, agents/, commands/) points at a path under skills/*/examples/."""
+    assert _example_path_references(ROOT) == []
+
+
+def test_example_manifests_live_only_at_the_copy_and_run_depth() -> None:
+    """Every manifest under skills/ is skills/<tutorial>/examples/<name>/.claude-plugin/plugin.json; none sits elsewhere."""
+    assert _stray_manifests(SKILLS) == []
+
+
+def test_load_guard_detects_references_and_stray_manifests(tmp_path: Path) -> None:
+    """Counter-examples: a root file naming an example path, and manifests at the wrong depth, are reported."""
+    (tmp_path / ".claude-plugin").mkdir()
+    (tmp_path / ".claude-plugin" / "plugin.json").write_text('{"hooks": "skills/mods-tutorial-x/examples/d/hooks.json"}', encoding="utf-8")
+    (tmp_path / "agents").mkdir()
+    (tmp_path / "agents" / "a.md").write_text("see skills/mods-tutorial-x/examples/d/", encoding="utf-8")
+    assert _example_path_references(tmp_path) == [".claude-plugin/plugin.json", "agents/a.md"]
+    good = tmp_path / "skills/mods-tutorial-x/examples/d/.claude-plugin"
+    good.mkdir(parents=True)
+    (good / "plugin.json").write_text("{}", encoding="utf-8")
+    assert _stray_manifests(tmp_path / "skills") == []
+    for bad in ("skills/mods-tutorial-x/.claude-plugin", "skills/mods-doc-y/examples/d/.claude-plugin", "skills/mods-tutorial-x/examples/d/sub/.claude-plugin"):
+        (tmp_path / bad).mkdir(parents=True)
+        (tmp_path / bad / "plugin.json").write_text("{}", encoding="utf-8")
+    assert _stray_manifests(tmp_path / "skills") == [
+        "mods-doc-y/examples/d/.claude-plugin",
+        "mods-doc-y/examples/d/.claude-plugin/plugin.json",
+        "mods-tutorial-x/.claude-plugin",
+        "mods-tutorial-x/.claude-plugin/plugin.json",
+        "mods-tutorial-x/examples/d/sub/.claude-plugin",
+        "mods-tutorial-x/examples/d/sub/.claude-plugin/plugin.json",
+    ]
+
+
+def test_call_intercept_dice_tool_is_a_non_deferred_tool_that_points_at_the_api_chapter() -> None:
+    """The dice-tool line of the call-intercept tutorial keeps isDeferred: false and names mods-doc-mods-api."""
+    skill = (SKILLS / "mods-tutorial-call-intercept-mods" / "SKILL.md").read_text(encoding="utf-8")
+    lines = [line for line in skill.splitlines() if "dice-tool" in line and "isDeferred: false" in line]
+    assert lines, "no dice-tool line carries isDeferred: false"
+    assert any("mods-doc-mods-api" in line for line in lines), "the dice-tool line does not name mods-doc-mods-api"

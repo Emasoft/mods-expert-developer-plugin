@@ -32,7 +32,7 @@ Three small, complete mods that hook `tool.call`, each with its manifest, `hooks
 3. Change the hook body for your case, keeping the pattern the example teaches:
    - `hello-mod`: return `{ deny: '...' }` before `next(e)`. After `next` the tool has already run. Its `.catch` answers `next(e)` when `next.called` is true and refuses otherwise, so a hook that throws does not let the call through. Facts: `mods-doc-mods-and-events`, "Mod ordering and failed hooks".
    - `redact-output`: matcher `{ tool: 'Bash' }`, `const ran = await next(e)`, return `ran` untouched on a deny or `isError`, otherwise return `{ result: { ...ran.result, stdout } }` and show `$.ui.status(...)`. Its `.catch` refuses unconditionally: the command already ran, so the refusal only keeps its output from the model. Facts: `mods-doc-mods-and-events`, "Hook tool calls, prompts, and turns".
-   - `dice-tool`: `await $.tool.register({ name, description, inputSchema })` in `session.start`, then answer `{ result }` or `{ result, isError: true }` from `tool.call`. Facts: `mods-doc-mods-api`, "Add a command or a tool".
+   - `dice-tool`: `await $.tool.register({ name, description, inputSchema })` in `session.start`, then answer `{ result }` or `{ result, isError: true }` from `tool.call`. The dice-tool registration omits `isDeferred: false`; on Claude Code 2.1.293+ add it when Claude must see the tool every turn, see the `mods-doc-mods-api` chapter (Tools). Facts: `mods-doc-mods-api`, "Add a command or a tool".
 4. Run `claude plugin validate` and `claude plugin test` in your copy. Facts: `mods-doc-mods-testing`, "Write a mod test".
 5. Run it live with `claude --plugin-dir <your copy>`.
 

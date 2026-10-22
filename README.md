@@ -92,7 +92,7 @@ Three tutorial skills are reference only: they hold worked examples for agents, 
 
 ## Prerequisites
 
-The expert agent delegates to the user-scope agents `fast-worker` and `cheap-worker`, which are NOT bundled with this plugin. Node is required for the `quicksilver` skill.
+The expert agent delegates to the user-scope agents `fast-worker` and `cheap-worker`, which are NOT bundled with this plugin. Node is required because mods are written in TypeScript and their tests run on Node; the `quicksilver` skill also uses it.
 
 Both agents also use these user-scope skills. They are optional but recommended, they are NOT bundled with this plugin, and they are NOT preloaded (a preload of a skill this plugin does not ship is silently skipped by Claude Code): each agent loads them on demand when installed.
 
