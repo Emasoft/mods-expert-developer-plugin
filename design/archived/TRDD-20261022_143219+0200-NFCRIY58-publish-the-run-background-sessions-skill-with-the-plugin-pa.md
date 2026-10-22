@@ -1,10 +1,10 @@
 ---
 trdd-id: NFCRIY58
 title: Publish the run-background-sessions skill with the plugin passing strict CPV
-column: todo
-status: tasked
+column: complete
+status: archived
 created: 2026-10-22T14:32:19+0200
-updated: 2026-10-22T15:57:07+0200
+updated: 2026-10-22T19:27:47+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -19,7 +19,7 @@ pre-block-column:
 blocked-by: []
 blocker-probe: []
 blocker-holds-if: 
-implementation-commits: [a523c7c, 6891472, c15499a, 1f3c287, 890e4a1, 8783882, 9c623ea, 51ddb08, 4b41493, 739cd60]
+implementation-commits: [a523c7c, 6891472, c15499a, 1f3c287, 890e4a1, 8783882, 9c623ea, 51ddb08, 4b41493, 739cd60, 0028f8a, a0e6767, 6333eb1, 9751e42, 70d0670, 3d45127]
 unblock-when: []
 ---
 
@@ -31,10 +31,11 @@ unblock-when: []
 - 2026-10-22 — OWNER decision, verbatim: "you must decide on everything else. you must do what you think its best! do not ask me anything anymore! publish!"
 - 2026-10-22 — OWNER decision, verbatim: "no exceptions are allowed. delete that file."
 - 2026-10-22 — OWNER decision, verbatim: "use a rewording, or any other trick, but publish the plugin passing all the validation with 0 errors (warning are fine)"
+- 2026-10-22T19:27:47+0200 — COMPLETE by main-agent@emasoft-mods-expert-developer. v0.2.1 published and installed; owner said publish.
 
 ## STATE
 
-CURRENT STATE 2026-10-22 (authoritative; supersedes every STATE line below, kept as history): the owner ruled "no exceptions are allowed"; the CPV audit-consent registry .cpv-audit-consent.json and its test were deleted (commits 9c623ea, 51ddb08). At commit 4b41493 (the chapter commit, message amended; formerly cited as aa3d0d1) the whole-plugin cpv-remote-validate plugin . --strict at the pinned v5.22.3 reports CRITICAL=0 MAJOR=0 MINOR=0 NIT=0 WARNING=23, exit 0 (reports/cpv/strict-after-fixes-9.txt), reached by rewording prose and putting the audit sentence above the flagged fences, not by any waiver. CPV v5.22.4 is released; the pin stays v5.22.3 for this release (passes clean, CI uses the same version). The owner decided: "publish", "you must decide on everything else". NEXT ACTION: (1) the owner retires five files (none is retired yet): tests/test_spec_selfcheck.py (it certifies the obsolete NIT-adjudication spec; the agent removal was denied by the permission classifier), tests/test_spec_selfcheck_coverage.py, scripts/measure_guard_coverage.py, tests/fixtures/cpv-scan-capture.txt and tests/fixtures/skillaudit_patterns.json; commit 114af5e turned tests/test_spec_selfcheck_coverage.py red, so the publish.py test stage passes only after they are retired; (2) uv run python scripts/publish.py publish; (3) reinstall at user scope and confirm the mods-doc-run-background-sessions skill appears after /reload-plugins. HISTORY: skill commits a523c7c, 6891472, c15499a, 1f3c287, 890e4a1 are local on main, unpushed. Blocked by CPV issue Emasoft/claude-plugins-validation#260 (token-minting fence + audit-consent sentence -> WARNING); fix implemented in the CPV session (commits 3eaa6553, aab9b092, not pushed), expected in CPV v5.22.4, waiting on the owner's approval in that session. The CPV session promised to SendMessage the tag.
+CURRENT STATE 2026-10-22 evening (authoritative; supersedes every STATE line below, kept as history): DONE. The owner retired the five files (commit 0028f8a); publish.py released v0.2.0 (6333eb1) and v0.2.1 (bump 3d45127), CI green on both, and v0.2.1 is installed at user scope with the mods-doc-run-background-sessions skill present in the plugin cache. No next action. PREVIOUS STATE 2026-10-22: the owner ruled "no exceptions are allowed"; the CPV audit-consent registry .cpv-audit-consent.json and its test were deleted (commits 9c623ea, 51ddb08). At commit 4b41493 (the chapter commit, message amended; formerly cited as aa3d0d1) the whole-plugin cpv-remote-validate plugin . --strict at the pinned v5.22.3 reports CRITICAL=0 MAJOR=0 MINOR=0 NIT=0 WARNING=23, exit 0 (reports/cpv/strict-after-fixes-9.txt), reached by rewording prose and putting the audit sentence above the flagged fences, not by any waiver. CPV v5.22.4 is released; the pin stays v5.22.3 for this release (passes clean, CI uses the same version). The owner decided: "publish", "you must decide on everything else". NEXT ACTION: (1) the owner retires five files (none is retired yet): tests/test_spec_selfcheck.py (it certifies the obsolete NIT-adjudication spec; the agent removal was denied by the permission classifier), tests/test_spec_selfcheck_coverage.py, scripts/measure_guard_coverage.py, tests/fixtures/cpv-scan-capture.txt and tests/fixtures/skillaudit_patterns.json; commit 114af5e turned tests/test_spec_selfcheck_coverage.py red, so the publish.py test stage passes only after they are retired; (2) uv run python scripts/publish.py publish; (3) reinstall at user scope and confirm the mods-doc-run-background-sessions skill appears after /reload-plugins. HISTORY: skill commits a523c7c, 6891472, c15499a, 1f3c287, 890e4a1 are local on main, unpushed. Blocked by CPV issue Emasoft/claude-plugins-validation#260 (token-minting fence + audit-consent sentence -> WARNING); fix implemented in the CPV session (commits 3eaa6553, aab9b092, not pushed), expected in CPV v5.22.4, waiting on the owner's approval in that session. The CPV session promised to SendMessage the tag.
 Verified 2026-10-22: CPV 5.22.3 strict on the real tree exits 4 only on CLAUDE_CLI_TOKEN_THEFT at chapter.md:36; SHELL_EXEC is a non-blocking WARNING; publish.py passes WARNINGs (blocks only CRITICAL/MAJOR/MINOR/NIT); ruff scripts/ clean; pytest 232 passed.
 NEXT on the tag: (1) a worker bumps the CPV pin v5.22.3 -> the new tag in scripts/publish.py lines 867, 1373, 2386, 2406, 2476, .github/workflows/ci.yml 171 and 197, .github/workflows/release.yml 67 and 95, then commit; (2) run remote_validation.py plugin on the REAL repo with --strict under the new version, gate: no CRITICAL/MAJOR/MINOR/NIT finding; (3) uv run python scripts/publish.py --dry-run, then publish; (4) reinstall the plugin at user scope and confirm the mods-doc-run-background-sessions skill appears after /reload-plugins.
 SUPERSEDED (owner decided 2026-10-22, see the Approval log) - old owner rules: no consent entries in .cpv-audit-consent.json, no rewording to dodge the scanner, no bypass.
@@ -46,3 +47,9 @@ Update 2026-10-22: no CPV release carries the #260 fix yet (latest v5.22.3, issu
 ## Known scanner-forced divergences, do not revert
 
 The 18 chapters intentionally differ from the upstream docs text, so a future upstream sync must re-apply the rewording or strict CPV fails. "Auth errors" (not "Authentication") in the models chapter and "Claude's file-changing tools" (not "the Edit and Write tools") in the memory chapter each produce a NIT when restored. The table cell uses `--permission-mode bypassPermissions`.
+
+## Acceptance checklist
+
+- [x] Strict CPV gate passes with 0 NIT or above and no waiver file (reports/cpv/strict-after-fixes-9.txt)
+- [x] publish.py released the plugin with CI green (v0.2.0 at 6333eb1, v0.2.1 at 3d45127)
+- [x] v0.2.1 installed at user scope with the mods-doc-run-background-sessions skill in the plugin cache
