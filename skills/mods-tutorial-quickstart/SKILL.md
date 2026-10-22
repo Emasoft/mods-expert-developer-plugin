@@ -59,6 +59,9 @@ The example mods live in two sibling tutorials: `mods-tutorial-call-intercept-mo
 | A tool the model can call | `dice-tool` | `mods-tutorial-call-intercept-mods` |
 | A line or band above the prompt | `branch-band` | `mods-tutorial-interface-mods` |
 | A slash command and a pane | `notes-pane` | `mods-tutorial-interface-mods` |
+| A status line and a toast on a transition | `turn-timer` | `mods-tutorial-interface-mods` |
+| Poll a command on a timer | `git-poller` | `mods-tutorial-interface-mods` |
+| Guard files with a stored list | `protect-files` | `mods-tutorial-call-intercept-mods` |
 
 ### Anthropic mods to read next
 
@@ -85,8 +88,8 @@ Input: "show the test status above the prompt". Output: copy `branch-band` from 
 
 ## Resources
 
-- `mods-tutorial-call-intercept-mods`: `hello-mod`, `redact-output` and `dice-tool`, with their code under its examples folder.
-- `mods-tutorial-interface-mods`: `branch-band` and `notes-pane`, with their code under its examples folder.
+- `mods-tutorial-call-intercept-mods`: `hello-mod`, `redact-output`, `dice-tool` and `protect-files`, with their code under its examples folder.
+- `mods-tutorial-interface-mods`: `branch-band`, `notes-pane`, `turn-timer` and `git-poller`, with their code under its examples folder.
 - [house-conventions](references/house-conventions.md): this plugin's own conventions for mods you keep (not Anthropic rules), the `check-mod.sh`, `new-mod.sh` and `keep-mod.sh` scripts, and a table of claims to test on a real build.
   - [How to read this file](references/house-conventions.md#how-to-read-this-file)
   - [An on/off switch](references/house-conventions.md#an-onoff-switch)

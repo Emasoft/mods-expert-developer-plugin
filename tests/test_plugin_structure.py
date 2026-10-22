@@ -40,8 +40,8 @@ TUTORIAL_DIRS = [d for d in SKILL_DIRS if d.name in TUTORIAL_SKILLS]
 # The example mods each tutorial carries under its examples/ folder, by folder name.
 TUTORIAL_EXAMPLES = {
     "mods-tutorial-quickstart": set(),
-    "mods-tutorial-call-intercept-mods": {"hello-mod", "redact-output", "dice-tool"},
-    "mods-tutorial-interface-mods": {"branch-band", "notes-pane"},
+    "mods-tutorial-call-intercept-mods": {"hello-mod", "redact-output", "dice-tool", "protect-files"},
+    "mods-tutorial-interface-mods": {"branch-band", "notes-pane", "turn-timer", "git-poller"},
 }
 # The first body paragraph of every tutorial, verbatim: it tells an agent the chapters win and the examples never load.
 TUTORIAL_NOTICE = (

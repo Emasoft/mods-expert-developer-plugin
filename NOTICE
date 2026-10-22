@@ -1,7 +1,7 @@
 NOTICE
 
 The MIT license in LICENSE applies to every file in this repository authored by Emasoft, that is,
-every file except skills/*/references/chapter.md and the example code under skills/*/examples/,
+every file except skills/*/references/chapter.md, the five BeLazy167 examples named below and skills/*/examples/LICENSE (the copies of the BeLazy167 MIT license),
 with the one exception noted below. This includes:
   - .claude-plugin/plugin.json
   - agents/mods-expert-developer-agent.md
@@ -20,14 +20,17 @@ only. These files are NOT licensed under MIT and remain subject to Anthropic's o
 The one exception is skills/mods-doc-run-background-sessions/references/chapter.md: it is original
 Emasoft text, a community how-to and not adapted Anthropic documentation, and it is licensed under MIT.
 
-The example mods under skills/mods-tutorial-call-intercept-mods/examples/ and
-skills/mods-tutorial-interface-mods/examples/ are copied from BeLazy167/claude-mods-skill
+The example mods hello-mod, redact-output and dice-tool under skills/mods-tutorial-call-intercept-mods/examples/
+and branch-band and notes-pane under skills/mods-tutorial-interface-mods/examples/ are copied from BeLazy167/claude-mods-skill
 (https://github.com/BeLazy167/claude-mods-skill, commit 396f0d4), and the three
 skills/mods-tutorial-*/SKILL.md tutorials adapt its creating-mods skill. The copies are verbatim
 except examples/hello-mod/smoke.sh, where Emasoft rewrote three lines as if/then/else and then
 reformatted the file with shfmt (tab indentation, one command per line). They are
 included for reference only, are never loaded as part of this plugin, and are licensed under the
-MIT license of that repository, reproduced here:
+MIT license of that repository, reproduced here. The other three examples, turn-timer and git-poller
+under skills/mods-tutorial-interface-mods/examples/ and protect-files under
+skills/mods-tutorial-call-intercept-mods/examples/, are original Emasoft code under the MIT license in LICENSE,
+and each carries its own copy of it. The BeLazy167 MIT license follows:
 
 MIT License
 

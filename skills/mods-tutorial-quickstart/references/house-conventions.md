@@ -107,7 +107,7 @@ These claims come from another author's notes. The chapters neither confirm nor 
 | In a test, a `$.store.get` stub must return `null` for a missing key | UNVERIFIED. |
 | Test files may use static imports only | UNVERIFIED. The chapter refuses dynamic `import()` in a hooks module, not in tests. |
 | The kit `expect` has no `toBeCloseTo` | UNVERIFIED. |
-| A command name must be a literal string for the validator to classify it | UNVERIFIED. |
+| A command name must be a literal string for the validator to classify it | UNVERIFIED. `claude plugin validate` printed `command=?` for a non-literal matcher (observed while writing git-poller); the run-time behaviour is still not checked. |
 | A types contract file with a bare `export {}` is refused | UNVERIFIED. |
 | A `$` call inside a `.catch` handler works as in any other hook | UNVERIFIED. The chapter documents only the 1 second budget of the handler (`mods-doc-mods-reference`, "Limits"). |
 | A call that returns control to the engine is refused when the test stubs no UI drawing | UNVERIFIED. `mods-doc-mods-testing`, "Stub what Claude Code would answer" documents the need for a stub, not the exact refusal text. |

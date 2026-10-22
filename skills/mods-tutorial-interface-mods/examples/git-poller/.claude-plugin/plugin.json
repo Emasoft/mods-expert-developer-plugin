@@ -1,0 +1,10 @@
+{
+  "name": "git-poller",
+  "version": "0.1.0",
+  "description": "Example: band above the prompt with the git branch and changed and untracked counts, refreshed by a poller that follows the house conventions",
+  "author": {
+    "name": "Emasoft"
+  },
+  "license": "MIT",
+  "types": "./types/index.d.ts"
+}

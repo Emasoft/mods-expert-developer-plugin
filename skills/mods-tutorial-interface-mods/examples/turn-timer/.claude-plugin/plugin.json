@@ -1,0 +1,9 @@
+{
+  "name": "turn-timer",
+  "version": "0.1.0",
+  "description": "Example: status line with the last turn duration, and a toast when a turn is slow",
+  "author": {
+    "name": "Emasoft"
+  },
+  "license": "MIT"
+}

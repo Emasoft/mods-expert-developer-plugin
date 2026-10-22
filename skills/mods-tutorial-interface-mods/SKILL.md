@@ -1,6 +1,6 @@
 ---
 name: mods-tutorial-interface-mods
-description: "Use when writing a mod that draws in the interface, a band above the prompt or a pane opened by a slash command, and you want a complete worked example to read and copy. Reference-only tutorial with two example mods; the mods-doc-* chapters stay authoritative."
+description: "Use when writing a mod that draws in the interface, a band above the prompt, a pane opened by a slash command, a status line or a toast, and you want a complete worked example to read and copy. Reference-only tutorial with four example mods; the mods-doc-* chapters stay authoritative."
 user-invocable: false
 metadata:
   coordination: exempt
@@ -12,12 +12,14 @@ Tutorial and reference example only. The mods-doc-* chapter skills of this plugi
 
 ## Overview
 
-Two small, complete mods that draw with `ui.render`, each with its manifest, `hooks.json`, hooks module, types contract and test. They are copied verbatim from BeLazy167/claude-mods-skill (MIT, see NOTICE at the plugin root).
+Four small, complete mods that draw with `ui.render`, each with its manifest, `hooks.json`, hooks module and test, and a types contract where it keeps `$.state`. `branch-band` and `notes-pane` are copied verbatim from BeLazy167/claude-mods-skill (MIT, see NOTICE at the plugin root); `turn-timer` and `git-poller` are written for this plugin and follow its house conventions.
 
 | Example | What it shows |
 |---|---|
 | [branch-band](examples/branch-band/hooks/register.tsx) | A band on `AbovePrompt` that shows the git branch and the count of changed files, refreshed by `$.process.run` on a `$.clock.every` timer started in `session.start`, with the drawn value kept in `$.state` |
 | [notes-pane](examples/notes-pane/hooks/register.tsx) | `/note <text>` and `/notes` registered with `$.command.register`, a `Pane` with a Clear `Button`, and the notes kept across sessions in `$.store` |
+| [turn-timer](examples/turn-timer/hooks/register.ts) | A status line with the duration of the last turn and a toast on the transition to a slow turn, with the logic in a pure `logic.ts`, a `/turn-timer` on/off command and the switch kept in `$.store`; house conventions: on/off command named after the mod, logic split from hooks, main loop only, `// UNVERIFIED:` comments |
+| [git-poller](examples/git-poller/hooks/register.ts) | A band with the branch, changed and untracked counts and a Refresh `Button`, kept current by one poller on a `$.clock.every` timer through `$.process.run`, which runs git with `-C` in the session's directory, with a last good snapshot on error and a `/git-poller` on/off command; `turn.complete` does not wait for git; house conventions: one timer started once, a non-blocking `session.start`, `// UNVERIFIED:` comments |
 
 ## Prerequisites
 
@@ -64,5 +66,7 @@ Input: "a /todo command with a pane listing the items". Output: copy `notes-pane
 
 - [branch-band](examples/branch-band/hooks/register.tsx), [its types](examples/branch-band/types/index.d.ts) and [its test](examples/branch-band/tests/register.test.ts).
 - [notes-pane](examples/notes-pane/hooks/register.tsx), [its types](examples/notes-pane/types/index.d.ts) and [its test](examples/notes-pane/tests/register.test.ts).
+- [turn-timer](examples/turn-timer/hooks/register.ts), [its logic](examples/turn-timer/hooks/logic.ts) and [its test](examples/turn-timer/tests/register.test.ts).
+- [git-poller](examples/git-poller/hooks/register.ts), [its logic](examples/git-poller/hooks/logic.ts), [its types](examples/git-poller/types/index.d.ts) and [its test](examples/git-poller/tests/register.test.ts).
 - `mods-tutorial-quickstart`: the step-by-step checklist and the traps table.
 - Chapter skills: `mods-doc-mods-interfaces`, `mods-doc-mods-basic-examples`, `mods-doc-mods-api`, `mods-doc-mods-testing` and `mods-doc-mods-troubleshooting`.

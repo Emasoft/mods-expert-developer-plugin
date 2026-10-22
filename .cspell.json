@@ -286,6 +286,7 @@
     "mypy",
     "native",
     "newbot",
+    "ngram",
     "nodejs",
     "nohup",
     "NONBLOCKING",

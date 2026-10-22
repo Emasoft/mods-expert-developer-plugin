@@ -1,6 +1,6 @@
 ---
 name: mods-tutorial-call-intercept-mods
-description: "Use when writing a mod that blocks, rewrites or answers tool calls, or adds a tool the model can call, and you want a complete worked example to read and copy. Reference-only tutorial with three example mods; the mods-doc-* chapters stay authoritative."
+description: "Use when writing a mod that blocks, rewrites or answers tool calls, or adds a tool the model can call, and you want a complete worked example to read and copy. Reference-only tutorial with four example mods; the mods-doc-* chapters stay authoritative."
 user-invocable: false
 metadata:
   coordination: exempt
@@ -12,13 +12,14 @@ Tutorial and reference example only. The mods-doc-* chapter skills of this plugi
 
 ## Overview
 
-Three small, complete mods that hook `tool.call`, each with its manifest, `hooks.json`, hooks module and test. They are copied verbatim from BeLazy167/claude-mods-skill (MIT, see NOTICE at the plugin root), apart from one shell fix named below.
+Four small, complete mods that hook `tool.call`, each with its manifest, `hooks.json`, hooks module and test. `hello-mod`, `redact-output` and `dice-tool` are copied verbatim from BeLazy167/claude-mods-skill (MIT, see NOTICE at the plugin root), apart from one shell fix named below; `protect-files` is written for this plugin and follows its house conventions.
 
 | Example | What it shows |
 |---|---|
 | [hello-mod](examples/hello-mod/hooks/register.ts) | A guard: refuse a Bash command before `next`, and a `.catch` that makes the guard fail closed |
 | [redact-output](examples/redact-output/hooks/register.ts) | Rewrite a result after `await next(e)`, answer with a new `{ result }`, and a `.catch` that withholds the raw output |
 | [dice-tool](examples/dice-tool/hooks/register.ts) | Register a tool in `session.start` and serve it from a `tool.call` hook on `mcp__dice-tool__roll` |
+| [protect-files](examples/protect-files/hooks/register.ts) | A fail-closed guard that denies `Edit` and `Write` on a protected path before `next`, with the list kept in `$.store`, `/protect-files` and `/protect-files-paths` commands, path matching in a pure `logic.ts`, a `.catch` that checks `next.called`, and `// UNVERIFIED:` comments |
 
 ## Prerequisites
 
@@ -69,5 +70,6 @@ Input: "let Claude look up a ticket by id". Output: copy `dice-tool`, register a
 - [hello-mod](examples/hello-mod/hooks/register.ts), [its test](examples/hello-mod/tests/register.test.ts) and [smoke.sh](examples/hello-mod/smoke.sh).
 - [redact-output](examples/redact-output/hooks/register.ts) and [its test](examples/redact-output/tests/register.test.ts).
 - [dice-tool](examples/dice-tool/hooks/register.ts) and [its test](examples/dice-tool/tests/register.test.ts).
+- [protect-files](examples/protect-files/hooks/register.ts) and [its test](examples/protect-files/tests/register.test.ts).
 - `mods-tutorial-quickstart`: the step-by-step checklist and the traps table.
 - Chapter skills: `mods-doc-mods-and-events`, `mods-doc-mods-api`, `mods-doc-mods-testing` and `mods-doc-mods-troubleshooting`.
