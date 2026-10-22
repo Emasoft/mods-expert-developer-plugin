@@ -4,7 +4,7 @@ title: Move the CPV pin from v5.22.3 to v5.23.0
 column: backburner
 status: tasked
 created: 2026-10-23T01:09:17+0200
-updated: 2026-10-23T01:13:44+0200
+updated: 2026-10-23T01:32:32+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: infra
@@ -29,9 +29,9 @@ publish.py, .github/workflows/ci.yml and release.yml pin claude-plugins-validati
 ## Steps
 - [ ] Fix the skills-menu TOC finding in this plugin's own files.
 - [ ] Decide and act on the five chapter example paths (file the CPV issue first if it is a detector question).
-- [ ] Re-run v5.23.0 strict on a clean clone until CRITICAL, MAJOR and MINOR are all 0.
-- [ ] Move the pin in publish.py (both occurrences), ci.yml and release.yml in one commit, and publish.
-- [ ] Before moving the pin, bring ci.yml, release.yml and .mega-linter.yml up to the v5.23.0 template and add .ruff.toml and .bandit.yml; review the standardize diff by hand, since it rewrites files.
+- [ ] Bring the pipeline up to the v5.23.0 template: the release ruff command (the template also widens it from scripts/ to the whole repo), the .mega-linter.yml config keys and exclude lists, and new .ruff.toml and .bandit.yml files. Moving the pin itself clears the version-string drift in ci.yml and release.yml, so leave that to the last step. Expect new lint findings: MegaLinter's cspell starts checking JSON files, and the ruff and bandit rule files apply in CI for the first time. Review the standardize diff by hand, since it rewrites files.
+- [ ] Re-run v5.23.0 strict on a clean clone until CRITICAL, MAJOR and MINOR are all 0 and the only RC-PIPELINE-DRIFT-001 warnings left are the version-string ones the last step clears. Also run the new ruff config over the whole repo and MegaLinter's cspell scope on the JSON files locally, and fix what they find without any waiver; CPV strict does not report those.
+- [ ] Move all 9 pins in one commit (at 694d70d: scripts/publish.py lines 867, 1373, 2386, 2406, 2476; .github/workflows/ci.yml 171 and 197; release.yml 67 and 95; grep for 5.22.3 to catch any added since), update the CPV version named in the open boxes of TRDD-GF5UDFWI, TRDD-03IIDGPP, TRDD-J4HRAQF0, TRDD-BDY6ZNDZ and TRDD-N9M0FOKO, then publish.
 
 ## Approval log
 
