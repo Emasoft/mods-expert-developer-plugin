@@ -59,6 +59,14 @@ python_version = "3.12"
 warn_return_any = true
 warn_unused_configs = true
 
+[tool.pytest.ini_options]
+# Bare `pytest` must collect only the shipped suite. Without this, a bare run
+# from the repo root also collects the gitignored scratch dirs (scripts_dev/
+# and the other *_dev/ folders) and aborts on any broken scratch file there,
+# while publish.py and CI run `pytest tests/` and pass. Pinning testpaths
+# makes the local command and the publish gate collect the same tests.
+testpaths = ["tests"]
+
 [tool.pyright]
 pythonVersion = "3.12"
 extraPaths = ["scripts", "tests"]
