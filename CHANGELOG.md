@@ -2,6 +2,42 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.0] — 2026-10-22
+
+### Bug Fixes
+
+- **quickstart:** Claim the keep-mod destination atomically (TRDD-BNBDNR2V) (19ad443)
+- **quickstart:** Make keep-mod failure messages true (TRDD-BNBDNR2V) (79515d5)
+- **quickstart:** Show the real keep-mod failure cause (TRDD-BNBDNR2V) (c31a84b)
+- **quickstart:** Refuse a dangling keep-mod destination before copying (TRDD-BNBDNR2V) (5b0ff02)
+- **tutorials:** Close the round-2 review findings on the new examples (TRDD-BNBDNR2V) (ea55896)
+- **tutorials:** Close the ea55896 review findings on the examples (TRDD-BNBDNR2V) (d5ed2ce)
+- **tutorials:** Give protect-files a working reset and tighten git-poller (TRDD-BNBDNR2V) (02fc9ce)
+- **tutorials:** Make the protect-files README match reset (TRDD-BNBDNR2V) (d82c1e0)
+- **tutorials:** Rewrite spans the no-copy proof flagged and tighten the mod name rule (TRDD-BNBDNR2V) (929f92b)
+- **tutorials:** Clear the six CPV strict findings that blocked the 0.4.0 publish (TRDD-BNBDNR2V) (e8c9347)
+
+### Documentation
+
+- Close TRDD-JFB5E98B after the 0.3.2 release (481744e)
+- Hand two TRDD-JFB5E98B follow-ups to TRDD-H26OG8AP (627e2be)
+- **quickstart:** Add house conventions for mods you keep (TRDD-BNBDNR2V) (5076bbf)
+- **trdd:** Record the final increment-2 evidence on BNBDNR2V (TRDD-BNBDNR2V) (d531732)
+- Add TRDD-71SH1V5W — harvest karanb192 mod-builder ideas (055b073)
+- **trdd:** Apply the 055b073 review to TRDD-71SH1V5W and re-order H26OG8AP (e29f516)
+- **trdd:** Remove the extra blank lines on TRDD-71SH1V5W (da72ab9)
+- **trdd:** Record the increment-2 review fixes on TRDD-BNBDNR2V (1c44d2e)
+- **trdd:** Link d82c1e0 on TRDD-BNBDNR2V (f343a34)
+- **tutorials:** Note where the copied interface examples differ from the house conventions (TRDD-BNBDNR2V) (203c938)
+- **tutorials:** List the new examples, scripts and conventions in the menu and README (TRDD-BNBDNR2V) (858047c)
+- **trdd:** Record increment 3 and the no-copy proof on BNBDNR2V (TRDD-BNBDNR2V) (4ef04b0)
+- **trdd:** Drop a gitignored report filename from the BNBDNR2V evidence (TRDD-BNBDNR2V) (71ed400)
+
+### Features
+
+- **quickstart:** Add check, new and keep scripts for mods (TRDD-BNBDNR2V) (7c3a79e)
+- **tutorials:** Add turn-timer, git-poller and protect-files examples (TRDD-BNBDNR2V) (233b5ab)
+- **agents:** Add a verify-before-you-report section to both agents (TRDD-BNBDNR2V) (6b430f9)
 ## [0.3.2] — 2026-10-22
 
 ### Bug Fixes
@@ -13,6 +49,10 @@ All notable changes to this project will be documented in this file.
 
 - Apply the review fixes to five cards, scope spell ignores per card (b792cd1)
 - Record the passing 0.3.1 post-install check (TRDD-N9M0FOKO) (c1885ed)
+
+### Miscellaneous Tasks
+
+- Bump version to 0.3.2 (143636f)
 
 ### Testing
 
