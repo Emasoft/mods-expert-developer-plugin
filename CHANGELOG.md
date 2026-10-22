@@ -2,6 +2,45 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.0] — 2026-10-22
+
+### Bug Fixes
+
+- **skills:** Read only the token line in the background-sessions how-to (6891472)
+- **skills:** Run the background launch in a subshell and report a missing token (c15499a)
+
+### Documentation
+
+- **card:** Close TRDD-XV6QOEK1 - v0.1.1 shipped the generated changelog (c09b4db)
+- **skills:** Mark the Python launcher with the CPV audit-consent warning (1f3c287)
+- **skills:** Put the token-minting command in its own fenced block (890e4a1)
+- Add TRDD-NFCRIY58 - publish the background-sessions skill once CPV ships the #260 fix (0ed43fe)
+- **card:** TRDD-NFCRIY58 - use the gh: external blocker form, record the doctor bug (2074bd8)
+- **card:** TRDD-NFCRIY58 - add a decision blocker so the card stays blocked (7a0af21)
+- **card:** TRDD-NFCRIY58 - say who clears the decision blocker and on what evidence (c841ea3)
+- **card:** TRDD-NFCRIY58 - require direct proof the #260 fix shipped (f8632ed)
+- **card:** TRDD-NFCRIY58 - separate clearing the decision from the publish gate (543f56c)
+- **card:** TRDD-NFCRIY58 - record the v5.22.3 pin and that publishing still waits on CPV 260 (2280518)
+- **card:** TRDD-NFCRIY58 - NEXT step 1 starts from the v5.22.3 pin (f88bef5)
+- **skills:** Pass strict CPV with no consent file (TRDD-NFCRIY58) (4b41493)
+- **card:** TRDD-NFCRIY58 - ledger and card match the no-exceptions state (114af5e)
+- **card:** TRDD-NFCRIY58 - mark the NIT specs superseded, sweep references (b4947a1)
+
+### Features
+
+- **skills:** Add the run-background-sessions how-to skill (draft checkpoint) (a523c7c)
+
+### Miscellaneous Tasks
+
+- Pin CPV to v5.22.3 to clear the canonical pipeline drift (TRDD-NFCRIY58) (8783882)
+- Delete the CPV audit-consent registry - no exceptions allowed (9c623ea)
+- Remove the orphaned consent-findings fixture (51ddb08)
+- Retire the NIT-adjudication spec self-check (owner ruled no exceptions) (0028f8a)
+- **cspell:** Accept lstrip, sendmessage, testpaths (a0e6767)
+
+### Build
+
+- Make bare pytest collect only tests/ (739cd60)
 ## [0.1.1] — 2026-10-21
 
 ### Bug Fixes
@@ -209,6 +248,7 @@ All notable changes to this project will be documented in this file.
 - **plugin:** Keep the customized release gate out of CPV canon upgrades, and give the floor gap its own card (TRDD-1Y56FYZW) (b0108eb)
 - **spell:** Accept British spelling, ignore TRDD card ids, and add genuine project words (de9834f)
 - **ci:** Pin CPV to v5.22.1, which fixes its self-integrity check (abcfa87)
+- Bump version to 0.1.1 (02b62f3)
 
 ### TRDD-ledger-fix
 
