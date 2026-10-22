@@ -140,10 +140,26 @@ test('/git-poller off removes a mounted band and on brings it back', async ($, o
   await $.command.run({ command: 'git-poller', args: 'off' })
   expect(await ui.find({ type: 'Text', text: 'main' })).toBeUndefined()
   await $.command.run({ command: 'git-poller', args: 'on' })
+  await s.clock.settle()
   expect(await ui.find({ type: 'Text', text: 'main' })).toBeDefined()
   await ui.unmount()
 })
 
+test('a poll that read the store before /git-poller off does not switch the band back on', async ($, on) => {
+  const s = stubs(on)
+  await startSession($, s)
+  const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  // The timer tick reads the store (still on) and waits for the answer: the stub holds it back.
+  s.store.slowNext = true
+  await s.clock.advance(POLL_INTERVAL_MS)
+  // The user switches off while that read is in flight; the held-back read still answers true.
+  await $.command.run({ command: 'git-poller', args: 'off' })
+  expect(await ui.find({ type: 'Text', text: 'main' })).toBeUndefined()
+  for (let i = 0; i < 3; i++) await s.clock.advance(1000)
+  await s.clock.settle()
+  expect(await ui.find({ type: 'Text', text: 'main' })).toBeUndefined()
+  await ui.unmount()
+})
 test('a subagent turn does not refresh', async ($, on) => {
   const s = stubs(on)
   await startSession($, s)
@@ -192,6 +208,7 @@ test('/git-poller off silences every hook and the timer, on brings it back', asy
   expect(await ui.find({ type: 'Text', text: 'main' })).toBeUndefined()
   await ui.unmount()
   await $.command.run({ command: 'git-poller', args: 'on' })
+  await s.clock.settle()
   expect(s.toasts).toEqual(['git-poller off', 'git-poller on'])
   expect(s.calls.length).toBe(before + 1)
 })

@@ -8,6 +8,8 @@ import { ENABLED_KEY, MIN_GAP_MS, MOD_NAME, POLL_INTERVAL_MS, USAGE, gitArgv, is
 // (mods-doc-mods-interfaces chapter.md:740-748 compares module variables, $.state and $.store;
 // the atom, read and update calls are shown at :789).
 // enabled is the off switch copied from the store, so ui.render reads only this atom and never the store.
+// Writers of enabled: the session.start kick (once) and command.run. Nothing else writes it, so a
+// poll that read the store before a /git-poller off cannot write a stale value back over it.
 const view = atom({ plugin: 'git-poller', key: 'view' } as const, { snapshot: null, stale: false, enabled: true } as View)
 
 // Module variables: timers stop when the module reloads (mods-doc-mods-api chapter.md:231) and
@@ -20,6 +22,7 @@ let lastStartedAt: number | null = null
 let timer: ReturnType<EngineInterface['clock']['every']> | null = null
 
 // The store holds the off switch. A missing key means on, so only an explicit false turns the mod off.
+// $.store.get(key) resolves to the value or undefined (mods-doc-mods-interfaces chapter.md:744).
 async function isEnabled($: EngineInterface): Promise<boolean> {
   return (await $.store.get(ENABLED_KEY)) !== false
 }
@@ -47,6 +50,7 @@ async function runGit($: EngineInterface): Promise<void> {
 
 // A refresh that starts while another runs joins it. inflight is assigned synchronously,
 // before any await, so two callers in the same tick cannot both start git.
+// $.clock.now() resolves to the time (mods-doc-mods-testing chapter.md:216).
 function refresh($: EngineInterface): Promise<void> {
   if (inflight !== null) return inflight
   inflight = (async () => {
@@ -58,22 +62,27 @@ function refresh($: EngineInterface): Promise<void> {
   return inflight
 }
 
-// Copies the store switch into the view atom (the only place ui.render reads it from) and
-// returns it. Writes only when it changed, so a poll does not redraw for nothing.
-async function syncEnabled($: EngineInterface): Promise<boolean> {
-  const enabled = await isEnabled($)
-  await update($, view, (v) => (v.enabled === enabled ? v : { ...v, enabled }))
-  return enabled
-}
-
-// Refreshes when the mod is on. runGit already handles git failures; this guards what is left
-// (a rejected store read or clock call) so a background caller never raises an unhandled rejection.
-// The next tick simply tries again.
+// Refreshes when the store switch is on. It only reads the switch and never writes the view atom:
+// the atom is written by command.run and the session.start kick alone (see the comment on `view`).
+// runGit already handles git failures; this guards what is left (a rejected store read or clock
+// call) so a background caller never raises an unhandled rejection. The next tick simply tries again.
 async function pollIfEnabled($: EngineInterface): Promise<void> {
   try {
-    if (await syncEnabled($)) await refresh($)
+    if (await isEnabled($)) await refresh($)
   } catch {
     // Nothing to report to: the timer, turn.complete and the session.start kick have no caller to throw to.
+  }
+}
+
+// The session.start kick: copies the store switch into the view atom once (a restart or reload
+// leaves the atom at its default, so the band would otherwise ignore a stored off), then polls.
+async function startPolling($: EngineInterface): Promise<void> {
+  try {
+    const enabled = await isEnabled($)
+    await update($, view, (v) => (v.enabled === enabled ? v : { ...v, enabled }))
+    if (enabled) await refresh($)
+  } catch {
+    // Same as pollIfEnabled: no caller to throw to.
   }
 }
 
@@ -95,15 +104,17 @@ export const register: Register = (on) => {
     // or skip the command registration below (mods-doc-mods-api chapter.md:208 does the same
     // with its timer: "Return without waiting for the timer, so the session starts right away").
     // It also copies the store switch into the view atom.
-    void pollIfEnabled($)
+    void startPolling($)
     // Register the command last, as the chapter says (mods-doc-mods-api chapter.md:49): a taken
     // name throws, and a hook that throws is skipped, so nothing after this call would run.
+    // The call and its fields: mods-doc-mods-api chapter.md:34.
     await $.command.register({ name: MOD_NAME, description: 'Switch the git working-tree band on or off', argumentHint: '[on|off]' })
     return next(e)
   })
 
   on('turn.complete', async ($, e, next) => {
-    // A subagent's turn fires turn.complete with agentId set: poll for the main loop only.
+    // A subagent's turn fires turn.complete with agentId set: poll for the main loop only
+    // (mods-doc-mods-and-events chapter.md:253, mods-doc-mods-reference chapter.md:85).
     // The refresh is not awaited: turn.complete must not wait for git, so a slow git cannot delay
     // the end of the turn. pollIfEnabled catches its own errors, so nothing is left unhandled.
     if (e.agentId === undefined && isDue(await $.clock.now(), lastStartedAt, MIN_GAP_MS)) void pollIfEnabled($)
@@ -111,16 +122,20 @@ export const register: Register = (on) => {
   })
 
   // A string literal, not MOD_NAME: with a variable, claude plugin validate printed command=? for this hook.
+  // e.args is the text typed after the command name, or an empty string (mods-doc-mods-api chapter.md:40).
   on('command.run', { command: 'git-poller' }, async ($, e) => {
     const action = parseSwitch(e.args, await isEnabled($))
     if (action.kind === 'usage') return { text: USAGE }
+    // $.store.set(key, value) takes any JSON value (mods-doc-mods-interfaces chapter.md:744).
     await $.store.set(ENABLED_KEY, action.enabled)
-    // The band reads the switch from the view atom, so write it here too.
+    // The band reads the switch from the view atom, so write it here too: this is the only writer after start.
     await update($, view, (v) => ({ ...v, enabled: action.enabled }))
+    // $.ui.toast shows a notification with the mod's name (mods-doc-mods-api chapter.md:222).
     await $.ui.toast(MOD_NAME + (action.enabled ? ' on' : ' off'))
-    if (action.enabled) await refresh($)
-    // No invalidate call: the update above writes the atom that ui.render reads, which redraws the band
-    // (the 'off removes a mounted band' test in tests/register.test.ts passes without one).
+    // Not awaited: switching on must not wait for git. pollIfEnabled catches its own errors.
+    if (action.enabled) void pollIfEnabled($)
+    // No $.ui.invalidate call: a ui.render hook that read an atom runs again each time the atom is
+    // written (mods-doc-mods-interfaces chapter.md:798), and the update above writes the atom ui.render reads.
     return {}
   })
 
@@ -140,6 +155,8 @@ export const register: Register = (on) => {
         Text({ children: ' ' }),
         // Letter hotkey: a digit on a band button also fires from an empty prompt.
         // plain: true drops the brackets and shows the hotkey (mods-doc-mods-interfaces chapter.md:398).
+        // The Button props key, label, onPress and hotkey: mods-doc-mods-reference chapter.md:262
+        // and the example at mods-doc-mods-interfaces chapter.md:402.
         Button({ key: 'refresh', label: 'Refresh', hotkey: 'r', plain: true, onPress: async () => { await refresh($) } }),
       ],
     })

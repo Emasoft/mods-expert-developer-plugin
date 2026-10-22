@@ -54,6 +54,7 @@ Run `claude plugin test` in this folder. `tests/logic.test.ts` covers the pure f
 
 - `hooks/register.ts`: the validator printed `command=?` when the `command.run` matcher was a variable, so the matcher is a string literal. Whether a variable would still work at run time was not tested.
 - `hooks/register.ts`: that `session.start` always carries `cwd` on every surface is shown only by the testing chapter's example.
+- `hooks/register.ts`: with no cwd on `session.start`, or after `/branch` into another directory (`session.start` does not fire after `/clear`, `/resume` or `/branch`: mods-doc-mods-reference chapter.md:136), the band stays empty or shows the old directory.
 - `hooks/logic.ts`: the `## No commits yet on` and `## Initial commit on` headers (newer and older git) come from git, not from a chapter; the tests feed them as text.
 - `tests/helpers.ts`: that `clock.settle()` also lets the mod's pending promises finish after `session.start` is observed, not documented.
 - Layout, colours and the key on your own terminal were not looked at: only the drawn tree is tested.

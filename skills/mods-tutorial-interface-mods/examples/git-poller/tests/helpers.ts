@@ -9,14 +9,23 @@ export function stubs(on: any, opts: { stdout?: string } = {}) {
   const registered: unknown[] = []
   const calls: string[][] = []
   const git = { stdout: opts.stdout ?? '## main...origin/main\n M a.ts\n?? b.ts\n', exitCode: 0, reject: false, slow: false }
-  const store = { fails: false }
+  // slowNext: the next store.get reads the value at once but answers only after the clock advances.
+  const store = { fails: false, slowNext: false }
   on('session.start', () => ({ cwd: '/work' }))
   on('command.register', ($: unknown, e: unknown) => {
     registered.push(e)
     return { value: undefined }
   })
   // A { deny } answer makes the call reject in the mod (mods-doc-mods-testing chapter.md:189).
-  on('store.get', ($: unknown, e: { key: string }) => (store.fails ? { deny: 'store down' } : { value: saved.get(e.key) }))
+  on('store.get', async ($: unknown, e: { key: string }) => {
+    if (store.fails) return { deny: 'store down' }
+    const value = saved.get(e.key)
+    if (store.slowNext) {
+      store.slowNext = false
+      await clock.sleep(1000)
+    }
+    return { value }
+  })
   on('store.set', ($: unknown, e: { key: string; value: unknown }) => {
     saved.set(e.key, e.value)
     return { value: undefined }

@@ -4,7 +4,7 @@ title: Adopt mod-builder ideas into the tutorials and agents
 column: dev
 status: tasked
 created: 2026-10-22T21:16:56+0200
-updated: 2026-10-22T23:31:03+0200
+updated: 2026-10-22T23:39:30+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -15,14 +15,14 @@ mandated-by: none
 approved: true
 approval-judge: main-agent@emasoft-mods-expert-developer
 approval-datetime: 2026-10-22T21:16:56+0200
-implementation-commits: [7c3a79e, 19ad443, 79515d5, c31a84b, 5b0ff02, 5076bbf]
+implementation-commits: [7c3a79e, 19ad443, 79515d5, c31a84b, 5b0ff02, 5076bbf, 233b5ab]
 ---
 
 # Adopt mod-builder ideas into the tutorials and agents
 
 ## ⏵ STATE — READ THIS FIRST ON RESUME (authoritative; supersedes the body) — 2026-10-22
 
-CURRENT STATE 2026-10-22: increment 1a committed as 7c3a79e, 19ad443, 79515d5, c31a84b, 5b0ff02; increment 1b (item C) committed as 5076bbf; increment 2 (item B) is complete and committed as part of the next commit; boxes A, B and C are ticked; the next step is increment 3 (D+E+F); 0.4.0 follows increment 3; the type-check of the three examples is an owner-run box.
+CURRENT STATE 2026-10-22: increment 1a committed as 7c3a79e, 19ad443, 79515d5, c31a84b, 5b0ff02; increment 1b (item C) as 5076bbf; increment 2 (item B, three examples plus the review fixes) as 233b5ab; boxes A, B and C ticked; next is increment 3 (D+E+F), then 0.4.0; the type-check of the three examples is an owner-run box (login expired).
 
 ## User directive
 
@@ -71,3 +71,6 @@ Merged into the owner-run check-mod.sh box above; no separate task.
 - 2026-10-22 — NO-COPY PROOF increment 2: identifier grep (parseToggle|paneAction|changesBetween) 0 hits and CLAUDE_MODS_HOME|tpl- 0 hits over the three example folders; jscpd --min-lines 5 over the mod-builder source and the three folders found 6 clones, all inside one tree (4 in the source templates, 2 inside our test file), 0 between the trees; 6-word and 8-word prose check over the .md files: 0 and 0 shared runs; over .md+.ts+.tsx the shared runs are 61 (6-word) and 28 (8-word), all public-API boilerplate in code (import lines, register/onSession signatures, UI props shape), not prose.
 - 2026-10-22 decision on the increment-2 review: no BLOCKED branch in check-mod.sh (claude plugin test passed with the login expired). Fixed: protect-files refuses to add a `..` entry; git-poller runs git with -C in the session cwd and skips git without one; NOTICE scope names skills/*/examples/LICENSE; turn.complete no longer waits for git; the off switch is in the view atom so ui.render does not read the store. Rejected: the `.catch` re-entry finding (mods-doc-mods-and-events chapter.md:331-337 shows the `if (next.called) return next(e)` pattern). Answered: the hot-reload finding (mods-doc-mods-reference chapter.md:136, session.start fires again after a reload, so the null timer restarts it).
 - 2026-10-22 — NO-COPY PROOF increment 2 (8-word runs): the 28 shared 8-word runs in code are all public API boilerplate (imports, hook signatures, the AbovePrompt prop set, the documented .catch pattern); 0 runs in prose.
+- 2026-10-22 box B evidence after the review fixes (supersedes the earlier box B evidence line): committed as 233b5ab; claude plugin test turn-timer 14, git-poller 26, protect-files 17 pass; mutation checks in reports_dev/20261022-bnb-inc2-fixes-A.md and -E.md; tsc still not run (login expired).
+- 2026-10-22 no-copy proof precision: each of the 28 shared 8-word runs was inspected by the orchestrator; all are code tokens (imports, hook signatures, the AbovePrompt prop set from the reference chapter, the documented .catch line); none is in a comment or an .md file. The 61 shared 6-word runs were not inspected one by one.
+- 2026-10-22 round-2 review of 233b5ab: Fixed: the syncEnabled stale-write race (command.run is the only writer of view.enabled after start); /git-poller on no longer waits for git; the invalidate removal is cited to interfaces:798; protect-files list no longer rewrites the store; stored relative entries starting with .. now count as a damaged list. Recorded: the 233b5ab message's 'every API use cites its chapter line' was over-broad; the citations are added in the follow-up commit. Moved: the turn.complete enabled gate moved into the poll. Rejected: 'NOTICE may not name the LICENSE copies' (NOTICE line 4 names skills/*/examples/LICENSE). Declined: refusing `/..` (it normalises to `/`, which the README documents as protecting everything, fail-closed).

@@ -63,10 +63,20 @@ export function isProtected(target: string, entries: readonly string[]): boolean
   return false
 }
 
-/** The stored list as strings: a missing key is an empty list, anything but a string array is undefined (damaged). */
+/**
+ * The stored list as strings: a missing key is an empty list. Anything that is not a string array
+ * is undefined (damaged), and so is a list holding a relative entry whose normalised form starts
+ * with `..`: it can never match (a target path is absolute and normalised), so it would claim a
+ * protection that is not there. `/..` is not such an entry: it normalises to `/`.
+ */
 export function readList(stored: unknown): string[] | undefined {
   if (stored === undefined) return []
   if (!Array.isArray(stored) || !stored.every((x) => typeof x === 'string')) return undefined
+  const neverMatches = (x: string): boolean => {
+    const n = normalizePath(x)
+    return !n.startsWith('/') && n.split('/')[0] === '..'
+  }
+  if (stored.some(neverMatches)) return undefined
   return stored
 }
 
@@ -115,7 +125,8 @@ export function parseManage(args: string, current: readonly string[]): ManageRes
   const verb = (space === -1 ? trimmed : trimmed.slice(0, space)).toLowerCase()
   const rest = space === -1 ? '' : trimmed.slice(space).trim()
   if (verb === 'list' && rest === '') {
-    return { paths: [...current], text: current.length === 0 ? 'No protected paths' : current.join('\n') }
+    // Text only, no paths: the caller must not write the list back on a read-only command.
+    return { text: current.length === 0 ? 'No protected paths' : current.join('\n') }
   }
   if ((verb !== 'add' && verb !== 'remove') || rest === '') return { usage: PATHS_USAGE }
   const entry = normalizePath(rest)

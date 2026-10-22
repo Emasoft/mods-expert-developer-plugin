@@ -5,11 +5,15 @@ import { DAMAGED_LIST_TEXT, ENABLED_KEY, PATHS_KEY, checkTarget, parseManage, pa
 export const register: Register = (on) => {
   on('session.start', async ($, e, next) => {
     // Register commands last: a throw here skips the rest of the hook (mods-doc-mods-api chapter.md:49).
+    // $.command.register and its fields name, description, argumentHint: mods-doc-mods-api chapter.md:34.
     await $.command.register({ name: 'protect-files', description: 'Turn the protected-files guard on or off', argumentHint: '[on|off]' })
     await $.command.register({ name: 'protect-files-paths', description: 'Manage the protected paths', argumentHint: 'add <path> | remove <path> | list' })
     return next(e)
   })
 
+  // e.args is the text typed after the command name, or an empty string (mods-doc-mods-api chapter.md:40).
+  // $.store.get(key) resolves to the value or undefined and $.store.set(key, value) takes any JSON value
+  // (mods-doc-mods-interfaces chapter.md:744); $.ui.toast shows a notification (mods-doc-mods-api chapter.md:222).
   on('command.run', { command: 'protect-files' }, async ($, e) => {
     // A missing key means on: a guard that has never been configured protects.
     const current = (await $.store.get(ENABLED_KEY)) !== false
@@ -20,6 +24,7 @@ export const register: Register = (on) => {
     return {}
   })
 
+  // e.args, $.store.get and $.store.set as above (mods-doc-mods-api chapter.md:40, mods-doc-mods-interfaces chapter.md:744).
   on('command.run', { command: 'protect-files-paths' }, async ($, e) => {
     const stored = await $.store.get(PATHS_KEY)
     // A damaged value is reported and left alone: replacing it with an empty list would silently

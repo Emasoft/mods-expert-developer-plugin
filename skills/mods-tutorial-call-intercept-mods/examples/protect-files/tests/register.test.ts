@@ -1,9 +1,10 @@
 import { expect, test } from 'claude-code/testing'
 
 // Stub $.store with a Map, as mods-doc-mods-testing does in "Test a drawing".
-function stubStore(on: any, saved: Map<string, unknown>) {
+function stubStore(on: any, saved: Map<string, unknown>, writes: string[] = []) {
   on('store.get', (_: unknown, e: any) => ({ value: saved.get(e.key) }))
   on('store.set', (_: unknown, e: any) => {
+    writes.push(e.key)
     saved.set(e.key, e.value)
     return { value: undefined }
   })
@@ -93,6 +94,30 @@ test('/protect-files-paths manages the stored list', async ($, on) => {
   expect(list.text).toBe('a/b')
   await $.command.run({ command: 'protect-files-paths', args: 'remove a/b' })
   expect(saved.get('protect-files.paths')).toEqual([])
+})
+
+test('/protect-files-paths list writes nothing to the store', async ($, on) => {
+  const saved = new Map<string, unknown>([['protect-files.paths', ['b', 'a']]])
+  const writes: string[] = []
+  stubStore(on, saved, writes)
+
+  const r = await $.command.run({ command: 'protect-files-paths', args: 'list' })
+  expect(r.text).toBe('b\na')
+  expect(writes).toEqual([])
+})
+
+test('a stored relative entry starting with .. is a damaged list: reported, left alone, and the call is denied', async ($, on) => {
+  const saved = new Map<string, unknown>([['protect-files.paths', ['../x']]])
+  const writes: string[] = []
+  stubStore(on, saved, writes)
+  const tool = stubTool(on)
+
+  const r = await $.command.run({ command: 'protect-files-paths', args: 'add /p/.env' })
+  expect(r.text).toContain('damaged')
+  expect(writes).toEqual([])
+  const denied = await $.tool.call({ tool: 'Write', file_path: '/p/.env', content: 'x' })
+  expect(denied.deny).toContain('damaged')
+  expect(tool.ran).toBe(0)
 })
 
 test('/protect-files-paths add ../x is refused and leaves the store unset', async ($, on) => {

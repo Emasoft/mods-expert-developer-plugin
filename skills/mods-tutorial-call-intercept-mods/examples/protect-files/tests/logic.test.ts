@@ -7,6 +7,13 @@ test('readList accepts a missing key and string arrays, and rejects the rest', (
   expect(readList(['a'])).toEqual(['a'])
   expect(readList('oops')).toBeUndefined()
   expect(readList([1])).toBeUndefined()
+  // A relative entry starting with .. can never match, so the list counts as damaged
+  expect(readList(['a', '../x'])).toBeUndefined()
+  expect(readList(['a/../../x'])).toBeUndefined()
+  expect(readList(['..'])).toBeUndefined()
+  // Not such entries: `/..` normalises to `/`, and `..b` is an ordinary segment name
+  expect(readList(['/..'])).toEqual(['/..'])
+  expect(readList(['./a/..b'])).toEqual(['./a/..b'])
 })
 
 test('normalizePath drops ./, repeated and trailing slashes, resolves ..', () => {
@@ -42,6 +49,7 @@ test('checkTarget fails closed on a missing target or a damaged list', () => {
   expect(checkTarget(undefined, [])).toContain('no file path')
   expect(checkTarget('/a', 'oops')).toContain('damaged')
   expect(checkTarget('/a', [1])).toContain('damaged')
+  expect(checkTarget('/a', ['../x'])).toContain('damaged')
   expect(checkTarget('/a', undefined)).toBeUndefined()
   expect(checkTarget('/a/b', ['/a'])).toContain('is protected')
   // A relative target cannot be compared with an absolute entry, so it is refused
@@ -64,7 +72,8 @@ test('parseManage adds, removes, lists, and answers usage', () => {
   expect(parseManage('add a/b', ['a/b'])).toMatchObject({ paths: ['a/b'], text: 'a/b is already protected' })
   expect(parseManage('remove a/b', ['a/b', 'c'])).toMatchObject({ paths: ['c'] })
   expect(parseManage('remove zzz', ['c'])).toMatchObject({ paths: ['c'], text: 'zzz was not in the list' })
-  expect(parseManage('list', ['c'])).toMatchObject({ text: 'c' })
+  // list answers with text only: a result with paths would make the caller write the list back
+  expect(parseManage('list', ['c'])).toEqual({ text: 'c' })
   expect(parseManage('add', [])).toEqual({ usage: 'usage: /protect-files-paths add <path> | remove <path> | list' })
   expect(parseManage('bogus x', [])).toHaveProperty('usage')
 })
