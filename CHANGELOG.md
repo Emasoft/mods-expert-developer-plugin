@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.0] — 2026-10-22
+
+### Bug Fixes
+
+- **agents:** Unfakeable menu self-check, optional tool skills (TRDD-N9M0FOKO) (f5e0779)
+- **agents:** Round 2 of the forge-agent review fixes (TRDD-N9M0FOKO) (ca81806)
+- **skills:** Narrow tutorial lint exclusion, ship licence with examples (TRDD-BDY6ZNDZ) (48589fd)
+- **tests:** Satisfy mypy in the menu namespace helper (TRDD-N9M0FOKO) (92e99d5)
+- **release:** Pass the CI-parity preflight (card names, shfmt example) (114609b)
+
+### Documentation
+
+- Close TRDD-NFCRIY58 as complete (v0.2.1 published) (6465d27)
+- Add TRDD-GF5UDFWI, TRDD-03IIDGPP, TRDD-J4HRAQF0 for the mods port (5280190)
+- Queue TRDD-BDY6ZNDZ - mods tutorial skills from claude-mods-skill (0d787a5)
+- Amend TRDD-BDY6ZNDZ with the review's findings (58a4257)
+- Rewrite TRDD-BDY6ZNDZ's superseded lines in place (7bda898)
+- Add TRDD-BNBDNR2V for the mod-builder ideas; log BDY6ZNDZ review (7c2b527)
+
+### Features
+
+- **agents:** Add mods-forge-agent with the skills-menu preload (TRDD-N9M0FOKO) (dd4e8e1)
+- **skills:** Add mods tutorial skills from claude-mods-skill (TRDD-BDY6ZNDZ) (ed3dc13)
 ## [0.2.1] — 2026-10-22
 
 ### Documentation
@@ -11,6 +34,7 @@ All notable changes to this project will be documented in this file.
 ### Miscellaneous Tasks
 
 - **cspell:** Keep sendmessage - the generated CHANGELOG quotes it (70d0670)
+- Bump version to 0.2.1 (3d45127)
 ## [0.2.0] — 2026-10-22
 
 ### Bug Fixes
