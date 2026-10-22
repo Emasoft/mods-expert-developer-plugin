@@ -12,11 +12,21 @@ fi
 example="$1"
 mod_name="$3"
 
-if ! [[ "$mod_name" =~ ^[a-z][a-z0-9-]{1,40}$ ]]; then
-	echo "new-mod.sh: invalid mod name \"$mod_name\" (must match ^[a-z][a-z0-9-]{1,40}\$)" >&2
+# Our own name rule: kebab-case (lowercase letters and digits in words joined by single hyphens, starting with a letter), as the
+# plugin manifest chapter asks (mods-doc-plugin-manifest-reference chapter.md:183; validate warns on a non-kebab name, :128). It sets no length limit; 64 is ours.
+valid_mod_name() (
+	LC_ALL=C
+	[ "${#1}" -ge 2 ] && [ "${#1}" -le 64 ] && [[ "$1" =~ ^[a-z][a-z0-9]*(-[a-z0-9]+)*$ ]]
+)
+valid_example_name() (
+	LC_ALL=C
+	[[ "$1" =~ ^[a-z][a-z0-9-]*$ ]]
+)
+if ! valid_mod_name "$mod_name"; then
+	echo "new-mod.sh: invalid mod name \"$mod_name\": use 2 to 64 characters, and write lowercase letters and digits as hyphen-separated words that start with a letter (no leading, trailing or doubled hyphen)" >&2
 	exit 64
 fi
-if ! [[ "$example" =~ ^[a-z][a-z0-9-]*$ ]]; then
+if ! valid_example_name "$example"; then
 	echo "new-mod.sh: invalid example name \"$example\"" >&2
 	exit 64
 fi

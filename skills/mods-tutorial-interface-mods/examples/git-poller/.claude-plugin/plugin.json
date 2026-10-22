@@ -1,7 +1,7 @@
 {
   "name": "git-poller",
   "version": "0.1.0",
-  "description": "Example: band above the prompt with the git branch and changed and untracked counts, refreshed by a poller that follows the house conventions",
+  "description": "Example: a git status band showing the branch and the changed and untracked counts, refreshed by a poller that follows the house conventions",
   "author": {
     "name": "Emasoft"
   },

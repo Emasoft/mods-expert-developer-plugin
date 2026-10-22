@@ -62,7 +62,7 @@ if [ -f "$mod_dir/tsconfig.json" ]; then
 	if [ "$hook_count" -eq 0 ]; then
 		echo "tsc: no hooks/*.ts|tsx to prove; proof skipped"
 	elif [ "$checked_count" -eq 0 ]; then
-		echo "tsc checked none of the $hook_count hooks/*.ts|tsx files in $mod_dir"
+		echo "tsc: 0 of $hook_count hooks/*.ts|tsx files were checked in $mod_dir"
 		fail "tsc checked no hook files"
 	else
 		echo "tsc: $checked_count of $hook_count hook files checked"

@@ -49,12 +49,27 @@ def _make_mod(root: Path, name: str = "demo-mod") -> Path:
     return mod
 
 
-@pytest.mark.parametrize("bad", ["A", "a", "1abc", "has_underscore", "Upper", "x" * 42, "-lead", "a b"])
+@pytest.mark.parametrize("bad", ["A", "a", "1abc", "has_underscore", "Upper", "x" * 65, "-lead", "a b", "a--b", "a-", "-a"])
 def test_new_mod_rejects_an_invalid_mod_name(tmp_path: Path, bad: str) -> None:
-    """A mod name outside ^[a-z][a-z0-9-]{1,40}$ is refused with exit 64 and nothing is created."""
+    """A mod name that is not 2-64 hyphen-separated lowercase words starting with a letter is refused with exit 64 and nothing is created."""
     result = _run("new-mod.sh", EXAMPLE, tmp_path, bad)
     assert result.returncode == 64
     assert list(tmp_path.iterdir()) == []
+
+
+def test_new_mod_accepts_a_name_with_a_digit_and_a_hyphen(tmp_path: Path) -> None:
+    """The name my-mod2 passes the name check and the copy is created."""
+    result = _run("new-mod.sh", EXAMPLE, tmp_path, "my-mod2")
+    assert result.returncode == 0, result.stderr
+    assert (tmp_path / "my-mod2").is_dir()
+
+
+def test_new_mod_accepts_a_64_character_name(tmp_path: Path) -> None:
+    """A name at the 64-character limit passes the name check: it pins the upper bound from the accept side."""
+    name = "x" * 64
+    result = _run("new-mod.sh", EXAMPLE, tmp_path, name)
+    assert result.returncode == 0, result.stderr
+    assert (tmp_path / name).is_dir()
 
 
 def test_new_mod_copies_and_renames_exact_tokens_only(tmp_path: Path) -> None:

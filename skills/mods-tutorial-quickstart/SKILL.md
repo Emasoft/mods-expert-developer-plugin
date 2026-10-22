@@ -26,7 +26,7 @@ The example mods live in two sibling tutorials: `mods-tutorial-call-intercept-mo
 
 ## Instructions
 
-0. Clarify before you build. Read [house conventions](references/house-conventions.md) and answer five questions about the mod: which surface it uses (status line, band, pane, tool hook), how often it updates, whether it starts on or off, what scope it covers (one project or every session), and its name. If the user has not said, ask. `scripts/new-mod.sh` accepts only lowercase letters, digits and hyphens, starting with a letter (2 to 41 characters).
+0. Clarify before you build. Read [house conventions](references/house-conventions.md) and answer five questions about the mod: which surface it uses (status line, band, pane, tool hook), how often it updates, whether it starts on or off, what scope it covers (one project or every session), and its name. If the user has not said, ask. `scripts/new-mod.sh` accepts only a kebab-case name: lowercase letters and digits in words joined by single hyphens, starting with a letter (2 to 64 characters).
 1. Load the `plugin-authoring` skill and follow where it says to write the mod. Facts: `mods-doc-mods-development`, "Ask Claude for a mod".
 2. Copy the closest example from the index below into your folder and rename it in `.claude-plugin/plugin.json`. A name that starts with `claude-`, `anthropic-`, `anthropics-` or `cc-plugin-` is refused. Facts: `mods-doc-plugin-manifest-reference`.
 3. Read the types for the event you hook. Claude Code writes them under `.claude-plugin/types/` on each load, with a root `tsconfig.json`; never edit or commit `.claude-plugin/types/`. Facts: `mods-doc-mods-development`, "Change and test a mod".

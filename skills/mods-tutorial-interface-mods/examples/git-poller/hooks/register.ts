@@ -4,7 +4,7 @@ import type { EngineInterface, Register } from 'claude-code'
 import type { View } from '../types/index.js'
 import { ENABLED_KEY, MIN_GAP_MS, MOD_NAME, POLL_INTERVAL_MS, USAGE, gitArgv, isDue, parseStatus, parseSwitch } from './logic.js'
 
-// Drawn values live in $.state, so they survive a hot reload and redraw readers
+// The values this band draws are kept in $.state atoms, so a hot reload keeps them and the readers redraw.
 // (mods-doc-mods-interfaces chapter.md:740-748 compares module variables, $.state and $.store;
 // the atom, read and update calls are shown at :789).
 // enabled is the off switch copied from the store, so ui.render reads only this atom and never the store.
