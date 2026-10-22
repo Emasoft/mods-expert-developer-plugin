@@ -34,12 +34,6 @@
     "**/fixtures/**",
     "**/skills/mods-tutorial-*/examples/**"
   ],
-  "ignoreWords": [
-    "aestetically",
-    "precius",
-    "seamlessy",
-    "techniues"
-  ],
   "words": [
     "actionlint",
     "actions",

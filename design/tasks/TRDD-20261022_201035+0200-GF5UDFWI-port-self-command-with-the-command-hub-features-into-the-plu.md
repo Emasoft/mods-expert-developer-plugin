@@ -4,7 +4,7 @@ title: Port self-command with the command-hub features into the plugin
 column: todo
 status: tasked
 created: 2026-10-22T20:10:35+0200
-updated: 2026-10-22T20:14:20+0200
+updated: 2026-10-22T21:59:21+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -32,6 +32,7 @@ CURRENT STATE 2026-10-22: planned, not started; NEXT ACTION: strict CPV gate mea
 
 - "extract the following two skills from this project, and add them to our plugin (adapt them, with the correct paths and scripts and removing references to other external mods or plugins)" (self-command)
 - "also examine this mod and see if it has some better features than the self-command mod you already integrated. pick the best features that self-command is missing, combining the best of the two in a better version of the self-command mod." (command-hub)
+<!-- cspell:ignore seamlessy -->
 
 ## Shared decisions
 

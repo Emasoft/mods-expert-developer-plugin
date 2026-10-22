@@ -4,7 +4,7 @@ title: Add mods-forge-agent with the skills-menu preload
 column: dev
 status: tasked
 created: 2026-10-22T20:23:29+0200
-updated: 2026-10-22T21:48:20+0200
+updated: 2026-10-22T21:58:44+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -15,14 +15,14 @@ mandated-by: none
 approved: true
 approval-judge: main-agent@emasoft-mods-expert-developer
 approval-datetime: 2026-10-22T20:23:29+0200
-implementation-commits: [dd4e8e1, f5e0779, ca81806, 92e99d5]
+implementation-commits: [dd4e8e1, f5e0779, ca81806, 92e99d5, cf3b7de]
 ---
 
 # Add mods-forge-agent with the skills-menu preload
 
 ## STATE
 
-CURRENT STATE 2026-10-22: 0.3.0 post-install smoke FAILED — the bare preload `cpv-the-skills-menu` injected claude-plugins-validation's menu (reports/mods-forge-agent/20261022_214153+0200-post-install-smoke.md); the first-line check caught it as designed. Fix: menu renamed to mods-the-skills-menu plus a self-heal line (0.3.1). NEXT ACTION: release 0.3.1, re-run the smoke check via the Agent tool, then tick the two post-install boxes. Caveat: a forced CPV standardize_plugin.py or generate_plugin_repo.py run writes the bare `cpv-the-skills-menu` back into agents; re-check the preload after any such run.
+CURRENT STATE 2026-10-22: 0.3.1 published (5e62111, CI green); menu renamed to mods-the-skills-menu (cf3b7de) after the 0.3.0 smoke failure (reports/mods-forge-agent/20261022_214153+0200-post-install-smoke.md). Installed copy updated to 0.3.1 for scope user. NEXT ACTION: owner restarts Claude Code; re-run the read-only smoke prompt via the Agent tool; expect the first line to name the seven chapter groups of mods-the-skills-menu; then tick the two post-install boxes.
 
 ## User directive
 
@@ -65,3 +65,4 @@ CURRENT STATE 2026-10-22: 0.3.0 post-install smoke FAILED — the bare preload `
 - 2026-10-22T20:23:38+0200 — column → dev by main-agent@emasoft-mods-expert-developer. user directive 2026-10-22
 - 2026-10-22 owner directive: tool skills optional but recommended (native fallback) — supersedes "missing means BLOCKED" in the body above.
 - 2026-10-22 orchestrator: Caveat: a forced CPV standardize_plugin.py or generate_plugin_repo.py run writes the bare `cpv-the-skills-menu` back into agents; re-check the preload after any such run.
+- 2026-10-22 orchestrator: 0.3.1 is a patch although it removes the public skill name mods-expert-developer-plugin:cpv-the-skills-menu; accepted because that name was public for under two hours.

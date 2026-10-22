@@ -4,7 +4,7 @@ title: Port mod-manager as a universal plugin manager
 column: todo
 status: tasked
 created: 2026-10-22T20:10:35+0200
-updated: 2026-10-22T20:14:22+0200
+updated: 2026-10-22T21:59:21+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -31,6 +31,7 @@ CURRENT STATE 2026-10-22: planned, not started; NEXT ACTION: strict CPV gate mea
 ## User directive
 
 - "Also extract this mod and improve it. It is called mod manager, but it has some limits and does not work on both cli and desktop. fix that. make it universal, and make it aestetically pleasing."
+<!-- cspell:ignore aestetically seamlessy -->
 
 ## Shared decisions
 

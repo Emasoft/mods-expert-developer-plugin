@@ -4,7 +4,7 @@ title: Make the tutorial examples pass every linter with no exclusion
 column: todo
 status: tasked
 created: 2026-10-22T21:42:44+0200
-updated: 2026-10-22T21:42:44+0200
+updated: 2026-10-22T21:59:22+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: refactor
@@ -20,7 +20,7 @@ approval-datetime: 2026-10-22T21:42:44+0200
 # Make the tutorial examples pass every linter with no exclusion
 
 ## STATE
-CURRENT STATE 2026-10-22: proposed and reviewed; not started. NEXT ACTION: box 1 (run jscpd with the example exclusions removed and record the duplicate list).
+CURRENT STATE 2026-10-22: proposed and reviewed; not started. NEXT ACTION: box 1 (run jscpd with the example exclusions removed and record the duplicate list). Order: this card first, then TRDD-BNBDNR2V (its new scripts are written lint-clean), then TRDD-H26OG8AP.
 
 ## Owner policy (verbatim, source: Emasoft/claude-plugins-validation issue 257, quoting the owner)
 > never bypass or suppress any validation. if there are false positives, improve the detection code instead, to be more precise in identifying threats.
@@ -35,10 +35,13 @@ Also the owner's standing constraint in this project: no CPV consent or waiver f
 - jscpd duplicates between SKILL.md snippets and example files: replace the snippet with a link to the example file (one source).
 - jscpd duplicates between examples: if no example can reference another, take it to the owner; never settle it with a jscpd exclude.
 - One increment per linter (cspell, markdownlint, shfmt, jscpd), each reviewed and committed separately.
+- No PRRD exists, so no relevant-rules.
+- Also move the four verbatim-quote misspellings (aestetically, seamlessy, precius, techniues) out of .cspell.json ignoreWords into per-card cspell:ignore comments (done 2026-10-22, see below).
+<!-- cspell:ignore aestetically seamlessy precius techniues -->
 
 ## Acceptance checklist
 - [ ] jscpd run with the example exclusions removed; duplicate list saved under reports/measure/.
-- [ ] .mega-linter.yml, .cspell.json and .jscpd.json carry no entry for skills/mods-tutorial-*/examples/.
+- [ ] No lint, spell or duplicate-check config anywhere in the repo excludes skills/mods-tutorial-*/examples/ (checked with a grep across every config file).
 - [ ] Tests that pinned the exclusions (MEGALINTER_EXAMPLES_EXCLUDES, the path-form regex test) now assert the exclusion is absent.
 - [ ] TypeScript/JavaScript example files: either a TS/JS linter is enabled for them, or the card records why none applies.
 - [ ] NOTICE lists every modified example file with its change.
@@ -48,3 +51,4 @@ Also the owner's standing constraint in this project: no CPV consent or waiver f
 ## Approval log
 
 - 2026-10-22T21:42:44+0200 — MANDATE issued by main-agent@emasoft-mods-expert-developer (min-approval-requirement: none). Pre-approved: issuer authority >= required approver. No approval request was sent.
+- 2026-10-22 orchestrator: approved by the main agent under the owner's 'decide yourself' instruction; it reverses TRDD-BDY6ZNDZ box 7; the owner may veto. The policy quote was copied from Emasoft/claude-plugins-validation issue 257's body as read on 2026-10-22.

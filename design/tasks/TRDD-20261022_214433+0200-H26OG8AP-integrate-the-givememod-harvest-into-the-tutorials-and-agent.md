@@ -4,12 +4,12 @@ title: Integrate the givememod harvest into the tutorials and agents
 column: todo
 status: tasked
 created: 2026-10-22T21:44:33+0200
-updated: 2026-10-22T21:44:33+0200
-current-owner: user
+updated: 2026-10-22T21:59:22+0200
+current-owner: main-agent@emasoft-mods-expert-developer
 created-by: user
 task-type: feature
 min-approval-requirement: none
-assignee: user
+assignee: main-agent@emasoft-mods-expert-developer
 mandate: true
 mandated-by: none
 approved: true
@@ -20,11 +20,12 @@ approval-datetime: 2026-10-22T21:44:33+0200
 # Integrate the givememod harvest into the tutorials and agents
 
 ## STATE
-CURRENT STATE 2026-10-22: harvest done (report: reports/givememod-harvest/20261022_213641+0200-harvest.md); not started. Sequenced AFTER TRDD-BNBDNR2V (mod-builder adoption, 0.4.0) and TRDD-JFB5E98B (lint exclusions), because the increments add files to the same tutorial folders. NEXT ACTION: increment I-1 (engine-traps.md).
+CURRENT STATE 2026-10-22: harvest done (report: reports/givememod-harvest/20261022_213641+0200-harvest.md); not started. Sequenced AFTER TRDD-BNBDNR2V (mod-builder adoption, 0.4.0) and TRDD-JFB5E98B (lint exclusions), because the increments add files to the same tutorial folders. NEXT ACTION: increment I-1 (engine-traps.md). Order: TRDD-JFB5E98B, then TRDD-BNBDNR2V, then this card. Before I-1, extend tests/test_plugin_structure.py so the quickstart tutorial may hold references/. Line references FORGE:nn/QS:nn date from the harvest; re-locate by text (the menu is now skills/mods-the-skills-menu).
 
 ## User directive (verbatim)
 > here is another plugin with a treasure trove of techniues, ideas, skills, informations, tricks, etc. I'm not interested in the skill per se (the ability to automatically create a custom mod based on the analysis of the session , to improve the workflow next time the same issues are encountered). Instead i'm interested in all the ideas that are included  and used to achieve such feat. there are many precius things scattered all across all the files and scripts and skills/reference/templates/examples/etc. I want you to harvest the best ones and to integrate those into our plugin.
 > https://github.com/timoncool/givememod
+<!-- cspell:ignore techniues precius -->
 
 ## Decisions
 - Licence: givememod is MIT (timoncool); its official samples are Apache-2.0 and community examples MIT per folder. Facts and techniques are rewritten in our own words and code; no code or template is copied. A no-copy proof per increment (identifier grep, jscpd, 8-word prose check) against downloads_dev/givememod-src/repo, as in BNBDNR2V. At most one idea-credit line in NOTICE.
@@ -35,6 +36,9 @@ CURRENT STATE 2026-10-22: harvest done (report: reports/givememod-harvest/202610
 - Rejected W10 workflow (star-history): broad contents write, unpinned action, not for us.
 - Rejected, the "not recommended" list at the end of report section 7: H06 (unasked offers), H07 as a table, H49 to H52 as examples, H29, H48, any copy of a template or helper kit, the FAVORITES.md file, the star-history workflow, the site generator.
 - W1: issue 99423 is closed; never import it as open. W2/W8: keep FORGE's "Button has no variant" until a types file proves otherwise.
+- No-copy proof per increment goes to reports/givememod-harvest/<timestamp>-I-n-no-copy.md; its one-line result is recorded in the approval log when the box is ticked.
+- The W2 rule (Button has no variant until a types file proves otherwise) applies to I-6 too.
+- No PRRD exists (design/requirements/PRRD.md absent), so no relevant-rules.
 
 ## Increments
 - [ ] I-1 — New skills/mods-tutorial-quickstart/references/engine-traps.md (symptom, cause, fix table in five sections, rows tagged; stale claims and open issues tables with a checked-on date; QS link row) — files: skills/mods-tutorial-quickstart/references/engine-traps.md (new), skills/mods-tutorial-quickstart/SKILL.md — covers: H08, H09, H10, H11, H13, H14, H15, H16, H16b, H19, H20, H21, H22, H23, H24, H25, H26, H27, H28, H33, H35, H39, H58, H59
@@ -64,3 +68,5 @@ CURRENT STATE 2026-10-22: harvest done (report: reports/givememod-harvest/202610
 ## Approval log
 
 - 2026-10-22T21:44:33+0200 — MANDATE issued by user (min-approval-requirement: none). Pre-approved: issuer authority >= required approver. No approval request was sent.
+- 2026-10-22 orchestrator: identity fields corrected from `user`; the card was minted by the main agent under the owner's directive quoted above and the owner's 'decide yourself' instruction; the owner has not reviewed this plan and may veto.
+- 2026-10-22 orchestrator: created-by and approval-judge still read `user`: trddgrep refuses to change them (write-once / create-path only); current-owner and assignee were changed.

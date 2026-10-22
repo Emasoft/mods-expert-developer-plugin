@@ -4,7 +4,7 @@ title: Port probe-runner into the plugin
 column: todo
 status: tasked
 created: 2026-10-22T20:10:35+0200
-updated: 2026-10-22T20:14:21+0200
+updated: 2026-10-22T21:59:21+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -31,6 +31,7 @@ CURRENT STATE 2026-10-22: planned, not started; NEXT ACTION: strict CPV gate mea
 ## User directive
 
 - "extract the following two skills from this project, and add them to our plugin (adapt them, with the correct paths and scripts and removing references to other external mods or plugins)" (probe-runner)
+<!-- cspell:ignore seamlessy -->
 
 ## Shared decisions
 
