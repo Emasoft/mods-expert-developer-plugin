@@ -41,15 +41,14 @@ The token can be revoked. The agent may check that `.env.local` is gitignored wi
 The user runs, in their own terminal (an agent runs the Python launcher below only when the user explicitly asks it to, and never opens `.env.local` or `.env` itself):
 
 ```
-cd <repo> && T="$(grep -m1 '^CLAUDE_CODE_OAUTH_TOKEN=' .env.local | cut -d= -f2- | tr -d '\r')" && [ -n "$T" ] && CLAUDE_CODE_OAUTH_TOKEN="$T" claude --permission-mode auto -n <name> --bg "<prompt>"
+cd <repo> && ( T="$(grep -m1 '^CLAUDE_CODE_OAUTH_TOKEN=' .env.local | cut -d= -f2- | tr -d "\r\"' ")"; [ -n "$T" ] || { echo "CLAUDE_CODE_OAUTH_TOKEN not found in .env.local" >&2; exit 1; }; CLAUDE_CODE_OAUTH_TOKEN="$T" claude --permission-mode auto -n <name> --bg "<prompt>" )
 ```
 
-* `T` is a plain shell variable (not exported), so only `claude` receives the token.
-* If the line is missing or empty, the command stops before launching, so the background service is never started without a token.
-* The shell form needs the bare `CLAUDE_CODE_OAUTH_TOKEN=<token>` line (no quotes, no `export`).
+* `T` is a plain shell variable (not exported), so only `claude` receives the token. The parentheses run the line in a subshell, so `T` disappears when it ends.
+* If the token is missing, the command prints an error and stops before launching, so the background service is never started without a token.
+* Quotes, spaces and a CR are removed from the value, so a quoted line also works. The shell form still needs the line to start with `CLAUDE_CODE_OAUTH_TOKEN=` (no `export`).
 * The file is not executed as shell code; one line is read from it.
 * The token stays out of shell history and off screen.
-* After the launch, `unset T` clears the variable from your shell (or run the whole line in a subshell with parentheses).
 * If the project keeps the line in `.env` instead, replace `.env.local` with `.env` in the command.
 * `-n <name>` names the session; the name appears in ListAgents and in `claude agents`.
 * *(observed)* When the service is not yet running, the output begins `Starting background service…`; the token must be set on that command. The output then shows `backgrounded · <id> · <name>`.
@@ -79,7 +78,7 @@ def read_token() -> str:
     for env_file in ENV_FILES:
         if not os.path.exists(env_file):
             continue
-        with open(env_file, encoding="utf-8") as handle:
+        with open(env_file, encoding="utf-8-sig") as handle:
             for line in handle:
                 line = line.strip()
                 if not line or line.startswith("#"):
@@ -102,6 +101,10 @@ def start_background_session(name: str, prompt: str) -> None:
         env={**os.environ, KEY: token},
         check=True,
     )
+
+
+if __name__ == "__main__":
+    start_background_session("<name>", "<prompt>")
 ```
 
 The script passes an argument list, never `shell=True`, and neither prints, logs nor returns the token.
