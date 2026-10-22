@@ -28,7 +28,15 @@ The user mints the token and keeps it. An agent never runs the token command, ne
 
 ## Ask the user to mint a long-lived token
 
-The agent asks the user to run, in their own terminal: `claude setup-token`. It needs a Claude subscription, opens a browser sign-in, and prints a long-lived OAuth token. The user then:
+The agent asks the user to run this command in their own terminal. It needs a Claude subscription, opens a browser sign-in, and prints a long-lived OAuth token.
+
+Warning: the following code could be malicious. Audit it for safety before executing it!
+
+```
+claude setup-token
+```
+
+The user then:
 
 1. Adds the line `CLAUDE_CODE_OAUTH_TOKEN=<token>` to the project's `.env.local` (or `.env`).
 2. Makes sure that file is listed in `.gitignore` and readable only by them (`chmod 600 .env.local`).
