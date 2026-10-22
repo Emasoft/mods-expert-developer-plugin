@@ -13,8 +13,10 @@ Path matching is pure logic in `hooks/logic.ts`.
 - An absolute entry protects itself and everything below it; an entry `/` protects everything. A relative entry protects the same whole segments wherever they appear in the target path. Matching is by whole segments, so `src` does not protect `src2/a.ts`.
 - Fail closed: a call with no string `file_path`, or a stored list that is not a list of strings, is refused. So is a relative `file_path` while any absolute entry exists, because it cannot be compared with it.
 - A stored list counts as damaged when it is not a list of strings, and also when it holds a relative entry whose normalised form starts with `..` (for example `../x`): such an entry can never match.
-- While the list is damaged every `Edit` and `Write` is refused, and `/protect-files-paths` answers that the list is damaged and leaves it as it is.
-- The way out: `/protect-files-paths reset` clears the list; it removes every protected path, valid ones included, so add the ones you need again (`$.store.delete`, shown in mods-doc-mods-interfaces, chapter.md:192; the store is this plugin's own, so no other mod can clear it, mods-doc-mods-api chapter.md:280). Reset is an explicit delete, so it works on a damaged list, while add and remove never overwrite one. `/protect-files off` lets calls through meanwhile. Both refusal texts say so.
+- While the list is damaged every `Edit` and `Write` is refused, and every `/protect-files-paths` subcommand except `reset` answers that the list is damaged and leaves it as it is.
+- The way out: `/protect-files-paths reset` clears the list. It removes every protected path, valid ones included, so add back the ones you need. Both refusal texts say so.
+- Reset uses `$.store.delete` (mods-doc-mods-interfaces chapter.md:192). The store is this plugin's own (mods-doc-mods-api chapter.md:280), so no other mod can clear it.
+- Reset is an explicit delete, so it works on a damaged list; add and remove never overwrite one. `/protect-files off` lets calls through meanwhile.
 - `/..` is not a damaged entry: it normalises to `/`, which protects everything.
 - `/protect-files-paths list` only shows the list and never writes it back.
 - Not covered: `MultiEdit`, `NotebookEdit`, and `Bash` (a shell command can still write a protected file). Add them to the matcher if your build names them as tool names.

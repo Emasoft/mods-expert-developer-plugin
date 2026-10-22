@@ -183,7 +183,8 @@ test('reset on a valid list deletes it and the next Write to a formerly protecte
 
   const before = await $.tool.call({ tool: 'Write', file_path: '/p/.env', content: 'x' })
   expect(before.deny).toBeDefined()
-  await $.command.run({ command: 'protect-files-paths', args: 'reset' })
+  const r = await $.command.run({ command: 'protect-files-paths', args: 'reset' })
+  expect(r.text).toBe('protect-files: the protected list was cleared')
   expect(deletes).toEqual(['protect-files.paths'])
   const after = await $.tool.call({ tool: 'Write', file_path: '/p/.env', content: 'x' })
   expect(after.deny).toBeUndefined()
