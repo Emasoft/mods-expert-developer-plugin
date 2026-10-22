@@ -4,7 +4,7 @@ title: Harvest karanb192 mod-builder ideas into the tutorials, skills and agents
 column: dev
 status: tasked
 created: 2026-10-22T23:44:48+0200
-updated: 2026-10-23T01:47:59+0200
+updated: 2026-10-23T01:51:10+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -48,10 +48,10 @@ Checked 2026-10-22 with the GitHub API: repo karanb192/claude-code-mods, licence
 ## Checklist
 
 - [x] 1. Download and inventory the source: only karanb192/claude-code-mods/plugins/mod-builder, on the user's directive of 2026-10-22, into downloads_dev/karanb192-mod-builder-src/; the inventory goes to reports_dev/<date>-karanb-inventory.md. The inventory read the larger scripts (gate, prove, api-check, footprint, lib, scripts.test) only in part.
-- [x] 2. Idea map at docs_dev/<date>-karanb-idea-map.md: each source idea marked already covered / adopt / reject, with the reason; a script idea is adopted only after that script is read in full. Done 2026-10-23: 39 ideas and 87 API claims (counts from the idea-map worker report); the map read gate, footprint, lib, api-check and prove line by line, with lines over about 230-260 characters cut; before an increment adopts a script idea, the cut lines of that script are read in full and the adoption is confirmed in that increment's report, and every adopted script idea comes from those five; list-mods, star-invitation and the source tests were not read and carry no adopt verdict.
+- [x] 2. Idea map at docs_dev/<date>-karanb-idea-map.md: each source idea marked already covered / adopt / reject, with the reason; a script idea is confirmed for adoption only after that script is read in full; the map's adopt verdicts on script ideas are provisional until then. Done 2026-10-23: 39 ideas and 87 API claims (counts from the idea-map worker report); the map read gate, footprint, lib, api-check and prove line by line, with lines over about 230-260 characters cut; before an increment adopts a script idea, the cut lines of that script are read in full and the adoption is confirmed in that increment's report; every script idea marked adopt comes from those five; list-mods, star-invitation and the source tests were not read and carry no adopt verdict.
 - [x] 3. Spec in docs_dev listing the increments, and one box per increment added to this card. Done 2026-10-23: docs_dev/20261023-karanb-increments-spec.md, increments I-1 to I-7 (revision 2, after two reviews).
 - [ ] 4. NOTICE credits karanb192/claude-code-mods (MIT).
-- [ ] 5. No-copy proof for each increment, as the no-copy proof line under Constraints says; for code, shared runs of 6 or more tokens are listed and judged in the same report.
+- [ ] 5. No-copy proof for each increment, as the no-copy proof line under Constraints says; for code, shared runs of 6 or more words, counted as for prose (lowercased, punctuation stripped, split on whitespace) are listed and judged in the same report.
 - [ ] 6. Publish (minor version) and verify after install: the installed cache version matches, the changed skills load, and `claude plugin test` passes on every changed example.
 - [ ] I-1. The three tutorial SKILL.md line-11 sentences keep the chapters winning but scope one exception to API names and shapes, where the running build generated type files win (mods-development chapter line 291 speaks of events and methods changing across releases); quickstart gains a right-container step, the ignored early-access flag line, and three UNVERIFIED trap rows.
 - [ ] I-2. Honest hand-over in house-conventions.md (banned words without a stage, -p draws nothing, DECISIONS, claude --version stamp, settle-by column); the forge agent stops after three identical stage failures.
