@@ -4,7 +4,7 @@ title: Add mods tutorial skills from BeLazy167 claude-mods-skill
 column: todo
 status: tasked
 created: 2026-10-22T20:24:37+0200
-updated: 2026-10-22T20:24:41+0200
+updated: 2026-10-22T20:26:38+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -34,6 +34,11 @@ github.com/BeLazy167/claude-mods-skill at 396f0d4 (MIT), cloned to downloads_dev
 - NOTICE gets the source's MIT copyright line and permission text.
 - The skills menu (cpv-the-skills-menu) lists the tutorials in their own group labelled reference-only; tests exclude tutorials from the chapter-enumeration checks through one named set and pin: every tutorial name contains "tutorial", each opens with the notice, examples live only under examples/ subfolders.
 - Sequencing: starts after the mods-forge-agent build is committed (both edit skills/, the menu and the same tests); ships in the same 0.3.0 release.
+The seven skill names are provisional: after the overlap check, a tutorial with less than about one screen of unique prose is merged into another tutorial, keeping its example code, which is the unique value.
+If the measurement forces renaming the nested manifest or hooks.json, each tutorial states in one line which files to rename back after copying the example, so a copied example is runnable.
+Reading list: keep only Anthropic's own sources (the mods docs and the built-in mods source); drop the community catalogue and third-party mod links, per the earlier directive to remove references to other external mods or plugins.
+API claims from the source (for example $.command.run({command:'compact'}), atom/read/update from 'claude-code', one plain hook per event per module, types laid under .claude-plugin/types/) are checked against the mods-doc chapters; a claim the chapters do not confirm is marked UNVERIFIED or dropped, never stated as fact.
+Executor: the plugin's own agents - mods-forge-agent once installed, mods-expert-developer-agent until then; the orchestrator commits a checkpoint before each dispatch.
 
 ## Acceptance checklist
 - [ ] Measurement report on nested manifests saved under reports/measure/.
@@ -43,8 +48,10 @@ github.com/BeLazy167/claude-mods-skill at 396f0d4 (MIT), cloned to downloads_dev
 - [ ] NOTICE carries the MIT text for BeLazy167/claude-mods-skill.
 - [ ] Menu and README list the tutorials as reference-only.
 - [ ] uv run pytest, claude plugin validate ., CI-parity linters and cpv-remote-validate plugin . --strict at v5.22.3 pass with no waiver.
+- [ ] claude plugin test . at the plugin root does not collect the example tests (measured), and tests/test_plugin_structure.py's skill-folder count is updated deliberately to the final number.
 
 ## Approval log
 
 - 2026-10-22T20:24:37+0200 — MANDATE issued by main-agent@emasoft-mods-expert-developer (min-approval-requirement: none). Pre-approved: issuer authority >= required approver. No approval request was sent.
 - 2026-10-22T20:24:41+0200 — column → todo by main-agent@emasoft-mods-expert-developer. user directive 2026-10-22
+- 2026-10-22 - authority: the user's directive quoted verbatim under User directive; mandated-by stays none because trddgrep set refuses that field.
