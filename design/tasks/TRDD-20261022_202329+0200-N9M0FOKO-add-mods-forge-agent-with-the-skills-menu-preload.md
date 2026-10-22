@@ -4,7 +4,7 @@ title: Add mods-forge-agent with the skills-menu preload
 column: dev
 status: tasked
 created: 2026-10-22T20:23:29+0200
-updated: 2026-10-22T21:58:44+0200
+updated: 2026-10-22T22:02:02+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -22,7 +22,7 @@ implementation-commits: [dd4e8e1, f5e0779, ca81806, 92e99d5, cf3b7de]
 
 ## STATE
 
-CURRENT STATE 2026-10-22: 0.3.1 published (5e62111, CI green); menu renamed to mods-the-skills-menu (cf3b7de) after the 0.3.0 smoke failure (reports/mods-forge-agent/20261022_214153+0200-post-install-smoke.md). Installed copy updated to 0.3.1 for scope user. NEXT ACTION: owner restarts Claude Code; re-run the read-only smoke prompt via the Agent tool; expect the first line to name the seven chapter groups of mods-the-skills-menu; then tick the two post-install boxes.
+CURRENT STATE 2026-10-22: 0.3.1 published and verified after install (both post-install boxes ticked). NEXT ACTION: tick the remaining build boxes against the evidence in the approval log and the commits, then move to complete.
 
 ## User directive
 
@@ -48,8 +48,8 @@ CURRENT STATE 2026-10-22: 0.3.1 published (5e62111, CI green); menu renamed to m
 - [ ] ruff and cspell clean on changed files
 - [ ] CPV strict (the publish.py command, CPV v5.22.3) shows no new finding against the CRITICAL=0 MAJOR=0 MINOR=0 NIT=0 baseline, output saved under reports/cpv/
 - [ ] README, plugin.json and DELEGATION.md updated
-- [ ] After install, one dispatch's first report line names the menu's Plugin Skills domains correctly — expected answer: seven groups, Mods; Plugins; Marketplaces; Hooks, Subagents and Skills; Settings and Configuration; Sessions and Runtime; Troubleshooting (Tutorials excluded) — (proves the preload resolved to this plugin's menu, not CPV's same-named skill); if it does not, rename the menu to a plugin-unique name and re-measure CPV D9.
-- [ ] The model actually used is confirmed from the harness side (debug log or session metadata), not from the agent's own claim.
+- [x] After install, one dispatch's first report line names the menu's Plugin Skills domains correctly — expected answer: seven groups, Mods; Plugins; Marketplaces; Hooks, Subagents and Skills; Settings and Configuration; Sessions and Runtime; Troubleshooting (Tutorials excluded) — (proves the preload resolved to this plugin's menu, not CPV's same-named skill); if it does not, rename the menu to a plugin-unique name and re-measure CPV D9.
+- [x] The model actually used is confirmed from the harness side (debug log or session metadata), not from the agent's own claim.
 
 ## Approval log
 
@@ -66,3 +66,6 @@ CURRENT STATE 2026-10-22: 0.3.1 published (5e62111, CI green); menu renamed to m
 - 2026-10-22 owner directive: tool skills optional but recommended (native fallback) — supersedes "missing means BLOCKED" in the body above.
 - 2026-10-22 orchestrator: Caveat: a forced CPV standardize_plugin.py or generate_plugin_repo.py run writes the bare `cpv-the-skills-menu` back into agents; re-check the preload after any such run.
 - 2026-10-22 orchestrator: 0.3.1 is a patch although it removes the public skill name mods-expert-developer-plugin:cpv-the-skills-menu; accepted because that name was public for under two hours.
+- 2026-10-22 orchestrator: post-install smoke on 0.3.1 PASSED: the injected menu's base directory was …/mods-expert-developer-plugin/0.3.1/skills/mods-the-skills-menu and the first line named the seven chapter groups (reports/mods-forge-agent/20261022_220037+0200-post-install-smoke-0.3.1.md).
+- 2026-10-22 orchestrator: model confirmed from the harness side: the subagent transcript's assistant messages carry model claude-opus-5-5; the only claude-fable-5-1 entries are the advisor-tool attachment.
+- 2026-10-22 orchestrator: the first two acceptance boxes still name the retired menu name; read them as mods-the-skills-menu since cf3b7de (superseded wording, not rewritten).
