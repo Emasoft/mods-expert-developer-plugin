@@ -4,7 +4,7 @@ title: Adopt mod-builder ideas into the tutorials and agents
 column: dev
 status: tasked
 created: 2026-10-22T21:16:56+0200
-updated: 2026-10-23T00:02:40+0200
+updated: 2026-10-23T00:40:59+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -15,14 +15,14 @@ mandated-by: none
 approved: true
 approval-judge: main-agent@emasoft-mods-expert-developer
 approval-datetime: 2026-10-22T21:16:56+0200
-implementation-commits: [7c3a79e, 19ad443, 79515d5, c31a84b, 5b0ff02, 5076bbf, 233b5ab, ea55896, d5ed2ce, 02fc9ce, d82c1e0]
+implementation-commits: [7c3a79e, 19ad443, 79515d5, c31a84b, 5b0ff02, 5076bbf, 233b5ab, ea55896, d5ed2ce, 02fc9ce, d82c1e0, 6b430f9, 203c938, 858047c, 929f92b]
 ---
 
 # Adopt mod-builder ideas into the tutorials and agents
 
-## ⏵ STATE — READ THIS FIRST ON RESUME (authoritative; supersedes the body) — 2026-10-22
+## ⏵ STATE — READ THIS FIRST ON RESUME (authoritative; supersedes the body) — 2026-10-23
 
-CURRENT STATE 2026-10-23: increment 1a committed as 7c3a79e, 19ad443, 79515d5, c31a84b, 5b0ff02; increment 1b (item C) as 5076bbf; increment 2 (item B) as 233b5ab plus ea55896, d5ed2ce, 02fc9ce and d82c1e0 (review fixes); boxes A, B and C ticked; next is increment 3 (D+E+F), then 0.4.0; the type-check of the three examples is an owner-run box (login expired).
+CURRENT STATE 2026-10-23: increments 1 to 3 committed (D 203c938, E 6b430f9, F 858047c, no-copy rewrites 929f92b); boxes A to F and the no-copy box ticked; next is the 0.4.0 publish (the git-cliff dry run and cspell on its changelog section already passed), then verify the ${CLAUDE_SKILL_DIR} expansion after install; the two owner-run boxes stay open (login expired).
 
 ## User directive
 
@@ -31,6 +31,13 @@ CURRENT STATE 2026-10-23: increment 1a committed as 7c3a79e, 19ad443, 79515d5, c
 ## Evidence
 
 reports/mod-builder-comparison/20261022_210944+0200-comparison.md. The source has NO licence, so only ideas are reused: every script, example and sentence is rewritten independently, and NOTICE gains one idea-credit line only (no licence text, nothing copied).
+2026-10-23 increment 3: E 6b430f9 (verify-before-you-report section in both agents, check-mod.sh named by ${CLAUDE_SKILL_DIR}); D 203c938; F 858047c; no-copy rewrites 929f92b (new-mod.sh name rule is now kebab-case of 2 to 64 characters, a behaviour change). pytest 281 passed.
+2026-10-23 fresh claude plugin validate and test on protect-files, turn-timer and git-poller: validate passed for all three, each with the plugin-directory warning every mod with a hooks module gets and one advice line that the README has no marketplace install line; claude plugin test passed protect-files 21, turn-timer 14, git-poller 28, 0 fail, no authentication error.
+UNVERIFIED: whether ${CLAUDE_SKILL_DIR} expands in a loaded skill on this harness; check after 0.4.0 is installed (the installed cache is 0.1.1).
+INFERRED, not measured: claude plugin validate exiting 0 with an expired login; the login state was not re-checked at that moment.
+Not applied: validate advises a marketplace install line in the README of all three examples; they are reference-only examples that are never installed from a marketplace, so the advice does not apply to them.
+Note: a fresh local `uv run` lacks pyyaml because it is in the dev extra; CI and release run `uv sync --extra dev`, so only local runs need `--extra dev`.
+Note for TRDD-GF5UDFWI: its planned command-name pattern has a 40-character bound similar to the unlicensed source's pattern; use this plugin's own kebab-case rule there.
 
 ## Decisions
 
@@ -45,12 +52,12 @@ reports/mod-builder-comparison/20261022_210944+0200-comparison.md. The source ha
 - [x] A: check-mod.sh, new-mod.sh and keep-mod.sh under skills/mods-tutorial-quickstart/scripts/, shellcheck clean, pytest on tmp dirs, placement rule extended to that folder only (evidence: commits 7c3a79e 19ad443 79515d5 c31a84b 5b0ff02, shellcheck clean, tests/test_mod_scripts.py on tmp dirs, placement rule)
 - [x] B: three new examples (turn-timer, git-poller, protect-files) with their tests, every API use verified against the mods-doc chapters
 - [x] C: house-conventions.md reference linked from the quickstart, with the UNVERIFIED table and the five proposal questions
-- [ ] D: notes-pane and branch-band notes in the interface tutorial SKILL.md, pointing to git-poller and turn-timer; their code unchanged
-- [ ] E: mods-forge-agent and mods-expert-developer-agent verification sections gain check-mod.sh as the mod gate and mutation checks
-- [ ] F: menu, catalog and README tutorial rows and entries updated for the scripts, new examples and conventions reference
+- [x] D: notes-pane and branch-band notes in the interface tutorial SKILL.md, pointing to git-poller and turn-timer; their code unchanged (evidence: commit 203c938)
+- [x] E: mods-forge-agent and mods-expert-developer-agent verification sections gain check-mod.sh as the mod gate and mutation checks (evidence: commit 6b430f9; 276 passed in a clean clone at that commit)
+- [x] F: menu, catalog and README tutorial rows and entries updated for the scripts, new examples and conventions reference (evidence: commit 858047c; README test now checks each tutorial's own bullet)
 - [ ] Owner-run: check-mod.sh prints == PASS on hello-mod on a real logged-in build after one load
 Merged into the owner-run check-mod.sh box above; no separate task.
-- [ ] No-copy proof (identifier grep, jscpd, 8-word prose check) recorded for each increment
+- [x] No-copy proof (identifier grep, jscpd, 8-word prose check) recorded for each increment (evidence: one proof run over every file increments 1-3 touched found 4 spans, rewritten in 929f92b; givememod, claude-code-mods and mishgoldenberg PASS; after 929f92b the four rewritten spans were re-checked against mod-builder and BeLazy167 and share only import and register boilerplate; the later name-rule comment and quickstart sentence were not re-checked; report reports_dev/20261023-bnb-nocopy-proof.md)
 - [x] check-mod.sh login handling: claude plugin test passed with the login expired (observed 2026-10-22), so no BLOCKED branch is needed there; the only login-bound step is the first load that writes .claude-plugin/types/, which check-mod.sh already reports as FAIL: tsc with the load instruction
 - [ ] Owner-run: type-check turn-timer, git-poller and protect-files with check-mod.sh after one live load (types folder) — not run: login expired
 

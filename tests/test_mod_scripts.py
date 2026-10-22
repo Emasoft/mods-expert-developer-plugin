@@ -51,7 +51,7 @@ def _make_mod(root: Path, name: str = "demo-mod") -> Path:
 
 @pytest.mark.parametrize("bad", ["A", "a", "1abc", "has_underscore", "Upper", "x" * 65, "-lead", "a b", "a--b", "a-", "-a"])
 def test_new_mod_rejects_an_invalid_mod_name(tmp_path: Path, bad: str) -> None:
-    """A mod name that is not 2-64 hyphen-separated lowercase words starting with a letter is refused with exit 64 and nothing is created."""
+    """A mod name that is not kebab-case or not 2 to 64 characters long is refused with exit 64 and nothing is created."""
     result = _run("new-mod.sh", EXAMPLE, tmp_path, bad)
     assert result.returncode == 64
     assert list(tmp_path.iterdir()) == []
