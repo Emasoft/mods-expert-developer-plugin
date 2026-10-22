@@ -36,7 +36,9 @@
   ],
   "ignoreWords": [
     "aestetically",
-    "seamlessy"
+    "precius",
+    "seamlessy",
+    "techniues"
   ],
   "words": [
     "actionlint",
@@ -437,6 +439,7 @@
     "testdata",
     "testing",
     "testpaths",
+    "timoncool",
     "todate",
     "tomli",
     "tomllib",
