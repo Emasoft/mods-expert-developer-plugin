@@ -4,7 +4,7 @@ title: Adopt mod-builder ideas into the tutorials and agents
 column: dev
 status: tasked
 created: 2026-10-22T21:16:56+0200
-updated: 2026-10-23T00:00:03+0200
+updated: 2026-10-23T00:02:40+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -15,14 +15,14 @@ mandated-by: none
 approved: true
 approval-judge: main-agent@emasoft-mods-expert-developer
 approval-datetime: 2026-10-22T21:16:56+0200
-implementation-commits: [7c3a79e, 19ad443, 79515d5, c31a84b, 5b0ff02, 5076bbf, 233b5ab, ea55896, d5ed2ce, 02fc9ce]
+implementation-commits: [7c3a79e, 19ad443, 79515d5, c31a84b, 5b0ff02, 5076bbf, 233b5ab, ea55896, d5ed2ce, 02fc9ce, d82c1e0]
 ---
 
 # Adopt mod-builder ideas into the tutorials and agents
 
 ## ⏵ STATE — READ THIS FIRST ON RESUME (authoritative; supersedes the body) — 2026-10-22
 
-CURRENT STATE 2026-10-22: increment 1a committed as 7c3a79e, 19ad443, 79515d5, c31a84b, 5b0ff02; increment 1b (item C) as 5076bbf; increment 2 (item B) as 233b5ab plus ea55896, d5ed2ce and 02fc9ce (review fixes); boxes A, B and C ticked; next is increment 3 (D+E+F), then 0.4.0; the type-check of the three examples is an owner-run box (login expired).
+CURRENT STATE 2026-10-23: increment 1a committed as 7c3a79e, 19ad443, 79515d5, c31a84b, 5b0ff02; increment 1b (item C) as 5076bbf; increment 2 (item B) as 233b5ab plus ea55896, d5ed2ce, 02fc9ce and d82c1e0 (review fixes); boxes A, B and C ticked; next is increment 3 (D+E+F), then 0.4.0; the type-check of the three examples is an owner-run box (login expired).
 
 ## User directive
 
@@ -78,3 +78,4 @@ Merged into the owner-run check-mod.sh box above; no separate task.
 - 2026-10-22 — d5ed2ce addresses the ea55896 review findings: git-poller switchGen guard on the session.start kick (new race test; its failure on the mutant is as reported by worker I), the old race test asserts the held read happened, the remaining API uses carry chapter citations (12 of the newly cited lines spot-checked by the orchestrator; reference 260-262, interfaces 192 and and-events 108 checked by the orchestrator in a second pass). Its protect-files way out ('delete the key from a mod') was wrong, because $.store is the plugin's own (mods-doc-mods-api chapter.md:280), and is replaced by the /protect-files-paths reset command in 02fc9ce. Plugin tests measured by the orchestrator: turn-timer 14, git-poller 28, protect-files 19 pass; pytest 274, cspell and markdownlint clean as reported by worker I (reports_dev/20261022-bnb-inc2-fixes-I.md).
 - 2026-10-22 — evidence correction to the d531732 line (its review): the n-gram check was re-measured by the orchestrator at d5ed2ce, against the B314-N03 mod-builder source only, over the three example folders only. Markdown only: 0 shared 6-word and 0 shared 8-word runs. Code plus Markdown: 59 shared 6-word runs (not inspected one by one) and 28 shared 8-word runs, the same 28 code-token runs as before (imports, hook signatures, the prop-set literal, store stubs, the .catch line). The tutorial and quickstart Markdown outside the example folders was not re-measured; increment 3's no-copy box covers it. Mutation results in the d531732 line are as reported by workers A, E and G. tsc is still not run (login expired); the owner-run type-check box tracks it.
 - 2026-10-22 — 02fc9ce: /protect-files-paths reset deletes the plugin's own key (a damaged or a valid list; both tests fail with the delete removed, as reported by workers J and K); the refusal texts and README say reset removes every protected path (a follow-up commit fixes one README sentence that still said every /protect-files-paths subcommand refuses a damaged list); the git-poller startup-race assertion now sits right after session.start; the generation re-check before refresh is untested and its comment says so; .cspell.json gains karanb. Measured by the orchestrator: git-poller 28, protect-files 21 pass (turn-timer 14, measured with its comment-only change applied). Before 0.4.0, cspell the generated changelog section, not only the subjects.
+- 2026-10-23 — d82c1e0 is the follow-up named in the 02fc9ce line: the README names reset as the exception, the way-out bullet is split in three, and the valid-list reset test checks the answer (protect-files 21 pass as reported by worker L; markdownlint 0 issues, run by the orchestrator from the repository root). Current plugin test counts: turn-timer 14, git-poller 28, protect-files 21. API citations: no complete sweep was run; every use a review flagged is now cited.
