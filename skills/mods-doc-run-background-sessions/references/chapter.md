@@ -17,12 +17,13 @@
 
 ## Who runs what
 
-The user mints the token and keeps it. An agent never runs the token command, never reads `.env.local` or `.env`, and never prints, copies or stores the token. When a background session needs a token, the agent asks the user to mint it and to start the session in the user's own terminal. The agent may write the prompt, give the user the launch command with every placeholder filled in, and talk to the session with SendMessage once it runs.
+The user mints the token and keeps it. An agent never runs the token command, never reads `.env.local` or `.env`, and never prints, copies or stores the token. When a background session needs a token, the agent asks the user to mint it and to run the launch command in their own terminal. An agent may run the Python launcher only when the user explicitly asks it to. The agent may write the prompt, give the user the launch command with the placeholders filled in (the token always stays in the file), and talk to the session with SendMessage once it runs.
 
 ## Security first
 
 * *(observed)* The background service keeps the token from the command that started it. Every later `--bg` session on that machine authenticates with it, including sessions an agent starts, until the service stops. No documented command stops or restarts the service.
 * `--permission-mode auto` lets the auto-mode classifier approve tool calls instead of the user.
+* The launch passes only `CLAUDE_CODE_OAUTH_TOKEN`, never the rest of the file, so other secrets in `.env.local` do not reach the background service.
 * Stop each session when its work is done.
 
 ## Ask the user to mint a long-lived token
@@ -37,15 +38,19 @@ The token can be revoked. The agent may check that `.env.local` is gitignored wi
 
 ## Start the background session
 
-The user runs:
+The user runs, in their own terminal (an agent runs the Python launcher below only when the user explicitly asks it to, and never opens `.env.local` or `.env` itself):
 
 ```
-cd <repo> && (set -a && . ./.env.local && set +a && claude --permission-mode auto -n <name> --bg "<prompt>")
+cd <repo> && T="$(grep -m1 '^CLAUDE_CODE_OAUTH_TOKEN=' .env.local | cut -d= -f2- | tr -d '\r')" && [ -n "$T" ] && CLAUDE_CODE_OAUTH_TOKEN="$T" claude --permission-mode auto -n <name> --bg "<prompt>"
 ```
 
-* `set -a` exports every variable the file defines, so `claude` sees `CLAUDE_CODE_OAUTH_TOKEN`.
-* The parentheses keep those variables inside a subshell, so the user's shell is unchanged.
-* The token never appears in shell history or on screen.
+* `T` is a plain shell variable (not exported), so only `claude` receives the token.
+* If the line is missing or empty, the command stops before launching, so the background service is never started without a token.
+* The shell form needs the bare `CLAUDE_CODE_OAUTH_TOKEN=<token>` line (no quotes, no `export`).
+* The file is not executed as shell code; one line is read from it.
+* The token stays out of shell history and off screen.
+* After the launch, `unset T` clears the variable from your shell (or run the whole line in a subshell with parentheses).
+* If the project keeps the line in `.env` instead, replace `.env.local` with `.env` in the command.
 * `-n <name>` names the session; the name appears in ListAgents and in `claude agents`.
 * *(observed)* When the service is not yet running, the output begins `Starting background service…`; the token must be set on that command. The output then shows `backgrounded · <id> · <name>`.
 
@@ -53,7 +58,7 @@ One-shot example, the user's own smoke test: the prompt `send a message via send
 
 ### From a Python script
 
-The line in `.env.local` (or `.env`) is exactly `CLAUDE_CODE_OAUTH_TOKEN=<token>`: KEY=value, no `export`, no quotes, so a script can read it without a third-party package. The user runs the script, or an agent runs it only when the user asked for it. The agent never opens the file itself, and the script never shows the token.
+The line in `.env.local` (or `.env`) is exactly `CLAUDE_CODE_OAUTH_TOKEN=<token>`. The script reads `.env.local` and falls back to `.env`, so it needs no third-party package. Run it from the repository root. The user runs the script, or an agent runs it only when the user explicitly asks it to; the agent never opens `.env.local` or `.env` itself, and the script never shows the token.
 
 ```python
 import os
@@ -61,18 +66,33 @@ import subprocess
 import sys
 
 KEY = "CLAUDE_CODE_OAUTH_TOKEN"
+ENV_FILES = (".env.local", ".env")
 
 
-def read_token(env_file: str = ".env.local") -> str:
-    with open(env_file, encoding="utf-8") as handle:
-        for line in handle:
-            line = line.strip()
-            if not line or line.startswith("#") or "=" not in line:
-                continue
-            name, value = line.split("=", 1)
-            if name.strip() == KEY and value.strip():
-                return value.strip()
-    sys.exit(f"{KEY} is missing from {env_file}")
+def unquote(value: str) -> str:
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in ("'", '"'):
+        return value[1:-1]
+    return value
+
+
+def read_token() -> str:
+    for env_file in ENV_FILES:
+        if not os.path.exists(env_file):
+            continue
+        with open(env_file, encoding="utf-8") as handle:
+            for line in handle:
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                if line.startswith("export "):
+                    line = line[len("export "):].lstrip()
+                if "=" not in line:
+                    continue
+                name, value = line.split("=", 1)
+                value = unquote(value.strip())
+                if name.strip() == KEY and value:
+                    return value
+    sys.exit(f"{KEY} not found in .env.local or .env")
 
 
 def start_background_session(name: str, prompt: str) -> None:
@@ -118,7 +138,7 @@ Also: `claude agents` (`--json`) lists sessions; `claude rm <id>` deletes one.
 
 ## Troubleshooting
 
-"Login expired · Please run /login": the background service is running without the token. No documented command stops or restarts the service. *(observed)* When a launch printed `Starting background service…`, the session started with the token from that command.
+"Login expired · Please run /login": *(inferred)* the background service is running without the token. No documented command stops or restarts the service. *(observed)* When a launch printed `Starting background service…`, the session started with the token from that command.
 
 ## See also
 

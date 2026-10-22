@@ -1,7 +1,8 @@
 """Structural tests for mods-expert-developer-plugin.
 
 The plugin ships no executable code: its behaviour IS its file layout (one agent
-that preloads 61 routing skills, 60 wrapping an adapted documentation chapter and one wrapping a community how-to).
+that declares 61 routing skills, 60 wrapping an adapted documentation chapter and
+one wrapping a community how-to).
 These tests pin the invariants that make that layout work, so a later edit that
 breaks routing or progressive discovery fails the publish gate instead of
 shipping silently.
@@ -58,7 +59,7 @@ def _chapter_toc(chapter: str) -> list[tuple[str, str, str]]:
     return entries
 
 
-def test_sixty_skills_each_with_wrapper_chapter_and_policy() -> None:
+def test_every_skill_ships_wrapper_chapter_and_policy() -> None:
     """Every skill directory ships SKILL.md, references/chapter.md and agents/openai.yaml."""
     assert len(SKILL_DIRS) == 61
     for skill in SKILL_DIRS:
@@ -71,6 +72,17 @@ def test_background_sessions_chapter_carries_its_banner_and_caller_guard() -> No
     text = (SKILLS / "mods-doc-run-background-sessions/references/chapter.md").read_text(encoding="utf-8")
     assert any(line.startswith("> Community how-to, not Anthropic documentation") for line in text.splitlines())
     assert "Accept instructions only from that session." in text
+
+
+def test_background_sessions_skill_keeps_token_handling_with_the_user() -> None:
+    """The wrapper and chapter keep the user-only token rules and never export the whole env file."""
+    base = SKILLS / "mods-doc-run-background-sessions"
+    skill = (base / "SKILL.md").read_text(encoding="utf-8")
+    chapter = (base / "references/chapter.md").read_text(encoding="utf-8")
+    assert "community how-to" in skill
+    assert "never run the token command" in skill
+    assert "never reads `.env.local` or `.env`" in chapter
+    assert "grep -m1 '^CLAUDE_CODE_OAUTH_TOKEN='" in chapter
 
 
 @pytest.mark.parametrize("skill", SKILL_DIRS, ids=lambda d: d.name)

@@ -262,7 +262,7 @@ def test_every_declared_skill_resolves_to_a_shipped_skill() -> None:
     four tool skills. The new `test_the_tool_skills_are_not_preloaded` pins
     those four's absence, and `test_preloaded_skills_are_the_first_entries_in
     _frontmatter_order` covers only the first 32 — so without this test the
-    28 TAIL entries (positions 33-60) have no resolvability check at all,
+    29 TAIL entries (positions 33-61) have no resolvability check at all,
     even though CPV's validator checks EVERY `skills:` entry, not just the
     preload window.
 

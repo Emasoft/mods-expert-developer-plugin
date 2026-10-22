@@ -23,7 +23,7 @@ Only the RUN BACKGROUND SESSIONS chapter shipped in the references folder of thi
 1. Confirm the task needs running background sessions; otherwise stop without opening the chapter.
 2. Pick the RUN BACKGROUND SESSIONS section from the Table of Contents under Resources and follow its link.
 3. Read only that background sessions section; do not preload this or any other chapter.
-4. The token steps are for the user: ask the user to mint the token and to run the launch command in their own terminal; never run the token command, never read `.env.local` or `.env`, never handle the token.
+4. The token steps are for the user: ask the user to mint the token and to run the launch command in their own terminal; an agent may run the Python launcher only when the user explicitly asks it to; never run the token command, never read `.env.local` or `.env`, never handle the token.
 5. Stop when the RUN BACKGROUND SESSIONS section is read: this wrapper routes reads only and authorizes no writes.
 
 ## Output
