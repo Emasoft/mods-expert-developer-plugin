@@ -221,8 +221,6 @@ PINNED_CSPELL_IGNORE_PATHS = [
     "**/__fixtures__/**",
     "**/testdata/**",
     "**/fixtures/**",
-    # TRDD-BDY6ZNDZ DECISION: cspell skips the verbatim tutorial example mods; see .mega-linter.yml.
-    "**/skills/mods-tutorial-*/examples/**",
 ]
 
 
@@ -248,8 +246,6 @@ PINNED_JSCPD_IGNORE = [
     "**/__fixtures__/**",
     "**/testdata/**",
     "**/fixtures/**",
-    # TRDD-BDY6ZNDZ DECISION: jscpd skips the verbatim tutorial example mods; see .mega-linter.yml.
-    "**/skills/mods-tutorial-*/examples/**",
     "**/node_modules/**",
     "**/.git/**",
 ]
@@ -391,59 +387,41 @@ def test_readme_lists_the_tutorials_as_reference_only() -> None:
         assert f"`{name}`" in section, f"README Tutorials section misses {name}"
 
 
-# --- review fixes after ed3dc13 (TRDD-BDY6ZNDZ) -------------------------------
+# --- no lint exclusion for the tutorial examples (TRDD-JFB5E98B) ---------------
 #
-# The lint exclusions must reach only the verbatim tutorial examples, the licence must travel with the copies, and
-# nothing the plugin loads may point into skills/*/examples/. Each assertion below was proven to fail on a broken
-# copy (see reports/mods-tutorials/*-review-fixes.md).
+# The tutorial examples are linted like every other file; the licence must travel with the copies, and nothing the
+# plugin loads may point into skills/*/examples/.
 
-# The tutorials' exclude regex. (^|/) rather than ^ because MegaLinter may hand the filter a path starting skills/,
-# ./skills/ or an absolute workspace path; (^|/) matches all three while staying narrowed to the tutorials.
-EXAMPLES_EXCLUDE = r"(^|/)skills/mods-tutorial-[^/]+/examples/"
-MEGALINTER_EXAMPLES_EXCLUDES = {
-    "MARKDOWN_MARKDOWNLINT_FILTER_REGEX_EXCLUDE": r"(CHANGELOG\.md|(^|/)skills/mods-tutorial-[^/]+/examples/)",
-    "SPELL_CSPELL_FILTER_REGEX_EXCLUDE": r"(uv\.lock|\.json|(^|/)skills/mods-tutorial-[^/]+/examples/)",
-    "BASH_SHFMT_FILTER_REGEX_EXCLUDE": EXAMPLES_EXCLUDE,
-    "COPYPASTE_JSCPD_FILTER_REGEX_EXCLUDE": EXAMPLES_EXCLUDE,
-}
-# Linters that read TypeScript or JavaScript would lint the examples; none may be enabled without the same exclude.
+TUTORIAL_EXAMPLE_PROBE = "skills/mods-tutorial-call-intercept-mods/examples/hello-mod/smoke.sh"
+# Linters that read TypeScript or JavaScript would lint the examples.
 TS_JS_LINTER_PREFIXES = ("TYPESCRIPT_", "JAVASCRIPT_", "JSX_", "TSX_")
 TS_JS_DESCRIPTORS = ("TYPESCRIPT", "JAVASCRIPT", "JSX", "TSX")
 
-def test_mega_linter_example_excludes_are_anchored_to_the_tutorials() -> None:
-    """Every per-linter examples exclude equals the pinned regex anchored on skills/mods-tutorial-*/examples/."""
+
+def test_no_mega_linter_exclude_skips_the_tutorial_examples() -> None:
+    """No FILTER_REGEX_EXCLUDE in .mega-linter.yml matches a tutorial example path."""
     config = yaml.safe_load((ROOT / ".mega-linter.yml").read_text(encoding="utf-8"))
-    for key, expected in MEGALINTER_EXAMPLES_EXCLUDES.items():
-        assert config[key] == expected, f"{key} is {config.get(key)!r}, expected {expected!r}"
+    for key, value in config.items():
+        if key.endswith("FILTER_REGEX_EXCLUDE"):
+            assert not re.search(value, TUTORIAL_EXAMPLE_PROBE), f"{key} excludes the tutorial examples"
 
 
-def test_no_ts_or_js_linter_is_enabled_without_the_tutorial_exclude() -> None:
-    """A TypeScript/JavaScript linter that MegaLinter would run needs its own (^|/)-anchored examples exclude."""
+def test_cspell_and_jscpd_do_not_ignore_the_tutorial_examples() -> None:
+    """Neither .cspell.json ignorePaths nor .jscpd.json ignore names a mods-tutorial path."""
+    cspell = json.loads((ROOT / ".cspell.json").read_text(encoding="utf-8"))
+    jscpd = json.loads((ROOT / ".jscpd.json").read_text(encoding="utf-8"))
+    for pattern in cspell["ignorePaths"] + jscpd["ignore"]:
+        assert "mods-tutorial" not in pattern, f"{pattern} ignores the tutorial examples"
+
+
+def test_no_ts_or_js_linter_is_enabled() -> None:
+    """No TypeScript/JavaScript linter is enabled for any file (examples included), so nothing is excluded for the examples."""
     config = yaml.safe_load((ROOT / ".mega-linter.yml").read_text(encoding="utf-8"))
     # Without ENABLE_LINTERS and ENABLE, MegaLinter runs every linter of the flavor, TypeScript and JavaScript included.
     assert "ENABLE_LINTERS" in config or "ENABLE" in config, "no ENABLE_LINTERS or ENABLE: every linter would run"
-    for linter in config.get("ENABLE_LINTERS", []):
-        if linter.startswith(TS_JS_LINTER_PREFIXES):
-            key = f"{linter}_FILTER_REGEX_EXCLUDE"
-            assert config.get(key) == EXAMPLES_EXCLUDE, f"{linter} lints the examples"
-    for descriptor in config.get("ENABLE", []):
-        if descriptor in TS_JS_DESCRIPTORS:
-            key = f"{descriptor}_FILTER_REGEX_EXCLUDE"
-            assert config.get(key) == EXAMPLES_EXCLUDE, f"{descriptor} lints the examples"
-
-
-@pytest.mark.parametrize("key", sorted(MEGALINTER_EXAMPLES_EXCLUDES))
-def test_examples_exclude_regexes_match_every_path_form_and_only_the_tutorials(key: str) -> None:
-    """Each examples exclude matches skills/, ./skills/ and absolute paths of a tutorial example, and nothing else."""
-    regex = re.compile(MEGALINTER_EXAMPLES_EXCLUDES[key])
-    for hit in (
-        "skills/mods-tutorial-x/examples/a.md",
-        "./skills/mods-tutorial-x/examples/a.md",
-        "/tmp/lint/skills/mods-tutorial-x/examples/a.md",
-    ):
-        assert regex.search(hit), f"{key} misses {hit}"
-    for miss in ("skills/mods-doc-x/examples/a.md", "skills/mods-tutorial-x/SKILL.md"):
-        assert not regex.search(miss), f"{key} wrongly matches {miss}"
+    enabled = [x for x in config.get("ENABLE_LINTERS", []) if x.startswith(TS_JS_LINTER_PREFIXES)]
+    enabled += [x for x in config.get("ENABLE", []) if x in TS_JS_DESCRIPTORS]
+    assert not enabled, f"TS/JS linters enabled: {enabled}"
 
 
 @pytest.mark.parametrize("tutorial", ("mods-tutorial-call-intercept-mods", "mods-tutorial-interface-mods"))

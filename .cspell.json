@@ -31,8 +31,7 @@
     "**/spec/fixtures/**",
     "**/__fixtures__/**",
     "**/testdata/**",
-    "**/fixtures/**",
-    "**/skills/mods-tutorial-*/examples/**"
+    "**/fixtures/**"
   ],
   "words": [
     "actionlint",
@@ -43,6 +42,7 @@
     "AICTX",
     "aimaestro",
     "AIRTABLE",
+    "AKIA",
     "alwaysload",
     "amvcp",
     "anchore",

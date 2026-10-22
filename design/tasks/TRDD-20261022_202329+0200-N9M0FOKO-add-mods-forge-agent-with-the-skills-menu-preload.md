@@ -4,7 +4,7 @@ title: Add mods-forge-agent with the skills-menu preload
 column: dev
 status: tasked
 created: 2026-10-22T20:23:29+0200
-updated: 2026-10-22T22:02:02+0200
+updated: 2026-10-22T22:09:13+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -22,7 +22,7 @@ implementation-commits: [dd4e8e1, f5e0779, ca81806, 92e99d5, cf3b7de]
 
 ## STATE
 
-CURRENT STATE 2026-10-22: 0.3.1 published and verified after install (both post-install boxes ticked). NEXT ACTION: tick the remaining build boxes against the evidence in the approval log and the commits, then move to complete.
+CURRENT STATE 2026-10-22: 0.3.1 published and verified after install (both post-install boxes ticked). NEXT ACTION: verify each remaining box against cited evidence (box 4 needs a broken-copy rerun or an explicit self-report note; box 8 needs the saved CPV output under reports/cpv/); boxes 1-2 (agent frontmatter, menu catalog) read as mods-the-skills-menu since cf3b7de; append all evidence before moving to complete.
 
 ## User directive
 
@@ -69,3 +69,4 @@ CURRENT STATE 2026-10-22: 0.3.1 published and verified after install (both post-
 - 2026-10-22 orchestrator: post-install smoke on 0.3.1 PASSED: the injected menu's base directory was …/mods-expert-developer-plugin/0.3.1/skills/mods-the-skills-menu and the first line named the seven chapter groups (reports/mods-forge-agent/20261022_220037+0200-post-install-smoke-0.3.1.md).
 - 2026-10-22 orchestrator: model confirmed from the harness side: the subagent transcript's assistant messages carry model claude-opus-5-5; the only claude-fable-5-1 entries are the advisor-tool attachment.
 - 2026-10-22 orchestrator: the first two acceptance boxes still name the retired menu name; read them as mods-the-skills-menu since cf3b7de (superseded wording, not rewritten).
+- 2026-10-22 orchestrator: box 10 evidence verified in the subagent transcript: a single 'Base directory for this skill' line at the 0.3.1 cache path and no Skill tool use (4 Bash + handback), so the menu came from the preload; the api-request-shape fable entry is the advisor tool's field.
