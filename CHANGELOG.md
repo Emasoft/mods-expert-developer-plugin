@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.1] — 2026-10-22
+
+### Bug Fixes
+
+- **agents:** Rename the skills menu so the forge agent preloads ours (TRDD-N9M0FOKO) (cf3b7de)
+- **release:** Spell-check the givememod card's verbatim quote (68aa496)
+
+### Documentation
+
+- Record the 0.3.0 release on two cards, reword NOTICE (TRDD-BDY6ZNDZ) (563524d)
+- Add TRDD-JFB5E98B to drop the tutorial-example lint exclusions (c824ae4)
+- Add TRDD-H26OG8AP to integrate the givememod harvest (88f78b2)
 ## [0.3.0] — 2026-10-22
 
 ### Bug Fixes
@@ -25,6 +37,10 @@ All notable changes to this project will be documented in this file.
 
 - **agents:** Add mods-forge-agent with the skills-menu preload (TRDD-N9M0FOKO) (dd4e8e1)
 - **skills:** Add mods tutorial skills from claude-mods-skill (TRDD-BDY6ZNDZ) (ed3dc13)
+
+### Miscellaneous Tasks
+
+- Bump version to 0.3.0 (44fd88a)
 ## [0.2.1] — 2026-10-22
 
 ### Documentation
