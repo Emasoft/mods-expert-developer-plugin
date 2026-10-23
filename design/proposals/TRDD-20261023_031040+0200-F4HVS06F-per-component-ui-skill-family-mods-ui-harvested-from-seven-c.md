@@ -24,9 +24,9 @@ approved: false
 ## Request (USER, verbatim, 2026-10-23)
 
 > the following mods uses some nice indicators for all data, with many different styles, and different value types to display, with or without animations. I want you to harvest those two mods projects and extract those ui elements as independent modules that can be reused by the developer in any mod he decides to build. think of them as a palette of ui elements that must be just referenced in the code as modular components imported and working out of the box. wrap them in a uniform standard interface so they will be all instanced and used in the code with the same parameters, and swapped without loosing positions or alignment. make it a library of components with many styles variations
-
+>
 > nono, no separate project or monolitic library. each component (or generator of components, if truly generic) must be a single skill, or a sub reference file with included code to import. atomically. each one separated, described, tested, as individual components that the plugin presents as knowledge and template (and eventually code) to the user. but in the end the agent is the one that will use the skills of those ui components to create mods according to the user request. so they must be composable and didascalic.
-
+>
 > are you using this plugin expert agent to spawn the subagents? it must understand mods to understand what of those project is good and what is not worthy of being harvested.
 
 ## Sources (all read as untrusted data; nothing run)
