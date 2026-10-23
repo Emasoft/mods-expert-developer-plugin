@@ -4,7 +4,7 @@ title: Harvest karanb192 mod-builder ideas into the tutorials, skills and agents
 column: dev
 status: tasked
 created: 2026-10-22T23:44:48+0200
-updated: 2026-10-23T02:09:23+0200
+updated: 2026-10-23T02:19:10+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -15,14 +15,14 @@ mandated-by: none
 approved: true
 approval-judge: main-agent@emasoft-mods-expert-developer
 approval-datetime: 2026-10-22T23:44:48+0200
-implementation-commits: [fdc9ae4, 30334de, 4e4e048]
+implementation-commits: [fdc9ae4, 30334de, 4e4e048, f7f039c, 180663a]
 ---
 
 # Harvest karanb192 mod-builder ideas into the tutorials, skills and agents
 
 ## ⏵ STATE — READ THIS FIRST ON RESUME (authoritative; supersedes the body) — 2026-10-23
 
-CURRENT STATE 2026-10-23: start gate read as its parenthetical "0.4.0 published", met at d9f6af3; TRDD-BNBDNR2V itself is not terminal (human_review, waiting only on owner-run boxes that need a logged-in build). Box 1 done: source at commit fb1f9c0 downloaded to downloads_dev/karanb192-mod-builder-src/ and inventoried in reports_dev. Boxes 2 and 3 done (idea map and increments spec in docs_dev). I-1 done (fdc9ae4, 30334de, 4e4e048; CPV gates clean on a clean clone of 4e4e048). NEXT ACTION: I-2.
+CURRENT STATE 2026-10-23: start gate read as its parenthetical "0.4.0 published", met at d9f6af3; TRDD-BNBDNR2V itself is not terminal (human_review, waiting only on owner-run boxes that need a logged-in build). Box 1 done: source at commit fb1f9c0 downloaded to downloads_dev/karanb192-mod-builder-src/ and inventoried in reports_dev. Boxes 2 and 3 done (idea map and increments spec in docs_dev). I-1 done (fdc9ae4, 30334de, 4e4e048) and I-2 done (f7f039c, 180663a); CPV gates met on a clean clone of each final commit (v5.22.3 all 0; v5.23.0 equals the 694d70d six-finding baseline, no new finding). NEXT ACTION: I-3.
 
 ## Goal
 
@@ -54,8 +54,8 @@ Checked 2026-10-22 with the GitHub API: repo karanb192/claude-code-mods, licence
 - [ ] 4. NOTICE credits karanb192/claude-code-mods (MIT).
 - [ ] 5. No-copy proof for each increment, as the no-copy proof line under Constraints says; for code, shared runs of 6 or more words, counted as for prose (lowercased, punctuation stripped, split on whitespace) are listed and judged in the same report.
 - [ ] 6. Publish (minor version) and verify after install: the installed cache version matches, the changed skills load, and `claude plugin test` passes on every changed example.
-- [x] I-1. The three tutorial SKILL.md line-11 sentences keep the chapters winning but scope one exception to API names and shapes, where the running build generated type files win (mods-development chapter line 291 speaks of events and methods changing across releases); quickstart gains a right-container step, the ignored early-access flag line, and three UNVERIFIED trap rows. Done 2026-10-23 in fdc9ae4, 30334de and 4e4e048: shipped text cites chapters by section title; CPV v5.22.3 all 0 and v5.23.0 equal to the 694d70d baseline on a clean clone of 4e4e048 (reports_dev/20261023-cpv-5223-4e4e048.txt and 20261023-cpv-5230-4e4e048.txt); no-copy 0 shared 8-word runs (reports_dev/20261023-71sh-i1.md and 20261023-71sh-i1-review-fixes.md).
-- [ ] I-2. Honest hand-over in house-conventions.md (banned words without a stage, -p draws nothing, DECISIONS, claude --version stamp, settle-by column); the forge agent stops after three identical stage failures.
+- [x] I-1. The three tutorial SKILL.md line-11 sentences keep the chapters winning but scope one exception to API names and shapes, where the running build generated type files win (mods-development chapter line 291 speaks of events and methods changing across releases); quickstart gains a right-container step, the ignored early-access flag line, and three UNVERIFIED trap rows. Done 2026-10-23 in fdc9ae4, 30334de and 4e4e048: shipped text cites chapters by section title; CPV v5.22.3 all 0 and v5.23.0 equal to the 694d70d baseline on a clean clone of 4e4e048 (reports_dev/20261023-cpv-5223-4e4e048.txt and 20261023-cpv-5230-4e4e048.txt); no-copy 0 shared 8-word runs (reports_dev/20261023-71sh-i1.md and 20261023-71sh-i1-review-fixes.md). Shipped as type shapes (event, method and argument names and their TypeScript types), with behaviour the types cannot express (ordering, timing, what next does) still owned by the chapters; the shipped text cites the section "Change and test a mod", not a line number.
+- [x] I-2. Honest hand-over in house-conventions.md (banned words without a stage, -p draws nothing, DECISIONS, claude --version stamp, settle-by column); the forge agent stops after three identical stage failures. Done 2026-10-23 in f7f039c and 180663a (review fixes: build stamp checked against the minimum version, UNVERIFIED label allowed, -p limited to hooks on events a print run produces, one stop sentence in both agents, which also forbids a workaround past a validator refusal); the forge agent also cuts a reproduced debug case to the smallest failing hook. CPV v5.22.3 all 0 and v5.23.0 equal to the 694d70d baseline on a clean clone of 180663a (reports_dev/20261023-cpv-5223-180663a.txt and 20261023-cpv-5230-180663a.txt); pytest 281 passed; no-copy 0 shared 8-word runs (reports_dev/20261023-71sh-i2.md and 20261023-71sh-i2-fixes.md).
 - [ ] I-3. New threat-model.md and review-checklist.md under the quickstart skill, with full TOCs embedded after their links in SKILL.md.
 - [ ] I-4. Plan-time rules in house-conventions.md (matcher, lifecycle questions, design gates, channel table with UNVERIFIED tags) and the gate-as-test technique in the call-intercept tutorial.
 - [ ] I-5. Live check for context-injecting mods in the call-intercept tutorial, cut to its principle (a fresh marker the model must quote, not confirm, and a control session without the mod), no step-by-step procedure, marked UNVERIFIED as a method.
