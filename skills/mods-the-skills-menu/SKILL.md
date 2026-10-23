@@ -9,7 +9,7 @@ allowed-tools: Read
 
 ## Overview
 
-This menu lists every skill an agent of `mods-expert-developer-plugin` can load at runtime: the four optional, recommended user-scope tool skills the agents use but the plugin does not ship, the 61 chapter skills the plugin ships (60 adapted Claude Code documentation chapters and one community how-to), and three reference-only tutorials with example mods. It names each skill once, says what it covers, and shows how to load it. It holds no chapter content itself.
+This menu lists every skill an agent of `mods-expert-developer-plugin` can load at runtime: the four optional, recommended user-scope tool skills the agents use but the plugin does not ship, the 61 chapter skills the plugin ships (60 adapted Claude Code documentation chapters and one community how-to), two tools that read the drafts of the requirements-drafts mod, and three reference-only tutorials with example mods. It names each skill once, says what it covers, and shows how to load it. It holds no chapter content itself.
 
 ## Prerequisites
 
@@ -209,6 +209,15 @@ Every skill below loads as `mods-expert-developer-plugin:<skill>`. Its full entr
 | mods-expert-developer-plugin:mods-doc-tracing-the-origin-of-a-plugin | Plugin loading reference |
 | mods-expert-developer-plugin:mods-doc-troubleshooting-cc-setup | Troubleshoot installation and login |
 | mods-expert-developer-plugin:mods-doc-cc-debug-mode | Debug your configuration |
+
+### Requirements drafts
+
+Tools of the requirements-drafts mod: they read the drafts the mod saves. Both are user- and model-invocable.
+
+| Skill | Covers |
+|---|---|
+| mods-expert-developer-plugin:mods-requirements-drafts-list | List the saved requirements drafts, newest first, for a project or all projects |
+| mods-expert-developer-plugin:mods-requirements-drafts-search | Find saved requirements drafts by keywords that must all match |
 
 ### Tutorials (reference only)
 

@@ -90,6 +90,18 @@ Three tutorial skills are reference only: they hold worked examples for agents, 
 - `mods-tutorial-call-intercept-mods`: the `hello-mod`, `redact-output`, `dice-tool` and `protect-files` example mods, which block, rewrite and answer tool calls, add a tool, and guard paths.
 - `mods-tutorial-interface-mods`: the `branch-band`, `notes-pane`, `turn-timer` and `git-poller` example mods, which draw a band above the prompt, a pane opened by a command, a status line, and a band kept current by a git poller.
 
+## Requirements drafts mod
+
+The `requirements-drafts` mod (`hooks/requirements-drafts/`) saves what you typed as a requirements draft: one Markdown file per message in `~/.claude/requirements-drafts/`. A dim line, `+ save as requirement draft`, appears under each message you typed in this session; after a save it reads `✓ saved as requirement draft <id>`. Drafts are plain text in your home folder, and every agent and session on the machine can read them. Three commands do the rest:
+
+- `/requirements-drafts [on|off]` sets the switch (on by default); with no argument it toggles.
+- `/requirements-drafts-save` saves your last typed message.
+- `/requirements-drafts-pick` opens a picker of your recent messages and saves the one you choose.
+
+Two skills, which you or Claude can invoke, read the drafts back: `mods-requirements-drafts-list` (newest first, for this project or `--all`) and `mods-requirements-drafts-search` (every keyword must match).
+
+On Claude Code 2.1.309 a click under a message reached the mod with `CLAUDE_CODE_NO_FLICKER=1` and not in the classic renderer (one click each). The commands work in any display. The recent list resets on `/clear`, `/resume` and fork, and on a module reload. Messages that look like they hold a secret (a key, token or password) are refused.
+
 ## Prerequisites
 
 The expert agent delegates to the user-scope agents `fast-worker` and `cheap-worker`, which are NOT bundled with this plugin. Node is required because mods are written in TypeScript and their tests run on Node; the `quicksilver` skill also uses it.

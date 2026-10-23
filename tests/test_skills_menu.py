@@ -218,7 +218,10 @@ CATALOG_SKILLS = {"mods-the-skills-menu"}
 # two drift. A tutorial is reference-only (TRDD-BDY6ZNDZ): it is listed by the menu in its own group, but it is not a
 # chapter, so it is not routed by the expert agent and is not a row of the README Components table.
 TUTORIAL_SKILLS = {"mods-tutorial-quickstart", "mods-tutorial-call-intercept-mods", "mods-tutorial-interface-mods"}
-DOC_SKILLS = [d.name for d in SKILL_DIRS if d.name not in CATALOG_SKILLS | TUTORIAL_SKILLS]
+# Identical copy of DRAFTS_SKILLS in tests/test_plugin_structure.py: the requirements-drafts mod tools (TRDD-O5LUMKPW), listed by the
+# menu in the group Requirements drafts but not chapters, so not routed by the expert agent and not README Components rows.
+DRAFTS_SKILLS = {"mods-requirements-drafts-list", "mods-requirements-drafts-search"}
+DOC_SKILLS = [d.name for d in SKILL_DIRS if d.name not in CATALOG_SKILLS | TUTORIAL_SKILLS | DRAFTS_SKILLS]
 
 
 def test_preload_window_is_exactly_the_pinned_roster() -> None:
@@ -678,7 +681,7 @@ def _menu_table_skills(text: str) -> list[str]:
 
 def _expected_menu_names() -> list[str]:
     """Every name the menu tables and the catalog list: the chapters plus the reference-only tutorials."""
-    return sorted(f"{_namespace()}:{name}" for name in [*DOC_SKILLS, *TUTORIAL_SKILLS])
+    return sorted(f"{_namespace()}:{name}" for name in [*DOC_SKILLS, *TUTORIAL_SKILLS, *DRAFTS_SKILLS])
 
 
 def test_tutorial_skills_copies_agree() -> None:
@@ -940,7 +943,7 @@ def test_every_menu_skill_call_uses_the_manifest_namespace() -> None:
     namespace = _namespace()
     # The Instructions step shows the generic form with a `<skill>` placeholder; it must carry the namespace too.
     allowed = (
-        {f"{namespace}:{name}" for name in [*DOC_SKILLS, *TUTORIAL_SKILLS]}
+        {f"{namespace}:{name}" for name in [*DOC_SKILLS, *TUTORIAL_SKILLS, *DRAFTS_SKILLS]}
         | set(TOOL_SKILLS)
         | {f"{namespace}:<skill>"}
     )

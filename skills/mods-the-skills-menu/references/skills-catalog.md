@@ -9,6 +9,7 @@
 - [Settings and Configuration](#settings-and-configuration)
 - [Sessions and Runtime](#sessions-and-runtime)
 - [Troubleshooting](#troubleshooting)
+- [Requirements drafts](#requirements-drafts)
 - [Tutorials (reference only)](#tutorials-reference-only)
 
 Full entries for the chapter skills of `mods-expert-developer-plugin`, grouped by domain. Each entry is derived from the skill's own SKILL.md: its description, its H1 and its section table of contents. The four standalone tool skills (optional, recommended; user-scope, not shipped by this plugin) are described in the menu's SKILL.md, not here.
@@ -880,6 +881,36 @@ Full entries for the chapter skills of `mods-expert-developer-plugin`, grouped b
 **Outputs:** that section of the chapter read into context; nothing is written.
 
 **Dependencies:** the chapter file in the skill's own references folder.
+
+## Requirements drafts
+
+### mods-expert-developer-plugin:mods-requirements-drafts-list
+
+**Use when:** the user asks to list, show or review the requirements drafts saved by the requirements-drafts mod, for this project or all projects. Sections: Overview; Prerequisites; Instructions; Output; Error Handling; Examples; Resources.
+
+**Do not use when:** the user wants to find a draft by keyword (use `mods-expert-developer-plugin:mods-requirements-drafts-search`).
+
+**Load with:** `Skill({skill: "mods-expert-developer-plugin:mods-requirements-drafts-list", args: "<project, limit or date>"})`
+
+**Inputs:** optionally a project path, a limit, or a since date.
+
+**Outputs:** a Markdown table of the newest drafts, a count, and any incomplete files; nothing is written.
+
+**Dependencies:** Python 3.12 and the drafts folder of the requirements-drafts mod.
+
+### mods-expert-developer-plugin:mods-requirements-drafts-search
+
+**Use when:** the user asks to find a requirements draft by keyword; every keyword must match, case-insensitively. Sections: Overview; Prerequisites; Instructions; Output; Error Handling; Examples; Resources.
+
+**Do not use when:** the user wants a plain list of recent drafts (use `mods-expert-developer-plugin:mods-requirements-drafts-list`).
+
+**Load with:** `Skill({skill: "mods-expert-developer-plugin:mods-requirements-drafts-search", args: "<keywords>"})`
+
+**Inputs:** one or more keywords, optionally a project path, a limit, or a since date.
+
+**Outputs:** a Markdown table of the matching drafts with one snippet line each; nothing is written.
+
+**Dependencies:** Python 3.12, the drafts folder of the requirements-drafts mod, and the script of `mods-requirements-drafts-list`.
 
 ## Tutorials (reference only)
 
