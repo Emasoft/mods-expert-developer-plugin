@@ -4,7 +4,7 @@ title: Ship the requirements-drafts mod with list and search skills
 column: backburner
 status: tasked
 created: 2026-10-23T18:01:09+0200
-updated: 2026-10-23T21:24:14+0200
+updated: 2026-10-23T23:13:05+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -15,7 +15,7 @@ mandated-by: user
 approved: true
 approval-judge: main-agent@emasoft-mods-expert-developer
 approval-datetime: 2026-10-23T18:01:09+0200
-implementation-commits: [b17e4b5, be732a4, 1bfccce, 94d1778]
+implementation-commits: [b17e4b5, be732a4, 1bfccce, 94d1778, 58fc002, ac621e6, 96fac93, 4de69c6, 1f3c768, 9c0a68e, 87f9560]
 ---
 
 # Ship the requirements-drafts mod with list and search skills
@@ -24,10 +24,11 @@ implementation-commits: [b17e4b5, be732a4, 1bfccce, 94d1778]
 
 - Approved by the user on 2026-10-23: "Approve the outline, but put the mod in this repo as a tutorial example and create the TRDD card here." Then, mid-turn: "the requirements-drafts mod must be part of this plugin."
 - Reading of the two: the mod ships LIVE as part of mods-expert-developer-plugin (its hooks module in the plugin's own `hooks/`, its two skills in `skills/`), and the interface tutorial points to it as a worked example. It is NOT an unloaded copy under `examples/`.
-- NEXT ACTION (updated 2026-10-23): step 2 (spike) is DONE for the terminal: a Button under a typed message fired on a click with CLAUDE_CODE_NO_FLICKER=1 and not in the classic renderer (runs 1-3 under Feasibility; probe, logs and 2.1.309 types in reports_dev/requirements-drafts-spike/, gitignored). The user then said build WITH the row button and that they will test the Desktop click on the finished mod. Step 3 is IN PROGRESS under the choices in '## Build decisions' (gate on a staging copy; recent messages in a module variable); the list and search skills are written but uncommitted, waiting on the review fixes listed there. The mod ships in the plugin's own root hooks/ and skills/mods-requirements-drafts-list and -search. STANDING AGREEMENT: tell the TRDD-H26OG8AP session before editing skills/mods-tutorial-quickstart/SKILL.md or references/house-conventions.md. Still open with the user: whether the mod starts ON (current default, not user-approved) or OFF for other installers.
-- Defaults taken from the approved outline's recommendations (the user did not override them; each can still change): drafts folder `~/.claude/requirements-drafts/`; a secret-looking message is refused with a toast; the slash commands are the primary save path and the row button ships only if the spike shows a click fires; the mod starts ON and `/requirements-drafts off` turns it off.
-- Open with the user: whether the mod should start OFF for other installers of this plugin; whether Claude drives the Desktop click with computer use or the user ticks it; how the user wants the plugin loaded so every session gets the skills (installed plugin vs CLAUDE_CODE_PLUGIN_DIRS); an allow rule for subagents reading the drafts folder.
+- NEXT ACTION: Live-check the row button in a fullscreen terminal session (CLAUDE_CODE_NO_FLICKER=1) after 87f9560, then move the card to human_review; owner-run: the Desktop click test, the on/off default, the secret-check trade-offs, deleting two test drafts. Row clicks reach the mod one click per placement, and the classic-renderer placement is unconfirmed.
+- Defaults taken from the approved outline's recommendations (the user did not override them; each can still change): drafts folder `~/.claude/requirements-drafts/`; a secret-looking message is refused with a toast; the slash commands and the row button both ship (the spike showed a fullscreen-terminal click fires); the mod starts ON and `/requirements-drafts off` turns it off.
+- Open with the user (owner-run): the Desktop click test, whether the mod should start OFF for other installers of this plugin, the secret-check trade-offs, deleting two test drafts; also how the plugin is loaded so every session gets the skills, and an allow rule for subagents reading the drafts folder.
 - Do not touch TRDD-H26OG8AP or its files (unrelated work in flight).
+- Built and committed 2026-10-23: mod ac621e6 plus fixes 87f9560 (per-session state keyed by $.session.id, which may matter when one process hosts several sessions — unverified; save-error toasts; a narrower linear secret check; CPV gate fixes); skills 96fac93, 4de69c6, 1f3c768; menu TOC 9c0a68e. Gates at 87f9560: claude plugin validate 0, pytest 334, check-mod on a staging copy == PASS 35/35, CPV 5.22.3 strict exit 0 (no CRITICAL/MAJOR/MINOR/NIT, 27 WARNINGs), CPV 5.23.0 strict exit 2 only on five pre-existing chapter MAJORs.
 
 ## Goal
 
@@ -79,3 +80,5 @@ Let the user save their own messages into a requirements-drafts store that every
 - 2026-10-23 (orchestrator, after the forge agent's BLOCKED report reports/mods-forge-agent/20261023_210455+0200-requirements-drafts-mod.md): (1) claude plugin test on the plugin root sweeps every *.test.ts in the repo (12 tutorial example tests plus gitignored downloads_dev), so the mod's gate is check-mod.sh on a fresh scratch staging copy holding only .claude-plugin/plugin.json and hooks/; mod tests live in hooks/tests/; tutorial tests are not renamed. (2) $.state needs a manifest types contract, so the recent typed messages live in a module variable with $.ui.invalidate (resets on /clear and on a module reload); the switch stays in $.store. Recording rule measured from the 2.1.309 types: next.origin.plugin engine, e.origin.kind composer, no e.command, not isMeta, not starting with '/'.
 - Done: b17e4b5 (user ruling: live check driven with the Anthropic computer-use skill, folded into quickstart step 8 and the house conventions). Skills worker output uncommitted pending fixes. Open follow-ups from reviews: drafts.py realpath project match with a symlink test, --limit >= 1, negative-offset date, path cell escaping, search header, a contract test on a mod-written draft, README and CHANGELOG rows, ruff/mypy and CPV on the new skills; live-check wording: human runs it by hand and an agent uses computer use, mark the renderer finding as observed, tool names as examples, align agents/mods-expert-developer-agent.md line 161.
 - Live-check docs commits under this card: b17e4b5 (section and step 8 sentence), be732a4 (embedded TOC line, raised by the TRDD-H26OG8AP session), 1bfccce (reworded as scoped observations), 94d1778 (two wording fixes made by the TRDD-H26OG8AP session at this card's request). house-conventions.md and the quickstart SKILL.md are edited only after telling that session (agreed 2026-10-23).
+- 2026-10-23 secret-check trade-offs left to the user: ordinary text after a credential name with 16+ characters, and slash lists after 'basic', are refused with no save-anyway path; accepted gaps: a lowercase dotted passphrase, an all-caps $PASSWORD, a quoted JSON Basic header with a letters-only token, passphrase= and aws_credentials= names, short passwords under 8 characters.
+- 2026-10-23 hooks.json carries an empty settings 'hooks' object beside 'modules' only to satisfy CPV's required-hooks check; the mods reference allows both keys.
