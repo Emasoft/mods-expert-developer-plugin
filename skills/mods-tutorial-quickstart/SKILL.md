@@ -26,7 +26,7 @@ The example mods live in two sibling tutorials: `mods-tutorial-call-intercept-mo
 
 ## Instructions
 
-0. Clarify before you build. Read [house conventions](references/house-conventions.md) and answer five questions: which surface the mod uses (status line, band, pane, tool hook), how often it updates, whether it starts on or off, what scope it covers (one project or every session), and its name. If the user has not said, ask. `scripts/new-mod.sh` accepts only a kebab-case name: lowercase letters and digits in words joined by single hyphens, starting with a letter (2 to 64 characters).
+0. Clarify before you build. Answer five questions: which surface the mod uses (status line, band, pane, tool hook), how often it updates, whether it starts on or off, what scope it covers (one project or every session), and its name. If the user has not said, ask; for the surface, offer the least intrusive form first (status line, then band, then pane). `scripts/new-mod.sh` accepts only a kebab-case name: lowercase letters and digits in words joined by single hyphens, starting with a letter (2 to 64 characters). Then work through the [Before the mod exists](references/house-conventions.md#before-the-mod-exists) rules.
    - Check that a mod suits the job. In `mods-doc-mods-overview`, the section that sets mods beside settings hooks, skills and MCP servers has a "Pick it when" row for each; when another covers the job, build that instead. Replacing a working settings hook? Keep the hook until the mod has run on your build (this plugin's advice, not a chapter rule).
 1. Load the `plugin-authoring` skill and follow where it says to write the mod. Facts: `mods-doc-mods-development`, "Ask Claude for a mod".
 2. Copy the closest example from the index below into your folder and rename it in `.claude-plugin/plugin.json`. A name that starts with `claude-`, `anthropic-`, `anthropics-` or `cc-plugin-` is refused. Facts: `mods-doc-plugin-manifest-reference`.
@@ -82,7 +82,7 @@ A mod folder of your own that passes `claude plugin validate` and `claude plugin
 
 - A chapter and this tutorial disagree: follow the chapter and treat the tutorial line as stale, except for API names and type shapes, where the notice at the top of this skill applies.
 - The early-access flag `CLAUDE_CODE_ENABLE_FUNCTION_HOOKS` is still set: Claude Code v2.1.287 and later ignores it at any value, so `0` does not turn mods off; remove it (`mods-doc-mods-overview`, "Turn mods on or off"; `mods-doc-manage-mods-for-organizations`, "Stop user-installed mods from loading").
-- A step fails or a hook never fires: load `mods-doc-mods-troubleshooting` and start at "Find out why a mod does nothing".
+- A step fails or a hook never fires: load `mods-doc-mods-troubleshooting` and start at "Find out why a mod does nothing", then look the symptom up in [engine-traps](references/engine-traps.md).
 - An UNVERIFIED trap matters to your mod: test it on your build first, and prefer the documented call the Status column names.
 
 ## Examples

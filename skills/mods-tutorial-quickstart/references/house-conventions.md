@@ -84,8 +84,7 @@ Every rule is tagged **House convention**. A convention is a choice that makes a
 
 ### Before the mod exists
 
-- Preflight (House convention). Start with the least intrusive form that does the job: a status-line item is preferred to a band, and a band to a full pane; a hook that only watches is preferred to one that changes what passes through; and a model is called only when the value cannot be worked out without one. Then list what would stop the mod working here: worktree subagents, when it guards Bash `tool.call` ([engine-traps.md, Open issues](engine-traps.md#open-issues)); managed settings or a Team or Enterprise sign-in, where the built-in guard skips parts of a mod (UNVERIFIED; [threat-model.md](threat-model.md#loading-and-the-built-in-guard)); the surface where it must draw (`mods-doc-mods-overview`, "Where mods run"); and Windows ([engine-traps.md, Platform and packaging](engine-traps.md#platform-and-packaging)).
-- Write two plain lines first: Observe (each event, with its matcher) and Do (each `$` call). Next to every `$` call put the hook that issues it and the failure you would see without it; a call whose removal breaks nothing goes.
+- Write two plain lines first: Observe (each event, with its matcher) and Do (each `$` call). Next to every `$` call put the hook that issues it and the failure you would see without it; a call whose removal breaks nothing goes. Prefer a hook that only watches to one that changes what passes through, and call a model only when the value cannot be worked out without one; the review applies the same reach rule later ([review-checklist](review-checklist.md#risk-the-mod-has-more-reach-than-the-job-needs)).
 - Choose the channel for each need from the table below, and write down what the person pays for it. The per-turn cost column is the inference of another author: UNVERIFIED. Before relying on a number, read `mods-doc-prompt-caching-reference`, "Actions that invalidate the cache" and "Actions that keep the cache".
 
 | Need | Channel | Per-turn cost |
@@ -101,6 +100,7 @@ Every rule is tagged **House convention**. A convention is a choice that makes a
 
   Chapter facts for the channels: `mods-doc-mods-reference`, "Prompts and what Claude reads" and "Commands and configuration"; `mods-doc-mods-interfaces`, "Keep state across reloads and sessions".
 - Give the mod a gate when it can reach spending, publishing or posting, secrets, a live production system, or case and legal records. Such a mod may annotate (`$.ui.status`, `$.ui.toast`), draft (`$.prompt.fill`), or ask the person; it never approves a tool call. Approval is a real power: `mods-doc-mods-overview`, "What a mod can reach" says a mod can approve calls that an `ask` rule would prompt for, and `mods-doc-manage-mods-for-organizations`, "Know what happens by default" adds that in auto mode such a call skips the classifier. The `asUser: true` option sends text as words typed by the person, so keep it away from gated text (`mods-doc-mods-api`, section "Start a turn from a background job"). Test the gate as shown in `mods-tutorial-call-intercept-mods`, "Gate as a test".
+- List what would stop the mod working where it will run: worktree subagents, when it guards Bash `tool.call` ([engine-traps, Open issues](engine-traps.md#open-issues)); managed settings or a Team or Enterprise sign-in, where the built-in guard may hand some events past user mods (UNVERIFIED; [engine-traps, A hook misbehaves](engine-traps.md#a-hook-misbehaves)); the surface it must draw on (`mods-doc-mods-overview`, "Where mods run"); and Windows ([engine-traps, Platform and packaging](engine-traps.md#platform-and-packaging)).
 
 ### At register
 
@@ -123,6 +123,7 @@ Every rule is tagged **House convention**. A convention is a choice that makes a
 
 - Ask what a reload keeps. A reload reruns `register`, so module variables and timers go; `$.state` survives a reload and `$.store` lasts beyond the session (`mods-doc-mods-interfaces`, "Keep state across reloads and sessions"; `mods-doc-mods-api`, "Stop background work").
 - Ask what `/clear`, `/resume` and `/branch` do. They reset `$.state` without a new `session.start`; the saved values come back through a `classic.SessionStart` hook filtered on `clear`, `resume` and `fork` (`mods-doc-mods-interfaces`, "Load a saved value again after `/clear`").
+- If the mod must run where the built-in guard loads, a `classic.SessionStart` hook may never reach it (UPSTREAM, UNVERIFIED on a machine with managed settings; see [engine-traps, A hook misbehaves](engine-traps.md#a-hook-misbehaves), the order-dependent start-up row). Write the restore as a routine that is safe to run twice, and call it from that hook and also from the first `turn.start`.
 
 ## Honest hand-over
 
