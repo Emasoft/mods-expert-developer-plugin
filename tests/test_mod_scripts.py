@@ -451,10 +451,11 @@ def test_plan_diff_exits_2_on_an_unknown_footprint_label(tmp_path: Path) -> None
     assert "unknown footprint label: network" in result.stderr
 
 
-def test_plan_diff_exits_2_on_an_unknown_label_when_the_module_token_has_no_dot_slash(tmp_path: Path) -> None:
+@pytest.mark.parametrize("module", ["hooks/register.ts", "hooks/register.mts", "hooks/register.cts"])
+def test_plan_diff_exits_2_on_an_unknown_label_when_the_module_token_has_no_dot_slash(tmp_path: Path, module: str) -> None:
     """An unknown label after a module token without "./" is still refused: a dropped "./" must not fail open."""
     out = tmp_path / "out.txt"
-    out.write_text("  ❯ ./register.ts hooks: session.start\n  ❯ hooks/register.ts network: x\n", encoding="utf-8")
+    out.write_text(f"  ❯ ./register.ts hooks: session.start\n  ❯ {module} network: x\n", encoding="utf-8")
     result = _run("plan-diff.sh", "--from-file", out, _plan(tmp_path, "hooks: session.start\n"))
     assert result.returncode == 2
     assert "unknown footprint label: network" in result.stderr
