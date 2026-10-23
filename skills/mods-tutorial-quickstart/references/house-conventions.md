@@ -110,7 +110,7 @@ Every rule is tagged **House convention**. A convention is a choice that makes a
 
 - Answer cache-sensitive events (`prompt.section`, `prompt.context`) with the same text each time unless the content really changed. The chapters document the cache (`mods-doc-mods-api`, "Use prompt caching") but not this rule for those events: UNVERIFIED.
 - Use `$.model.fork` only when the reply depends on the conversation; use `$.model.complete` for an input small enough to put in its own prompt. A fork sends the whole conversation and the session system prompt, a complete sends one message (`mods-doc-mods-api`, "Call a model", the comparison table).
-- A call that drives Claude gets a rate limit and a named trigger. Begin it only after `next(e)` has resolved, and never wait for it inside a hook that holds the turn (the rate limit, the trigger and the start after next are this plugin's advice; the chapter backs only the timing: the submit call resolves once its turn starts, chapter skill mods-doc-mods-api, section "Start a turn from a background job").
+- A call that drives Claude gets a rate limit and a named trigger. Begin it only after `next(e)` has resolved, and never wait for it inside a hook that holds the turn (the rate limit, the trigger and the start after `next` resolves are this plugin's advice; the chapter backs only the timing: the submit call resolves once its turn starts, chapter skill `mods-doc-mods-api`, section "Start a turn from a background job").
 
 ### On turn and session events
 
