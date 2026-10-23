@@ -1,10 +1,10 @@
 ---
 trdd-id: O5LUMKPW
 title: Ship the requirements-drafts mod with list and search skills
-column: testing
+column: human_review
 status: tasked
 created: 2026-10-23T18:01:09+0200
-updated: 2026-10-23T23:16:24+0200
+updated: 2026-10-23T23:23:01+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -15,7 +15,7 @@ mandated-by: user
 approved: true
 approval-judge: main-agent@emasoft-mods-expert-developer
 approval-datetime: 2026-10-23T18:01:09+0200
-implementation-commits: [b17e4b5, be732a4, 1bfccce, 94d1778, 58fc002, ac621e6, 96fac93, 4de69c6, 1f3c768, 9c0a68e, 87f9560]
+implementation-commits: [b17e4b5, be732a4, 1bfccce, 94d1778, 58fc002, ac621e6, 96fac93, 4de69c6, 1f3c768, 9c0a68e, 87f9560, a1d4648, ef2558c]
 ---
 
 # Ship the requirements-drafts mod with list and search skills
@@ -24,7 +24,7 @@ implementation-commits: [b17e4b5, be732a4, 1bfccce, 94d1778, 58fc002, ac621e6, 9
 
 - Approved by the user on 2026-10-23: "Approve the outline, but put the mod in this repo as a tutorial example and create the TRDD card here." Then, mid-turn: "the requirements-drafts mod must be part of this plugin."
 - Reading of the two: the mod ships LIVE as part of mods-expert-developer-plugin (its hooks module in the plugin's own `hooks/`, its two skills in `skills/`), and the interface tutorial points to it as a worked example. It is NOT an unloaded copy under `examples/`.
-- NEXT ACTION: Live-check the row button in a fullscreen terminal session (CLAUDE_CODE_NO_FLICKER=1) after 87f9560, then move the card to human_review; owner-run: the Desktop click test, the on/off default, the secret-check trade-offs, deleting two test drafts. Observed: row clicks reach the mod one click per placement, and the classic-renderer placement is unconfirmed.
+- NEXT ACTION: owner-run only. (1) The Desktop click test: add the repo root to CLAUDE_CODE_PLUGIN_DIRS, restart the Desktop app, type a message, click the dim '+ save as requirement draft' line. (2) Rule on the on/off default; it is ON, pinned by a test. (3) Rule on the secret-check trade-offs listed under Build decisions. (4) Say whether to delete the four test drafts in ~/.claude/requirements-drafts/: 20261023_211419+0200-68790fd39323.md, 20261023_211558+0200-d215e455a838.md, 20261023_231950+0200-14c4b806242c.md and 20261023_232124+0200-b0da7aba0411.md. The terminal live check passed at a1d4648. Observed: row clicks reach the mod one click per placement; the classic-renderer placement is unconfirmed.
 - STANDING AGREEMENT: tell the TRDD-H26OG8AP session before editing skills/mods-tutorial-quickstart/SKILL.md or references/house-conventions.md.
 - Defaults taken from the approved outline's recommendations (the user did not override them; each can still change): drafts folder `~/.claude/requirements-drafts/`; a secret-looking message is refused with a toast; the slash commands and the row button both ship (the spike showed a fullscreen-terminal click fires); the mod starts ON and `/requirements-drafts off` turns it off.
 - Open with the user (owner-run): the Desktop click test, whether the mod should start OFF for other installers of this plugin, the secret-check trade-offs, deleting two test drafts; also how the plugin is loaded so every session gets the skills, and an allow rule for subagents reading the drafts folder.
@@ -75,6 +75,7 @@ Let the user save their own messages into a requirements-drafts store that every
 
 - 2026-10-23T18:01:09+0200 — MANDATE issued by main-agent@emasoft-mods-expert-developer (min-approval-requirement: user). Pre-approved: issuer authority >= required approver. No approval request was sent.
 - 2026-10-23 — The user approved the outline and ruled the mod ships in this plugin (quoted in STATE). The defaults listed in STATE (folder, refusing secrets, start ON for every installer, skill names, immediate: true) were chosen by main-agent@emasoft-mods-expert-developer from the outline's recommendations and are NOT user-approved; the user may change any of them.
+- 2026-10-23T23:23:01+0200 — column → human_review. terminal live check passed at a1d4648; Desktop test and three rulings are owner-run
 
 ## Build decisions
 
@@ -86,3 +87,4 @@ Let the user save their own messages into a requirements-drafts store that every
 - 2026-10-23: all follow-ups in the "Done: b17e4b5 ... Open follow-ups from reviews" bullet are done in 96fac93, 4de69c6 and 1f3c768; the CHANGELOG row was dropped because publish.py regenerates CHANGELOG.md with git-cliff.
 - 2026-10-23: superseded — the recent typed messages and saved rows no longer live in one module variable; since 87f9560 they are maps keyed by $.session.id().
 - 2026-10-23 accepted gaps, added after review: a value with a / that ends in a file extension is exempt (password=S3cr3t/pass.word); a raw / inside a URL password ends the authority early (postgres://admin:ab/cd@db); the UserMessage render awaits $.session.id() with no catch.
+- 2026-10-23 live check at a1d4648 (terminal, fullscreen CLAUDE_CODE_NO_FLICKER=1, tmux SGR click): with the empty 'hooks' object in hooks.json the mod loaded and drew '+ save as requirement draft' under the typed message; one click saved it and the row turned into '✓ saved as requirement draft 20261023_231950+0200-14c4b806242c'; /requirements-drafts-save saved a second message (20261023_232124+0200-b0da7aba0411); drafts.py list --all showed both. Observed: a command save marks no row, because the command path has no message id. Report: reports/mods-forge-agent/20261023_232145+0200-requirements-drafts-live-check-a1d4648.md.
