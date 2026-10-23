@@ -15,7 +15,7 @@ test('session.start runs git once with an argv list, then the timer polls', asyn
   await startSession($, s)
   expect(s.calls.length).toBe(1)
   // git runs in the session's directory: START carries cwd '/work'
-  expect(s.calls[0]).toEqual(['git', '-C', '/work', 'status', '--porcelain=v1', '--branch'])
+  expect(s.calls[0]).toEqual(['git', '-C', '/work', '--no-optional-locks', 'status', '--porcelain=v1', '--branch'])
   expect(s.registered.length).toBe(1)
   await s.clock.advance(POLL_INTERVAL_MS - 1)
   expect(s.calls.length).toBe(1)

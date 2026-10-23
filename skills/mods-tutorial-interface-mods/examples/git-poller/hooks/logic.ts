@@ -8,8 +8,8 @@ export const USAGE = 'usage: /git-poller [on|off]'
 export const POLL_INTERVAL_MS = 15_000
 // Minimum time between two refreshes started by turn.complete.
 export const MIN_GAP_MS = 5_000
-// What git is asked, after `git -C <cwd>`.
-export const GIT_STATUS_ARGS = ['status', '--porcelain=v1', '--branch'] as const
+// What git is asked, after `git -C <cwd>`. `--no-optional-locks` is a git option: it must precede `status` (git help status, BACKGROUND REFRESH).
+export const GIT_STATUS_ARGS = ['--no-optional-locks', 'status', '--porcelain=v1', '--branch'] as const
 
 /** The argument list for $.process.run: git runs in the session's directory, not wherever the engine runs. */
 export function gitArgv(cwd: string): string[] {

@@ -48,5 +48,5 @@ test('the exported constants have the values the README lists', () => {
 })
 
 test('gitArgv runs git in the given directory with the status arguments', () => {
-  expect(gitArgv('/w')).toEqual(['git', '-C', '/w', 'status', '--porcelain=v1', '--branch'])
+  expect(gitArgv('/w')).toEqual(['git', '-C', '/w', '--no-optional-locks', 'status', '--porcelain=v1', '--branch'])
 })

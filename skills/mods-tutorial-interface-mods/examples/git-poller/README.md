@@ -2,7 +2,7 @@
 
 ## What it shows
 
-A band above the prompt with the working-tree state: the branch, the number of changed files and the number of untracked files, plus a `Refresh` button (hotkey `r`). A background poller keeps it current by running `git -C <cwd> status --porcelain=v1 --branch` through `$.process.run` (an argument list, no shell), where `<cwd>` is the `cwd` of the `session.start` event. Without a usable `cwd` git does not run and the snapshot is marked stale.
+A band above the prompt with the working-tree state: the branch, the number of changed files and the number of untracked files, plus a `Refresh` button (hotkey `r`). A background poller keeps it current by running `git -C <cwd> --no-optional-locks status --porcelain=v1 --branch` through `$.process.run` (an argument list, no shell), where `<cwd>` is the `cwd` of the `session.start` event. Without a usable `cwd` git does not run and the snapshot is marked stale.
 
 It is a teaching example for a poller: one timer started once in `session.start`, refreshes that join, a minimum gap after `turn.complete`, main loop only, and a last good snapshot kept on error (the band then adds `(stale)`).
 
@@ -17,7 +17,7 @@ Constants exported from `hooks/logic.ts`:
 | `USAGE` | `'usage: /git-poller [on\|off]'` | The answer to an unknown argument |
 | `POLL_INTERVAL_MS` | `15000` | The timer refreshes every 15 seconds |
 | `MIN_GAP_MS` | `5000` | A `turn.complete` refresh waits until 5 seconds have passed since the last refresh started |
-| `GIT_STATUS_ARGS` | `['status', '--porcelain=v1', '--branch']` | What git is asked. `gitArgv(cwd)` returns `['git', '-C', cwd, ...GIT_STATUS_ARGS]`, the argument list given to `$.process.run`, so git runs in the session's directory |
+| `GIT_STATUS_ARGS` | `['--no-optional-locks', 'status', '--porcelain=v1', '--branch']` | What git is asked. `gitArgv(cwd)` returns `['git', '-C', cwd, ...GIT_STATUS_ARGS]`, the argument list given to `$.process.run`, so git runs in the session's directory. `--no-optional-locks` must stay before `status`: it is a git option, and after `status` git rejects it. Without it, a background `git status` may rewrite the index under a lock that can make another git command fail at the same moment; the output is the same (`git help status`, BACKGROUND REFRESH). |
 
 `session.start` starts the first refresh without waiting for it, so a slow git never delays the session or the command registration. `turn.complete` does not wait for git either: it starts the refresh and returns at once. Outside a git repository the band never appears.
 

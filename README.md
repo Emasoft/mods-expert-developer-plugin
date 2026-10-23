@@ -90,6 +90,8 @@ Three tutorial skills are reference only: they hold worked examples for agents, 
 - `mods-tutorial-call-intercept-mods`: the `hello-mod`, `redact-output`, `dice-tool` and `protect-files` example mods, which block, rewrite and answer tool calls, add a tool, and guard paths.
 - `mods-tutorial-interface-mods`: the `branch-band`, `notes-pane`, `turn-timer` and `git-poller` example mods, which draw a band above the prompt, a pane opened by a command, a status line, and a band kept current by a git poller.
 
+More mods written by others are listed at [timoncool/givememod](https://github.com/timoncool/givememod). This plugin has not reviewed them: before you load one, go through the review checklist and threat model in the `mods-tutorial-quickstart` skill.
+
 ## Requirements drafts mod
 
 The `requirements-drafts` mod (`hooks/requirements-drafts/`) saves what you typed as a requirements draft: one Markdown file per message in `~/.claude/requirements-drafts/`. A dim line, `+ save as requirement draft`, appears under each message you typed in this session; after a save it reads `✓ saved as requirement draft <id>`. Drafts are plain text in your home folder, and every agent and session on the machine can read them. Three commands do the rest:
