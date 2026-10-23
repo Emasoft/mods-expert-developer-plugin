@@ -113,4 +113,4 @@ Treat anything the mod receives or reads as possibly crafted by someone else. Th
 
 ## Keeping the model in step
 
-When the `hooks:`, `calls:`, `env reads:` or `env writes:` lines of `claude plugin validate` change, change the filled block and the README in the same commit. A README claim the validator output cannot back up is a finding by itself, however harmless the code.
+When the `hooks:`, `calls:`, `env reads:` or `env writes:` lines of `claude plugin validate` change, change the filled block and the README in the same commit. A README claim the validator output cannot back up is a finding by itself, however harmless the code. This is this plugin's advice, not a chapter rule.

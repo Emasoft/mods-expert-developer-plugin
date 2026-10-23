@@ -1,6 +1,6 @@
 # Review checklist for a mod
 
-A procedure for reviewing someone else's mod, or your own before hand-over. Checks are grouped by the risk they guard against, not by the order you run them; run all groups, and report findings per group. Each check has a severity: High (the mod may do something the reader was not told, or can be abused), Medium (the mod may misbehave or hide a failure), Low (hygiene). The `mods-doc-*` chapters stay authoritative; a check marked UNVERIFIED rests on advice the chapters do not confirm.
+A procedure for reviewing someone else's mod, or your own before hand-over. Checks are grouped by the risk they guard against, not by the order you run them; run all groups, and report findings per group. Each check has a severity: High (the mod may do something the reader was not told, or can be abused), Medium (the mod may misbehave or hide a failure), Low (hygiene). The severities are this plugin's own scale, not a chapter rule. The `mods-doc-*` chapters stay authoritative; a check marked UNVERIFIED rests on advice the chapters do not confirm.
 
 ## Table of Contents
 

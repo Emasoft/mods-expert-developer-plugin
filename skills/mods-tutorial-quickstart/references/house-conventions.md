@@ -116,7 +116,7 @@ Every rule is tagged **House convention**. A convention is a choice that makes a
 
 - Install: <the command or folder to load>
 - Off for good: <the mod's command with `off`, kept across restarts>
-- Off for one session: `claude --safe-mode`
+- Off for one session: `claude --safe-mode` (this turns off every installed mod, the organisation's included, not just this one)
 ````
 
 ## The three quickstart scripts
