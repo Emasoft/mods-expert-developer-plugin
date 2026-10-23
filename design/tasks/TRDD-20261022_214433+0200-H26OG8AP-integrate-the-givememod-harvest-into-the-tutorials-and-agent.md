@@ -4,7 +4,7 @@ title: Integrate the givememod harvest into the tutorials and agents
 column: dev
 status: tasked
 created: 2026-10-22T21:44:33+0200
-updated: 2026-10-23T07:15:04+0200
+updated: 2026-10-23T11:31:46+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: user
 task-type: feature
@@ -84,3 +84,4 @@ CURRENT STATE 2026-10-23: TRDD-71SH1V5W is in human_review (only owner-run boxes
 - 2026-10-23 R-1 correction: the no-copy proof and the pytest, markdownlint and cspell results predated the last pre-commit edits. Re-measured on d10349d: no-copy over git diff -U0 ec28949^ d10349d (skills/mods-tutorial-quickstart, NOTICE) gives 4641 added words (the proof says 4626; the 15 more are the last pre-commit edits) and the same shared runs as the proof's raw output (10 eight-word, the same six-word set); the proof's invented-name pattern has 0 hits. On a clean clone of d10349d: pytest 307 passed. On main, where both files equal d10349d: markdownlint-cli2 0.23.3 2 files 0 issues, cspell 2 files 0 issues. CPV v5.23.0 strict exits 2 on its six baseline findings.
 - 2026-10-23 R-1 correction to the line above: the invented-name re-run covered world(, once(, BAND, PANE, AbovePrompt, reachLevel and reach-level (0 hits); the template-stem check was not re-run, because the earlier raw output does not record its stem list. The 15 extra added words are whatever changed after the proof's run. Re-run evidence is saved under reports/givememod-harvest/ as 20261023_071111+0200-R-1-no-copy-rerun.md with its diff and output.
 - 2026-10-23 R-1 template-stem check closed: 16 template basenames (reports/givememod-harvest/template-stems.txt) grepped whole-word against the added lines of the ec28949^..d10349d diff; only generic words or API names hit (hooks, plugin, register, index.d), every distinctive template name 0. Recorded in 20261023_071111+0200-R-1-no-copy-rerun.md.
+- 2026-10-23T11:31:46+0200 — card-edit method, user verbatim: "edit the trdd card directly, but then lint it with trddgrep afterward to ensure its valid". From now on this card's edits (Approval-log lines, box ticks, STATE) are made directly on the file and followed by trddgrep lint and validate; the trddgrep write verbs (check-box, append) are no longer the path. This line was written that way.
