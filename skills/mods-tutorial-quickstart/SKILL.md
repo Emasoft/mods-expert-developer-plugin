@@ -103,6 +103,7 @@ Input: "show the test status above the prompt". Output: copy `branch-band` from 
   - [Pollers](references/house-conventions.md#pollers)
   - [Toasts on transitions only](references/house-conventions.md#toasts-on-transitions-only)
   - [Look and feel](references/house-conventions.md#look-and-feel)
+  - [Live check](references/house-conventions.md#live-check)
   - [Mutation-check every guard test](references/house-conventions.md#mutation-check-every-guard-test)
   - [Plan-time rules](references/house-conventions.md#plan-time-rules)
   - [Honest hand-over](references/house-conventions.md#honest-hand-over)
