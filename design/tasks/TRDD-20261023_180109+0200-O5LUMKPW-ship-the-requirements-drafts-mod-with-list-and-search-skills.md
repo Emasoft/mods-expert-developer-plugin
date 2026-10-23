@@ -4,7 +4,7 @@ title: Ship the requirements-drafts mod with list and search skills
 column: backburner
 status: tasked
 created: 2026-10-23T18:01:09+0200
-updated: 2026-10-23T20:29:23+0200
+updated: 2026-10-23T21:06:31+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -72,3 +72,8 @@ Let the user save their own messages into a requirements-drafts store that every
 
 - 2026-10-23T18:01:09+0200 — MANDATE issued by main-agent@emasoft-mods-expert-developer (min-approval-requirement: user). Pre-approved: issuer authority >= required approver. No approval request was sent.
 - 2026-10-23 — The user approved the outline and ruled the mod ships in this plugin (quoted in STATE). The defaults listed in STATE (folder, refusing secrets, start ON for every installer, skill names, immediate: true) were chosen by main-agent@emasoft-mods-expert-developer from the outline's recommendations and are NOT user-approved; the user may change any of them.
+
+## Build decisions
+
+- 2026-10-23 (orchestrator, after the forge agent's BLOCKED report reports/mods-forge-agent/20261023_210455+0200-requirements-drafts-mod.md): (1) claude plugin test on the plugin root sweeps every *.test.ts in the repo (12 tutorial example tests plus gitignored downloads_dev), so the mod's gate is check-mod.sh on a fresh scratch staging copy holding only .claude-plugin/plugin.json and hooks/; mod tests live in hooks/tests/; tutorial tests are not renamed. (2) $.state needs a manifest types contract, so the recent typed messages live in a module variable with $.ui.invalidate (resets on /clear and on a module reload); the switch stays in $.store. Recording rule measured from the 2.1.309 types: next.origin.plugin engine, e.origin.kind composer, no e.command, not isMeta, not starting with '/'.
+- Done: b17e4b5 (user ruling: live check driven with the Anthropic computer-use skill, folded into quickstart step 8 and the house conventions). Skills worker output uncommitted pending fixes. Open follow-ups from reviews: drafts.py realpath project match with a symlink test, --limit >= 1, negative-offset date, path cell escaping, search header, a contract test on a mod-written draft, README and CHANGELOG rows, ruff/mypy and CPV on the new skills; live-check wording: human runs it by hand and an agent uses computer use, mark the renderer finding as observed, tool names as examples, align agents/mods-expert-developer-agent.md line 161.
