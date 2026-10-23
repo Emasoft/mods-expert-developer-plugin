@@ -12,6 +12,7 @@ These are this plugin's own conventions for mods that a person will keep and use
 - [Toasts on transitions only](#toasts-on-transitions-only)
 - [Mutation-check every guard test](#mutation-check-every-guard-test)
 - [Honest hand-over](#honest-hand-over)
+- [README template](#readme-template)
 - [The three quickstart scripts](#the-three-quickstart-scripts)
 - [UNVERIFIED — test on a real build before relying on it](#unverified--test-on-a-real-build-before-relying-on-it)
 - [A premise this plugin rejects](#a-premise-this-plugin-rejects)
@@ -87,6 +88,36 @@ Every rule is tagged **House convention**. A convention is a choice that makes a
 - The words "tested", "works", "loads" and "verified" are banned in a hand-over, unless they stand next to the name of a stage that ran and its result, for example "type-check: ran, exit 0". Without a named stage, say what you did not run instead. The label UNVERIFIED and the name of the UNVERIFIED table are not claims, so they stay allowed.
 - A `-p` (print mode) run draws nothing: the chapter table lists hooks as running there and the mod's drawing as not appearing (`mods-doc-mods-overview`, "Where mods run"). Use such a run for command text and for hooks on events a print run produces, never as a claim that a pane, band or row showed up.
 - For a clean experiment, launch with `CLAUDE_CONFIG_DIR` set to a fresh folder and `--setting-sources user`, so your real config and project settings stay out of it (`mods-doc-cc-debug-mode`, section "Test against a clean configuration").
+
+## README template
+
+**House convention.** Every mod you keep or share carries a README with the parts below, so a reader can judge it before loading it.
+
+- A "What it can reach" part, filled from the output of `claude plugin validate` (the `hooks:`, `calls:`, `env reads:` and `env writes:` lines; `mods-doc-manage-mods-for-organizations`, "Review what a mod can do"). Use the block from the [threat model](threat-model.md#fill-in-block).
+- A version triple: the build the types came from (built on), the build you ran it on (validated on), and the lowest build that can load mods (requires; the chapter gives v2.1.287 in `mods-doc-mods-development`, "Create a mod"). Take the first two from `claude --version`, copied as printed.
+- How to switch the mod off: the slash command from "An on/off switch", and `claude --safe-mode`, which turns every installed mod off (`mods-doc-manage-mods-for-organizations`, "Know which controls still apply").
+
+````markdown
+# <mod-name>
+
+<One sentence: what the mod does for the person using it.>
+
+## What it can reach
+
+<The filled block from the threat model.>
+
+## Versions
+
+- Built on: <output of claude --version, first line>
+- Validated on: <output of claude --version, first line, and the date>
+- Requires: Claude Code <lowest build that loads mods, or a higher one if you need it>
+
+## Install and switch off
+
+- Install: <the command or folder to load>
+- Off for good: <the mod's command with `off`, kept across restarts>
+- Off for one session: `claude --safe-mode`
+````
 
 ## The three quickstart scripts
 

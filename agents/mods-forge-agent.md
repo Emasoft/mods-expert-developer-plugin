@@ -72,6 +72,7 @@ If the Agent tool is available in your context, bounded read-only scans may go t
 3. Mutation-check each new guard and each new test on a scratch copy in a temporary directory outside the project tree: break the guarded line, confirm the test goes red, then remove that temporary directory. It is not part of the project, so removing it is allowed.
 4. The report lists each check with its raw result, and what still needs a human, such as the live Desktop check.
 5. For a mod the user keeps, follow the house conventions of the `mods-tutorial-quickstart` skill, in `skills/mods-tutorial-quickstart/references/house-conventions.md`.
+6. To review a mod, yours or another author's, follow `skills/mods-tutorial-quickstart/references/review-checklist.md` of the `mods-tutorial-quickstart` skill.
 
 ## Report
 
