@@ -89,7 +89,7 @@ Every rule is tagged **House convention**. A convention is a choice that makes a
 
 What one run of each check showed on Claude Code 2.1.309, in Terminal.app on macOS, on 2026-10-23 (TRDD-O5LUMKPW). These are observations, not guarantees; re-check them on your build:
 
-- A terminal app was granted click-only: computer use could click in it but not type. So an agent starts the session with the prompt as a command-line argument, for example `claude --plugin-dir <mod> 'Reply with ok.'`.
+- A terminal app was granted click-only: computer use could click in it but not type. So an agent must start the session with the prompt as a command-line argument, for example `claude --plugin-dir <mod> 'Reply with ok.'`.
 - Observed: with `CLAUDE_CODE_NO_FLICKER=1` (fullscreen rendering), one click on a Button drawn under a transcript row reached the mod. With `CLAUDE_CODE_NO_FLICKER=0` (the classic renderer), one click on the same Button reached nothing; whether the click landed on it was not confirmed.
 - Use a full-screen click (in this harness, `left_click` in `computer_batch`), not a background click on the app window. A background click (in this harness, `app_click`) only moved Terminal's text cursor and sent the mod nothing.
 - A new terminal window can open on another desktop Space. Find it and bring it to the current Space (in this harness, `app_list_windows` and `app_bring_to_current_space`).
