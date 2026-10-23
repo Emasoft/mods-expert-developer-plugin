@@ -4,7 +4,7 @@ title: Ship the requirements-drafts mod with list and search skills
 column: backburner
 status: tasked
 created: 2026-10-23T18:01:09+0200
-updated: 2026-10-23T21:22:34+0200
+updated: 2026-10-23T21:24:14+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -15,6 +15,7 @@ mandated-by: user
 approved: true
 approval-judge: main-agent@emasoft-mods-expert-developer
 approval-datetime: 2026-10-23T18:01:09+0200
+implementation-commits: [b17e4b5, be732a4, 1bfccce, 94d1778]
 ---
 
 # Ship the requirements-drafts mod with list and search skills
@@ -23,7 +24,7 @@ approval-datetime: 2026-10-23T18:01:09+0200
 
 - Approved by the user on 2026-10-23: "Approve the outline, but put the mod in this repo as a tutorial example and create the TRDD card here." Then, mid-turn: "the requirements-drafts mod must be part of this plugin."
 - Reading of the two: the mod ships LIVE as part of mods-expert-developer-plugin (its hooks module in the plugin's own `hooks/`, its two skills in `skills/`), and the interface tutorial points to it as a worked example. It is NOT an unloaded copy under `examples/`.
-- NEXT ACTION: step 2 is half done. Spike run 1 (terminal only, see Feasibility) settled origin, prompt.submit, fs.write folders and the placeholder id; spike run 2 measured the terminal click: a Button under a UserMessage fires onPress in the fullscreen terminal (CLAUDE_CODE_NO_FLICKER=1); the Markdown link did not fire. Remaining cell: the Desktop app click, which needs the Desktop app restarted with CLAUDE_CODE_PLUGIN_DIRS pointing at the probe (the user's to run, since it is the app hosting this session). Probe, log and generated 2.1.309 types are kept in reports_dev/requirements-drafts-spike/ (gitignored). The mod ships in the plugin's own root hooks/ (empty today, so the whole plugin becomes a mod for every installer) and skills/mods-requirements-drafts-list and -search; the interface tutorial only points to it. Step 4 must check that tests/test_plugin_structure.py and tests/test_skills_menu.py accept a root hooks/ folder and the skill names. The project has no PRRD (trddgrep: PRRD.md absent), so no relevant-rules apply.
+- NEXT ACTION (updated 2026-10-23): step 2 (spike) is DONE for the terminal: a Button under a typed message fired on a click with CLAUDE_CODE_NO_FLICKER=1 and not in the classic renderer (runs 1-3 under Feasibility; probe, logs and 2.1.309 types in reports_dev/requirements-drafts-spike/, gitignored). The user then said build WITH the row button and that they will test the Desktop click on the finished mod. Step 3 is IN PROGRESS under the choices in '## Build decisions' (gate on a staging copy; recent messages in a module variable); the list and search skills are written but uncommitted, waiting on the review fixes listed there. The mod ships in the plugin's own root hooks/ and skills/mods-requirements-drafts-list and -search. STANDING AGREEMENT: tell the TRDD-H26OG8AP session before editing skills/mods-tutorial-quickstart/SKILL.md or references/house-conventions.md. Still open with the user: whether the mod starts ON (current default, not user-approved) or OFF for other installers.
 - Defaults taken from the approved outline's recommendations (the user did not override them; each can still change): drafts folder `~/.claude/requirements-drafts/`; a secret-looking message is refused with a toast; the slash commands are the primary save path and the row button ships only if the spike shows a click fires; the mod starts ON and `/requirements-drafts off` turns it off.
 - Open with the user: whether the mod should start OFF for other installers of this plugin; whether Claude drives the Desktop click with computer use or the user ticks it; how the user wants the plugin loaded so every session gets the skills (installed plugin vs CLAUDE_CODE_PLUGIN_DIRS); an allow rule for subagents reading the drafts folder.
 - Do not touch TRDD-H26OG8AP or its files (unrelated work in flight).
