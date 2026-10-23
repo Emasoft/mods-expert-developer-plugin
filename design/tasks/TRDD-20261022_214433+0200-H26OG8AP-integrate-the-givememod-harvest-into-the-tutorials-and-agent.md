@@ -4,7 +4,7 @@ title: Integrate the givememod harvest into the tutorials and agents
 column: dev
 status: tasked
 created: 2026-10-22T21:44:33+0200
-updated: 2026-10-23T07:09:28+0200
+updated: 2026-10-23T07:11:12+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: user
 task-type: feature
@@ -82,3 +82,4 @@ CURRENT STATE 2026-10-23: TRDD-71SH1V5W is in human_review (only owner-run boxes
 - 2026-10-23T04:16:06+0200 — column → dev. reconciled plan R-1..R-9 recorded; TRDD-71SH1V5W in human_review
 - 2026-10-23 R-1 done: ec28949 (first cut) and d10349d (size and rewording fix). No-copy proof PASS in reports/givememod-harvest/20261023_065444+0200-R-1-no-copy.md (0 unexplained 8-word runs; every 6-word run judged; 0 givememod-invented names). Clean-clone CPV on d10349d: v5.22.3 strict CRITICAL/MAJOR/MINOR/NIT all 0 (exit 0); v5.23.0 has the 694d70d baseline's six findings (MAJOR=5, MINOR=1), no new one; its .sh-count WARNING reads 5 not 4 because of skills/mods-tutorial-quickstart/scripts/plan-diff.sh (56008d5, TRDD-71SH1V5W I-6), not R-1. The commit message's pytest, markdownlint and cspell results were measured on the working tree before commit.
 - 2026-10-23 R-1 correction: the no-copy proof and the pytest, markdownlint and cspell results predated the last pre-commit edits. Re-measured on d10349d: no-copy over git diff -U0 ec28949^ d10349d (skills/mods-tutorial-quickstart, NOTICE) gives 4641 added words (the proof says 4626; the 15 more are the last pre-commit edits) and the same shared runs as the proof's raw output (10 eight-word, the same six-word set); the proof's invented-name pattern has 0 hits. On a clean clone of d10349d: pytest 307 passed. On main, where both files equal d10349d: markdownlint-cli2 0.23.3 2 files 0 issues, cspell 2 files 0 issues. CPV v5.23.0 strict exits 2 on its six baseline findings.
+- 2026-10-23 R-1 correction to the line above: the invented-name re-run covered world(, once(, BAND, PANE, AbovePrompt, reachLevel and reach-level (0 hits); the template-stem check was not re-run, because the earlier raw output does not record its stem list. The 15 extra added words are whatever changed after the proof's run. Re-run evidence is saved under reports/givememod-harvest/ as 20261023_071111+0200-R-1-no-copy-rerun.md with its diff and output.
