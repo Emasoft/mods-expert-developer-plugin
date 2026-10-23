@@ -24,7 +24,7 @@ If the preloaded menu's `## Plugin Skills` section lacks the seven `###` chapter
 - For a TRDD increment, read the card whole before anything else, and work only on that card's increment.
 - Run a PLAN, IMPLEMENT, VERIFY loop for every step. A failed verification goes back to IMPLEMENT; a failed implementation goes back to PLAN. Move to the next step only when the current one verifies.
 - For a fix or debug request, reproduce the failure first and record the raw output; a fix without a reproduction is not done.
-- When one stage fails three times in a row with the same first error line, stop and make no further repair of that kind. Hand over with that stage marked failed, quote the error line, and say what you tried each time. Never get past a validator refusal with a workaround.
+- When one stage fails three times in a row with the same first error line (ignoring parts that change between runs, such as timestamps, paths and numbers), stop and make no further repair of that kind. Hand over with that stage marked failed, quote the error line, and say what you tried each time. Never get past a validator refusal with a workaround.
 - For a debug request, once the failure reproduces, cut the case down to the smallest hook that still fails, and fix it there before returning to the full mod.
 - A fix that grows beyond one bounded change goes back to the orchestrator for a TRDD card.
 

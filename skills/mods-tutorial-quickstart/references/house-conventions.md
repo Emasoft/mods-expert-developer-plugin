@@ -80,12 +80,12 @@ Every rule is tagged **House convention**. A convention is a choice that makes a
 **House convention.** End every mod you build with the lists below, and keep the claims in them to what you ran.
 
 - Ran: every stage you actually ran (validate, test, type-check, a live load), the command for each, and its raw result.
-- Build stamp: the first line printed by `claude --version`, copied as is, and the date. The chapters tell you to run that command to learn the installed build (`mods-doc-mods-development`, "Create a mod"); the stamp itself is a convention.
+- Build stamp: the first line printed by `claude --version`, copied as is, and the date. The chapters tell you to check it against the minimum version mods need (`mods-doc-mods-development`, "Create a mod"); the stamp itself is a convention.
 - Decisions: each choice that shaped the mod, the option you turned down, and every assumption you could not check, with the damage if it turns out false.
 - Needs human eyes: layout, colours, placement, wording, the behaviour of a key on the person's own terminal. A test cannot see these.
 - Name anything from the UNVERIFIED table below that the mod relies on.
-- The words "tested", "works", "loads" and "verified" are banned in a hand-over, unless they stand next to the name of a stage that ran and its result, for example "type-check: ran, exit 0". Without a named stage, say what you did not run instead.
-- A `-p` (print mode) run draws nothing: the chapter table lists hooks as running there and the mod's drawing as not appearing (`mods-doc-mods-overview`, "Where mods run"). Use such a run for command text and hook behaviour, never as a claim that a pane, band or row showed up.
+- The words "tested", "works", "loads" and "verified" are banned in a hand-over, unless they stand next to the name of a stage that ran and its result, for example "type-check: ran, exit 0". Without a named stage, say what you did not run instead. The label UNVERIFIED and the name of the UNVERIFIED table are not claims, so they stay allowed.
+- A `-p` (print mode) run draws nothing: the chapter table lists hooks as running there and the mod's drawing as not appearing (`mods-doc-mods-overview`, "Where mods run"). Use such a run for command text and for hooks on events a print run produces, never as a claim that a pane, band or row showed up.
 - For a clean experiment, launch with `CLAUDE_CONFIG_DIR` set to a fresh folder and `--setting-sources user`, so your real config and project settings stay out of it (`mods-doc-cc-debug-mode`, section "Test against a clean configuration").
 
 ## The three quickstart scripts
