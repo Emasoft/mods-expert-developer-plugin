@@ -212,7 +212,7 @@ Every skill below loads as `mods-expert-developer-plugin:<skill>`. Its full entr
 
 ### Tutorials (reference only)
 
-Worked examples for reading and copying, not chapters: the chapter skills above are authoritative and win on any disagreement, except that for API names and type shapes (event, method and argument names and their TypeScript types) the type files your running build generates win, while for behaviour the types cannot express (ordering, timing, what next does) the chapters still win (events and methods change across releases), and the example code a tutorial carries is never loaded as part of the plugin. The scripts the quickstart carries are tools to run, not examples to read; the example code stays reference only.
+Worked examples for reading and copying, not chapters: the chapter skills above are authoritative and win on any disagreement, except that for API names and type shapes (event, method and argument names and their TypeScript types) the type files your running build generates win, while for behaviour the types cannot express (ordering, timing, what `next` does) the chapters still win (events and methods change across releases), and the example code a tutorial carries is never loaded as part of the plugin. The scripts the quickstart carries are tools to run, not examples to read; the example code stays reference only.
 
 | Skill | Covers |
 |---|---|

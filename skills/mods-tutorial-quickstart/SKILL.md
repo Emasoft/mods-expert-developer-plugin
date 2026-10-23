@@ -8,7 +8,7 @@ metadata:
 
 # MODS TUTORIAL QUICKSTART
 
-Tutorial and reference example only. The mods-doc-* chapter skills of this plugin are authoritative and win on any disagreement, with one exception: for API names and type shapes (event, method and argument names and their TypeScript types), the type files your running build generates win, because events and methods change across releases (chapter skill mods-doc-mods-development, section "Change and test a mod"); for behaviour the types cannot express (ordering, timing, what next does) the chapters still win. The example code under examples/ is for reading and copying into your own project; it is never installed or loaded as part of this plugin. Do not point --plugin-dir at a copy inside the plugin cache.
+Tutorial and reference example only. The mods-doc-* chapter skills of this plugin are authoritative and win on any disagreement, with one exception: for API names and type shapes (event, method and argument names and their TypeScript types), the type files your running build generates win, because events and methods change across releases (chapter skill mods-doc-mods-development, section "Change and test a mod"); for behaviour the types cannot express (ordering, timing, what `next` does) the chapters still win. The example code under examples/ is for reading and copying into your own project; it is never installed or loaded as part of this plugin. Do not point --plugin-dir at a copy inside the plugin cache.
 
 ## Overview
 
@@ -80,7 +80,7 @@ A mod folder of your own that passes `claude plugin validate` and `claude plugin
 
 ## Error Handling
 
-- A chapter and this tutorial disagree: follow the chapter, and treat the tutorial line as stale. The one exception is API names and type shapes (event, method and argument names and their TypeScript types): there the type files your running build generates win (see the notice at the top of this skill), while for behaviour the types cannot express (ordering, timing, what next does) the chapters still win.
+- A chapter and this tutorial disagree: follow the chapter, and treat the tutorial line as stale. The one exception is API names and type shapes (event, method and argument names and their TypeScript types): there the type files your running build generates win (see the notice at the top of this skill), while for behaviour the types cannot express (ordering, timing, what `next` does) the chapters still win.
 - The early-access flag `CLAUDE_CODE_ENABLE_FUNCTION_HOOKS` is still set: Claude Code v2.1.287 and later ignores it at any value, so `0` does not turn mods off; remove it (`mods-doc-mods-overview`, section "Turn mods on or off"; `mods-doc-manage-mods-for-organizations`, section "Stop user-installed mods from loading").
 - A step fails or a hook never fires: load `mods-doc-mods-troubleshooting` and start at "Find out why a mod does nothing".
 - An UNVERIFIED trap matters to your mod: test it on your build before you rely on it, and prefer the documented call the Status column names.
