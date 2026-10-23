@@ -31,7 +31,7 @@ The example mods live in two sibling tutorials: `mods-tutorial-call-intercept-mo
 1. Load the `plugin-authoring` skill and follow where it says to write the mod. Facts: `mods-doc-mods-development`, "Ask Claude for a mod".
 2. Copy the closest example from the index below into your folder and rename it in `.claude-plugin/plugin.json`. A name that starts with `claude-`, `anthropic-`, `anthropics-` or `cc-plugin-` is refused. Facts: `mods-doc-plugin-manifest-reference`.
 3. Read the types for the event you hook. Claude Code writes them under `.claude-plugin/types/` on each load, with a root `tsconfig.json`; never edit or commit `.claude-plugin/types/`. Facts: `mods-doc-mods-development`, "Change and test a mod".
-4. Write the hook. One plain hook per event per module, a refusal before `next`, and a `.catch` on every hook that can refuse. Facts: `mods-doc-mods-and-events`, "How a hook handles an event" and "Mod ordering and failed hooks".
+4. Write the hook. One plain hook per event per module, a refusal before `next`, and a `.catch` on every hook that can refuse. Narrow it with a matcher where the event has one, and keep each `$` call only if you can say what breaks without it (the [plan-time rules](references/house-conventions.md#plan-time-rules)). Facts: `mods-doc-mods-and-events`, "How a hook handles an event" and "Mod ordering and failed hooks".
 5. Run `claude plugin validate <mod>` and read what it lists. Facts: `mods-doc-mods-development`, "Change and test a mod".
 6. Write `tests/*.test.ts` and run `claude plugin test` in the mod folder. Facts: `mods-doc-mods-testing`, "Write a mod test".
 7. Type-check with `npx -p typescript@5 tsc -p <mod> --noEmit` once the types are written. This command comes from the source and is not in the chapters. The script `${CLAUDE_SKILL_DIR}/scripts/check-mod.sh <mod-dir>` (this skill's own folder; Claude Code fills in the path when the skill is loaded) runs this type-check, step 5 and step 6 in one go and prints `== PASS` or `== FAIL: <step>`.
@@ -103,6 +103,7 @@ Input: "show the test status above the prompt". Output: copy `branch-band` from 
   - [Pollers](references/house-conventions.md#pollers)
   - [Toasts on transitions only](references/house-conventions.md#toasts-on-transitions-only)
   - [Mutation-check every guard test](references/house-conventions.md#mutation-check-every-guard-test)
+  - [Plan-time rules](references/house-conventions.md#plan-time-rules)
   - [Honest hand-over](references/house-conventions.md#honest-hand-over)
   - [README template](references/house-conventions.md#readme-template)
   - [The three quickstart scripts](references/house-conventions.md#the-three-quickstart-scripts)

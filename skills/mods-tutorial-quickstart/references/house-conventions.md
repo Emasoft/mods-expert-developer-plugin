@@ -11,6 +11,7 @@ These are this plugin's own conventions for mods that a person will keep and use
 - [Pollers](#pollers)
 - [Toasts on transitions only](#toasts-on-transitions-only)
 - [Mutation-check every guard test](#mutation-check-every-guard-test)
+- [Plan-time rules](#plan-time-rules)
 - [Honest hand-over](#honest-hand-over)
 - [README template](#readme-template)
 - [The three quickstart scripts](#the-three-quickstart-scripts)
@@ -75,6 +76,51 @@ Every rule is tagged **House convention**. A convention is a choice that makes a
 - A guard that refuses must fail closed: add a `.catch` handler and check `next.called`. Chapter fact: `mods-doc-mods-and-events`, "Handle a hook that fails".
 - Mutate a scratch duplicate, never the folder you keep.
 - Write the result in the hand-over: which mutation you tried, and that the test failed because of it.
+
+## Plan-time rules
+
+**House convention.** Settle these before and while you write the hooks, grouped by the stage of the mod life they apply to. They are this plugin advice; a chapter fact is named where one backs a rule, and anything the chapters do not confirm is marked UNVERIFIED.
+
+### Before the mod exists
+
+- Write two plain lines first: Observe (each event, with its matcher) and Do (each `$` call). Next to every `$` call put the hook that issues it and the failure you would see without it; a call whose removal breaks nothing goes.
+- Choose the channel for each need from the table below, and write down what the person pays for it. The per-turn cost column is the inference of another author: UNVERIFIED. Before relying on a number, read `mods-doc-prompt-caching-reference`, "Actions that invalidate the cache" and "Actions that keep the cache".
+
+| Need | Channel | Per-turn cost |
+|---|---|---|
+| Wording the model sees with a single prompt | a `prompt.submit` hook that adds `context` | UNVERIFIED |
+| Context for the first message of a conversation | a `prompt.context` hook | UNVERIFIED |
+| An instruction present on every request | a `prompt.section` hook | UNVERIFIED |
+| A remark after a slash command | a `command.run` result | UNVERIFIED |
+| A tool the model can call | `$.tool.register` and a `tool.call` hook | UNVERIFIED |
+| A refusal | a `tool.call` hook that returns `{ deny }` | UNVERIFIED |
+| Values for this session, or across sessions | `$.state`, or `$.store` | UNVERIFIED |
+| A mark for the person | `$.ui.status` or `$.ui.toast` | UNVERIFIED |
+
+  Chapter facts for the channels: `mods-doc-mods-reference`, "Prompts and what Claude reads" and "Commands and configuration"; `mods-doc-mods-interfaces`, "Keep state across reloads and sessions".
+- Give the mod a gate when it can reach spending, publishing or posting, secrets, a live production system, or case and legal records. Such a mod may annotate (`$.ui.status`, `$.ui.toast`), draft (`$.prompt.fill`), or ask the person; it never approves a tool call. Approval is a real power: `mods-doc-mods-overview`, "What a mod can reach" says a mod can approve calls that an `ask` rule would prompt for, and `mods-doc-manage-mods-for-organizations`, "Know what happens by default" adds that in auto mode such a call skips the classifier. The `asUser: true` option sends text as words typed by the person, so keep it away from gated text (`mods-doc-mods-api`, section "Start a turn from a background job"). Test the gate as shown in `mods-tutorial-call-intercept-mods`, "Gate as a test".
+
+### At register
+
+- Decide the trigger that switches the mod on, and write it down. `session.start` fires once per loaded mod ahead of the first prompt, and once more after that mod reloads (`mods-doc-mods-reference`, "Events a mod can hook", session events).
+- Narrow every hook with a matcher where its event has one. A bare `tool.call` hook sees every tool call; `{ tool: 'Bash' }` sees one. The wildcard `*` matches every event except telemetry (`mods-doc-mods-and-events`, "Filter which events a hook handles"). Say in the plan which one applies.
+- Register each event once per matcher, or the module fails to load (same section).
+
+### Per event
+
+- Answer cache-sensitive events (`prompt.section`, `prompt.context`) with the same text each time unless the content really changed. The chapters document the cache (`mods-doc-mods-api`, "Use prompt caching") but not this rule for those events: UNVERIFIED.
+- Use `$.model.fork` only when the answer needs the conversation; use `$.model.complete` for an input small enough to put in its own prompt. A fork sends the whole conversation and the session system prompt, a complete sends one message (`mods-doc-mods-api`, "Call a model", the comparison table).
+- A call that drives Claude gets a rate limit and a named trigger. Begin it only after `next(e)` has resolved, and never wait for it inside a hook that holds the turn (the submit call resolves once its turn starts; chapter skill `mods-doc-mods-api`, section "Start a turn from a background job").
+
+### On turn and session events
+
+- Ask whether the mod covers subagents. `turn.step` and `turn.complete` carry `e.agentId` for a subagent (`mods-doc-mods-and-events`, "Follow a turn"); `agent.spawn` fires when a subagent starts (`mods-doc-mods-reference`, "Subagents"). A rule for the main loop only checks that `e.agentId` is absent.
+- Ask what compaction does to text the mod added. `session.compact` fires before compaction and can skip it (`mods-doc-mods-reference`, session events). Whether text a turn carried survives a summary is UNVERIFIED.
+
+### At reload or clear
+
+- Ask what a reload keeps. A reload reruns `register`, so module variables and timers go; `$.state` survives a reload and `$.store` lasts beyond the session (`mods-doc-mods-interfaces`, "Keep state across reloads and sessions"; `mods-doc-mods-api`, "Stop background work").
+- Ask what `/clear`, `/resume` and `/branch` do. They reset `$.state` without a new `session.start`; the saved values come back through a `classic.SessionStart` hook filtered on `clear`, `resume` and `fork` (`mods-doc-mods-interfaces`, "Load a saved value again after `/clear`").
 
 ## Honest hand-over
 

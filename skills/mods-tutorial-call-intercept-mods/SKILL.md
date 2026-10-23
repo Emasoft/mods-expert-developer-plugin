@@ -41,6 +41,10 @@ Four small, complete mods that hook `tool.call`, each with its manifest, `hooks.
 
 `examples/hello-mod/smoke.sh` is illustrative only and this plugin never runs it. Read it as a pattern: it proves a deny by its side effect (a temporary file that survives), because a deny leaves no log line. Run it yourself only on your own copy, and only after reading it: it starts two headless `claude -p` sessions, which cost two small model calls. Its three `A && B || C` lines were rewritten as `if`/`then`/`else` with the same exit behaviour, so shellcheck passes; nothing else in the examples changed.
 
+### Gate as a test
+
+For a mod that guards something, count the forbidden calls and expect zero. Register a stub for the forbidden method with `on`, have it add one to a counter, fire the events that should hit the gate, then `expect(counter).toBe(0)`. Stubs are explained in `mods-doc-mods-testing`, "Stub what Claude Code would answer", and `toBe` is among the assertions listed in "Look up what a stub returns". Mutation-check it as in the house conventions: a gate test that cannot fail checks nothing.
+
 ### Where the examples differ from the chapters
 
 - The `dice-tool` test stubs `tool.register` to return `{ value: { tool } }`. The testing chapter's stub table gives `() => ({ value: undefined })` for `$.tool.register`; follow the chapter in your own tests.
