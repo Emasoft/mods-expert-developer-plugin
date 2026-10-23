@@ -35,8 +35,8 @@ A Markdown table `id | date | project | first line | path`, a count line, and a 
 
 ## Known limits
 
-- A linked git worktree lists only the drafts whose saved project is that worktree, not those of the main checkout.
-- A git repository at the home folder counts as exact-match only: just drafts saved from the home folder itself are listed, not those of its subfolders.
+- A linked git worktree lists only the drafts whose saved project is that worktree. Claude Code puts worktrees under `.claude/worktrees/` inside the repo, so listing from the main checkout does include the worktrees' drafts.
+- A git repository at the home folder counts as no repository: the default is then exactly the working directory, without its subfolders.
 
 ## Examples
 
