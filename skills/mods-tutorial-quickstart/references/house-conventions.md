@@ -77,11 +77,15 @@ Every rule is tagged **House convention**. A convention is a choice that makes a
 
 ## Honest hand-over
 
-**House convention.** End every mod you build with two lists.
+**House convention.** End every mod you build with the lists below, and keep the claims in them to what you ran.
 
-- Verified: what you ran and saw (validate, test, type-check, a live load) and the command for each.
+- Ran: every stage you actually ran (validate, test, type-check, a live load), the command for each, and its raw result.
+- Build stamp: the first line printed by `claude --version`, copied as is, and the date. The chapters tell you to run that command to learn the installed build (`mods-doc-mods-development`, "Create a mod"); the stamp itself is a convention.
+- Decisions: each choice that shaped the mod, the option you turned down, and every assumption you could not check, with the damage if it turns out false.
 - Needs human eyes: layout, colours, placement, wording, the behaviour of a key on the person's own terminal. A test cannot see these.
 - Name anything from the UNVERIFIED table below that the mod relies on.
+- The words "tested", "works", "loads" and "verified" are banned in a hand-over, unless they stand next to the name of a stage that ran and its result, for example "type-check: ran, exit 0". Without a named stage, say what you did not run instead.
+- A `-p` (print mode) run draws nothing: the chapter table lists hooks as running there and the mod's drawing as not appearing (`mods-doc-mods-overview`, "Where mods run"). Use such a run for command text and hook behaviour, never as a claim that a pane, band or row showed up.
 - For a clean experiment, launch with `CLAUDE_CONFIG_DIR` set to a fresh folder and `--setting-sources user`, so your real config and project settings stay out of it (`mods-doc-cc-debug-mode`, section "Test against a clean configuration").
 
 ## The three quickstart scripts
@@ -98,20 +102,20 @@ They live in `skills/mods-tutorial-quickstart/scripts/`. They are tools to run, 
 
 ## UNVERIFIED — test on a real build before relying on it
 
-These claims come from another author's notes. The chapters neither confirm nor contradict them. Do not build on one until you have tried it on your own build.
+These claims come from another author's notes. The chapters neither confirm nor contradict them. Do not build on one until you have tried it on your own build. The last column names the run that would settle the row.
 
-| Claim | Status |
-|---|---|
-| `$.ui.panes()` returns records with fields such as `isShown` | UNVERIFIED. `mods-doc-mods-reference`, "Mods API methods" lists the method only. |
-| `$.command.run` hands the keyboard back to the prompt | UNVERIFIED. |
-| A test must pass `origin` and `presentation` to `$.command.run` | UNVERIFIED. The chapters do not say which values a test must give. |
-| In a test, a `$.store.get` stub must return `null` for a missing key | UNVERIFIED. |
-| Test files may use static imports only | UNVERIFIED. The chapter refuses dynamic `import()` in a hooks module, not in tests. |
-| The kit `expect` has no `toBeCloseTo` | UNVERIFIED. |
-| A command name must be a literal string for the validator to classify it | UNVERIFIED. `claude plugin validate` printed `command=?` for a non-literal matcher (observed while writing git-poller); the run-time behaviour is still not checked. |
-| A types contract file with a bare `export {}` is refused | UNVERIFIED. |
-| A `$` call inside a `.catch` handler works as in any other hook | UNVERIFIED. The chapter documents only the 1 second budget of the handler (`mods-doc-mods-reference`, "Limits"). |
-| A call that returns control to the engine is refused when the test stubs no UI drawing | UNVERIFIED. `mods-doc-mods-testing`, "Stub what Claude Code would answer" documents the need for a stub, not the exact refusal text. |
+| Claim | Status | Settle by |
+|---|---|---|
+| `$.ui.panes()` returns records with fields such as `isShown` | UNVERIFIED. `mods-doc-mods-reference`, "Mods API methods" lists the method only. | Show a pane in a throwaway mod, call the method from a command, and print the result with `$.ui.log`. |
+| `$.command.run` hands the keyboard back to the prompt | UNVERIFIED. | Run it from a keybinding in a live terminal session and type straight away. |
+| A test must pass `origin` and `presentation` to `$.command.run` | UNVERIFIED. The chapters do not say which values a test must give. | Call it from a test without those two fields and read the failure, if any. |
+| In a test, a `$.store.get` stub must return `null` for a missing key | UNVERIFIED. | Return `undefined` from the stub in a test and compare the outcome. |
+| Test files may use static imports only | UNVERIFIED. The chapter refuses dynamic `import()` in a hooks module, not in tests. | Add a dynamic `import()` to a test file and run `claude plugin test`. |
+| The kit `expect` has no `toBeCloseTo` | UNVERIFIED. | Call `toBeCloseTo` in a one-line test and run it. |
+| A command name must be a literal string for the validator to classify it | UNVERIFIED. `claude plugin validate` printed `command=?` for a non-literal matcher (observed while writing git-poller); the run-time behaviour is still not checked. | Register the command with a non-literal name, load the mod, and invoke the command. |
+| A types contract file with a bare `export {}` is refused | UNVERIFIED. | Put a bare `export {}` in the contract file and run `claude plugin validate`. |
+| A `$` call inside a `.catch` handler works as in any other hook | UNVERIFIED. The chapter documents only the 1 second budget of the handler (`mods-doc-mods-reference`, "Limits"). | Make a hook fail on purpose, call `$.ui.log` in its `.catch`, and look for the line. |
+| A call that returns control to the engine is refused when the test stubs no UI drawing | UNVERIFIED. `mods-doc-mods-testing`, "Stub what Claude Code would answer" documents the need for a stub, not the exact refusal text. | Run such a test with no stub and quote the refusal text. |
 
 ## A premise this plugin rejects
 
