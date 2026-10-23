@@ -36,13 +36,19 @@ Four small, complete mods that draw with `ui.render`, each with its manifest, `h
    - Work that outlives one event starts in `session.start`; `branch-band` starts its 15-second timer there and runs `git` with an argument list, not a shell. Facts: `mods-doc-mods-api`, "Reach files, processes, and the network".
    - Return `next(e)` from a render hook when you have nothing to draw, so Claude Code draws its own band.
    - A command hook answers alone with `{ text }`, and that text is the transcript row the model also reads.
+   - Share the band. Size an `AbovePrompt` drawing to `e.props.bodyColumns`, not `e.viewport`, and read `e.props.maxRows` for its height and `e.props.isWorking` for whether Claude is working (the table lists both props without describing them, so their meaning is read from the names; chapter skill `mods-doc-mods-reference`, section "Render sites"). Step aside with `return next(e)` while `e.props.hasSurvey` is true; the chapter lists that prop without saying what it means, so this is this plugin's advice. At the sites Claude Code draws itself, `await next(e)` returns its drawing reference, unless a later mod returned its own tree, for you to place in your own `Box` (`mods-doc-mods-interfaces`, "Change what Claude Code already draws"); whether `next(e)` at `AbovePrompt` returns another mod's band the same way is UNVERIFIED.
+   - Fit the width by dropping whole parts, least important first. Never cut a number or a word in the middle: a cut figure reads as a different figure (this plugin's advice). The look rules are in `skills/mods-tutorial-quickstart/references/house-conventions.md`, section "Look and feel".
+   - Restyle a part Claude Code already draws before you add a row of your own. The `Spinner` site has a `suffix` prop, `SessionMode` has `modes` and `PromptHint` has `hint` (`mods-doc-mods-reference`, "Render sites"); change one by passing `next` a copy of the event with changed props (`mods-doc-mods-interfaces`, "Change what Claude Code already draws"). What each value must look like is in the types for your build.
+   - Keep redraws cheap. Claude Code redraws a site when its props or the terminal width change, and a `$.state` write redraws the sites that read it (`mods-doc-mods-interfaces`, "When Claude Code redraws without being asked" and "Redraw when your data changes"), so skip writing a value that has not changed. Start an animation timer once in `session.start`, as the chapter's "Redraw on a timer" and the house conventions' Pollers rule 1 do, and have its callback return at once while nothing moves, for example outside the span from `turn.start` to `turn.complete` (this plugin's advice). You need not throttle `$.ui.invalidate` yourself: Claude Code does (`mods-doc-mods-interfaces`, "How often a site can redraw"). Raster animation is out for mods the `mods-forge-agent` builds, whose rules forbid Raster; its rules win.
+   - Decide the fallback first. Hooks run but nothing drawn appears in the VS Code chat panel, under `claude -p` and the Agent SDK, and in a cloud session the plugin reaches (`mods-doc-mods-overview`, "Where mods run"); the chapter's answer is a transcript line or a command's text reply. For detecting a session with no screen, see `skills/mods-tutorial-quickstart/references/engine-traps.md`, section "Drawing". This is about where drawing is absent, not about drawing differently per surface: the `mods-forge-agent` keeps one render path for both surfaces, and its rule wins.
+   - Write what the person reads in the language of the conversation, a command's `{ text }` reply included, and keep command names, plugin names and text written only for the model, such as a `prompt.section` answer, in English (this plugin's advice).
 4. Run `claude plugin validate` and `claude plugin test` in your copy. The `notes-pane` test mounts the pane with `$.ui.mount`, finds text, and presses the `clear` button. Facts: `mods-doc-mods-testing`, "Test a drawing".
 5. Run it live with `claude --plugin-dir <your copy>`.
 
 ### Where the examples differ from the chapters
 
 - `notes-pane` loads `$.store` into `$.state` only in `session.start`. After `/clear`, `/resume` or `/branch`, `$.state` goes back to its default and `session.start` does not fire again, so the pane shows no notes and the next `/note` overwrites the saved list. The interfaces chapter fixes this by reloading the saved value in a `classic.SessionStart` hook as well; do that in your copy.
-- `notes-pane` keeps the whole list under one `$.store` key, so two sessions writing at once can lose a note. See `mods-doc-mods-interfaces` on `$.store` across sessions before you rely on it.
+- `notes-pane` keeps the whole list under one `$.store` key, so two sessions writing at once can lose a note. See `mods-doc-mods-interfaces` on `$.store` across sessions before you rely on it. Ways to avoid the lost write are in `skills/mods-tutorial-quickstart/references/engine-traps.md`, section "State and timers".
 - `branch-band` recovers after `/clear` only when its timer next fires, up to 15 seconds later.
 - The `notes-pane` test stubs `command.register` to return `{ value: { command } }`. The testing chapter's stub table gives `() => ({ value: undefined })` for `$.command.register`; follow the chapter in your own tests.
 
@@ -73,6 +79,17 @@ A copy of one example in your own folder, renamed everywhere the plugin name app
 Input: "show the open pull request count above the prompt". Output: copy `branch-band`, replace `readBranch` with a call that counts the pull requests, rename the atom and types, validate and test.
 
 Input: "a /todo command with a pane listing the items". Output: copy `notes-pane`, rename the commands and the pane, add the `classic.SessionStart` reload, validate and test.
+
+When the person asks to change a mod that already draws, this table maps the request to the change:
+
+| The person asks | Change | Source |
+|---|---|---|
+| "Make it shorter" | Drop the least important parts, and keep within `e.props.maxRows` | `maxRows`: `mods-doc-mods-reference`, "Render sites"; the rest is this plugin's advice |
+| "Put it under the prompt" | A `$.ui.status` line, or the hint line through the `PromptHint` site | `mods-doc-mods-api`, "Run and control background work"; `mods-doc-mods-interfaces`, "Change what Claude Code already draws" |
+| "Put it beside the conversation" | A `Pane` opened from a command, as `notes-pane` does; `e.props.placement` says whether it docks beside the transcript or sits above the prompt | `mods-doc-mods-interfaces`, "Pick where to draw and open panes"; `mods-doc-mods-reference`, "Render sites" |
+| "Only while it is working" | Draw when `e.props.isWorking` is true, otherwise `return next(e)` | `mods-doc-mods-reference`, "Render sites" |
+| "Ask me before it runs X" | A guard on the tool call | `mods-tutorial-call-intercept-mods` |
+| "Let me turn it off" | The on/off command | `skills/mods-tutorial-quickstart/references/house-conventions.md`, section "An on/off switch" |
 
 ## Resources
 

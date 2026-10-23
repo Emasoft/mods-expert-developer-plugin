@@ -10,6 +10,7 @@ These are this plugin's own conventions for mods that a person will keep and use
 - [Pure logic in logic.ts, thin register](#pure-logic-in-logicts-thin-register)
 - [Pollers](#pollers)
 - [Toasts on transitions only](#toasts-on-transitions-only)
+- [Look and feel](#look-and-feel)
 - [Mutation-check every guard test](#mutation-check-every-guard-test)
 - [Plan-time rules](#plan-time-rules)
 - [Honest hand-over](#honest-hand-over)
@@ -69,6 +70,17 @@ Every rule is tagged **House convention**. A convention is a choice that makes a
 - Compare the new snapshot with the previous one and toast only on a difference that matters (a turn became slow, a build went red).
 - The first snapshot after a start has nothing to compare with: record it silently.
 - A toast is shown for 4 seconds unless you pass `timeoutMs`. Chapter fact: `mods-doc-mods-reference`, "Limits". The call is listed in `mods-doc-mods-api`, "Show something without starting a turn".
+
+## Look and feel
+
+**House convention.** These rules cover anything a mod draws. They are taste, except where a chapter is named.
+
+- Draw nothing when there is nothing to say (the interface tutorial, step 3: return `next(e)`).
+- Give each mark one meaning, and never let colour carry a state on its own: pair it with a mark or a word.
+- Show state with plain one-cell marks, for example `✓` for done and `✗` for failed, not emoji. Emoji, wide CJK characters and combining marks do not take one cell each, so they break column widths; a `Raster` needs every character one cell wide (`mods-doc-mods-interfaces`, "Draw a grid of colored cells"; the `mods-forge-agent` does not use `Raster`).
+- Show times as relative ("3 min ago"), not as clock times.
+- Align columns by cell count, not by string length, and drop the least important column first when the width runs out.
+- Strip control characters, bidirectional marks and zero-width characters from outside data before you draw it.
 
 ## Mutation-check every guard test
 
