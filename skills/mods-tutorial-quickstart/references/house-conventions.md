@@ -95,6 +95,7 @@ Every rule is tagged **House convention**. A convention is a choice that makes a
 | A reply to a slash command | a `command.run` result | UNVERIFIED |
 | A tool the model can call | `$.tool.register` and a `tool.call` hook | UNVERIFIED |
 | A refusal | a `tool.call` hook that returns `{ deny }` | UNVERIFIED |
+| A note the model reads with one tool result | a `tool.call` hook that adds `context` to the result after `next` (UNVERIFIED: not in the chapters) | UNVERIFIED |
 | Values for this session, or across sessions | `$.state`, or `$.store` | UNVERIFIED |
 | A mark for the person | `$.ui.status` or `$.ui.toast` | UNVERIFIED |
 

@@ -34,6 +34,16 @@ Four small, complete mods that hook `tool.call`, each with its manifest, `hooks.
    - `hello-mod`: return `{ deny: '...' }` before `next(e)`. After `next` the tool has already run. Its `.catch` answers `next(e)` when `next.called` is true and refuses otherwise, so a hook that throws does not let the call through. Facts: `mods-doc-mods-and-events`, "Mod ordering and failed hooks".
    - `redact-output`: matcher `{ tool: 'Bash' }`, `const ran = await next(e)`, return `ran` untouched on a deny or `isError`, otherwise return `{ result: { ...ran.result, stdout } }` and show `$.ui.status(...)`. Its `.catch` refuses unconditionally: the command already ran, so the refusal only keeps its output from the model. Facts: `mods-doc-mods-and-events`, "Hook tool calls, prompts, and turns".
    - `dice-tool`: `await $.tool.register({ name, description, inputSchema })` in `session.start`, then answer `{ result }` or `{ result, isError: true }` from `tool.call`. The dice-tool registration omits `isDeferred: false`; on Claude Code 2.1.293+ add it when Claude must see the tool every turn, see the `mods-doc-mods-api` chapter (Tools). Facts: `mods-doc-mods-api`, "Add a command or a tool".
+   - For any guard you write, see these moves (this plugin's advice, UNVERIFIED as a set; chapter-backed parts are tagged):
+     - Fail closed: a guard that throws, or has nobody to ask, refuses (`mods-doc-mods-and-events`, "Handle a hook that fails"). Where someone can be asked, a question beats a flat refusal, and one question can carry every reason that applies.
+     - Three levels of strictness: a note while the call runs, a question, a block.
+     - The model reads the refusal in place of the tool's output (`mods-doc-mods-and-events`, "Guard or change a tool call"), so tell it to stop trying other routes and to consult the person.
+     - Approving once means passing the identical retry to `next(e)`, matched by tool, target and content, so the normal permission checks still run. Never answer allow from `tool.check`; the gate bullet in [house conventions](../mods-tutorial-quickstart/references/house-conventions.md#before-the-mod-exists) wins.
+     - Before asking about something destructive, show what it would touch, and make a copy first.
+     - Swapping a command for a safer one changes what passes through, so it needs the Observe/Do justification in the same house conventions; also ask `$.tool.check` about the original command.
+     - Parse a command the way the shell would, including `bash -c`, `eval` and substitutions. A text pattern remains advisory ([threat-model](../mods-tutorial-quickstart/references/threat-model.md)).
+     - Repeat the refusal in `tool.check`, which fires once the permission rules and the settings hooks have decided (`mods-doc-mods-and-events`, "Where settings hooks run in the order"). That section also says that answering `tool.call` without `next` stops the unmanaged settings `PreToolUse` hooks from running.
+   - While a guard waits for the person (`$.ui.ask`) or pauses briefly, keep the wait inside a `$` call: such time is not charged to the hook's 10 seconds of own time, unlike your own promise or `$.clock.sleep` (`mods-doc-mods-reference`, limits table). Do not start a turn from there: see the Per event timing rule in the house conventions and the engine-traps row "A command or prompt submitted from a hook hangs or is refused".
 4. Run `claude plugin validate` and `claude plugin test` in your copy. Facts: `mods-doc-mods-testing`, "Write a mod test".
 5. Run it live with `claude --plugin-dir <your copy>`.
 
@@ -45,11 +55,13 @@ Four small, complete mods that hook `tool.call`, each with its manifest, `hooks.
 
 For a mod that guards something, count the forbidden calls and expect zero. Register a stub for the forbidden method with `on`, have it add one to a counter, fire the events that should hit the gate, then `expect(counter).toBe(0)`. Stubs are explained in `mods-doc-mods-testing`, "Stub what Claude Code would answer", and `toBe` is among the assertions listed in "Look up what a stub returns". Mutation-check it as in the house conventions: a gate test that cannot fail checks nothing.
 
+Test each risky pattern in its plain form and its other spellings, for instance the short and long flags of one command, or flags written apart. Text matching over a shell command only reminds; it cannot bound what runs, because variables, aliases and scripts evade it (the advisory row of the [threat-model](../mods-tutorial-quickstart/references/threat-model.md), UNVERIFIED as a general statement).
+
 ### Live check for a mod that adds text
 
 UNVERIFIED as a method: the chapters do not describe it. This is this plugin's advice, not a chapter rule; try it on your build before you rely on it.
 
-A hook can add to or change what the model reads: `prompt.submit` with `context`, `prompt.context` with `blocks`, or `prompt.section` replacing a section's text (see `mods-doc-mods-reference`, "Prompts and what Claude reads", and `mods-doc-mods-and-events`, "Rewrite or add to a prompt"). A unit test can check what the hook passes on, but not what the model then received, so it cannot prove the text arrived.
+A hook can add to or change what the model reads: `prompt.submit` with `context`, `prompt.context` with `blocks`, or `prompt.section` replacing a section's text (see `mods-doc-mods-reference`, "Prompts and what Claude reads", and `mods-doc-mods-and-events`, "Rewrite or add to a prompt"). The deny text, one fixed `tool.describe` sentence (`mods-doc-mods-reference`, the `tool.describe` row) and a remark attached to one tool output (UNVERIFIED) also reach it; the channel table in the [house conventions](../mods-tutorial-quickstart/references/house-conventions.md#before-the-mod-exists) is the list. A unit test can check what the hook passes on, but not what the model then received, so it cannot prove the text arrived. The check below applies to each channel.
 
 - Make the mod inject a fresh marker the model could not guess, new for each check, then ask the model to quote it back. Do not ask it to confirm: a model can agree without having seen anything. `prompt.context` fires once per conversation, so for that hook start a new session for each check.
 - Run a control session without the mod. If the control can produce the marker, the check proves nothing.
