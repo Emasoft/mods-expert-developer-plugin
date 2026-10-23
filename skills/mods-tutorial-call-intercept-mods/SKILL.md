@@ -45,6 +45,15 @@ Four small, complete mods that hook `tool.call`, each with its manifest, `hooks.
 
 For a mod that guards something, count the forbidden calls and expect zero. Register a stub for the forbidden method with `on`, have it add one to a counter, fire the events that should hit the gate, then `expect(counter).toBe(0)`. Stubs are explained in `mods-doc-mods-testing`, "Stub what Claude Code would answer", and `toBe` is among the assertions listed in "Look up what a stub returns". Mutation-check it as in the house conventions: a gate test that cannot fail checks nothing.
 
+### Live check for a mod that adds text
+
+UNVERIFIED as a method: the chapters do not describe it. It is a house idea, so test it before you rely on it.
+
+A hook that adds text to what the model reads (`prompt.submit` with `context`, `prompt.section`, `prompt.context`; see `mods-doc-mods-reference`, "Prompts and what Claude reads", and `mods-doc-mods-and-events`, "Rewrite or add to a prompt") cannot be proven by a unit test alone, because no test sees what the model received.
+
+- Make the mod inject a fresh marker the model could not guess, new for each check, then ask the model to quote it back. Do not ask it to confirm: a model can agree without having seen anything.
+- Run a control session without the mod. If the control can produce the marker, the check proves nothing.
+
 ### Where the examples differ from the chapters
 
 - The `dice-tool` test stubs `tool.register` to return `{ value: { tool } }`. The testing chapter's stub table gives `() => ({ value: undefined })` for `$.tool.register`; follow the chapter in your own tests.
