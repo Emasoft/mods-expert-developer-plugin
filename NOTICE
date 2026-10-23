@@ -56,4 +56,13 @@ SOFTWARE.
 
 Acknowledgements
 
-Some conventions and the three quickstart scripts follow ideas from B314-N03/plugin-marketplace (mod-builder); no text or code was copied, and that repository had no licence file when reviewed on 2026-10-22.
+Some conventions and three of the quickstart scripts (check-mod.sh, new-mod.sh and keep-mod.sh)
+follow ideas from B314-N03/plugin-marketplace (mod-builder); no text or code was copied, and that
+repository had no licence file when reviewed on 2026-10-22.
+
+Parts of the tutorial skills, their quickstart scripts and references, the two agents and one test
+follow ideas from karanb192/claude-code-mods (plugins/mod-builder, https://github.com/karanb192/claude-code-mods,
+commit fb1f9c0; MIT license, Copyright (c) 2026 Karan Bansal), among them the quickstart script plan-diff.sh,
+the references threat-model.md and review-checklist.md, and the test tests/test_tutorial_api_names.py. No text
+or code was copied: each change was checked for runs of six and eight words shared with that source, and
+every shared run was listed and judged.
