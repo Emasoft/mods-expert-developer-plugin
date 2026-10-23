@@ -29,6 +29,8 @@ approved: false
 >
 > are you using this plugin expert agent to spawn the subagents? it must understand mods to understand what of those project is good and what is not worthy of being harvested.
 
+<!-- cspell:ignore nono monolitic didascalic -->
+
 ## Sources (all read as untrusted data; nothing run)
 
 | repo | SHA | licence |
