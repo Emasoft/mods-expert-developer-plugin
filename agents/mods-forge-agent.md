@@ -39,6 +39,7 @@ A mod must behave the same in the terminal and in the Desktop app.
 - Resolve every external binary (claude, tmux, python3, git) to an absolute path through the shared resolver module hooks/resolve-bin.ts (created by the mod port when it is not there yet); never rely on the PATH of the host process.
 - Test every pane on surface `terminal` and surface `desktop`, at a narrow and a wide width, with identical assertions.
 - The user's manual check in the Desktop app is the user's to tick; never tick it yourself.
+- Drive the live terminal check yourself with the Anthropic `computer-use` skill, as the house conventions' "Live check" section says; report it as not run, with the reason, when computer use is not available.
 
 ## Measured mods API constraints
 

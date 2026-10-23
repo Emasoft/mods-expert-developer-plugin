@@ -43,7 +43,7 @@ Four small, complete mods that draw with `ui.render`, each with its manifest, `h
    - Decide the fallback first. Hooks run but nothing drawn appears in the VS Code chat panel, under `claude -p` and the Agent SDK, and in a cloud session the plugin reaches (`mods-doc-mods-overview`, "Where mods run"); the chapter's answer is a transcript line or a command's text reply. For detecting a session with no screen, see `skills/mods-tutorial-quickstart/references/engine-traps.md`, section "Drawing". This is about where drawing is absent, not about drawing differently per surface: the `mods-forge-agent` keeps one render path for both surfaces, and its rule wins.
    - Write what the person reads in the language of the conversation, a command's `{ text }` reply included, and keep command names, plugin names and text written only for the model, such as a `prompt.section` answer, in English (this plugin's advice).
 4. Run `claude plugin validate` and `claude plugin test` in your copy. The `notes-pane` test mounts the pane with `$.ui.mount`, finds text, and presses the `clear` button. Facts: `mods-doc-mods-testing`, "Test a drawing".
-5. Run it live with `claude --plugin-dir <your copy>`.
+5. Run it live with `claude --plugin-dir <your copy>`, as quickstart step 8 does: an agent drives the live check with the Anthropic `computer-use` skill (`mods-tutorial-quickstart`, house conventions, "Live check").
 
 ### Where the examples differ from the chapters
 

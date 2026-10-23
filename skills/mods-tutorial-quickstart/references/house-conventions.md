@@ -11,6 +11,7 @@ These are this plugin's own conventions for mods that a person will keep and use
 - [Pollers](#pollers)
 - [Toasts on transitions only](#toasts-on-transitions-only)
 - [Look and feel](#look-and-feel)
+- [Live check](#live-check)
 - [Mutation-check every guard test](#mutation-check-every-guard-test)
 - [Plan-time rules](#plan-time-rules)
 - [Honest hand-over](#honest-hand-over)
@@ -81,6 +82,19 @@ Every rule is tagged **House convention**. A convention is a choice that makes a
 - Show times as relative ("3 min ago"), not as clock times.
 - Align columns by cell count, not by string length; when space is short, give up the column that matters least.
 - Strip control characters, bidirectional marks and zero-width characters from outside data before you draw it.
+
+## Live check
+
+**House convention.** Quickstart step 8 runs the mod in a real Claude Code session, and an agent drives that check with the Anthropic `computer-use` skill (`anthropic-skills:computer-use`; Computer use must be turned on in the Claude desktop app's settings). Load it before step 8 and request access to the terminal app. A mod test (`claude plugin test`) shows that a drawing is valid; only a live check shows that a click, a hotkey or a pane really works.
+
+What the check needs, measured on Claude Code 2.1.309 in Terminal.app on macOS on 2026-10-23 (TRDD-O5LUMKPW, one run each):
+
+- Start the session with the prompt as a command-line argument, for example `claude --plugin-dir <mod> 'Reply with ok.'`. A terminal app is granted click-only: computer use can click in it but cannot type.
+- Launch with `CLAUDE_CODE_NO_FLICKER=1` (fullscreen rendering). A click on a Button drawn under a transcript row reached the mod there; with `CLAUDE_CODE_NO_FLICKER=0` (the classic renderer) the same click reached nothing.
+- Click with full-screen control (`left_click` in `computer_batch`). A background `app_click` only moved Terminal's text cursor and sent the mod nothing.
+- A new terminal window can open on another desktop Space. Find it with `app_list_windows` and bring it over with `app_bring_to_current_space`.
+- Judge the result from what the mod records (a log file written by a test build, or the debug log), not from the screenshot: a press often changes nothing on screen.
+- The Desktop app that hosts the session cannot restart itself with the mod loaded, so the Desktop check stays the user's, as the `mods-forge-agent` rules say.
 
 ## Mutation-check every guard test
 
