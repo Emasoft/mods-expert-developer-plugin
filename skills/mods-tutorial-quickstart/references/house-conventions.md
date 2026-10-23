@@ -79,7 +79,7 @@ Every rule is tagged **House convention**. A convention is a choice that makes a
 
 ## Plan-time rules
 
-**House convention.** Settle these before and while you write the hooks, grouped by the stage of the mod life they apply to. They are this plugin advice; a chapter fact is named where one backs a rule, and anything the chapters do not confirm is marked UNVERIFIED.
+**House convention.** Settle these before and while you write the hooks, grouped by the stage of the mod life they apply to. They are this plugin's advice; a chapter fact is named where one backs a rule, and anything the chapters do not confirm is marked UNVERIFIED.
 
 ### Before the mod exists
 
@@ -91,7 +91,7 @@ Every rule is tagged **House convention**. A convention is a choice that makes a
 | Wording the model sees with a single prompt | a `prompt.submit` hook that adds `context` | UNVERIFIED |
 | Context for the first message of a conversation | a `prompt.context` hook | UNVERIFIED |
 | An instruction present on every request | a `prompt.section` hook | UNVERIFIED |
-| A remark after a slash command | a `command.run` result | UNVERIFIED |
+| A reply to a slash command | a `command.run` result | UNVERIFIED |
 | A tool the model can call | `$.tool.register` and a `tool.call` hook | UNVERIFIED |
 | A refusal | a `tool.call` hook that returns `{ deny }` | UNVERIFIED |
 | Values for this session, or across sessions | `$.state`, or `$.store` | UNVERIFIED |
@@ -102,15 +102,15 @@ Every rule is tagged **House convention**. A convention is a choice that makes a
 
 ### At register
 
-- Decide the trigger that switches the mod on, and write it down. `session.start` fires once per loaded mod ahead of the first prompt, and once more after that mod reloads (`mods-doc-mods-reference`, "Events a mod can hook", session events).
+- Decide the trigger that switches the mod on, and write it down. `session.start` fires once for each loaded mod, before the first prompt, and once more after that mod reloads (`mods-doc-mods-reference`, "Events a mod can hook", session events).
 - Narrow every hook with a matcher where its event has one. A bare `tool.call` hook sees every tool call; `{ tool: 'Bash' }` sees one. The wildcard `*` matches every event except telemetry (`mods-doc-mods-and-events`, "Filter which events a hook handles"). Say in the plan which one applies.
 - Register each event once per matcher, or the module fails to load (same section).
 
 ### Per event
 
 - Answer cache-sensitive events (`prompt.section`, `prompt.context`) with the same text each time unless the content really changed. The chapters document the cache (`mods-doc-mods-api`, "Use prompt caching") but not this rule for those events: UNVERIFIED.
-- Use `$.model.fork` only when the answer needs the conversation; use `$.model.complete` for an input small enough to put in its own prompt. A fork sends the whole conversation and the session system prompt, a complete sends one message (`mods-doc-mods-api`, "Call a model", the comparison table).
-- A call that drives Claude gets a rate limit and a named trigger. Begin it only after `next(e)` has resolved, and never wait for it inside a hook that holds the turn (the submit call resolves once its turn starts; chapter skill `mods-doc-mods-api`, section "Start a turn from a background job").
+- Use `$.model.fork` only when the reply depends on the conversation; use `$.model.complete` for an input small enough to put in its own prompt. A fork sends the whole conversation and the session system prompt, a complete sends one message (`mods-doc-mods-api`, "Call a model", the comparison table).
+- A call that drives Claude gets a rate limit and a named trigger. Begin it only after `next(e)` has resolved, and never wait for it inside a hook that holds the turn (the rate limit, the trigger and the start after next are this plugin's advice; the chapter backs only the timing: the submit call resolves once its turn starts, chapter skill mods-doc-mods-api, section "Start a turn from a background job").
 
 ### On turn and session events
 
