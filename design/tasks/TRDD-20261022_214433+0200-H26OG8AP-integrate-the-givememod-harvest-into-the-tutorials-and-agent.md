@@ -1,10 +1,10 @@
 ---
 trdd-id: H26OG8AP
 title: Integrate the givememod harvest into the tutorials and agents
-column: todo
+column: dev
 status: tasked
 created: 2026-10-22T21:44:33+0200
-updated: 2026-10-22T23:46:58+0200
+updated: 2026-10-23T04:16:06+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: user
 task-type: feature
@@ -20,7 +20,7 @@ approval-datetime: 2026-10-22T21:44:33+0200
 # Integrate the givememod harvest into the tutorials and agents
 
 ## STATE
-CURRENT STATE 2026-10-22: harvest done (report: reports/givememod-harvest/20261022_213641+0200-harvest.md); not started. Sequenced AFTER TRDD-BNBDNR2V (mod-builder adoption, 0.4.0) and TRDD-JFB5E98B (lint exclusions), because the increments add files to the same tutorial folders. NEXT ACTION (after TRDD-71SH1V5W): increment I-1 (engine-traps.md). Order: TRDD-JFB5E98B, then TRDD-BNBDNR2V, then TRDD-71SH1V5W, then this card. Before I-1, extend tests/test_plugin_structure.py so the quickstart tutorial may hold references/. Line references FORGE:nn/QS:nn date from the harvest; re-locate by text (the menu is now skills/mods-the-skills-menu). Identity fields created-by/approval-judge read `user` only because trddgrep cannot change them; the main agent minted this card.
+CURRENT STATE 2026-10-23: TRDD-71SH1V5W is in human_review (only owner-run boxes left), so this card starts. A reconciliation of every harvest row against HEAD (reports_dev/20261023-h26-reconciliation.md, local, gitignored) replaced the harvest-time plan I-1..I-10 with R-1..R-9 below: one new file (references/engine-traps.md); the planned mod-review.md, cost-and-cache.md and testing-recipes.md are dropped because review-checklist.md, threat-model.md and house-conventions.md (added by TRDD-71SH1V5W) already cover them, and their gaps become extensions of those files; the api-index script is deferred. The old instruction to extend tests/test_plugin_structure.py first is void: the placement rule polices only code suffixes (CODE_SUFFIXES), so a quickstart references/*.md is already allowed (three ship). Harvest line references FORGE:nn/QS:nn are stale; re-locate by text. NEXT ACTION: R-1, after re-running the dated checks (issue states, sec-default source) on the day engine-traps.md is written. Identity fields created-by/approval-judge read `user` only because trddgrep cannot change them; the main agent minted this card.
 
 ## User directive (verbatim)
 > here is another plugin with a treasure trove of techniues, ideas, skills, informations, tricks, etc. I'm not interested in the skill per se (the ability to automatically create a custom mod based on the analysis of the session , to improve the workflow next time the same issues are encountered). Instead i'm interested in all the ideas that are included  and used to achieve such feat. there are many precius things scattered all across all the files and scripts and skills/reference/templates/examples/etc. I want you to harvest the best ones and to integrate those into our plugin.
@@ -39,18 +39,21 @@ CURRENT STATE 2026-10-22: harvest done (report: reports/givememod-harvest/202610
 - No-copy proof per increment goes to reports/givememod-harvest/<timestamp>-I-n-no-copy.md; its one-line result is recorded in the approval log when the box is ticked.
 - The W2 rule (Button has no variant until a types file proves otherwise) applies to I-6 too.
 - No PRRD exists (design/requirements/PRRD.md absent), so no relevant-rules.
+- 2026-10-23 decision: the no-copy proof is scripts_dev/nocopy_diff.py on each commit's added lines against every file of downloads_dev/givememod-src/repo, with 0 unexplained shared 8-word runs and every shared 6-word run judged, as in TRDD-71SH1V5W; this replaces "identifier grep, jscpd, 8-word prose check" because the increments add Markdown prose and no code, and the run check covers identifiers inside prose.
+- 2026-10-23 decision: TUI and Desktop parity (agents/mods-forge-agent.md: no Raster, Image or Svg, one render path) wins over H34, H35 and H36: the Svg and Raster desktop measurements and the branch-on-surface-first advice are dropped or reduced to one sentence saying why the plugin forbids them; what serves parity stays (Client placeholder caveat, empty session surfaces means headless, the redraw rules that need no surface-specific API).
+- 2026-10-23 decision: R-1 adds the single NOTICE idea-credit line for givememod (MIT, timoncool), with no code or text copied.
 
 ## Increments
-- [ ] I-1 — New skills/mods-tutorial-quickstart/references/engine-traps.md (symptom, cause, fix table in five sections, rows tagged; stale claims and open issues tables with a checked-on date; QS link row) — files: skills/mods-tutorial-quickstart/references/engine-traps.md (new), skills/mods-tutorial-quickstart/SKILL.md — covers: H08, H09, H10, H11, H13, H14, H15, H16, H16b, H19, H20, H21, H22, H23, H24, H25, H26, H27, H28, H33, H35, H39, H58, H59
-- [ ] I-2 — Preflight and built-in-guard section (sec-default skip list with upstream URL, restore-on-turn.start pattern, preflight checklist), first section of engine-traps.md, plus a 6-line Preflight paragraph in FORGE and EXPERT — files: engine-traps.md, agents/mods-forge-agent.md, agents/mods-expert-developer-agent.md — covers: H04, H18, H19, H20, H44
-- [ ] I-3 — Guard craft and how-to-tell-the-model notes in the call-intercept tutorial (ten guard moves, realPath allow-list kept UNVERIFIED, refusal that teaches, note-on-result channel, wait-inside-$ idiom); apply in protect-files if BNBDNR2V B is open — files: skills/mods-tutorial-call-intercept-mods/SKILL.md (and the protect-files example) — covers: H11, H12, H17, H40, H41, H42, H44
-- [ ] I-4 — New skills/mods-tutorial-quickstart/references/mod-review.md (our wording and level names, calls-and-hooks tables, report format) and a review-a-mod mode in EXPERT — files: skills/mods-tutorial-quickstart/references/mod-review.md (new), agents/mods-expert-developer-agent.md — covers: H61, H62, parts of H45
-- [ ] I-5 — New skills/mods-tutorial-quickstart/references/cost-and-cache.md (cache-prefix changes, where model calls multiply and the gates, fork versus complete, how to measure); Tokens per turn / Cache impact / Off switch lines join the hand-over text — files: skills/mods-tutorial-quickstart/references/cost-and-cache.md (new), FORGE report contract line — covers: H45, H46, H47
-- [ ] I-6 — Interface tutorial notes (share the band with a stack test, fit width by dropping, restyle built-in rows, cheap redraw rules, surface fallback first, the glyph set); coordinate with BNBDNR2V D, same file — files: skills/mods-tutorial-interface-mods/SKILL.md — covers: H03, H05, H30, H31, H32, H34, H36, H37, H38, H67
-- [ ] I-7 — New skills/mods-tutorial-quickstart/references/testing-recipes.md (spawn generator stub, anchored find, one-string captions, turn.step driving, world helper, pure-core rule); link from QS step 6 — files: skills/mods-tutorial-quickstart/references/testing-recipes.md (new), skills/mods-tutorial-quickstart/SKILL.md — covers: H53, H54, H55, H56
-- [ ] I-8 — API-index script: read the types file written after a load, print one-line tables, exit non-zero when a pattern matches nothing; one fixture-based pytest — files: 1 script, 1 test, README row, menu/catalog row (same area as BNBDNR2V A and F) — covers: H63
-- [ ] I-9 — Agent text corrections after the owner-run checks: FORGE:48 and FORGE:62 wording about /plugin-types, FORGE:44 Button note, QS:43 and QS:45 rows — files: agents/mods-forge-agent.md, skills/mods-tutorial-quickstart/SKILL.md — covers: H01, H10, H16b, H41, W2
-- [ ] I-10 — Small additions: README where-to-find-more-mods line; favorites route with disable commands in keep-mod.sh hand-over text (BNBDNR2V A); rename-surface list as new-mod.sh checklist (BNBDNR2V A) — files: README, BNBDNR2V A scripts — covers: H57, H65, H66
+- [ ] R-1 — New skills/mods-tutorial-quickstart/references/engine-traps.md, indexed by symptom (does not load, hook misbehaves, state and timers, drawing, platform), with an open-issues table carrying the date the check ran and a stale or conflicting claims list; rows already in the quickstart SKILL.md traps table or the house-conventions UNVERIFIED table are linked, not restated; rows follow the house-conventions format (claim, tag, settle by); one Resources entry with anchors in the quickstart SKILL.md; the one NOTICE idea-credit line — covers: H08 rest, H09, H10, H13, H14, H15, H16, H19, H20-H25, H26, H27, H28, H33, H35 (parity-safe part), H38, H39, H48, H49, H52, H58, H59, W1, W2, W3, W8
+- [ ] R-2 — Preflight and built-in guard facts: a Preflight bullet in house-conventions.md (before the mod exists), the sec-default skip list and the session.compact line in threat-model.md, one pointer line each in FORGE and EXPERT — covers: H03, H04, H18, H20, H47
+- [ ] R-3 — Guard craft in skills/mods-tutorial-call-intercept-mods/SKILL.md (guard moves, refusal that teaches, wait inside a $ call, long-flag pattern tests, tool-result note) plus a channel row in house-conventions.md; W6 and W7 stay out; protect-files untouched — covers: H11, H12, H17, H40, H42, H44
+- [ ] R-4 — Review additions to review-checklist.md (verdict words and reach levels, hygiene check) and threat-model.md (chain-order exposure); replaces I-4 — covers: H59, H61, H62
+- [ ] R-5 — Cost and cache gates as a house-conventions.md subsection, hand-over lines, and one FORGE report-contract line; replaces I-5 — covers: H45, H46
+- [ ] R-6 — Interface tutorial notes in skills/mods-tutorial-interface-mods/SKILL.md (share the band, drop by priority to fit width, restyle built-in rows, cheap redraw rules, decide the fallback first, language rule, tune-it table) and house-conventions.md look rules — covers: H05, H30, H31, H32, H34 (parity-safe part), H36 (parity-safe part), H37, H67
+- [ ] R-7 — Test recipes and live-check rows in the house-conventions.md UNVERIFIED table; ui.find and turn.step written without the $. prefix; replaces I-7 — covers: H53, H55, H56
+- [ ] R-8 — Agent and quickstart corrections after the owner-run checks: FORGE /plugin-types wording, EXPERT, quickstart step 3, the opposing claim beside the compaction trap row (its Status wording stays: the reference chapter lists compact in the $.session row), the token-weather note; the quickstart notice paragraph pinned by tests/test_plugin_structure.py is not edited; FORGE "Button has no variant" stays (W2) — covers: H01, H16b, W4
+- [ ] R-9 — Small additions: README where-to-find-more-mods line, rename surface and favorites route in house-conventions.md, git-poller note (--no-optional-locks, after checking) — covers: H50, H57, H65, H66
+- [ ] Deferred — api-index script (H63): needs a types file from a logged-in build; if built, scripts/api-index.sh with a fixture and tests in tests/test_mod_scripts.py
 
 ## Owner-run checks
 - [ ] Read the types file written after an interactive load (.claude-plugin/types/claude-code/index.d.ts, line 1 is the version) and confirm: $.fs.stat resolve:true and realPath (H41, QS:45); Button props variant and role (W2); Raster limits (W8); ui.render prop names suffix, modes, tail (H32, H05); session.surfaces (H36); the context field on a tool.call result (H44). Owner: I-3, I-6, I-9.
@@ -61,7 +64,7 @@ CURRENT STATE 2026-10-22: harvest done (report: reports/givememod-harvest/202610
 
 ## Acceptance checklist
 - [ ] Each increment committed separately, reviewed, with its no-copy proof saved under reports/.
-- [ ] tests/test_plugin_structure.py allows references/ (and scripts/ per BNBDNR2V) inside the quickstart tutorial, deliberately.
+- [x] tests/test_plugin_structure.py allows references/ (and scripts/ per BNBDNR2V) inside the quickstart tutorial, deliberately. Done before this card started: the placement rule _misplaced_example_code polices only CODE_SUFFIXES, so references/*.md pass, and scripts/*.sh are exempted one level deep in the quickstart only (checked 2026-10-23 in the reconciliation).
 - [ ] uv run pytest, CPV strict (cpv-remote-validate plugin . --strict) and CI pass with no exclusion and no waiver.
 - [ ] README, menu and catalog list any new reference file.
 
@@ -75,3 +78,4 @@ CURRENT STATE 2026-10-22: harvest done (report: reports/givememod-harvest/202610
 - 2026-10-22 orchestrator: correction. The CI-parity follow-up for new example files moved to TRDD-BNBDNR2V increment 2. What stays here: the verbatim BeLazy167 copies (hello-mod, redact-output, dice-tool, branch-band, notes-pane) are linted in CI only when one of them is edited. The first increment here that edits one must confirm SPELL_CSPELL, MARKDOWN_MARKDOWNLINT and BASH_SHFMT ran on it.
 - 2026-10-22 orchestrator: the two ruff format hunks are already applied in 7c3a79e; nothing left to do.
 - 2026-10-22 — queue order: this card now waits for TRDD-71SH1V5W (karanb192 mod-builder harvest), which waits for TRDD-BNBDNR2V; the order is the main agent's reading of the user's directive, offered to the user for veto.
+- 2026-10-23T04:16:06+0200 — column → dev. reconciled plan R-1..R-9 recorded; TRDD-71SH1V5W in human_review
