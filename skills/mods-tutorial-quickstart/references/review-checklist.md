@@ -94,7 +94,8 @@ This group is this plugin's advice, built on the event facts in the [threat mode
 | The README says how a person turns the mod off, and the mod has the on/off command described in [house conventions](house-conventions.md#an-onoff-switch). | Medium |
 | The README states the versions the mod was built on, validated on, and requires. | Low |
 | `version` in the manifest was raised since the last release. This is this plugin's advice. | Low |
+| The folder that ships holds no `package.json` or lock file, no root `CLAUDE.md` and no `bin/` folder, unless the mod means them. The reasons are reported, not chapter facts: see the engine-traps.md rows "A clean install runs a package manager", "Validation warns about a file at the plugin root" and "A helper script leaks into the shell tool" (UNVERIFIED). | Low |
 
 ## Closing the review
 
-End with the smallest set of changes that clears the High findings. Leave the mod's design and reach alone unless the author asks for the implementation. State which proof stages you ran and which you did not.
+End with the smallest set of changes that clears the High findings. Leave the mod's design and reach alone unless the author asks for the implementation. State which proof stages you ran and which you did not. State the reach level of the mod, from drawing and remembering only, through reading and then writing or running, up to the network, and end with one verdict: load as it is, load after the listed changes, or do not load. The verdict follows from the High findings. Both the verdict and the reach level are this plugin's advice, not a chapter rule.
