@@ -87,7 +87,9 @@ function emit(kind, rest,   n, i, parts, item) {
 
 # Only footprint-shaped lines count: optional spaces, the ❯ glyph, then the module token.
 # The kind is found as a whole label ("<space>kind: ") so a module path with a space still parses.
-# A footprint-shaped line whose label is neither a known kind nor an ignored label is an error.
+# A footprint-shaped line whose label is neither a known kind nor an ignored label is an error, but only
+# when its module token starts with "./": advisory lines like "❯ README.md: Install with: ..." are not
+# footprint lines, so their "README.md:" must not be read as a label.
 LC_ALL=C awk -v kinds="$kinds" "$awk_items"'
 BEGIN {
 	kind_re = "[ \t](" substr(kinds, 2, length(kinds) - 2) "): "
@@ -100,7 +102,7 @@ BEGIN {
 		next
 	}
 	line = $0
-	if (sub(/^[ \t]*❯[ \t]+[^ \t]+[ \t]+/, "", line) && (i = index(line, ": ")) > 0) {
+	if (sub(/^[ \t]*❯[ \t]+\.\/[^ \t]*[ \t]+/, "", line) && (i = index(line, ": ")) > 0) {
 		print "plan-diff.sh: unknown footprint label: " substr(line, 1, i - 1) > "/dev/stderr"
 		exit 2
 	}

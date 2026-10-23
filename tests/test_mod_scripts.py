@@ -449,3 +449,12 @@ def test_plan_diff_exits_2_on_an_unknown_footprint_label(tmp_path: Path) -> None
     result = _run("plan-diff.sh", "--from-file", out, _plan(tmp_path, "hooks: session.start\n"))
     assert result.returncode == 2
     assert "unknown footprint label: network" in result.stderr
+
+
+def test_plan_diff_ignores_an_advisory_line_that_holds_a_colon(tmp_path: Path) -> None:
+    """An advisory line such as "README.md: Install with: ..." is not a footprint line: a healthy mod still exits 0."""
+    out = tmp_path / "out.txt"
+    out.write_text("  ❯ ./register.ts hooks: session.start\n  ❯ README.md: Install with: claude plugin install x\n", encoding="utf-8")
+    result = _run("plan-diff.sh", "--from-file", out, _plan(tmp_path, "hooks: session.start\n"))
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert result.stderr == ""
