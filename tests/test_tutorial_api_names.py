@@ -9,8 +9,8 @@ are parsed from the event tables of the same chapter; an event name is not an AP
 
 Scanned: each tutorial skill's SKILL.md and references/*.md, plus the shipped example hook code
 (examples/*/hooks/**/*.ts and *.tsx, and any register.ts under examples/). Skipped: files under a
-tests/ folder (they call a test harness whose `$` is not the shipped API), files under types/
-(declarations, not calls), .d.ts files and node_modules.
+tests/ folder (they call a test harness whose `$` is not the shipped API), files under .claude-plugin/
+(generated declarations, not calls), .d.ts files and node_modules.
 
 The scan checks noun.method only: a third segment (`$.ui.log.foo`) is not checked.
 """
@@ -65,7 +65,7 @@ def tutorial_files() -> list[Path]:
             parts = code.relative_to(skill).parts
             if code.suffix not in (".ts", ".tsx") or code.name.endswith(".d.ts"):
                 continue
-            if "node_modules" in parts or "tests" in parts or "types" in parts:
+            if "node_modules" in parts or "tests" in parts or ".claude-plugin" in parts:
                 continue
             if "hooks" in parts or code.name == "register.ts":
                 files.append(code)
