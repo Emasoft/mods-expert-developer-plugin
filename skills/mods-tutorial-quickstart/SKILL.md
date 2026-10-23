@@ -42,7 +42,7 @@ The example mods live in two sibling tutorials: `mods-tutorial-call-intercept-mo
 
 | Trap from the source | Status |
 |---|---|
-| Run a slash command with `$.command.run({ command: 'compact' })`, not `$.prompt.submit` | UNVERIFIED. The chapters list only `run`; for compaction they document `$.session.compact`. |
+| Run a slash command with `$.command.run({ command: 'compact' })`, not `$.prompt.submit` | UNVERIFIED. Chapters: only `run`, and `$.session.compact` for compaction. 2.1.309 type docs: `$.session.compact` is the `/compact` call, refused mid-turn; `$.command.run` lists `compact` as an example, refused in a hook the turn waits on. |
 | A rewritten result returned as `{ ...r, text }` is ignored, because `text` and `ref` are set by core; answer `{ result: newResult }` | UNVERIFIED. `redact-output` follows this shape. |
 | A path guard is bypassed by `..`, symlinks or other spellings; allow-list on `(await $.fs.stat(path, { resolve: true })).realPath` | UNVERIFIED API. Normalising a path first is sound either way. |
 | `mobile` has no `Input` and `vscode` no `Client` | UNVERIFIED. The reference confirms only that `Raster` and `Image` draw in the terminal. |
@@ -81,7 +81,7 @@ A mod folder of your own that passes `claude plugin validate` and `claude plugin
 ## Error Handling
 
 - A chapter and this tutorial disagree: follow the chapter and treat the tutorial line as stale, except for API names and type shapes, where the notice at the top of this skill applies.
-- The early-access flag `CLAUDE_CODE_ENABLE_FUNCTION_HOOKS` is still set: Claude Code v2.1.287 and later ignores it at any value, so `0` does not turn mods off; remove it (`mods-doc-mods-overview`, "Turn mods on or off"; `mods-doc-manage-mods-for-organizations`, "Stop user-installed mods from loading").
+- `CLAUDE_CODE_ENABLE_FUNCTION_HOOKS` is still set: it is ignored, so `0` does not turn mods off; remove it (`mods-doc-mods-overview`, "Turn mods on or off").
 - A step fails or a hook never fires: load `mods-doc-mods-troubleshooting` and start at "Find out why a mod does nothing", then look the symptom up in [engine-traps](references/engine-traps.md).
 - An UNVERIFIED trap matters to your mod: test it on your build first, and prefer the documented call the Status column names.
 

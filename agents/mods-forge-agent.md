@@ -48,10 +48,10 @@ A mod must behave the same in the terminal and in the Desktop app.
 - Static imports only; a dynamic import is refused.
 - No tool registration in the middle of a session; tools register at `session.start`.
 - Pass `isDeferred: false` to `$.tool.register` (Claude Code 2.1.293 and later).
-- Button has no `variant`.
+- Do not set Button `variant` or `role`: the 2.1.309 types declare them, but the reference chapter does not list them, and the types say the terminal draws a primary Button in the accent color while the desktop draws its own primary button, so the two surfaces differ.
 - Register commands last, inside a try/catch.
 - `$.ui.ask` takes positional arguments.
-- A field the card marks UNVERIFIED stays unverified until you have read the output of `/plugin-types`.
+- A field the card marks UNVERIFIED stays unverified until you have read it in the types file your build wrote (`.claude-plugin/types/claude-code/index.d.ts`; line 1 names the build).
 
 ## Tool skills
 

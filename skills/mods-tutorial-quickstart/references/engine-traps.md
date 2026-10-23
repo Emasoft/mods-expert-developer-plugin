@@ -82,7 +82,8 @@ The forge agent in this plugin forbids Raster, Image and Svg and forbids drawing
 | You need to know whether anything can be drawn | The list of surfaces from `$.session.surfaces` is empty when there is no screen (reported) | Treat empty as headless and hand a line to Claude through context instead (headless fallback only; drawing itself must not depend on the surface) | UNVERIFIED | Print the list in an interactive and in a print-mode session, 10 times each; it stays UNVERIFIED until an empty list is seen in print mode; a non-empty list in print mode refutes it |
 | A hover effect leaves a card on top of later rows | Hover groups are one scope on several boxes (the display form is not in the chapters); absolute cards were reported painted over by later transcript rows | Use cards in the flow, and check the props on a build | UNVERIFIED (the chapters list the `hover` prop only) | Build two boxes in one hover scope and move the pointer |
 | A button in transcript text gets no clicks | One source says a Markdown link with press handling works there and a Button does not. That source's own example draws a Button with `onPress` in a user message row, and its cookbook calls clicks in transcript rows not guaranteed | Prefer a link there; record which one your build honours | UNVERIFIED (both statements recorded) | Click each in a transcript row |
-| Button props from another source (`variant`, `role`) | The chapter lists Button props as `key`, `label`, `onPress`, `hotkey`, `plain`, `dimColor`, `autoFocus`, `action` | Use only those; the agent keeps its rule that Button has no variant | CHAPTER: `mods-doc-mods-reference`, "Elements" | Check the types of a real build before changing the agent |
+| Button props from another source (`variant`, `role`) | The chapter lists Button props as `key`, `label`, `onPress`, `hotkey`, `plain`, `dimColor`, `autoFocus`, `action`; the 2.1.309 types also declare `variant` ('primary' or 'secondary') and `role` ('dismiss') | Read your build's types before using `variant` or `role`, and keep the press working without them; the forge agent does not set them (it draws both surfaces identically) | CHAPTER: `mods-doc-mods-reference`, "Elements" | Draw a Button with `variant` on both surfaces and compare |
+| A drawing copied from an example gets `undefined` props or draws nothing | Component props sit under `e.props` in the 2.1.309 types; another author reports that `token-weather` reads them from `e` | Read `e.props` | UNVERIFIED | Read the render hook of `token-weather` in `claude-code-playground` |
 
 ## Platform and packaging
 
@@ -120,12 +121,12 @@ Re-check with `gh api repos/anthropics/claude-code/issues/<number> --jq .state` 
 Claims that circulate and are wrong, outdated or in conflict. None is advice.
 
 - The early access environment flag for function hooks: dated early access; this plugin's overview already marks the flag as ignored.
-- The `/plugin-types` command: no chapter names it, so whether it still exists is UNVERIFIED; re-test before relying on it.
+- The `/plugin-types` command: no chapter names it, so whether it still exists is UNVERIFIED; re-test before relying on it. The 2.1.309 `claude-code` types file does not mention it; its header says it is written beside the mod under `.claude-plugin/types/` on each load, with line 1 naming the build, so read that file instead.
 - "`session.start` did not fire in a reloaded module": some authors report this; the reference chapter says it runs again after a reload of that mod, so follow the chapter and make start-up safe to repeat anyway.
 - "`$.http.fetch` has no timeout": wrong. The reference chapter gives 30 seconds for one call, redirects and body included.
 - "No call resolves a path through symlinks": the quickstart traps table keeps it as UNVERIFIED; re-test on a real build.
 - "No event fires while typing" and "`tool.check` is not implemented": reported as outdated by the same source; no chapter confirms either way, so test before you rely on either.
-- Button `variant` and `role` from the source's cookbook conflict with the reference chapter's Button props. Keep the chapter until a real build's types say otherwise.
+- Button `variant` and `role`: the reference chapter does not list them; the 2.1.309 types declare them (see Drawing).
 - A Button in a transcript row: the source contradicts itself (see Drawing).
 - Limits cited from types of builds 2.1.292 and 2.1.293 (stream caps, grid sizes, node counts, call times): the chapters lack several of them. Treat each as UNVERIFIED and read the types of your own build.
 - Headline counts in the source's description (mods read, techniques, events, methods) are the author's own numbers; do not quote them.
