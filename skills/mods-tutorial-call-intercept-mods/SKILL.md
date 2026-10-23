@@ -47,11 +47,11 @@ For a mod that guards something, count the forbidden calls and expect zero. Regi
 
 ### Live check for a mod that adds text
 
-UNVERIFIED as a method: the chapters do not describe it. It is a house idea, so test it before you rely on it.
+UNVERIFIED as a method: the chapters do not describe it. This is this plugin's advice, not a chapter rule; try it on your build before you rely on it.
 
-A hook that adds text to what the model reads (`prompt.submit` with `context`, `prompt.section`, `prompt.context`; see `mods-doc-mods-reference`, "Prompts and what Claude reads", and `mods-doc-mods-and-events`, "Rewrite or add to a prompt") cannot be proven by a unit test alone, because no test sees what the model received.
+A hook can add to or change what the model reads: `prompt.submit` with `context`, `prompt.context` with `blocks`, or `prompt.section` replacing a section's text (see `mods-doc-mods-reference`, "Prompts and what Claude reads", and `mods-doc-mods-and-events`, "Rewrite or add to a prompt"). A unit test can check what the hook passes on, but not what the model then received, so it cannot prove the text arrived.
 
-- Make the mod inject a fresh marker the model could not guess, new for each check, then ask the model to quote it back. Do not ask it to confirm: a model can agree without having seen anything.
+- Make the mod inject a fresh marker the model could not guess, new for each check, then ask the model to quote it back. Do not ask it to confirm: a model can agree without having seen anything. `prompt.context` fires once per conversation, so for that hook start a new session for each check.
 - Run a control session without the mod. If the control can produce the marker, the check proves nothing.
 
 ### Where the examples differ from the chapters
