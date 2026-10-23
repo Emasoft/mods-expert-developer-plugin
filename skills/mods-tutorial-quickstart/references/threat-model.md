@@ -1,6 +1,6 @@
 # Threat model template for a mod
 
-A template you fill in for a mod you ship or review. It is organised by the policy sections of the chapters, so each fact sits next to the chapter that owns it. The chapters stay authoritative: where this file and a chapter disagree, follow the chapter. A claim the chapters do not confirm carries the mark UNVERIFIED and should be tested on your own build before you rely on it.
+A template you fill in for a mod you ship or review. It is organised by the policy sections of the chapters, so each fact sits next to the chapter that owns it. The chapters stay authoritative: where this file and a chapter disagree, follow the chapter. A claim the chapters do not confirm carries the mark UNVERIFIED and should be tested on your own build before you rely on it. A claim tagged UPSTREAM was read from the built-in guard's source at a pinned blob, not from a chapter, and can change with any release; where an UPSTREAM claim and a chapter disagree, follow the chapter.
 
 ## Table of Contents
 
@@ -41,6 +41,7 @@ Abuse case: <what a crafted prompt, tool result, file, message or reply from the
 - The guard is present when managed settings exist on the machine, or when the user logs in under a Team or Enterprise plan. Someone using an API key, Amazon Bedrock, Google Cloud's Agent Platform or Microsoft Foundry gets it only where managed settings exist (same section).
 - If managed `prependPlugins` is set, the guard loads only when that list names it (`mods-doc-mods-reference`, "Settings and environment variables").
 - Practical effect for your model: write down whether your mod will run where the guard is present. Several answers below differ with and without it.
+- UPSTREAM: the guard's hook file ([pinned blob 72e0324 at commit 65823ec](https://github.com/anthropics/claude-code/blob/65823ec0034ed0aa0266bc43903fefd3ff94a327/mods/sec-default/hooks/register.ts)) registers `classic.*`, `prompt.section`, `prompt.context`, `prompt.attachment`, `prompt.compose`, `skill.prompt`, `attribution.text`, `settings.read` and `session.compact` with a move that its own comment calls continuing past the user tier, which reads as: an installed mod's hooks on those events, and on `session.compact`, do not run where the guard loads (UNVERIFIED on a real managed machine). `prompt.submit` is not in that list; whether the guard leaves it to user hooks is UNVERIFIED. `tool.describe` goes through a helper, `past-users.ts`, that could not be read, so its effect is UNVERIFIED. Whether the guard adds a note to tool results was not checked, so that is UNVERIFIED too. House convention: a mod that restores state after `/clear` also restores it on `turn.start`. To test the skip, install a mod that hooks `prompt.context` and `classic.SessionStart` on a machine with managed settings and see whether its hooks run.
 
 ## What the guard protects and what it leaves open
 
