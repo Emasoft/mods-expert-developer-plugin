@@ -4,7 +4,7 @@ title: Ship the requirements-drafts mod with list and search skills
 column: backburner
 status: tasked
 created: 2026-10-23T18:01:09+0200
-updated: 2026-10-23T18:01:09+0200
+updated: 2026-10-23T18:04:59+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -41,6 +41,7 @@ Let the user save their own messages into a requirements-drafts store that every
 - No documented way for a mod to add its own keybinding; `Button.action` reuses Claude Code's actions (mods-doc-mods-reference, "Elements").
 - No mod drawing in VS Code, `-p`, cloud, remote side of Remote Control (relayed from the expert report citing mods-doc-mods-overview, "Where mods run"); commands still run there.
 - MEASURE fork results: `immediate: true` and `{ text }` going to Claude's context CONFIRMED (mods-doc-mods-api line 47); `crypto.subtle` available CONFIRMED (line 273); skills ship as `skills/<name>/SKILL.md` CONFIRMED; skills user- and model-invocable by default CONFIRMED. UNVERIFIED: whether `$.fs.write` creates missing folders; whether a typed slash command fires `prompt.submit`.
+- Spike run 1 (terminal, 2.1.309, 2026-10-23, probe in the session scratchpad): a typed message has props.origin.kind 'composer' (generated types list the union composer, bridge, plugin); prompt.submit fires for it with next.origin { plugin: 'engine', tier: 'core' }; $.fs.write created a missing nested folder; the first draw of a row has requestId 'placeholder' before the real message id, so a save must skip that id; $.clock.now() logged as {} (likely a promise: await it). Clicks on the row Button and Markdown link: NOT YET MEASURED (screen capture failed for computer use; the user is asked to click).
 
 ## Design
 
