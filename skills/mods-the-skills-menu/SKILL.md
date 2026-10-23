@@ -49,6 +49,15 @@ Input: a step must read lines 1 to 80 of the hooks module before editing it.
 ## Resources
 
 - [the skills catalog](references/skills-catalog.md): the full entry of every chapter skill and every tutorial (Use when, Do not use when, Load with, Inputs, Outputs, Dependencies), grouped by the same domains as the tables below.
+  - [Mods](references/skills-catalog.md#mods)
+  - [Plugins](references/skills-catalog.md#plugins)
+  - [Marketplaces](references/skills-catalog.md#marketplaces)
+  - [Hooks, Subagents and Skills](references/skills-catalog.md#hooks-subagents-and-skills)
+  - [Settings and Configuration](references/skills-catalog.md#settings-and-configuration)
+  - [Sessions and Runtime](references/skills-catalog.md#sessions-and-runtime)
+  - [Troubleshooting](references/skills-catalog.md#troubleshooting)
+  - [Requirements drafts](references/skills-catalog.md#requirements-drafts)
+  - [Tutorials (reference only)](references/skills-catalog.md#tutorials-reference-only)
 
 ## Standalone Skills
 
