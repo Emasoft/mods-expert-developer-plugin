@@ -1,10 +1,10 @@
 ---
 trdd-id: H26OG8AP
 title: Integrate the givememod harvest into the tutorials and agents
-column: dev
+column: human_review
 status: tasked
 created: 2026-10-22T21:44:33+0200
-updated: 2026-10-23T23:20:31+0200
+updated: 2026-10-23T23:48:38+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: user
 task-type: feature
@@ -120,3 +120,4 @@ CURRENT STATE 2026-10-23: TRDD-71SH1V5W is in human_review (only owner-run boxes
 - 2026-10-23T23:15+0200 Corrections after the review of 85c8fc8: (1) STATE no longer carries the stale hooks-blocker sentence; it now records that blocker as closed in 87f9560 and states the cspell blocker. (2) The ticks on boxes 8 and 9 rest on this card own rule, not on TRDD-71SH1V5W: the final-commit gates on c502dd7 and 4c2eef0 were red only on foreign TRDD-O5LUMKPW findings, those findings are gone at descendant 87f9560, and no H26 content changed in between. (3) The previous line stated as fact that CI MegaLinter spell-checks changed files on push; that is inferred from VALIDATE_ALL_CODEBASE false, not read from the push behaviour. (4) specsgrep is also inside the verbatim user quote.
 - 2026-10-23T23:18+0200 Cspell fix for this card, applied without waiting on the open question because the card already had the convention (its line-28 cspell:ignore comment for misspellings in quoted user text): that comment now also lists contraddicting, reccomended, specsgrep and prrdgrep (all inside the verbatim user quote of 17:05, left as written) and hamzafer, sparklines, tiktoken. cspell on the card: 0 issues. Full-tree cspell over 311 tracked files at this working tree: 1 issue left, fakehome in tests/test_requirements_drafts.py:271, a TRDD-O5LUMKPW file (that session told). STATE: the exit-2 figure for v5.23.0 at 87f9560 is now credited to the TRDD-O5LUMKPW session, since this card run recorded counts only.
 - 2026-10-23T23:20+0200 Cspell closed: after ef2558c (TRDD-O5LUMKPW, adds fakehome), a full-tree cspell run over 311 tracked files at 2110da2 found 0 issues, superseding the 1-issue line above. Disclosures: 2110da2 was stale when written (its own command printed ef2558c as HEAD, yet it recorded fakehome as still open); 8c431f0 says STATE dropped the fakehome wait, but that edit was refused (empty --replace) and set -e did not stop the chain, so the wait was only removed in aab3abf. Edits now check each trddgrep exit code before committing.
+- 2026-10-23T23:48:38+0200 — column → human_review. all agent-run work done (R-1..R-9, sweep, cspell); only owner-run checks (lines 60, 62, 64), the user ruling on the five chapter-path MAJORs, and the push for CI remain
