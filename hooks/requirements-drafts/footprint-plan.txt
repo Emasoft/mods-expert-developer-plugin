@@ -13,12 +13,14 @@ hooks: session.start, prompt.submit, classic.SessionStart, command.run{command=r
 #   $.fs.exists/list    no dedup by hash: a second save would write a second file
 #   $.fs.write          no draft file at all
 #   $.clock.now         no created time and no file name
-#   $.session.root/id/repo  the frontmatter would lack project-root, session and repo
-#   $.ui.toast          saves, refusals and "already saved" would be silent
+#   $.session.root/repo  the frontmatter would lack project-root and repo
+#   $.session.id        no session in the frontmatter, and no per-session typed-message lists:
+#                       one session's message could be saved from another
+#   $.ui.toast          saves, refusals, "already saved" and a failed write would be silent
 #   $.ui.open/close     no picker pane, and it would stay open after a pick
 #   $.ui.invalidate     a row would keep its button after a save, the picker its old list
 #   $.ui.resolve        no elements to draw with
-#   $.ui.log            a failed start or command registration would leave no trace
-calls: $.clock.now (via saveDraft), $.command.register (via startRequirementsDrafts), $.env.get (via saveDraft), $.fs.exists (via saveDraft), $.fs.list (via saveDraft), $.fs.write (via saveDraft), $.session.id (via saveDraft), $.session.repo (via saveDraft), $.session.root (via saveDraft), $.store.get (via startRequirementsDrafts), $.store.set, $.ui.close, $.ui.invalidate, $.ui.log, $.ui.open, $.ui.resolve, $.ui.toast
+#   $.ui.log            a failed start, command registration, write, record or reset would leave no trace
+calls: $.clock.now (via saveDraft), $.command.register (via startRequirementsDrafts), $.env.get (via saveDraft), $.fs.exists (via saveDraft), $.fs.list (via saveDraft), $.fs.write (via saveDraft), $.session.id, $.session.repo (via saveDraft), $.session.root (via saveDraft), $.store.get (via startRequirementsDrafts), $.store.set, $.ui.close, $.ui.invalidate, $.ui.log, $.ui.open, $.ui.resolve, $.ui.toast
 env reads: HOME
 env writes: nothing

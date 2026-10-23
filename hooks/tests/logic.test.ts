@@ -85,16 +85,63 @@ describe('refusal', () => {
       'REDACTED-FIXTURE',
       'NPM_TOKEN=abcd1234efgh5678',
       'dbpassword=s3cretValue99',
+      // A base64 secret holds / and still counts (the AWS documentation's example secret key).
+      'aws_secret_access_key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY',
+      // A dot or a $ inside a value does not make it a reference (second fix round, 2026-10-23).
+      'token=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIn0.abc123def456',
+      'password=Hunter2.Xk9fj',
+      'my password=Xk29fjs82kdQ.',
+      'password=$ecretPa55word',
+      // A short JWT with no credential name before it: the unconditional pattern takes 8 or more per part.
+      'the cookie holds eyJabcd1234.efgh5678.ijkl9012 after login',
+      // A / start is a path only in a path shape; base64 secrets can start with / (CPV round, 2026-10-23).
+      'aws_secret_access_key=/K7MDENGbPxRfiCYEXAMPLEKEYwJalrXUtnFEMI',
+      'password=/Xk29fjs82kdQ',
+      // Pins for the path shape: two or more segments, and one of them all lowercase letters.
+      'aws_secret_access_key=/K7MDENG/bPxRfiCYEXAMPLEKEY',
+      'password=/qwertyuiopasdfghjk',
+      // Credentials inside a URL, after a credential name or anywhere in the message.
+      'secret: postgres://admin:S3cr3tPass@db:5432/app',
+      'connect with postgres://admin:S3cr3tPass@db:5432/app today',
+      // The Redis form has an empty user; a quoted value is read inside its quotes.
+      'cache at redis://:S3cr3tPass@cache:6379',
+      'password: "Xk29fjs82kdQ"',
+      // A credential inside a value that counts as a reference is still judged (last fix round, 2026-10-23).
+      'token_url: https://app.example.com/cb?access_token=Xk29fjs82kdQabc',
+      'password=$OPENAI_KEY;token=Xk29fjs82kdQ',
+      // Short and compound credential names; the long words still match inside a name (PGPASSWORD).
+      'DB_PASS=Xk29fjs82kdQ',
+      'pwd=Xk29fjs82kdQ',
+      'PRIVATE_KEY=Xk29fjs82kdQabc',
+      'db_credential: Xk29fjs82kdQ',
+      'PGPASSWORD=Xk29fjs82kdQ',
+      // HTTP basic auth: base64 of user:password after "Basic".
+      'Authorization: Basic dXNlcjpwYXNzd29yZA==',
+      // The reference prefixes count only at the start of a value.
+      'password=Xk29fjs82kdQprocess.env.X',
+      'password=Xk29fjs82kdQos.environ',
+      'password=Xk29fjs82kdQsecrets.x',
+      // Inside a reference, & and ; end each inner value: a later :// does not hide the credential.
+      'token_url: https://app/cb?access_token=Xk29fjs82kdQabc&redirect=https://app/home',
+      'password=$A;token=$B;secret=Xk29fjs82kdQ',
+      // Basic auth after authorization and : or =, even with a token of letters only.
+      'Authorization: Basic QWxhZGRpbjpvcGVuSesame',
+      'authorization=basic QWxhZGRpbjpvcGVuSesame',
+      // Basic auth anywhere when the token holds a digit, +, / or = (one sample per character kind).
+      'send Basic YWRtaW46czNjcjN0UGFzcw with curl',
+      'send Basic QWxhZGRpbjpvcGVu+SesameAB with curl',
+      'send Basic QWxhZGRpbjpvcGVu/SesameAB with curl',
+      'send Basic QWxhZGRpbjpvcGVuSesameAB== with curl',
     ]
-    for (const text of samples) {
-      expect(looksSecret(text)).toBe(true)
-      expect(refusal(text)).toMatch(/secret/)
-    }
+    // One assertion over the list, so a red run names every sample that slipped through.
+    expect(samples.filter((text) => !looksSecret(text))).toEqual([])
+    for (const text of samples) expect(refusal(text)).toMatch(/secret/)
   })
   test('ordinary requirements pass', () => {
     expect(looksSecret('The password field must hide what is typed.')).toBe(false)
     // Schema-style requirement text names credential fields without holding one.
-    for (const text of [
+    // One assertion over the list, so a red run names every sample wrongly refused.
+    const ordinary = [
       'auth_token: optional string',
       'password: required, min length',
       'access_token: `string`',
@@ -103,14 +150,61 @@ describe('refusal', () => {
       'passwords=encrypted at rest',
       'the secret: keep it short',
       'api_key: string in the config schema',
-    ]) {
-      expect(looksSecret(text)).toBe(false)
-    }
+      // References, not secrets: an env reference, a path or a URL after a credential name.
+      'api_key: process.env.OPENAI_API_KEY',
+      'token=${{ secrets.NPM_TOKEN }}',
+      'TOKEN=$GITHUB_TOKEN_FOR_RELEASES',
+      'secret_key_base: config/credentials.yml.enc',
+      'token_url: https://auth.example.com/oauth/token',
+      'token_url: http://localhost:8080/oauth2token',
+      'password_file: /run/secrets/db_password1',
+      'secret_dir: ~/vault/keys2026ab',
+      'API_KEY="$OPENAI_KEY_FROM_THE_ENVIRONMENT"',
+      // The sentence's period after a path is stripped before the path is judged.
+      'Load it from secret_file: config/credentials.yml.enc.',
+      // Lowercase dotted identifiers are code references.
+      'token: req.headers.authorization',
+      'token = request.headers.token',
+      'api_key: config.auth.key',
+      // An @ in the query is not a user: the authority ends at ? or #.
+      'callback token_url: https://host:8080?email=me@x.com',
+      // The short words pass and pwd count only as a whole part of a name: bypass, compass, OLDPWD do not.
+      'bypass=Xk29fjs82kdQ',
+      'compass=Xk29fjs82kdQ',
+      'OLDPWD=Xk29fjs82kdQ',
+      // Reference prefixes at the start of a value.
+      'api_key = os.environ["OPENAI_API_KEY"]',
+      'token: secrets.NPM_TOKEN',
+      'token=${{secrets.NPM_TOKEN}}',
+      // An inner value ends at &, so a short value plus the rest of the query is not one random value.
+      'token_url: https://x/cb?token_type=bearer&scope=read',
+      'api_key = os.environ.get(KEY_NAME)',
+      // "basic" before a long word of letters is ordinary requirement text.
+      'Add basic internationalization support',
+      'a basic authentication flow for administrators',
+    ]
+    expect(ordinary.filter((text) => looksSecret(text))).toEqual([])
     expect(refusal('Add a search box to the drafts list')).toBeUndefined()
   })
   test('empty and oversize text are refused', () => {
     expect(refusal('  ')).toMatch(/empty/)
     expect(refusal('x'.repeat(MAX_TEXT_BYTES + 1))).toMatch(/4 MiB/)
+  })
+  test('a long run with many separators is scanned once, not once per separator', () => {
+    // The credential scan runs on every save; a quadratic scan of a 1 MB line would hang the press (review, 2026-10-23).
+    const started = Date.now()
+    // Sizes chosen so a linear scan takes milliseconds and a quadratic one takes seconds: a regression
+    // then fails the 2000 ms bound below instead of hanging the run (review, 2026-10-23).
+    expect(looksSecret('a=1&'.repeat(20_000))).toBe(false)
+    // Credential names inside one long reference value: the scan resumes after the value.
+    expect(looksSecret('token=a://'.repeat(10_000))).toBe(false)
+    // A long value that is itself a credential is refused at once.
+    expect(looksSecret('token='.repeat(20_000))).toBe(true)
+    // Inner references inside one long reference value: ; ends each inner value, so every inner value is short.
+    expect(looksSecret('token=$A;'.repeat(10_000))).toBe(false)
+    // Many short reference values: each inner scan stays inside its own value.
+    expect(looksSecret('token=$A '.repeat(5_000))).toBe(false)
+    expect(Date.now() - started).toBeLessThan(2000)
   })
 })
 

@@ -62,17 +62,218 @@ const SECRET_PATTERNS: readonly RegExp[] = [
   /\bsk-[A-Za-z0-9_-]{32,}/,
   /\bxox[abposr]-[A-Za-z0-9-]{10,}/,
   /\bAIza[0-9A-Za-z_-]{35}\b/,
-  /\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}/,
-  // A credential name anywhere (so aws_secret_access_key, GITHUB_ACCESS_TOKEN and dbpassword count),
-  // followed only by _- joined name parts (so Secretary and passwords= do not), and a value that
-  // looks random: letters and digits, or 16 characters or more. Plain schema text such as
-  // "auth_token: optional string" passes (both review findings, 2026-10-23).
-  /(?:password|passwd|secret|token|api[_-]?key|access[_-]?token|auth[_-]?token)(?:[_-][A-Za-z0-9]+)*\s*[:=]\s*["']?(?:(?=[^\s"']*\d)(?=[^\s"']*[A-Za-z])[^\s"']{8,}|[^\s"']{16,})/i,
+  // Unconditional: a JWT is a secret wherever it sits, dots and all (second fix round, 2026-10-23).
+  /\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}/,
   /\bbearer\s+[A-Za-z0-9._~+/-]{20,}=*/i,
 ]
 
+// The credential-name rule, written as plain string steps instead of one regex: a repeated group
+// followed by more quantified parts is a catastrophic-backtracking risk on long text (CPV
+// skillaudit REGEX_DOS, 2026-10-23). The scans below visit each character a bounded number of times.
+const CREDENTIAL_WORDS = [
+  'password', 'passwd', 'pass', 'pwd', 'secret', 'token', 'api_key', 'api-key', 'apikey', 'private_key', 'credential',
+]
+// Short words that are also inside ordinary words (bypass, compass, OLDPWD): they count only as a
+// whole part of the name. The long words still count inside a name: PGPASSWORD is PostgreSQL's
+// standard password variable and dbpassword an existing pinned sample, and a before-edge rule on
+// every word would miss both (coordinator accepted, last fix round, 2026-10-23).
+const WHOLE_PART_WORDS: ReadonlySet<string> = new Set(['pass', 'pwd'])
+
+function isNameChar(ch: string): boolean {
+  return /^[A-Za-z0-9_-]$/.test(ch)
+}
+
+function isPartEdge(ch: string): boolean {
+  return ch === '' || ch === '_' || ch === '-'
+}
+
+/**
+ * A credential word anywhere in the name (so aws_secret_access_key, GITHUB_ACCESS_TOKEN and
+ * dbpassword count), followed only by _- joined parts (so Secretary and passwords do not).
+ * Plain schema text such as "auth_token: optional string" passes on its value (review findings).
+ */
+function isCredentialName(name: string): boolean {
+  const lower = name.toLowerCase()
+  for (const word of CREDENTIAL_WORDS) {
+    for (let at = lower.indexOf(word); at >= 0; at = lower.indexOf(word, at + 1)) {
+      if (!isPartEdge(lower.charAt(at + word.length))) continue
+      if (WHOLE_PART_WORDS.has(word) && !isPartEdge(lower.charAt(at - 1))) continue
+      return true
+    }
+  }
+  return false
+}
+
+type Span = { from: number; to: number }
+
+// A value ends at whitespace or a quote. Inside a reference value, & and ; end it too: a URL query
+// or a shell line holds several pairs, and each one is judged on its own, while a value read to the
+// end would let a later :// make the whole tail a reference (review of the last fix round,
+// 2026-10-23). Outside a reference they do not end it: a password can hold & or ;.
+const VALUE_END = /[\s"']/
+const INNER_VALUE_END = /[\s"'&;]/
+
+/**
+ * Where the value sits after each : or = in text[lo, hi) whose name (the word just before it,
+ * spaces allowed between) is a credential name. A value is read only after its name passes, and
+ * the scan resumes after that value, so each character is visited a bounded number of times: a
+ * long line full of separators (a=1&b=2&...) costs one pass, not one pass per separator (review
+ * finding, 2026-10-23). The bounds let the same scan run inside one value.
+ */
+function* credentialSpans(text: string, lo: number, hi: number, valueEnd: RegExp): Generator<Span> {
+  for (let sep = lo; sep < hi; sep += 1) {
+    const ch = text.charAt(sep)
+    if (ch !== ':' && ch !== '=') continue
+    let end = sep
+    while (end > lo && /\s/.test(text.charAt(end - 1))) end -= 1
+    let start = end
+    while (start > lo && isNameChar(text.charAt(start - 1))) start -= 1
+    if (!isCredentialName(text.slice(start, end))) continue
+    let from = sep + 1
+    while (from < hi && /\s/.test(text.charAt(from))) from += 1
+    if (text.charAt(from) === '"' || text.charAt(from) === "'") from += 1
+    let to = from
+    while (to < hi && !valueEnd.test(text.charAt(to))) to += 1
+    yield { from, to }
+    // Separators inside this value belong to it; credentialValueIsSecret scans them when it is a reference.
+    sep = Math.max(sep, to - 1)
+  }
+}
+
+/** The sentence's own punctuation is not part of the value ("my password=Xk29fjs82kdQ."). */
+function stripTrailingPunctuation(value: string): string {
+  let end = value.length
+  while (end > 0 && '.,;:!?)'.includes(value.charAt(end - 1))) end -= 1
+  return value.slice(0, end)
+}
+
+/**
+ * A value that names where a secret lives instead of holding it: a URL, an env reference
+ * (${...}, $UPPER_CASE, or a start of process.env., os.environ or secrets.), a home path, an
+ * absolute path in a path shape, a lowercase dotted identifier (req.headers.authorization), or a
+ * path with a / that ends in a file extension. A dot, a $ or a / alone proves nothing
+ * (Hunter2.Xk9fj, $ecretPa55word, base64 secrets such as AWS secret keys, which hold / and can
+ * start with it). Each shape has a test (fix rounds of 2026-10-23).
+ */
+function isReference(value: string): boolean {
+  // A URL that carries a user and password never gets here as a reference: looksSecret refuses
+  // the whole text through hasUrlCredentials before any value is judged.
+  if (value.includes('://')) return true
+  if (/^\$(?:\{|[A-Z_][A-Z0-9_]*(?![A-Za-z0-9]))/.test(value)) return true
+  // Anchored at the start (last fix round, 2026-10-23): Xk29fjs82kdQsecrets.x holds the word, not a
+  // reference. ${{ secrets.X }} is already a reference through the ${ rule above.
+  if (value.startsWith('process.env.') || value.startsWith('os.environ') || value.startsWith('secrets.')) return true
+  // A / start is a path only in a path shape: base64 secrets can start with / too.
+  if (value.startsWith('/') ? isPathShape(value) : value.startsWith('~')) return true
+  if (isCodeReference(value)) return true
+  const slash = value.lastIndexOf('/')
+  if (slash < 0) return false
+  const segment = value.slice(slash + 1)
+  const dot = segment.lastIndexOf('.')
+  return dot >= 0 && /^[A-Za-z][A-Za-z0-9]{0,7}$/.test(segment.slice(dot + 1))
+}
+
+/**
+ * scheme://user:pass@ anywhere in the text, credential name or not (CPV round, 2026-10-23).
+ * Plain string steps per "://", so the scan stays linear (no regex backtracking).
+ */
+function hasUrlCredentials(text: string): boolean {
+  for (let at = text.indexOf('://'); at >= 0; at = text.indexOf('://', at + 3)) {
+    let start = at
+    while (start > 0 && /^[A-Za-z0-9+.-]$/.test(text.charAt(start - 1))) start -= 1
+    if (start === at || !/^[A-Za-z]$/.test(text.charAt(start))) continue
+    let end = at + 3
+    // The authority ends at /, ? or # (RFC 3986), so an @ in a path or a query is not a user.
+    while (end < text.length && !/[\s/?#"']/.test(text.charAt(end))) end += 1
+    const authority = text.slice(at + 3, end)
+    const userinfo = authority.slice(0, Math.max(authority.lastIndexOf('@'), 0))
+    // An empty user counts (redis://:pass@host); an empty password does not (user:@host).
+    const colon = userinfo.indexOf(':')
+    if (colon >= 0 && colon < userinfo.length - 1) return true
+  }
+  return false
+}
+
+/** /a/b with two or more segments of [A-Za-z0-9._-], one of them all lowercase letters. */
+function isPathShape(value: string): boolean {
+  const segments = value.slice(1).split('/')
+  return segments.length >= 2
+    && segments.every((segment) => /^[A-Za-z0-9._-]+$/.test(segment))
+    && segments.some((segment) => /^[a-z]+$/.test(segment))
+}
+
+/** A lowercase dotted identifier such as req.headers.authorization is code, not a secret. */
+function isCodeReference(value: string): boolean {
+  const parts = value.split('.')
+  return parts.length >= 2 && parts.every((part) => /^[a-z_$]+$/.test(part))
+}
+
+/** Letters and digits, or 16 characters or more: what a password or key looks like. */
+function looksRandom(value: string): boolean {
+  if (value.length >= 16) return true
+  return value.length >= 8 && /\d/.test(value) && /[A-Za-z]/.test(value)
+}
+
+type Verdict = 'secret' | 'reference' | 'plain'
+
+function judge(text: string, span: Span): Verdict {
+  const bare = stripTrailingPunctuation(text.slice(span.from, span.to))
+  if (isReference(bare)) return 'reference'
+  return looksRandom(bare) ? 'secret' : 'plain'
+}
+
+function credentialValueIsSecret(text: string): boolean {
+  for (const outer of credentialSpans(text, 0, text.length, VALUE_END)) {
+    const verdict = judge(text, outer)
+    if (verdict === 'secret') return true
+    // A reference can carry pairs of its own (a URL's ?access_token=..., $KEY;token=...): judge each
+    // of them once (last fix round, 2026-10-23). One level only: scanning inside an inner reference
+    // again would make a long chain of references quadratic. A plain value needs no inner scan: an
+    // inner pair that looks random makes the whole value at least as long and random, so it is
+    // already 'secret'.
+    if (verdict === 'reference') {
+      for (const inner of credentialSpans(text, outer.from, outer.to, INNER_VALUE_END)) {
+        if (judge(text, inner) === 'secret') return true
+      }
+    }
+  }
+  return false
+}
+
+/**
+ * HTTP basic auth: "basic" and a base64 token, counted only after authorization and : or =, or when
+ * the token holds a digit, +, / or =. Ordinary requirement text says "basic internationalization",
+ * a long word of letters only, which an unconditional pattern refused (coordinator, 2026-10-23).
+ */
+function hasBasicCredential(text: string): boolean {
+  // Local, so the g flag's lastIndex never leaks between calls. \s+ and the token class share no
+  // character and the class excludes =, so no quantifier overlaps another (CPV REGEX_DOS).
+  const basic = /\bbasic\s+([A-Za-z0-9+/]{16,}={0,2})/gi
+  for (let match = basic.exec(text); match !== null; match = basic.exec(text)) {
+    if (/[0-9+/=]/.test(match[1] ?? '')) return true
+    if (followsAuthorization(text, match.index)) return true
+  }
+  return false
+}
+
+/** authorization, optional spaces, : or =, optional spaces, then at (Proxy-Authorization counts). */
+function followsAuthorization(text: string, at: number): boolean {
+  let end = at
+  while (end > 0 && /\s/.test(text.charAt(end - 1))) end -= 1
+  // At the start charAt(-1) is '', which is neither : nor =.
+  const sep = text.charAt(end - 1)
+  if (sep !== ':' && sep !== '=') return false
+  end -= 1
+  while (end > 0 && /\s/.test(text.charAt(end - 1))) end -= 1
+  const word = 'authorization'
+  return text.slice(Math.max(0, end - word.length), end).toLowerCase() === word
+}
+
 export function looksSecret(text: string): boolean {
   return SECRET_PATTERNS.some((re) => re.test(text))
+    || hasUrlCredentials(text)
+    || hasBasicCredential(text)
+    || credentialValueIsSecret(text)
 }
 
 export function byteLength(text: string): number {

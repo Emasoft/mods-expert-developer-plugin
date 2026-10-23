@@ -25,11 +25,32 @@ const SWITCH_KEY = 'enabled'
 
 // Module variables, not $.state: $.state would need a `types` contract in the plugin manifest
 // (claude plugin validate refused an undeclared key on 2.1.309), and the orchestrator ruled the
-// manifest is left unchanged. A reload of this module empties both; the switch lives in $.store.
+// manifest is left unchanged. A reload of this module empties them; the switch lives in $.store.
+// The switch is one machine-wide value, like the $.store it is read from.
 let enabled = true
-let recent: string[] = []
-// requestId of a UserMessage row -> id of the draft saved from it, so the row draws "saved".
-const savedRows = new Map<string, string>()
+// Both lists are keyed by $.session.id(): one module instance may serve more than one session in
+// a process (not verified on 2.1.309), and one conversation's message must never be saved from,
+// or marked saved in, another (review finding, 2026-10-23).
+const recentBySession = new Map<string, string[]>()
+// Per session: requestId of a UserMessage row -> id of the draft saved from it, so the row draws "saved".
+const savedRowsBySession = new Map<string, Map<string, string>>()
+
+async function recentOf($: EngineInterface): Promise<string[]> {
+  return recentBySession.get(await $.session.id()) ?? []
+}
+
+/** Read-only: a render never creates an entry (second fix round, 2026-10-23). */
+async function savedIdOf($: EngineInterface, requestId: string): Promise<string | undefined> {
+  return savedRowsBySession.get(await $.session.id())?.get(requestId)
+}
+
+/** The only place a session's saved-rows map is created: after a save succeeded. */
+async function markSaved($: EngineInterface, requestId: string, id: string): Promise<void> {
+  const session = await $.session.id()
+  const rows = savedRowsBySession.get(session) ?? new Map<string, string>()
+  rows.set(requestId, id)
+  savedRowsBySession.set(session, rows)
+}
 
 type Saved = { id: string } | undefined
 
@@ -81,9 +102,33 @@ async function saveDraft(
   return { id }
 }
 
+/**
+ * Every press and command saves through here: a thrown $.fs or $.session error (a full disk, a
+ * folder it may not write) reaches the person as a toast and the log, never as an engine error
+ * on a button press, and never silently (review finding, 2026-10-23).
+ */
+async function trySave(
+  $: EngineInterface,
+  text: string,
+  via: Via,
+  surface: string,
+  messageId: string,
+): Promise<Saved> {
+  try {
+    return await saveDraft($, text, via, surface, messageId)
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error)
+    $.ui.log(`requirements-drafts: save failed: ${reason}`)
+    $.ui.toast(`Not saved: ${reason}`)
+    return undefined
+  }
+}
+
 /** Called once per session.start by hooks/index.ts. Commands register last. */
 export async function startRequirementsDrafts($: EngineInterface): Promise<void> {
   const stored = await $.store.get(SWITCH_KEY)
+  // Default ON: an unset switch counts as on (the card's recorded default; the user has not
+  // answered yet). A test pins it, so flipping the default turns that test red.
   enabled = stored !== false
   try {
     await $.command.register({ name: 'requirements-drafts', description: 'Turn requirement drafts on or off', argumentHint: '[on|off]' })
@@ -104,20 +149,32 @@ export function registerRequirementsDrafts(on: On): void {
       isMeta: e.isMeta === true,
       text: e.text,
     })) {
-      recent = pushRecent(recent, e.text)
+      const session = await $.session.id()
+      recentBySession.set(session, pushRecent(recentBySession.get(session) ?? [], e.text))
       $.ui.invalidate('ui.render')
     }
     return next(e)
-  }).catch(async ($, e, next) => next(e))
+  }).catch(async ($, e, next) => {
+    // A throw (from $.session.id, say) must not drop the message silently: log why, pass the prompt on.
+    // || not ??: an empty message falls back to the failure kind too.
+    $.ui.log(`requirements-drafts: could not record a typed message: ${next.error.message || next.error.kind}`)
+    return next(e)
+  })
 
   // /clear, /resume and /branch start another conversation: its "last typed message" starts empty.
+  // Only this session's entry is dropped; another session served by this module keeps its own.
   on('classic.SessionStart', async ($, e, next) => {
     if (e.source === 'clear' || e.source === 'resume' || e.source === 'fork') {
-      recent = []
-      savedRows.clear()
+      const session = await $.session.id()
+      recentBySession.delete(session)
+      savedRowsBySession.delete(session)
     }
     return next(e)
-  }).catch(async ($, e, next) => next(e))
+  }).catch(async ($, e, next) => {
+    // Same rule for the reset: a failure is logged, and the event goes on.
+    $.ui.log(`requirements-drafts: could not reset the typed messages: ${next.error.message || next.error.kind}`)
+    return next(e)
+  })
 
   on('command.run', { command: 'requirements-drafts' }, async ($, e) => {
     const answer = parseSwitch(e.args, enabled)
@@ -133,13 +190,13 @@ export function registerRequirementsDrafts(on: On): void {
       $.ui.toast('requirements-drafts is off. Turn it on with /requirements-drafts on.')
       return {}
     }
-    const last = recent[0]
+    const last = (await recentOf($))[0]
     if (last === undefined) {
       $.ui.toast('No typed message to save yet in this conversation.')
       return {}
     }
     // command.run names no surface, and the command's message has no id it can read: both stay empty.
-    await saveDraft($, last, 'command', '', '')
+    await trySave($, last, 'command', '', '')
     return {}
   })
 
@@ -155,7 +212,7 @@ export function registerRequirementsDrafts(on: On): void {
   on('ui.render', { component: 'Pane', requestId: PANE }, async ($, e) => {
     const { Box, Button, Text } = $.ui.resolve(e)
     const width = e.props.bodyColumns - 4
-    const choices = recent.slice(0, HOTKEYS.length)
+    const choices = (await recentOf($)).slice(0, HOTKEYS.length)
     return Box({
       flexDirection: 'column',
       children: [
@@ -169,7 +226,7 @@ export function registerRequirementsDrafts(on: On): void {
             hotkey: HOTKEYS[i],
             plain: true,
             onPress: async (pe) => {
-              await saveDraft($, text, 'picker', pe.surface, '')
+              await trySave($, text, 'picker', pe.surface, '')
               await $.ui.close({ id: PANE })
             },
           }),
@@ -185,7 +242,7 @@ export function registerRequirementsDrafts(on: On): void {
     const theirs = await next(e)
     if (!enabled || !rowIsSaveable(e.props.origin.kind, e.requestId)) return theirs
     const { Box, Button, Text } = $.ui.resolve(e)
-    const savedId = savedRows.get(e.requestId)
+    const savedId = await savedIdOf($, e.requestId)
     const mark = savedId !== undefined
       ? Text({ dimColor: true, children: [`✓ saved as requirement draft ${savedId}`] })
       : Button({
@@ -194,9 +251,9 @@ export function registerRequirementsDrafts(on: On): void {
           plain: true,
           dimColor: true,
           onPress: async (pe) => {
-            const saved = await saveDraft($, e.props.text, 'row', pe.surface, e.requestId)
+            const saved = await trySave($, e.props.text, 'row', pe.surface, e.requestId)
             if (saved !== undefined) {
-              savedRows.set(e.requestId, saved.id)
+              await markSaved($, e.requestId, saved.id)
               $.ui.invalidate('ui.render')
             }
           },
