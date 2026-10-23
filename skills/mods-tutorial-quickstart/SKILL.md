@@ -110,6 +110,15 @@ Input: "show the test status above the prompt". Output: copy `branch-band` from 
   - [Footprint against a plan](references/house-conventions.md#footprint-against-a-plan)
   - [UNVERIFIED — test on a real build before relying on it](references/house-conventions.md#unverified--test-on-a-real-build-before-relying-on-it)
   - [A premise this plugin rejects](references/house-conventions.md#a-premise-this-plugin-rejects)
+- [engine-traps](references/engine-traps.md): engine behaviour indexed by symptom, each row tagged CHAPTER, UPSTREAM or UNVERIFIED with the run that settles it, plus an open-issues table with its check date and a list of stale or conflicting claims.
+  - [How to read this file](references/engine-traps.md#how-to-read-this-file)
+  - [The mod does not load](references/engine-traps.md#the-mod-does-not-load)
+  - [A hook misbehaves](references/engine-traps.md#a-hook-misbehaves)
+  - [State and timers](references/engine-traps.md#state-and-timers)
+  - [Drawing](references/engine-traps.md#drawing)
+  - [Platform and packaging](references/engine-traps.md#platform-and-packaging)
+  - [Open issues (checked 2026-10-23)](references/engine-traps.md#open-issues-checked-2026-10-23)
+  - [Stale or conflicting claims](references/engine-traps.md#stale-or-conflicting-claims)
 - [threat-model](references/threat-model.md): a template for the reach and abuse cases of a mod, with the policy facts of the chapters sorted by policy section and a table of claims the chapters do not confirm.
   - [How to use this template](references/threat-model.md#how-to-use-this-template)
   - [Fill-in block](references/threat-model.md#fill-in-block)

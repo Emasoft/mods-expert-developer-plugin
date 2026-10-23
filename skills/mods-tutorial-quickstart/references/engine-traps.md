@@ -1,0 +1,131 @@
+# Engine traps, indexed by symptom
+
+Look up what you see, not what you suspect. Each row gives the symptom, the likely cause, the fix, a tag and, for anything not yet confirmed, the run that would settle it. Most rows come from another author's notes about how the mods engine behaves; they were rewritten here in this plugin's own words and sorted by symptom.
+
+## Table of Contents
+
+- [How to read this file](#how-to-read-this-file)
+- [The mod does not load](#the-mod-does-not-load)
+- [A hook misbehaves](#a-hook-misbehaves)
+- [State and timers](#state-and-timers)
+- [Drawing](#drawing)
+- [Platform and packaging](#platform-and-packaging)
+- [Open issues (checked 2026-10-23)](#open-issues-checked-2026-10-23)
+- [Stale or conflicting claims](#stale-or-conflicting-claims)
+
+## How to read this file
+
+Every row carries one tag.
+
+- **CHAPTER** means a chapter skill states the fact. The tag names the chapter skill and the section title, so you can open it and check.
+- **UPSTREAM** means the fact was read in a public source on a date; the tag gives the URL. A source can change after that date.
+- **UNVERIFIED** means the chapters neither confirm nor contradict the claim. Do not build on it until you have run the check in the last column on your own build. Nothing tagged UNVERIFIED is a fact here.
+
+Rows already settled elsewhere are linked, not repeated: the traps table in the quickstart `SKILL.md` ("Traps the chapters do not settle") and the claims table in [house-conventions](house-conventions.md#unverified--test-on-a-real-build-before-relying-on-it). The reach and abuse side is in [threat-model](threat-model.md) and [review-checklist](review-checklist.md). Where a convention elsewhere in this plugin and a row here disagree, the chapter wins, then the agent policy, then this file.
+
+## The mod does not load
+
+Run `claude plugin validate` first; the engine prints a refusal message per cause. Compare that message with the rows below.
+
+| Symptom | Cause | Fix | Tag | Settle by |
+|---|---|---|---|---|
+| Hooks module refused at load, with a name complaint | The names `on`, `$` and `next` are taken by the engine's own bindings, so your code cannot declare them | Rename your variable or helper | UNVERIFIED | Declare a local named `next` in a throwaway mod and read the validate message |
+| JSX is refused or renders nothing | JSX is allowed only in `.tsx` or `.jsx` files, and a local `h`, a local `Fragment` or a `@jsx` pragma clashes with the engine's own factory | Keep JSX in `.tsx`, and declare none of those names | UNVERIFIED (the quickstart traps table already covers a global `h`) | Add a local `Fragment` to a `.tsx` hooks file and run validate |
+| A state definition is refused | An `atom` call must name its plugin and key as literals, be held in a `const`, use a key declared in the plugin's `types/index.d.ts`, and the contract file must be listed under `types` in `plugin.json` | Follow the literal and declared-key shape; see the bare-`export {}` row in house-conventions | UNVERIFIED | Break each of the four conditions one at a time and run validate |
+| `setTimeout`, `setInterval` or `WebAssembly` is refused | The engine allows only its own clock | Use `$.clock.after` and `$.clock.every` | UNVERIFIED | Call `setTimeout` in a hook and run validate |
+| A second hook for one event is ignored or refused | One hook with no matcher for an event per module is the rule | Merge them into one hook | UNVERIFIED (house-conventions already states the one-per-event rule as a convention) | Register two hooks with no matcher for one event and run validate |
+| An import is refused | An import that resolves outside the plugin folder is refused, symlinks included | Copy the file into the plugin folder | UNVERIFIED | Import a file through a symlink that points outside the folder |
+| A large module is refused | Reported cap of 1 MiB for a module | Split the module, or drop the data from it | UNVERIFIED | Pad a hooks file past 1 MiB and run validate |
+| `$.env.get` is refused | The variable name must be a literal string, as for other calls the analyser must classify | Write the name inline, never from a variable | UNVERIFIED | Pass a variable as the name and run validate |
+| A helper that takes `$` is refused | A function that receives `$` must be defined in the same file and must not share its name with another identifier; storing `$` in an object is also refused (reported) | Pass `$` into each call, define the helper locally | UNVERIFIED | Import such a helper from a second file and run validate |
+| The module loads under one name and your override of another plugin does not apply | Same-name precedence: managed settings first, then a plugin directory given on the command line or in the environment (it silently replaces an installed copy), then installed plugins, then personal skills, then project skills | Run with debug output and look for the override line | UNVERIFIED (the chapters cover the refusal message only, in `mods-doc-mods-troubleshooting`) | Read the loading page of the official docs, then start with the plugin directory option and an installed copy of the same name |
+
+## A hook misbehaves
+
+| Symptom | Cause | Fix | Tag | Settle by |
+|---|---|---|---|---|
+| A turn or tool hook runs too often, or for work you did not start | `tool.call`, `turn.step` and `turn.complete` also fire for subagents. `e.agentId` is set when a subagent or teammate makes the call | Gate on `e.agentId === undefined` when the hook should see the main conversation only | CHAPTER: `mods-doc-mods-reference`, "Events a mod can hook" (the field). The statement that `turn.start` has no `agentId` is UNVERIFIED | Log `e.agentId` in a `turn.start` hook while a subagent runs |
+| A call made while drawing is denied | `ui.render` is a read-only pass. State writes are covered by the interfaces tutorial; files, processes and model calls are reported as denied too | Do effects in other hooks, commands or timers and invalidate the render | UNVERIFIED | Call `$.model.complete` from a render hook and read the failure |
+| `$.ui.ask` rejects, or shows odd choices | It is a question dialog underneath: the text should end with a question mark, offer 2 to 4 labels with the safest first, and it rejects when dismissed or when the session is headless | Wrap the call in a catch and treat rejection as "no answer"; in a test, answer the underlying question tool call (see `mods-doc-mods-testing`) | UNVERIFIED (label count and question mark); CHAPTER for the typed answer: `mods-doc-mods-and-events` | Ask five labels in a throwaway mod and read the result |
+| A command or prompt submitted from a hook hangs or is refused | Calling `$.command.run`, `$.prompt.submit` or `$.session.compact` inside a hook the turn waits on can deadlock or reject; `$.prompt.submit` resolves when its turn starts | Return from the hook first and act from `$.clock.after(0, fn)`. The pure deadlock part is already in house-conventions (pollers); the compaction wording conflict is in the traps table of the quickstart `SKILL.md` | UNVERIFIED | Call each from a command hook and from a turn-waited hook on a real build |
+| A model call returns no answer instead of throwing | `$.model.complete` resolves with `isAnswered` false and a reason; `$.model.fork` reports that there is nothing to fork before the first reply, after `/clear`, and after a resumed restart | Check `isAnswered`; fall back to `complete` over the end of `$.session.messages()` | CHAPTER for `isAnswered`: `mods-doc-mods-api`. The `nothing-to-fork` cases are UNVERIFIED | Call `fork` as the first action of a new session |
+| You wait for Esc, Ctrl+C, a paste or a permission answer and nothing arrives | Mods get no event for those keys, for a paste or for a key release. A permission answer is not an event either; infer it from the `tool.check` ask plus the end of the call, or from `classic.PermissionDenied`. A permission refusal reaches `tool.call` as an error result | Poll `$.prompt.read` for pastes; read the call result instead of waiting for a dialog event | UNVERIFIED | Log every event in a throwaway mod, then press each key and paste text |
+| A command name does not run your command | Names collide with built-in commands and skills | Prefix every command with the mod name | UNVERIFIED | Register a command named like a built-in and run it |
+| Order-dependent start-up is flaky | `classic.SessionStart` and `session.start` settle in no fixed order (reported) | Do not depend on the order; make start-up idempotent (see the state section) | UNVERIFIED | Log both events with `$.clock.now` on several starts |
+| A toast, status or log line has the mod name in front of it | The engine prefixes plugin text with the plugin name (reported) | Leave the name out of your own text | UNVERIFIED | Toast a short text and read what is drawn |
+| An `http` request is slow to finish | `$.http.fetch` resolves only after the whole body arrived; there is no streaming | Run a streaming client through `$.process.spawn` and read its output; pass secrets on standard input | CHAPTER for the 30 second limit: `mods-doc-mods-reference`, "Limits". The no-streaming claim is UNVERIFIED | Fetch a slow streaming URL and see when the call resolves |
+
+## State and timers
+
+State lifetimes are in the chapters and in house-conventions. These rows cover what fails around them.
+
+| Symptom | Cause | Fix | Tag | Settle by |
+|---|---|---|---|---|
+| Two sessions overwrite each other's saved values | One store file serves every session on the machine, and a read then write is not atomic | One key per writer and combine on read; read again right before writing; cap list size | CHAPTER: `mods-doc-mods-interfaces`, "Save from more than one session"; the 4 MiB cap is in `mods-doc-mods-reference`, "Limits" | Not needed |
+| Lost updates continue with the key-per-writer layout | Several writers still share one key, for instance a list | Put a revision number in the value; on write, read again, compare the revision, retry a few times; inside one process a chained promise queue is enough | UNVERIFIED (design on top of the chapter rule) | Run two sessions that append in a loop and count the entries |
+| Only one session should act (play a sound, run a sweep) | Every session runs the same hooks | Take a lease: store an owner token and a time stamp, refresh it on a short beat, treat a lease older than a few beats as free | UNVERIFIED | Run two sessions and check that only the lease holder acts |
+| A timer looks running after `/reload-plugins` but never fires | A reload cancels waiting `$.clock` calls while `$.state` survives | Keep timer handles in a module array that the next `register` cancels, store deadlines, and re-arm from them in `session.start` | CHAPTER for the re-run of `session.start` in a fresh copy: `mods-doc-mods-troubleshooting`. The cancelled timers are UNVERIFIED | Start a timer, run `/reload-plugins`, and see whether it fires |
+| Start-up code never ran after a reload | Some authors saw no `session.start` after a reload (reported) | Make start-up idempotent and callable from any hook, and call it lazily from the first hook that needs it | UNVERIFIED | Log `session.start` across a reload |
+| A repeating timer stopped on its own | A refused period ends the repeat (reported) | Store a heartbeat time stamp on every tick and restart a stale timer from the next hook | UNVERIFIED | Pass a period the engine refuses and watch for ticks |
+| Two projects share one key by accident | The store is machine-wide, not per project | Add a hash of the root from `$.session.root` to the key | UNVERIFIED | Run the same mod in two projects and compare keys |
+| Text from another session is treated as an instruction | Incoming session text is only text | Treat it as untrusted data; see [threat-model](threat-model.md) | Linked, not restated | Not needed |
+| A watcher polls too much or reads a half-written file | Writes are not atomic, so a reader can see part of a file | List the folder once, re-read only when the modified time or size changed, and keep the last good parse | CHAPTER for the non-atomic write: `mods-doc-mods-reference`, "Mods API methods". The rest is UNVERIFIED (the `fs.stat` field names are not in the chapters) | Write a file in a loop and read it from a watcher |
+
+## Drawing
+
+The forge agent in this plugin forbids Raster, Image and Svg and forbids drawing that depends on the surface, so measurements for those are not recorded here.
+
+| Symptom | Cause | Fix | Tag | Settle by |
+|---|---|---|---|---|
+| Your band vanishes while a question dialog is open | The question dialog replaces the prompt area (reported); a height near 12 rows is the reported cap | Draw compactly; put your elements above the `next(e)` reference, and write the reference exactly once | UNVERIFIED | Open a question dialog while the band is drawn and count the rows |
+| A `Client` module shows a placeholder where you expect output | The placeholder can appear in place of the module (reported) | Do not rely on a `Client` for information the person must see | UNVERIFIED | Draw a `Client` and read what shows |
+| You need to know whether anything can be drawn | The list of surfaces from `$.session.surfaces` is empty when there is no screen (reported) | Treat empty as headless and hand a line to Claude through context instead | UNVERIFIED | Print the list in an interactive and in a print-mode session |
+| A hover effect leaves a card on top of later rows | Hover groups are one scope on several boxes (the display form is not in the chapters); absolute cards were reported painted over by later transcript rows | Use cards in the flow, and check the props on a build | UNVERIFIED (the chapters list the `hover` prop only) | Build two boxes in one hover scope and move the pointer |
+| A button in transcript text gets no clicks | One source says a Markdown link with press handling works there and a Button does not. That source's own example draws a Button with `onPress` in a user message row, and its cookbook calls clicks in transcript rows not guaranteed | Prefer a link there; record which one your build honours | UNVERIFIED (both statements recorded) | Click each in a transcript row |
+| Button props from another source (`variant`, `role`) | The chapter lists Button props as `key`, `label`, `onPress`, `hotkey`, `plain`, `dimColor`, `autoFocus`, `action` | Use only those; the agent keeps its rule that Button has no variant | CHAPTER: `mods-doc-mods-reference`, "Elements" | Check the types of a real build before changing the agent |
+
+## Platform and packaging
+
+| Symptom | Cause | Fix | Tag | Settle by |
+|---|---|---|---|---|
+| `npm` fails to start on Windows | `npm` is a `.cmd` shim, not an executable | Run it through the shell as `cmd` with `/d /s /c`, or use an absolute path | UNVERIFIED | Spawn `npm --version` with and without the shell |
+| A guard on shell commands never fires on Windows | The tool may be named PowerShell, not Bash | Match both names | UNVERIFIED | Log the tool name for a command on Windows |
+| Commands are not found when Claude starts from a desktop launcher | The path is bare and `~` is not expanded | Build absolute paths from `$.env.get('HOME')` or `$.env.get('USERPROFILE')` | UNVERIFIED | Start from the macOS Dock and print the path |
+| A spawned process fails with a missing-file error though the program exists | The working directory was deleted | Pass a safe working directory (the root folder) explicitly | UNVERIFIED | Delete the directory, then spawn |
+| `$.audio.play` is silent | It sounds on macOS only; elsewhere it resolves and plays nothing | Fall back to a toast on other systems; on Windows use a constant script with the path in the environment, never in the command text | UNVERIFIED (the chapters list `play` and `speak` only) | Call it on Linux and read the result |
+| You need a streaming child, binary data or a long-lived helper | `for await` over the spawn result reads output as it comes and ends the child when the loop stops; the text write method cannot write binary data (reported) | Send base64 to a system tool for binary; keep one helper with a version handshake | UNVERIFIED | Spawn a child that prints slowly and break out of the loop |
+| A clean install runs a package manager | A `package.json` or lock file in the plugin folder makes a marketplace install run npm (reported) | Ship none in the mod folder | UNVERIFIED | Install a copy that has one and watch the install output |
+| Validation warns about a file at the plugin root | A `CLAUDE.md` at the plugin root warns under strict validation (reported) | Keep it out of the shipped folder | UNVERIFIED | Run `claude plugin validate --strict` with and without it |
+| A helper script leaks into the shell tool | A file under `bin/` joins the Bash tool's path (reported) | Keep helpers elsewhere | UNVERIFIED | List `PATH` from a Bash call after install |
+| `claude plugin details` shows fewer hooks than you wrote | It counts settings-style hooks only (reported) | Read the validate output instead | UNVERIFIED | Compare both outputs for one mod |
+| Generated type files end up in version control | The mods folder holds a generated `.claude-plugin/types/` folder (reported) | Ignore that folder in git, and do not run `git init` in the dev mods folder itself | UNVERIFIED | Load a mod in a fresh folder and look at what is generated |
+
+Not covered here, on purpose: the check for a missing package file is a check in the review checklist, and the Windows preflight is a plan-time line, both added by other increments of the same card.
+
+## Open issues (checked 2026-10-23)
+
+Re-check with `gh api repos/anthropics/claude-code/issues/<number> --jq .state` before you rely on any state in this table. State shown is the answer on 2026-10-23.
+
+| Issue | What it does to a mod | State on 2026-10-23 | What to do |
+|---|---|---|---|
+| https://github.com/anthropics/claude-code/issues/92533 | A hook on Bash `tool.call` breaks worktree subagents | open | Test a Bash guard with a worktree subagent before shipping |
+| https://github.com/anthropics/claude-code/issues/100837 | A headless load of build 2.1.295 writes no types | open | Do not rely on generated types in headless runs |
+| https://github.com/anthropics/claude-code/issues/100797 | Desktop rebuilds an unchanged drawing on every redraw | open | Redraw only when a value changed |
+| https://github.com/anthropics/claude-code/issues/99395 | On desktop the first click in a pane only focuses it | open | Do not assume the first press reaches `onPress` |
+| https://github.com/anthropics/claude-code/issues/99217 | Remote Control views draw nothing | open | Do not make a drawing the only way to learn something important |
+| https://github.com/anthropics/claude-code/issues/101089 | An Input cannot be made full width | open | Plan for a fixed width |
+| https://github.com/anthropics/claude-code/issues/101090 | Mod text cannot be selected | open | Offer a copy button where the person needs the text |
+| https://github.com/anthropics/claude-code/issues/99423 | The VS Code extension draws no mod interface | closed | Listed as open on 2026-10-11 in the source; test on the current extension |
+
+## Stale or conflicting claims
+
+Claims that circulate and are wrong, outdated or in conflict. None is advice.
+
+- The early access environment flag for function hooks and the `/plugin-types` command: dated early access; this plugin's overview already marks the flag as ignored. The forge agent still mentions `/plugin-types` and should be re-tested on a real build.
+- "`$.http.fetch` has no timeout": wrong. The reference chapter gives 30 seconds for one call, redirects and body included.
+- "No call resolves a path through symlinks": the quickstart traps table keeps it as UNVERIFIED; re-test on a real build.
+- "No event fires while typing" and "`tool.check` is not implemented": reported as outdated by the same source; no chapter confirms either way, so test before you rely on either.
+- Button `variant` and `role` from the source's cookbook conflict with the reference chapter's Button props. Keep the chapter until a real build's types say otherwise.
+- A Button in a transcript row: the source contradicts itself (see Drawing).
+- Limits cited from types of builds 2.1.292 and 2.1.293 (stream caps, grid sizes, node counts, call times): the chapters lack several of them. Treat each as UNVERIFIED and read the types of your own build.
+- Headline counts in the source's description (mods read, techniques, events, methods) are the author's own numbers; do not quote them.

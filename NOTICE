@@ -60,6 +60,9 @@ Some conventions and three of the quickstart scripts (check-mod.sh, new-mod.sh a
 follow ideas from B314-N03/plugin-marketplace (mod-builder); no text or code was copied, and that
 repository had no licence file when reviewed on 2026-10-22.
 
+The reference skills/mods-tutorial-quickstart/references/engine-traps.md follows ideas from
+timoncool/givememod (https://github.com/timoncool/givememod, MIT), rewritten in this plugin's own words.
+
 Parts of the tutorial skills, their quickstart scripts and references, the two agents and the tests
 follow ideas from karanb192/claude-code-mods (plugins/mod-builder at commit fb1f9c0,
 https://github.com/karanb192/claude-code-mods), among them the quickstart script plan-diff.sh, the
