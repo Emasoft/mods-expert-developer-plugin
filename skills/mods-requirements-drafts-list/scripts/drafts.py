@@ -39,11 +39,13 @@ def default_project() -> tuple[str, bool]:
     """Return (project, subfolders_count): the git top level, else the working directory.
 
     Outside git the cwd may be any folder (even the home folder); letting its subfolders count would
-    list every project below it, so only an exact match is accepted in that case.
+    list every project below it, so only an exact match is accepted in that case. A git top level that
+    is the home folder (a dotfiles repo) is treated the same way, because it would otherwise match
+    every project under home.
     """
     result = subprocess.run(["git", "rev-parse", "--show-toplevel"], capture_output=True, text=True, check=False)
     top = result.stdout.strip()
-    if result.returncode == 0 and top:
+    if result.returncode == 0 and top and os.path.realpath(top) != os.path.realpath(Path.home()):
         return top, True
     return os.getcwd(), False
 
@@ -66,9 +68,10 @@ def split_frontmatter(text: str) -> tuple[dict[str, str], str]:
             fields[key.strip()] = decode_value(value.strip())
     return {}, text
 
+
 def decode_value(raw: str) -> str:
     """JSON-decode a quoted frontmatter value; anything else is returned as written."""
-    if raw.startswith("\""):
+    if raw.startswith('"'):
         try:
             decoded = json.loads(raw)
         except json.JSONDecodeError:
@@ -109,10 +112,10 @@ def run(args: argparse.Namespace) -> int:
         print(f"error: requirements drafts folder not found: {folder}", file=sys.stderr)
         return 2
     keywords: list[str] = getattr(args, "keywords", [])
-    # realpath on both sides: a symlinked checkout and its target are the same project.
     project: str | None = None
     subfolders = True
     if not args.all:
+        # realpath on both sides: a symlinked checkout and its target are the same project.
         if args.project:
             project = os.path.realpath(args.project)
         else:
@@ -147,13 +150,16 @@ def run(args: argparse.Namespace) -> int:
         first = next((ln for ln in draft.body.split("\n") if ln.strip()), "")[:FIRST_LINE_WIDTH]
         if keywords:
             first = f"{first} // {snippet(draft.body, keywords)}"
-        print(f"| {cell(draft.id)} | {cell(draft.date)} | {cell(draft.project)} | {cell(first)} | {cell(str(draft.path))} |")
+        print(
+            f"| {cell(draft.id)} | {cell(draft.date)} | {cell(draft.project)} | {cell(first)} | {cell(str(draft.path))} |"
+        )
     print(f"\n{len(shown)} of {len(chosen)} matching drafts shown.")
     if incomplete:
         print("\nIncomplete files (still being written, not drafts):")
         for path in incomplete:
             print(f"- {path}")
     return 0
+
 
 def positive_int(raw: str) -> int:
     value = int(raw)

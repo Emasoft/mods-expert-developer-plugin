@@ -19,8 +19,13 @@ def _draft(folder: Path, stamp: str, text: str, project: str = "/proj/a", comple
     return path
 
 
+def _clean_env(**extra: str) -> dict[str, str]:
+    """The environment without any GIT_ variable: GIT_DIR exported by a git hook defeats GIT_CEILING_DIRECTORIES."""
+    return {**{k: v for k, v in os.environ.items() if not k.startswith("GIT_")}, **extra}
+
+
 def _run(folder: Path, *args: str) -> subprocess.CompletedProcess[str]:
-    env = {**os.environ, "REQUIREMENTS_DRAFTS_DIR": str(folder)}
+    env = _clean_env(REQUIREMENTS_DRAFTS_DIR=str(folder))
     return subprocess.run([sys.executable, str(SCRIPT), *args], capture_output=True, text=True, env=env, check=False)
 
 
@@ -245,16 +250,48 @@ def test_default_outside_git_matches_only_the_exact_cwd(tmp_path: Path) -> None:
     _draft(drafts, "20260101_100000+0200", "at cwd", str(cwd))
     _draft(drafts, "20260102_100000+0200", "in subfolder", str(cwd / "sub"))
     # HOME and GIT_CEILING_DIRECTORIES keep git from finding a repository above tmp_path.
-    env = {
-        **os.environ,
-        "REQUIREMENTS_DRAFTS_DIR": str(drafts),
-        "HOME": str(tmp_path),
-        "GIT_CEILING_DIRECTORIES": str(tmp_path),
-    }
+    env = _clean_env(REQUIREMENTS_DRAFTS_DIR=str(drafts), HOME=str(tmp_path), GIT_CEILING_DIRECTORIES=str(tmp_path))
     out = subprocess.run(
         [sys.executable, str(SCRIPT), "list"], capture_output=True, text=True, env=env, cwd=cwd, check=False
     ).stdout
     assert "at cwd" in out and "in subfolder" not in out
+
+
+def _git_env(drafts: Path, home: Path, ceiling: Path) -> dict[str, str]:
+    return _clean_env(REQUIREMENTS_DRAFTS_DIR=str(drafts), HOME=str(home), GIT_CEILING_DIRECTORIES=str(ceiling))
+
+
+def test_default_in_git_repo_matches_repo_and_subfolders_only(tmp_path: Path) -> None:
+    """Inside a git repo without --project, drafts of its subfolders match and a sibling folder outside it does not."""
+    repo = tmp_path / "repo"
+    (repo / "sub").mkdir(parents=True)
+    (tmp_path / "outside").mkdir()
+    drafts = tmp_path / "drafts"
+    drafts.mkdir()
+    env = _git_env(drafts, tmp_path / "fakehome", tmp_path.parent)
+    subprocess.run(["git", "init", "-q"], cwd=repo, env=env, check=True)
+    _draft(drafts, "20260101_100000+0200", "in subfolder", str(repo / "sub"))
+    _draft(drafts, "20260102_100000+0200", "in sibling", str(tmp_path / "outside"))
+    out = subprocess.run(
+        [sys.executable, str(SCRIPT), "list"], capture_output=True, text=True, env=env, cwd=repo, check=False
+    ).stdout
+    assert "in subfolder" in out and "in sibling" not in out
+
+
+def test_default_in_git_repo_at_home_matches_only_the_exact_folder(tmp_path: Path) -> None:
+    """A git repo whose top level is HOME counts as exact-match only: a subfolder draft is not listed."""
+    repo = tmp_path / "home"
+    (repo / "sub").mkdir(parents=True)
+    drafts = tmp_path / "drafts"
+    drafts.mkdir()
+    env = _git_env(drafts, repo, tmp_path.parent)
+    subprocess.run(["git", "init", "-q"], cwd=repo, env=env, check=True)
+    _draft(drafts, "20260101_100000+0200", "at root", str(repo))
+    _draft(drafts, "20260102_100000+0200", "in subfolder", str(repo / "sub"))
+    out = subprocess.run(
+        [sys.executable, str(SCRIPT), "list"], capture_output=True, text=True, env=env, cwd=repo, check=False
+    ).stdout
+    assert "at root" in out and "in subfolder" not in out
 
 
 def test_mod_copy_matches_logic_ts() -> None:

@@ -33,6 +33,11 @@ A Markdown table `id | date | project | first line | path`, a count line, and a 
 - Exit code 2 with "folder not found": no draft was ever saved; tell the user.
 - An empty table: widen with `--all`, or drop `--since`.
 
+## Known limits
+
+- A linked git worktree lists only the drafts whose saved project is that worktree, not those of the main checkout.
+- A git repository at the home folder counts as exact-match only: just drafts saved from the home folder itself are listed, not those of its subfolders.
+
 ## Examples
 
 Input: list the last five drafts of every project.
