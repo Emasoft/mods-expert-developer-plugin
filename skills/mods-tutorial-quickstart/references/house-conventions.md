@@ -75,11 +75,11 @@ Every rule is tagged **House convention**. A convention is a choice that makes a
 
 **House convention.** These rules cover anything a mod draws. They are taste, except where a chapter is named.
 
-- Draw nothing when there is nothing to say (the interface tutorial, step 3: return `next(e)`).
+- When the mod has nothing worth showing, it shows nothing (the interface tutorial, step 3: return `next(e)`).
 - Give each mark one meaning, and never let colour carry a state on its own: pair it with a mark or a word.
 - Show state with plain one-cell marks, for example `✓` for done and `✗` for failed, not emoji. Emoji, wide CJK characters and combining marks do not take one cell each, so they break column widths; a `Raster` needs every character one cell wide (`mods-doc-mods-interfaces`, "Draw a grid of colored cells"; the `mods-forge-agent` does not use `Raster`).
 - Show times as relative ("3 min ago"), not as clock times.
-- Align columns by cell count, not by string length, and drop the least important column first when the width runs out.
+- Align columns by cell count, not by string length; when space is short, give up the column that matters least.
 - Strip control characters, bidirectional marks and zero-width characters from outside data before you draw it.
 
 ## Mutation-check every guard test
