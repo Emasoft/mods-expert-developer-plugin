@@ -2,6 +2,67 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.0] — 2026-10-23
+
+### Bug Fixes
+
+- **tutorials:** Stop plan-diff.sh reading advisory lines as footprint labels (TRDD-71SH1V5W) (ca17c7c)
+- **tutorials:** Keep plan-diff.sh refusing unknown labels when the module has no ./ (TRDD-71SH1V5W) (a10a01f)
+
+### Documentation
+
+- Add TRDD-0QXYIABR — move the CPV pin to v5.23.0 (694d70d)
+- **trdd:** Record the 0.4.0 release on BNBDNR2V and move it to human_review (TRDD-BNBDNR2V) (33de8a0)
+- **trdd:** Base TRDD-0QXYIABR on a v5.23.0 run of the current tree (TRDD-0QXYIABR) (1fb5d05)
+- **trdd:** Start TRDD-71SH1V5W, source downloaded and inventoried (TRDD-71SH1V5W) (4b4587e)
+- **trdd:** Order the TRDD-0QXYIABR steps and list all 9 pin sites (TRDD-0QXYIABR) (1dc8389)
+- **trdd:** Make the TRDD-0QXYIABR pin move grep first (TRDD-0QXYIABR) (2768403)
+- **trdd:** Record boxes 2-3, increment boxes and per-increment gates on TRDD-71SH1V5W (TRDD-71SH1V5W) (e2b4a9b)
+- **trdd:** Scope the TRDD-0QXYIABR pin move to scripts and workflows (TRDD-0QXYIABR) (0f03a2b)
+- **trdd:** Fix box evidence and gate wording on TRDD-71SH1V5W after review (TRDD-71SH1V5W) (8d7bfbf)
+- **trdd:** Sort 5.22 matches into pins and records on TRDD-0QXYIABR (TRDD-0QXYIABR) (9f43934)
+- **trdd:** Make TRDD-71SH1V5W adopt verdicts provisional and define word runs (TRDD-71SH1V5W) (5164c01)
+- **trdd:** Sort 5.22 matches into four kinds on TRDD-0QXYIABR (TRDD-0QXYIABR) (fc556a5)
+- **tutorials:** Scope the chapters-win rule and add the container check (TRDD-71SH1V5W) (fdc9ae4)
+- **trdd:** Catch sentence-final versions and order the match kinds on TRDD-0QXYIABR (TRDD-0QXYIABR) (441de87)
+- **trdd:** Narrow the record kind and cite chapters by section (TRDD-0QXYIABR, TRDD-71SH1V5W) (efa80f4)
+- **tutorials:** Define type shapes and cite chapters by section (TRDD-71SH1V5W) (30334de)
+- **tutorials:** Mark next as code and keep the reason by its clause (TRDD-71SH1V5W) (4e4e048)
+- **trdd:** Tick I-1 on TRDD-71SH1V5W with its commits and gate evidence (TRDD-71SH1V5W) (2d607cb)
+- **tutorials:** Make the hand-over name what ran and stop repeated failures (TRDD-71SH1V5W) (f7f039c)
+- **tutorials:** Narrow the hand-over rules where review found them loose (TRDD-71SH1V5W) (180663a)
+- **trdd:** Tick I-2 on TRDD-71SH1V5W and say the CPV gate is met, not clean (TRDD-71SH1V5W) (61ac7fb)
+- **tutorials:** Add a threat model and a review checklist for mods (TRDD-71SH1V5W) (b53f99a)
+- **tutorials:** Label house advice in the threat model and checklist (TRDD-71SH1V5W) (99acdee)
+- **trdd:** Tick I-3 on TRDD-71SH1V5W with its commits and gate evidence (TRDD-71SH1V5W) (3ee1038)
+- **tutorials:** Add plan-time rules by lifecycle stage and a gate test (TRDD-71SH1V5W) (9f24cb2)
+- **tutorials:** Separate house advice from citations in the plan-time rules (TRDD-71SH1V5W) (7c12694)
+- **tutorials:** Mark next as code in the plan-time timing note (TRDD-71SH1V5W) (f3dd0be)
+- **trdd:** Tick I-4 on TRDD-71SH1V5W with its commits and gate evidence (TRDD-71SH1V5W) (0877250)
+- **tutorials:** Add a live check for mods that add text the model reads (TRDD-71SH1V5W) (2519e61)
+- **tutorials:** Tighten the live-check wording after review (TRDD-71SH1V5W) (2a76929)
+- **trdd:** Tick I-5 on TRDD-71SH1V5W with its commits and gate evidence (TRDD-71SH1V5W) (ead181c)
+- **design:** Add TRDD-F4HVS06F per-component UI skill proposal and its catalogue (83dbd29)
+- **trdd:** Format-only MD028 repair of TRDD-F4HVS06F from 83dbd29 (02e17d9)
+- **trdd:** Tick I-6 and I-7 on TRDD-71SH1V5W with their commits and gate evidence (TRDD-71SH1V5W) (9c060cb)
+- **trdd:** Correct the I-6 evidence on TRDD-71SH1V5W and spin off TRDD-H2OB07BC (TRDD-71SH1V5W) (0df3ca7)
+- **notice:** Credit karanb192/claude-code-mods and name the B314-N03 scripts (TRDD-71SH1V5W) (b0f142c)
+- **notice:** Scope the karanb192 no-copy claim and reproduce its MIT license (TRDD-71SH1V5W) (b9b6f18)
+- **trdd:** Tick boxes 4 and 5 on TRDD-71SH1V5W with their evidence (TRDD-71SH1V5W) (374b88c)
+
+### Features
+
+- **tutorials:** Add plan-diff.sh to check a mod's footprint against its plan (TRDD-71SH1V5W) (56008d5)
+
+### Miscellaneous Tasks
+
+- **cspell:** Declare the words that blocked the 0.5.0 publish preflight (TRDD-71SH1V5W) (f92c414)
+
+### Testing
+
+- **tutorials:** Check every $.noun.method in the tutorials against the API table (TRDD-71SH1V5W) (19964e2)
+- **tutorials:** Skip only the generated .claude-plugin folder in the name lint (TRDD-71SH1V5W) (919bad8)
+- **tutorials:** Pin the .mts and .cts module tokens in the plan-diff guard test (TRDD-71SH1V5W) (3f869fc)
 ## [0.4.0] — 2026-10-22
 
 ### Bug Fixes
@@ -38,6 +99,10 @@ All notable changes to this project will be documented in this file.
 - **quickstart:** Add check, new and keep scripts for mods (TRDD-BNBDNR2V) (7c3a79e)
 - **tutorials:** Add turn-timer, git-poller and protect-files examples (TRDD-BNBDNR2V) (233b5ab)
 - **agents:** Add a verify-before-you-report section to both agents (TRDD-BNBDNR2V) (6b430f9)
+
+### Miscellaneous Tasks
+
+- Bump version to 0.4.0 (d9f6af3)
 ## [0.3.2] — 2026-10-22
 
 ### Bug Fixes
