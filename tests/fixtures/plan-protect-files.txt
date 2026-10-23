@@ -1,0 +1,3 @@
+# plan for the protect-files fixture
+hooks: session.start, command.run{command=protect-files}, command.run{command=protect-files-paths}, tool.call{tool=Edit|Write}
+calls: $.command.register, $.store.delete, $.store.get, $.store.set, $.ui.toast

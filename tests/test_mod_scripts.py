@@ -1,4 +1,4 @@
-"""Tests for the three shell tools under skills/mods-tutorial-quickstart/scripts/ (TRDD-BNBDNR2V).
+"""Tests for the shell tools under skills/mods-tutorial-quickstart/scripts/ (TRDD-BNBDNR2V, TRDD-71SH1V5W).
 
 Every test runs the real script with bash on tmp dirs. No PATH shim and no stub is used, and no test
 invokes the claude CLI: CI has none, so only the branches that never reach it are covered here.
@@ -330,3 +330,122 @@ def test_check_mod_types_check_accepts_the_bare_generated_form(tmp_path: Path) -
     result = _run("check-mod.sh", mod, path="/usr/bin:/bin")
     assert result.returncode == 1
     assert "types not generated yet" in result.stdout.splitlines()[-1]
+
+
+FIXTURES = ROOT / "tests/fixtures"
+PROTECT_VALIDATE = FIXTURES / "validate-protect-files.txt"
+PROTECT_PLAN = FIXTURES / "plan-protect-files.txt"
+ENV_VALIDATE = FIXTURES / "validate-env-mod.txt"
+
+
+def _plan(tmp_path: Path, text: str) -> Path:
+    """Write a plan file under tmp_path and return its path."""
+    plan = tmp_path / "plan.txt"
+    plan.write_text(text, encoding="utf-8")
+    return plan
+
+
+def test_plan_diff_fixture_names_the_claude_build_it_came_from() -> None:
+    """The fixtures sidecar starts with the claude --version line, so a stale capture can be told apart."""
+    first = (FIXTURES / "validate-fixtures.version").read_text(encoding="utf-8").splitlines()[0]
+    assert re.fullmatch(r"\d+\.\d+\.\d+ \(Claude Code\)", first)
+
+
+def test_plan_diff_exits_0_when_the_plan_matches_the_captured_output() -> None:
+    """The committed plan lists exactly the footprint items of the captured validate output: exit 0, nothing in stderr."""
+    result = _run("plan-diff.sh", "--from-file", PROTECT_VALIDATE, PROTECT_PLAN)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "matches the plan (9 items)" in result.stdout
+    assert result.stderr == ""
+
+
+def test_plan_diff_reads_env_lines_and_ignores_order_comments_and_blank_lines(tmp_path: Path) -> None:
+    """Env reads and env writes are compared too, and entry order, comments, blank lines and comma lists do not matter."""
+    entries = ["# footprint", "", "env writes: PLAN_DIFF_DEMO", "calls: $.env.set, $.env.get", "env reads: HOME", "hooks: session.start"]
+    plan = _plan(tmp_path, "\n".join(entries) + "\n")
+    result = _run("plan-diff.sh", "--from-file", ENV_VALIDATE, plan)
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_plan_diff_names_the_item_a_plan_leaves_out(tmp_path: Path) -> None:
+    """A plan without $.store.delete exits 1 and prints that item as '+ calls: $.store.delete', and no other difference."""
+    lines = PROTECT_PLAN.read_text(encoding="utf-8").replace("$.store.delete, ", "")
+    result = _run("plan-diff.sh", "--from-file", PROTECT_VALIDATE, _plan(tmp_path, lines))
+    assert result.returncode == 1
+    assert result.stdout.splitlines() == ["in the validate output but not in the plan:", "+ calls: $.store.delete"]
+
+
+def test_plan_diff_names_the_item_a_plan_adds(tmp_path: Path) -> None:
+    """A plan that also lists env reads: HOME exits 1 and prints that line as '- env reads: HOME', and no other difference."""
+    text = PROTECT_PLAN.read_text(encoding="utf-8") + "env reads: HOME\n"
+    result = _run("plan-diff.sh", "--from-file", PROTECT_VALIDATE, _plan(tmp_path, text))
+    assert result.returncode == 1
+    assert result.stdout.splitlines() == ["in the plan but not in the validate output:", "- env reads: HOME"]
+
+
+def test_plan_diff_reports_a_narrower_matcher_as_one_removed_and_one_added_item(tmp_path: Path) -> None:
+    """Changing the matcher in a plan item is a difference in both directions, so a widened or narrowed hook cannot pass."""
+    text = PROTECT_PLAN.read_text(encoding="utf-8").replace("{tool=Edit|Write}", "{tool=Edit}")
+    result = _run("plan-diff.sh", "--from-file", PROTECT_VALIDATE, _plan(tmp_path, text))
+    assert result.returncode == 1
+    assert "+ hooks: tool.call{tool=Edit|Write}" in result.stdout
+    assert "- hooks: tool.call{tool=Edit}" in result.stdout
+
+
+@pytest.mark.parametrize(
+    "args",
+    [(), ("only-one",), ("--from-file", "x"), ("--from-file", "a", "b", "c"), ("a", "b", "c")],
+    ids=["none", "one", "from-file-without-plan", "from-file-too-many", "three"],
+)
+def test_plan_diff_exits_64_on_a_bad_argument_count(args: tuple[str, ...]) -> None:
+    """Any argument count other than the two documented forms exits 64 and prints the usage."""
+    result = _run("plan-diff.sh", *args)
+    assert result.returncode == 64
+    assert "usage: plan-diff.sh" in result.stderr
+
+
+def test_plan_diff_exits_2_when_a_path_is_missing(tmp_path: Path) -> None:
+    """A missing validate-output file, plan file or mod directory each exits 2 and names the path."""
+    missing = tmp_path / "nope"
+    for args, culprit in (
+        (("--from-file", missing, PROTECT_PLAN), missing),
+        (("--from-file", PROTECT_VALIDATE, missing), missing),
+        ((missing, PROTECT_PLAN), missing),
+    ):
+        result = _run("plan-diff.sh", *args)
+        assert result.returncode == 2, args
+        assert str(culprit) in result.stderr
+
+
+def test_plan_diff_exits_2_on_a_plan_line_with_an_unknown_kind(tmp_path: Path) -> None:
+    """A misspelt kind in the plan is an error naming the line, never a silent pass."""
+    result = _run("plan-diff.sh", "--from-file", PROTECT_VALIDATE, _plan(tmp_path, "hook: session.start\n"))
+    assert result.returncode == 2
+    assert "plan line 1" in result.stderr
+
+
+def test_plan_diff_exits_2_when_the_output_holds_no_footprint_line(tmp_path: Path) -> None:
+    """Validate output with a verdict but no hooks, calls, env or state line is refused: an empty set must not count as a match."""
+    out = tmp_path / "out.txt"
+    out.write_text("Validating hooks: x\n\n  ❯ README.md: This README has no install line.\n\n✔ Validation passed\n", encoding="utf-8")
+    result = _run("plan-diff.sh", "--from-file", out, PROTECT_PLAN)
+    assert result.returncode == 2
+    assert "no footprint line" in result.stderr
+
+
+def test_plan_diff_parses_a_module_path_with_a_space(tmp_path: Path) -> None:
+    """A footprint line whose module path holds a space still yields its items: the kind is found as a whole label."""
+    out = tmp_path / "out.txt"
+    out.write_text("  ❯ ./my hooks/register.ts hooks: session.start\n", encoding="utf-8")
+    result = _run("plan-diff.sh", "--from-file", out, _plan(tmp_path, "hooks: session.start\n"))
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "matches the plan (1 items)" in result.stdout
+
+
+def test_plan_diff_exits_2_on_an_unknown_footprint_label(tmp_path: Path) -> None:
+    """A footprint line with a label that is neither a known kind nor an ignored one is refused, naming the label."""
+    out = tmp_path / "out.txt"
+    out.write_text("  ❯ ./register.ts hooks: session.start\n  ❯ ./register.ts network: example.com\n", encoding="utf-8")
+    result = _run("plan-diff.sh", "--from-file", out, _plan(tmp_path, "hooks: session.start\n"))
+    assert result.returncode == 2
+    assert "unknown footprint label: network" in result.stderr

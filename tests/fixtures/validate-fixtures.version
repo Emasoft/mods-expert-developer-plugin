@@ -1,0 +1,6 @@
+2.1.307 (Claude Code)
+Captured 2026-10-23, logged out, with: claude plugin validate <mod-dir> (text output, stdout and stderr).
+validate-protect-files.txt: the shipped example skills/mods-tutorial-call-intercept-mods/examples/protect-files.
+validate-env-mod.txt: a copy of the example hello-mod with hooks/register.ts replaced by validate-env-mod.register.ts.txt, so the capture can be repeated.
+Kept from each capture: the "❯ ./register.ts ..." lines and the verdict line, verbatim. Dropped: the "Validating ..." lines, the plugin directory warnings and advice, and the closing prose; they carry the absolute path of the capture machine.
+plan-protect-files.txt: a plan that matches validate-protect-files.txt exactly.

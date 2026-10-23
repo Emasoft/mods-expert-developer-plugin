@@ -1,0 +1,9 @@
+import type { Register } from 'claude-code'
+
+export const register: Register = (on) => {
+  on('session.start', async ($, e, next) => {
+    const home = await $.env.get('HOME')
+    await $.env.set('PLAN_DIFF_DEMO', home ?? '')
+    return next(e)
+  })
+}

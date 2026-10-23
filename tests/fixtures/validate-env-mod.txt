@@ -1,0 +1,6 @@
+  ❯ ./register.ts hooks: session.start
+  ❯ ./register.ts calls: $.env.get, $.env.set
+  ❯ ./register.ts env writes: PLAN_DIFF_DEMO
+  ❯ ./register.ts env reads: HOME
+
+✔ Validation passed

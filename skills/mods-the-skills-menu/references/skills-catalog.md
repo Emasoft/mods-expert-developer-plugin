@@ -895,9 +895,9 @@ These three skills are worked examples for reading and copying, not chapters. Th
 
 **Inputs:** one section title from the list above, or the mod you want to build.
 
-**Outputs:** that section read into context, and the house conventions file read on demand. When an agent runs the scripts: `new-mod.sh` copies a tutorial example to a new folder under its own plugin name and never deletes anything, `check-mod.sh` type-checks, validates and tests a mod and prints `== PASS` or `== FAIL: <step>`, and `keep-mod.sh` copies a mod out of the session mods folder and never deletes or overwrites anything.
+**Outputs:** that section read into context, and the house conventions file read on demand. When an agent runs the scripts: `new-mod.sh` copies a tutorial example to a new folder under its own plugin name and never deletes anything, `check-mod.sh` type-checks, validates and tests a mod and prints `== PASS` or `== FAIL: <step>`, `keep-mod.sh` copies a mod out of the session mods folder and never deletes or overwrites anything, and `plan-diff.sh` compares the footprint `claude plugin validate` prints with a plan file and prints what differs.
 
-**Dependencies:** the chapter skills it names. All three scripts need bash and standard POSIX tools; `check-mod.sh` also needs the `claude` CLI and npx from Node.js (npx fetches typescript over the network when it is not in its cache), and `new-mod.sh` needs perl.
+**Dependencies:** the chapter skills it names. All four scripts need bash and standard POSIX tools; `check-mod.sh` also needs the `claude` CLI and npx from Node.js (npx fetches typescript over the network when it is not in its cache), and `new-mod.sh` needs perl. `plan-diff.sh` also needs the `claude` CLI unless it is given `--from-file`.
 
 ### mods-expert-developer-plugin:mods-tutorial-call-intercept-mods
 

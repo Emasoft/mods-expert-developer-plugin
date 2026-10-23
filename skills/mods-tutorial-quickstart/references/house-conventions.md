@@ -14,7 +14,8 @@ These are this plugin's own conventions for mods that a person will keep and use
 - [Plan-time rules](#plan-time-rules)
 - [Honest hand-over](#honest-hand-over)
 - [README template](#readme-template)
-- [The three quickstart scripts](#the-three-quickstart-scripts)
+- [The quickstart scripts](#the-quickstart-scripts)
+- [Footprint against a plan](#footprint-against-a-plan)
 - [UNVERIFIED — test on a real build before relying on it](#unverified--test-on-a-real-build-before-relying-on-it)
 - [A premise this plugin rejects](#a-premise-this-plugin-rejects)
 
@@ -165,17 +166,65 @@ Every rule is tagged **House convention**. A convention is a choice that makes a
 - Off for one session: `claude --safe-mode` (this turns off every installed mod, the organisation's included, not just this one)
 ````
 
-## The three quickstart scripts
+## The quickstart scripts
 
-They live in `skills/mods-tutorial-quickstart/scripts/`. They are tools to run, not example mods. Usage errors exit 64.
+They live in `skills/mods-tutorial-quickstart/scripts/`. They are tools to run, not example mods. Usage errors exit 64 in all four scripts.
 
 | Script | What it does | Exit codes |
 |---|---|---|
 | `check-mod.sh <mod-dir>` | The gate. Type-checks with `npx -y -p typescript@5 tsc` (first run needs network), proves the hook files were really checked (a mod with no TypeScript hooks skips that proof), then runs `claude plugin validate` and `claude plugin test`. Fails early with a load-once hint when `.claude-plugin/types/` is missing, and fails when `claude` is not on PATH. Last line is `== PASS` or `== FAIL: <step>`. | 0 pass, 1 fail, 64 usage |
 | `new-mod.sh <example-name> <target-dir> <mod-name>` | Copies one tutorial example to `<target-dir>/<mod-name>`, rewrites the name in `plugin.json` and `README.md`, prints other lines that still hold the old name. Refuses an existing target. Commands and tools inside the copied hooks keep the example's names; rename them by hand. | 0 ok, 1 refused (target exists), 64 usage or invalid name |
 | `keep-mod.sh <session-mod-dir> <dest-root>` | Copies a mod out of the session mods folder to `<dest-root>/<name>`, leaving out the generated types and root `tsconfig.json`. Never deletes or overwrites anything already there. Prints the `CLAUDE_CODE_PLUGIN_DIRS` line to add. | 0 ok, 1 refused or failed, 64 usage |
+| `plan-diff.sh <mod-dir> <plan-file>` or `plan-diff.sh --from-file <validate-output> <plan-file>` | Runs `claude plugin validate` (text output only), or reads output saved earlier, and compares the footprint items it prints with a plan file. Prints what the mod does beyond the plan (`+`) and what the plan lists but the mod does not (`-`). Format and use: [Footprint against a plan](#footprint-against-a-plan). | 0 same, 1 different, 2 unreadable path or plan, unknown label, no footprint line or validate failure, 64 usage |
 
 `check-mod.sh` has no BLOCKED branch yet. When the `claude` login is expired, the validate or test step simply fails and the script prints `== FAIL: <step>`. Read the step output before you blame the mod; a login problem is not a mod defect. A BLOCKED branch will be added once the real message has been captured.
+
+## Footprint against a plan
+
+**House convention.** Write down what a mod is meant to touch before you build it. When it is built, let `claude plugin validate` say what it touches, and treat every difference as a finding. The validator reads the mod's code without running it (`mods-doc-manage-mods-for-organizations`, "Review what a mod can do"), so the check needs no live session.
+
+1. At the planning stage, write a plan file next to your two plain lines (see [Plan-time rules](#plan-time-rules)).
+2. After the code exists, run `plan-diff.sh <mod-dir> <plan-file>` from this skill's `scripts/` folder (see [The quickstart scripts](#the-quickstart-scripts)).
+3. Read each `+` line (the mod does it, the plan did not say so) and each `-` line (the plan says it, the mod does not). Either change the plan and write the reason in the hand-over, or change the code. Do not close the difference by editing the plan alone.
+
+Plan file format, one entry per line, `<kind>: <item>[, <item>...]`:
+
+```text
+# comment lines and blank lines are ignored
+hooks: session.start, tool.call{tool=Edit|Write}
+calls: $.store.get, $.store.set
+env reads: HOME
+```
+
+- The kinds are the labels `claude plugin validate` prints: `calls`, `env reads`, `env writes`, `hooks`, `state reads` and `state writes` (`mods-doc-mods-development`, "Change and test a mod"). Any other kind is an error, so a misspelling cannot pass.
+- Copy each item as validate prints it, matcher braces included. Items are compared one by one, so order does not matter, and lines of several modules are merged.
+- The other lines the validator prints (`gating hook with .catch:`, `gating hook without .catch:`, `answers its own command:`) are not compared. Read the `without .catch` ones by hand: a refusal that has no `.catch` handler is a finding of its own.
+- Exit 2 also covers an unknown label on a footprint line and validate output with no footprint line at all, because an empty list must never count as a match.
+
+### What a footprint line lets the mod do
+
+The meanings come from the chapter table for the `calls:` line and the paragraph under it. Which of them a given mod may have is your judgement and the reader's, not the chapter's, so this table grades nothing. Every row cites the chapter text it rests on, or says UNVERIFIED.
+
+| Footprint line | What it lets the mod do | Source |
+|---|---|---|
+| `calls: $.fs.read`, `$.fs.write` | Read or write files anywhere the user can | `mods-doc-manage-mods-for-organizations`, "Review what a mod can do", the `calls:` table |
+| `calls: $.process.run`, `$.process.spawn` | Start programs as the user | same table |
+| `calls: $.http.fetch` | Make network requests | same table |
+| `calls: $.env.get`, `$.settings.read`; `env reads:` | Read environment variables and settings, which can hold API keys; the `env reads:` line names each variable | same table |
+| `calls: $.env.set`; `env writes:` | Set a variable that Claude Code and every program or MCP server it starts later then see, which can change what those programs run; the `env writes:` line names each variable | same table |
+| `calls: $.mcp.call` | Call a tool on a connected MCP server, under the session's permission rules | same table |
+| `calls: $.model.complete` | Spend the user's plan or API key on model calls | same table |
+| `calls: $.prompt.submit` | Submit a prompt, possibly as the user's own words | same table |
+| `calls: $.session.send` | Send a message that another session's, subagent's or teammate's Claude reads | same table |
+| `hooks: tool.call`, `prompt.submit` | See every tool call and every prompt, and change them | same section, the paragraph on the `hooks:` line |
+| `hooks: session.append` | Rewrite each row of the conversation before it is stored | same paragraph |
+| `hooks: tool.check` | Approve or deny a tool call before a permission prompt appears | same paragraph |
+| `hooks: ui.render{component=AskUserQuestion}` | Redraw the dialog Claude uses to ask the user a question | same paragraph |
+| `state reads:`, `state writes:` | List the use of `$.state` (`mods-doc-mods-development`, "Change and test a mod"). What that exposes is UNVERIFIED; the chapter gives no risk for it | none |
+
+### Residual risk
+
+The tests of `plan-diff.sh` run on committed captures of real validate output, because the CI runners have no `claude` binary. The captures name the `claude --version` they came from (`tests/fixtures/validate-fixtures.version`). Nothing in CI notices a newer build that prints these lines differently, so between owner runs a stale capture stays green. The owner run is: when `claude --version` differs from the capture's, validate the example again, replace the capture and its label, and on any difference update `plan-diff.sh` in the same commit. Until then, trust a live `plan-diff.sh <mod-dir> <plan-file>` on your own build over a green CI.
 
 ## UNVERIFIED — test on a real build before relying on it
 

@@ -95,7 +95,7 @@ Input: "show the test status above the prompt". Output: copy `branch-band` from 
 
 - `mods-tutorial-call-intercept-mods`: `hello-mod`, `redact-output`, `dice-tool` and `protect-files`, with their code under its examples folder.
 - `mods-tutorial-interface-mods`: `branch-band`, `notes-pane`, `turn-timer` and `git-poller`, with their code under its examples folder.
-- [house-conventions](references/house-conventions.md): this plugin's own conventions for mods you keep (not Anthropic rules), the `check-mod.sh`, `new-mod.sh` and `keep-mod.sh` scripts, and a table of claims to test on a real build.
+- [house-conventions](references/house-conventions.md): this plugin's own conventions for mods you keep (not Anthropic rules), the `check-mod.sh`, `new-mod.sh`, `keep-mod.sh` and `plan-diff.sh` scripts, a risk table for the footprint lines, and a table of claims to test on a real build.
   - [How to read this file](references/house-conventions.md#how-to-read-this-file)
   - [An on/off switch](references/house-conventions.md#an-onoff-switch)
   - [Keyboard first](references/house-conventions.md#keyboard-first)
@@ -106,7 +106,8 @@ Input: "show the test status above the prompt". Output: copy `branch-band` from 
   - [Plan-time rules](references/house-conventions.md#plan-time-rules)
   - [Honest hand-over](references/house-conventions.md#honest-hand-over)
   - [README template](references/house-conventions.md#readme-template)
-  - [The three quickstart scripts](references/house-conventions.md#the-three-quickstart-scripts)
+  - [The quickstart scripts](references/house-conventions.md#the-quickstart-scripts)
+  - [Footprint against a plan](references/house-conventions.md#footprint-against-a-plan)
   - [UNVERIFIED — test on a real build before relying on it](references/house-conventions.md#unverified--test-on-a-real-build-before-relying-on-it)
   - [A premise this plugin rejects](references/house-conventions.md#a-premise-this-plugin-rejects)
 - [threat-model](references/threat-model.md): a template for the reach and abuse cases of a mod, with the policy facts of the chapters sorted by policy section and a table of claims the chapters do not confirm.
