@@ -72,6 +72,7 @@ describe('parseSwitch', () => {
 
 describe('refusal', () => {
   test('secret-looking text is refused', () => {
+    // cspell:disable
     const samples = [
       'key REDACTED-FIXTURE here',
       'token REDACTED-FIXTURE',
@@ -133,6 +134,7 @@ describe('refusal', () => {
       'send Basic QWxhZGRpbjpvcGVu/SesameAB with curl',
       'send Basic QWxhZGRpbjpvcGVuSesameAB== with curl',
     ]
+    // cspell:enable
     // One assertion over the list, so a red run names every sample that slipped through.
     expect(samples.filter((text) => !looksSecret(text))).toEqual([])
     for (const text of samples) expect(refusal(text)).toMatch(/secret/)

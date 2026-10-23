@@ -224,6 +224,7 @@ describe('row button under a typed message', () => {
   test('a secret-looking message is refused with a toast and nothing is written', async ($, on) => {
     const world = stubs(on)
     await start($)
+    // cspell:disable-next-line
     const ui = await $.ui.mount(row('desktop', 160, 'secret-row', 'my key is AKIAABCDEFGHIJKLMNOP'))
     await ui.press({ key: 'rd-save-secret-row' })
     expect(world.writes.length).toBe(0)
@@ -280,6 +281,7 @@ describe('/requirements-drafts-save', () => {
   test('refuses a secret with a toast', async ($, on) => {
     const world = stubs(on)
     await start($)
+    // cspell:disable-next-line
     await typed($, 'password: correcthorsebattery')
     await command($, 'requirements-drafts-save')
     expect(world.writes.length).toBe(0)

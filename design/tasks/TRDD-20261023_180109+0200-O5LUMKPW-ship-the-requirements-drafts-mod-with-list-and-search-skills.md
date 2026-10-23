@@ -1,10 +1,10 @@
 ---
 trdd-id: O5LUMKPW
 title: Ship the requirements-drafts mod with list and search skills
-column: backburner
+column: testing
 status: tasked
 created: 2026-10-23T18:01:09+0200
-updated: 2026-10-23T23:13:05+0200
+updated: 2026-10-23T23:16:24+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -24,7 +24,8 @@ implementation-commits: [b17e4b5, be732a4, 1bfccce, 94d1778, 58fc002, ac621e6, 9
 
 - Approved by the user on 2026-10-23: "Approve the outline, but put the mod in this repo as a tutorial example and create the TRDD card here." Then, mid-turn: "the requirements-drafts mod must be part of this plugin."
 - Reading of the two: the mod ships LIVE as part of mods-expert-developer-plugin (its hooks module in the plugin's own `hooks/`, its two skills in `skills/`), and the interface tutorial points to it as a worked example. It is NOT an unloaded copy under `examples/`.
-- NEXT ACTION: Live-check the row button in a fullscreen terminal session (CLAUDE_CODE_NO_FLICKER=1) after 87f9560, then move the card to human_review; owner-run: the Desktop click test, the on/off default, the secret-check trade-offs, deleting two test drafts. Row clicks reach the mod one click per placement, and the classic-renderer placement is unconfirmed.
+- NEXT ACTION: Live-check the row button in a fullscreen terminal session (CLAUDE_CODE_NO_FLICKER=1) after 87f9560, then move the card to human_review; owner-run: the Desktop click test, the on/off default, the secret-check trade-offs, deleting two test drafts. Observed: row clicks reach the mod one click per placement, and the classic-renderer placement is unconfirmed.
+- STANDING AGREEMENT: tell the TRDD-H26OG8AP session before editing skills/mods-tutorial-quickstart/SKILL.md or references/house-conventions.md.
 - Defaults taken from the approved outline's recommendations (the user did not override them; each can still change): drafts folder `~/.claude/requirements-drafts/`; a secret-looking message is refused with a toast; the slash commands and the row button both ship (the spike showed a fullscreen-terminal click fires); the mod starts ON and `/requirements-drafts off` turns it off.
 - Open with the user (owner-run): the Desktop click test, whether the mod should start OFF for other installers of this plugin, the secret-check trade-offs, deleting two test drafts; also how the plugin is loaded so every session gets the skills, and an allow rule for subagents reading the drafts folder.
 - Do not touch TRDD-H26OG8AP or its files (unrelated work in flight).
@@ -82,3 +83,6 @@ Let the user save their own messages into a requirements-drafts store that every
 - Live-check docs commits under this card: b17e4b5 (section and step 8 sentence), be732a4 (embedded TOC line, raised by the TRDD-H26OG8AP session), 1bfccce (reworded as scoped observations), 94d1778 (two wording fixes made by the TRDD-H26OG8AP session at this card's request). house-conventions.md and the quickstart SKILL.md are edited only after telling that session (agreed 2026-10-23).
 - 2026-10-23 secret-check trade-offs left to the user: ordinary text after a credential name with 16+ characters, and slash lists after 'basic', are refused with no save-anyway path; accepted gaps: a lowercase dotted passphrase, an all-caps $PASSWORD, a quoted JSON Basic header with a letters-only token, passphrase= and aws_credentials= names, short passwords under 8 characters.
 - 2026-10-23 hooks.json carries an empty settings 'hooks' object beside 'modules' only to satisfy CPV's required-hooks check; the mods reference allows both keys.
+- 2026-10-23: all follow-ups in the "Done: b17e4b5 ... Open follow-ups from reviews" bullet are done in 96fac93, 4de69c6 and 1f3c768; the CHANGELOG row was dropped because publish.py regenerates CHANGELOG.md with git-cliff.
+- 2026-10-23: superseded — the recent typed messages and saved rows no longer live in one module variable; since 87f9560 they are maps keyed by $.session.id().
+- 2026-10-23 accepted gaps, added after review: a value with a / that ends in a file extension is exempt (password=S3cr3t/pass.word); a raw / inside a URL password ends the authority early (postgres://admin:ab/cd@db); the UserMessage render awaits $.session.id() with no catch.

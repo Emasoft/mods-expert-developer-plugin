@@ -152,7 +152,7 @@ function stripTrailingPunctuation(value: string): string {
  * (${...}, $UPPER_CASE, or a start of process.env., os.environ or secrets.), a home path, an
  * absolute path in a path shape, a lowercase dotted identifier (req.headers.authorization), or a
  * path with a / that ends in a file extension. A dot, a $ or a / alone proves nothing
- * (Hunter2.Xk9fj, $ecretPa55word, base64 secrets such as AWS secret keys, which hold / and can
+ * (Hunter2.Xk9fj, a $-prefixed word, base64 secrets such as AWS secret keys, which hold / and can
  * start with it). Each shape has a test (fix rounds of 2026-10-23).
  */
 function isReference(value: string): boolean {
@@ -160,7 +160,7 @@ function isReference(value: string): boolean {
   // the whole text through hasUrlCredentials before any value is judged.
   if (value.includes('://')) return true
   if (/^\$(?:\{|[A-Z_][A-Z0-9_]*(?![A-Za-z0-9]))/.test(value)) return true
-  // Anchored at the start (last fix round, 2026-10-23): Xk29fjs82kdQsecrets.x holds the word, not a
+  // Anchored at the start (last fix round, 2026-10-23): random text followed by secrets.x holds the word, not a
   // reference. ${{ secrets.X }} is already a reference through the ${ rule above.
   if (value.startsWith('process.env.') || value.startsWith('os.environ') || value.startsWith('secrets.')) return true
   // A / start is a path only in a path shape: base64 secrets can start with / too.
