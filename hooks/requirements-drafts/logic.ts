@@ -63,10 +63,15 @@ export function parseSwitch(args: string, current: boolean): SwitchAnswer {
   return { enabled: next, text: `requirements-drafts is ${next ? 'on' : 'off'}.` }
 }
 
-// Shapes of credentials that must never land in a plain file other agents read.
+// Shapes of credentials that must never land in a plain file other agents read. Each pattern has at
+// most one quantified class between literals that class cannot match (a prefix, a dot, a slash),
+// so no two quantifiers compete for the same characters (CPV skillaudit REGEX_DOS).
+// cspell:ignore bglpat bxapp
 const SECRET_PATTERNS: readonly RegExp[] = [
-  /-----BEGIN [A-Z ]*PRIVATE KEY-----/,
-  /\bAKIA[0-9A-Z]{16}\b/,
+  // PEM keys and the OpenPGP armor header (-----BEGIN PGP PRIVATE KEY BLOCK-----), 2026-10-24.
+  /-----BEGIN [A-Z ]*PRIVATE KEY(?: BLOCK)?-----/,
+  // AWS access key ids: AKIA long-term, ASIA temporary (STS), 2026-10-24.
+  /\b(?:AKIA|ASIA)[0-9A-Z]{16}\b/,
   /\b(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{30,}\b/,
   /\bgithub_pat_[A-Za-z0-9_]{40,}\b/,
   /\bsk-ant-[A-Za-z0-9_-]{20,}/,
@@ -76,6 +81,21 @@ const SECRET_PATTERNS: readonly RegExp[] = [
   // Unconditional: a JWT is a secret wherever it sits, dots and all (second fix round, 2026-10-23).
   /\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}/,
   /\bbearer\s+[A-Za-z0-9._~+/-]{20,}=*/i,
+  // Vendor prefixes that need no credential name before them (review finding M1, 2026-10-24).
+  // Stripe secret and restricted keys; pk_ publishable keys are public, so they are not here.
+  /\b(?:sk|rk)_(?:live|test)_[A-Za-z0-9]{20,}/,
+  // GitLab personal access token, npm token, Hugging Face token.
+  /\bglpat-[A-Za-z0-9_-]{20,}/,
+  /\bnpm_[A-Za-z0-9]{36,}/,
+  /\bhf_[A-Za-z0-9]{30,}/,
+  // SendGrid API key: SG.<id>.<secret>.
+  /\bSG\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{30,}/,
+  // Slack app-level token.
+  /\bxapp-\d-[A-Za-z0-9-]{10,}/,
+  // Webhook and bot URLs that carry their token in the path: Slack, Discord, Telegram.
+  /hooks\.slack\.com\/services\/T[A-Za-z0-9]+\/B[A-Za-z0-9]+\/[A-Za-z0-9]{20,}/,
+  /discord(?:app)?\.com\/api\/webhooks\/\d+\/[A-Za-z0-9_-]{30,}/,
+  /api\.telegram\.org\/bot\d+:[A-Za-z0-9_-]{30,}/,
 ]
 
 // The credential-name rule, written as plain string steps instead of one regex: a repeated group
@@ -105,7 +125,7 @@ function isPartEdge(ch: string): boolean {
  * Plain schema text such as "auth_token: optional string" passes on its value (review findings).
  */
 function isCredentialName(name: string): boolean {
-  const lower = name.toLowerCase()
+  const lower = snakeCaseOfCamel(name)
   for (const word of CREDENTIAL_WORDS) {
     for (let at = lower.indexOf(word); at >= 0; at = lower.indexOf(word, at + 1)) {
       if (!isPartEdge(lower.charAt(at + word.length))) continue
@@ -116,6 +136,24 @@ function isCredentialName(name: string): boolean {
   return false
 }
 
+/**
+ * The name lowercased, with _ put where a lowercase letter meets an uppercase one, so a camelCase
+ * name has the same parts as its snake_case form: secretKey is secret_key, privateKey is
+ * private_key, secretAccessKey is secret_access_key (review finding M3, 2026-10-24). An all-caps
+ * or all-lowercase name is unchanged (PGPASSWORD and OLDPWD keep their old verdict), and
+ * the continuation after a word must still start a new part (tokenizerConfig stays tokenizer_config).
+ * One pass over the name.
+ */
+function snakeCaseOfCamel(name: string): string {
+  let out = ''
+  for (let at = 0; at < name.length; at += 1) {
+    const ch = name.charAt(at)
+    if (at > 0 && /^[A-Z]$/.test(ch) && /^[a-z]$/.test(name.charAt(at - 1))) out += '_'
+    out += ch
+  }
+  return out.toLowerCase()
+}
+
 type Span = { from: number; to: number }
 
 // A value ends at whitespace or a quote. Inside a reference value, & and ; end it too: a URL query
@@ -124,32 +162,50 @@ type Span = { from: number; to: number }
 // 2026-10-23). Outside a reference they do not end it: a password can hold & or ;.
 const VALUE_END = /[\s"']/
 const INNER_VALUE_END = /[\s"'&;]/
+// A separator like : and =. Written as a code point, not as the character, because the fullwidth
+// colon looks like ':' in an editor.
+const FULLWIDTH_COLON = String.fromCharCode(0xff1a)
 
 /**
- * Where the value sits after each : or = in text[lo, hi) whose name (the word just before it,
+ * Where the value sits after each separator in text[lo, hi) whose name (the word just before it,
  * spaces allowed between) is a credential name. A value is read only after its name passes, and
  * the scan resumes after that value, so each character is visited a bounded number of times: a
  * long line full of separators (a=1&b=2&...) costs one pass, not one pass per separator (review
  * finding, 2026-10-23). The bounds let the same scan run inside one value.
+ * Separators: : and =, and the fullwidth colon U+FF1A (typed with an East Asian input method,
+ * 2026-10-24). A name may end in one quote ({"password": ...}, 'token': ...): the walk back steps
+ * over that one closing quote, never more, so the walk stays bounded (review finding H1, 2026-10-24).
+ * := (Go) and => (Ruby, PHP) count as one separator only when a quoted value follows: unquoted, the
+ * right side is code (secret := loadFromVault(ctx), password => hashPassword(password)), which a
+ * long call would make look random (2026-10-24).
  */
 function* credentialSpans(text: string, lo: number, hi: number, valueEnd: RegExp): Generator<Span> {
   for (let sep = lo; sep < hi; sep += 1) {
     const ch = text.charAt(sep)
-    if (ch !== ':' && ch !== '=') continue
+    if (ch !== ':' && ch !== '=' && ch !== FULLWIDTH_COLON) continue
     let end = sep
     while (end > lo && /\s/.test(text.charAt(end - 1))) end -= 1
+    if (end > lo && isQuote(text.charAt(end - 1))) end -= 1
     let start = end
     while (start > lo && isNameChar(text.charAt(start - 1))) start -= 1
     if (!isCredentialName(text.slice(start, end))) continue
     let from = sep + 1
+    const pair = (ch === ':' && text.charAt(from) === '=') || (ch === '=' && text.charAt(from) === '>')
+    if (pair) from += 1
     while (from < hi && /\s/.test(text.charAt(from))) from += 1
-    if (text.charAt(from) === '"' || text.charAt(from) === "'") from += 1
+    const quoted = from < hi && isQuote(text.charAt(from))
+    if (pair && !quoted) continue
+    if (quoted) from += 1
     let to = from
     while (to < hi && !valueEnd.test(text.charAt(to))) to += 1
     yield { from, to }
     // Separators inside this value belong to it; credentialValueIsSecret scans them when it is a reference.
     sep = Math.max(sep, to - 1)
   }
+}
+
+function isQuote(ch: string): boolean {
+  return ch === '"' || ch === "'"
 }
 
 /** The sentence's own punctuation is not part of the value ("my password=Xk29fjs82kdQ."). */
@@ -232,6 +288,12 @@ function judge(text: string, span: Span): Verdict {
   const bare = stripTrailingPunctuation(text.slice(span.from, span.to))
   if (isReference(bare)) return 'reference'
   return looksRandom(bare) ? 'secret' : 'plain'
+}
+
+/** One value outside a name=value pair (a command-line flag's value), judged the way judge judges a pair's value. */
+function valueIsSecret(value: string): boolean {
+  const bare = stripTrailingPunctuation(value)
+  return !isReference(bare) && looksRandom(bare)
 }
 
 function credentialValueIsSecret(text: string): boolean {
@@ -392,10 +454,102 @@ function followsAuthorization(text: string, at: number): boolean {
   return text.slice(Math.max(0, end - word.length), end).toLowerCase() === word
 }
 
+/**
+ * Authorization: Token <value> (Django REST framework, GitHub and similar), quoted or not. Gated on
+ * authorization before it: an unconditional "token <20+ characters>" would refuse ordinary text such
+ * as "token based-authentication-for-the-api". The value must hold a digit and a letter, so a long
+ * word ("Token AuthenticationRequiredForAll") is saved (2026-10-24). Each quantifier sits between
+ * characters it cannot match, and the token class excludes whitespace, so there is no backtracking
+ * blow-up (CPV REGEX_DOS).
+ */
+function hasTokenAuthorization(text: string): boolean {
+  const scheme = /\bauthorization["']?\s*[:=]\s*["']?token\s+([A-Za-z0-9._~+/-]{20,})/gi
+  for (let match = scheme.exec(text); match !== null; match = scheme.exec(text)) {
+    const value = match[1] ?? ''
+    if (/\d/.test(value) && /[A-Za-z]/.test(value)) return true
+  }
+  return false
+}
+
+/**
+ * A Docker config "auth" entry ({"auths":{"ghcr.io":{"auth":"<base64>"}}}) whose value decodes to
+ * user:password. auth is not a credential word: as a name part it is too common (auth_mode,
+ * oauth_scope, auth_required), so the decode is what proves the secret (2026-10-24). The value
+ * class excludes " and =, so its quantifiers do not overlap.
+ */
+function hasDockerAuth(text: string): boolean {
+  const entry = /"auth"\s*:\s*"([A-Za-z0-9+/]{8,}={0,2})"/g
+  for (let match = entry.exec(text); match !== null; match = entry.exec(text)) {
+    if (decodesToUserPassword(match[1] ?? '')) return true
+  }
+  return false
+}
+
+/**
+ * A PuTTY private key file: both its first line and its Private-Lines line, each at a line start,
+ * so a sentence that names the two ("its Private-Lines: field holds the key") is saved. One
+ * quantifier per regex (2026-10-24).
+ */
+function hasPuttyPrivateKey(text: string): boolean {
+  return /^PuTTY-User-Key-File-\d/m.test(text) && /^Private-Lines: *\d/m.test(text)
+}
+
+/** A value without one pair of surrounding quotes ("x" or 'x'). */
+function unquote(value: string): string {
+  const start = value.startsWith('"') || value.startsWith("'") ? 1 : 0
+  const end = value.length > start && (value.endsWith('"') || value.endsWith("'")) ? value.length - 1 : value.length
+  return value.slice(start, end)
+}
+
+/** The password part of a curl -u user:password value is a secret: a value with no colon or an empty password is not. */
+function curlUserIsSecret(value: string): boolean {
+  const colon = value.indexOf(':')
+  return colon >= 0 && valueIsSecret(value.slice(colon + 1))
+}
+
+/**
+ * Credentials passed as command-line flags, judged per line and per whitespace-separated word, as
+ * plain string steps (no regex beyond one whitespace split, so the scan stays linear: CPV REGEX_DOS):
+ * - --password <value> or --passwd <value> on any command (docker login, mysql); --password=<value>
+ *   is already a name=value pair. A next word starting with - is another flag, not a value.
+ * - curl's -u/--user user:password, only on a line holding curl: elsewhere -u means other things
+ *   (docker run -u 1000:1000, git push -u origin).
+ * - a glued -p<value>, only on a line holding mysql or mariadb: elsewhere -p is a port, a pattern or
+ *   parents (psql -p5432, mkdir -pv).
+ * Each value is judged like a name=value pair (valueIsSecret). Added 2026-10-24 (review finding M2).
+ */
+function hasCommandLineCredential(text: string): boolean {
+  for (const line of text.split('\n')) {
+    const lower = line.toLowerCase()
+    const curl = lower.includes('curl')
+    const mysql = lower.includes('mysql') || lower.includes('mariadb')
+    const words = line.split(/\s+/)
+    for (let at = 0; at < words.length; at += 1) {
+      const word = words[at] ?? ''
+      const next = words[at + 1] ?? ''
+      if (word === '--password' || word === '--passwd') {
+        if (!next.startsWith('-') && valueIsSecret(unquote(next))) return true
+        continue
+      }
+      if (curl) {
+        if ((word === '-u' || word === '--user') && curlUserIsSecret(unquote(next))) return true
+        if (word.startsWith('--user=') && curlUserIsSecret(unquote(word.slice('--user='.length)))) return true
+        if (word.startsWith('-u') && word.length > 2 && curlUserIsSecret(unquote(word.slice(2)))) return true
+      }
+      if (mysql && word.startsWith('-p') && word.length > 2 && valueIsSecret(unquote(word.slice(2)))) return true
+    }
+  }
+  return false
+}
+
 export function looksSecret(text: string): boolean {
   return SECRET_PATTERNS.some((re) => re.test(text))
+    || hasPuttyPrivateKey(text)
     || hasUrlCredentials(text)
     || hasBasicCredential(text)
+    || hasTokenAuthorization(text)
+    || hasDockerAuth(text)
+    || hasCommandLineCredential(text)
     || credentialValueIsSecret(text)
 }
 

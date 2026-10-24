@@ -108,7 +108,7 @@ In the classic (non-fullscreen) terminal view a click on the line is not deliver
 
 Two skills, which you or Claude can invoke, read the drafts back: `mods-requirements-drafts-list` (newest first, for this project or `--all`) and `mods-requirements-drafts-search` (every keyword must match).
 
-The recent list resets on `/clear`, `/resume` and fork, and on a module reload. Messages that look like they hold a secret are refused, with a toast that says why. The check looks for API-key and token shapes, JWTs, credentials in URLs, Basic auth headers, and credential names followed by a value (password, passphrase, credentials, token, secret, api_key and similar). It is a heuristic: it can refuse ordinary text or miss a secret, so do not paste secrets into messages you plan to save.
+The recent list resets on `/clear`, `/resume` and fork, and on a module reload. Messages that look like they hold a secret are refused, with a toast that says why. The check looks for API-key and token shapes (including Stripe, GitLab, npm, Hugging Face, SendGrid and Slack app tokens, and Slack, Discord and Telegram webhook or bot URLs), JWTs, private key blocks (PEM, PGP and PuTTY), credentials in URLs, Basic and Token authorization headers, Docker config `auth` entries, passwords in `curl -u`, `--password` and MySQL `-p` flags, and credential names followed by a value (password, passphrase, credentials, token, secret, api_key and similar, in snake_case, camelCase or quoted as a JSON key). It is a heuristic: it can refuse ordinary text or miss a secret, so do not paste secrets into messages you plan to save.
 
 ## Prerequisites
 

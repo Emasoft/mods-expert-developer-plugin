@@ -163,6 +163,49 @@ describe('refusal', () => {
       // so only the authorization rule can refuse them.
       'Authorization : Basic QWxhZGRpbk9wZW5TZXNhbWU',
       'Proxy-Authorization: Basic QWxhZGRpbk9wZW5TZXNhbWU',
+      // Quoted keys: JSON, a Python dict, quoted YAML (review finding H1, 2026-10-24).
+      '{"password": "Xk29fjs82kdQ"}',
+      '{"api_key":"abcd1234efgh5678"}',
+      '"token":"Xk29fjs82kdQabc"',
+      "creds = {'password': 'Xk29fjs82kdQ'}",
+      // Go := and Ruby/PHP => with a quoted value, and a fullwidth colon.
+      'secret := "Xk29fjs82kdQ"',
+      'password => "Xk29fjs82kdQ"',
+      'password：Xk29fjs82kdQ',
+      // An OpenPGP private key block and a PuTTY private key file.
+      '-----BEGIN PGP PRIVATE KEY BLOCK-----\nlQOYBF0abc\n-----END PGP PRIVATE KEY BLOCK-----',
+      'PuTTY-User-Key-File-3: ssh-ed25519\nEncryption: none\nPublic-Lines: 2\nAAAAC3NzaC1lZDI1NTE5AAAAIA\nPrivate-Lines: 1\nAAAAIGZpcnN0c2VjcmV0a2V5Ynl0ZXM',
+      // An Authorization Token header, plain and quoted; curl -u and mysql/docker password flags.
+      'Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b',
+      '"Authorization": "Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b"',
+      'curl -u admin:S3cr3tPass https://api.example.com',
+      'curl --user=admin:S3cr3tPass https://api.example.com',
+      'curl -uadmin:S3cr3tPass https://api.example.com',
+      'mysql --password Xk29fjs82kdQ -h db',
+      'mysql -uroot -pXk29fjs82kdQ',
+      'docker login --password Xk29fjs82kdQ ghcr.io',
+      // camelCase forms of the credential words.
+      'secretKey: "Xk29fjs82kdQ"',
+      'secretAccessKey=wJalrXUtnFEMIK7MDENGbPxRfiCYEXAMPLEKEY',
+      'privateKey=Xk29fjs82kdQabc',
+      'apiKey: "Xk29fjs82kdQ"',
+      'authToken: "Xk29fjs82kdQ"',
+      'dbPass=Xk29fjs82kdQ',
+      // Vendor prefixes with no credential name before them (review finding M1).
+      'REDACTED-FIXTURE',
+      'REDACTED-FIXTURE',
+      'use REDACTED-FIXTURE in CI',
+      'REDACTED-FIXTURE',
+      'REDACTED-FIXTURE',
+      'REDACTED-FIXTURE',
+      'REDACTED-FIXTURE',
+      'REDACTED-FIXTURE',
+      'REDACTED-FIXTURE',
+      'REDACTED-FIXTURE',
+      'https://api.telegram.org/REDACTED-FIXTURE/getMe',
+      'key REDACTED-FIXTURE here',
+      // A Docker config auth entry that decodes to user:password (auth is not a credential word).
+      '{"auths":{"ghcr.io":{"auth":"dXNlcjpwYXNzd29yZA=="}}}',
     ]
     // cspell:enable
     // One assertion over the list, so a red run names every sample that slipped through.
@@ -223,6 +266,49 @@ describe('refusal', () => {
       'the passphrase field is required',
       'passphrase: required, min length',
       'credentials: see the vault documentation',
+      // cspell:disable
+      // Next to each 2026-10-24 refusal, the ordinary text that must stay saved.
+      'the password field is required',
+      '"password": "required"',
+      '{"api_key": "string"}',
+      'secret := os.Getenv("X")',
+      'secret := loadFromVaultWithRetries(ctx)',
+      'password => hashPasswordWithSalt(password)',
+      'const f = token => token.trim()',
+      'the password：field is required',
+      'use a PGP key to sign',
+      '-----BEGIN PGP PUBLIC KEY BLOCK-----',
+      'convert the PuTTY-User-Key-File-3 file; its Private-Lines: field holds the key',
+      'Authorization: Token <your-token-here>',
+      'Authorization: Token AuthenticationRequiredForAll',
+      'curl -u admin: https://api.example.com',
+      'curl -u $USER:$PASS https://api.example.com',
+      'docker run -u appuser:appgroup1 img',
+      'git push -u origin main',
+      'mysql --password -h db',
+      'psql -p5432 -h db',
+      'mkdir -pv build',
+      'docker compose -pmyproject2026 up',
+      'mysql --password --default-character-set=utf8mb4 -h db',
+      'docker login --password-stdin',
+      'secretKey: "required"',
+      'apiKey: string in the config schema',
+      'tokenizerConfig: "Xk29fjs82kdQ"',
+      'PASSWORDHASH=Xk29fjs82kdQ',
+      'sk_live mode docs',
+      'pk_live_51H8xAbCdEfGhIjKlMnOpQrSt',
+      'use glpat- tokens for CI',
+      'npm_config_registry is set',
+      'hf_hub_download(repo_id)',
+      'SG.x.y',
+      'xapp- tokens are app-level',
+      'the hooks.slack.com/services/ URL goes in settings',
+      'discord.com/api/webhooks/{id}/{token}',
+      'api.telegram.org/bot<token>/getMe',
+      'ASIA pacific region',
+      '{"auths":{"ghcr.io":{}}}',
+      '{"auth": "required"}',
+      // cspell:enable
     ]
     expect(ordinary.filter((text) => looksSecret(text))).toEqual([])
     expect(refusal('Add a search box to the drafts list')).toBeUndefined()
@@ -270,6 +356,18 @@ describe('refusal', () => {
     expect(looksSecret('token=$A;'.repeat(10_000))).toBe(false)
     // Many short reference values: each inner scan stays inside its own value.
     expect(looksSecret('token=$A '.repeat(5_000))).toBe(false)
+    expect(Date.now() - started).toBeLessThan(2000)
+  })
+  test('the 2026-10-24 scans stay linear on long repeated input', () => {
+    // Quoted keys, command-line flags and the Authorization and Docker auth regexes each run on every
+    // save; a regression to a quadratic scan fails the 2000 ms bound instead of hanging the run.
+    const started = Date.now()
+    expect(looksSecret('"token":"a",'.repeat(20_000))).toBe(false)
+    expect(looksSecret('secret := '.repeat(20_000))).toBe(false)
+    expect(looksSecret('curl -u a:b --password -x -p '.repeat(10_000))).toBe(false)
+    expect(looksSecret('authorization: token '.repeat(10_000))).toBe(false)
+    expect(looksSecret('"auth": "'.repeat(10_000))).toBe(false)
+    expect(looksSecret('-----BEGIN PRIVATE KEY BLOCK '.repeat(10_000))).toBe(false)
     expect(Date.now() - started).toBeLessThan(2000)
   })
 })
