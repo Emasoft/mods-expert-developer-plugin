@@ -193,12 +193,12 @@ describe('row button under a typed message', () => {
     }
   })
 
-  test('a row that is not the composer\'s gets no button', async ($, on) => {
+  test('a row from any other origin gets no button', async ($, on) => {
     stubs(on)
     await start($)
     for (const surface of SURFACES) {
       for (const columns of WIDTHS) {
-        for (const kind of ['task-notification', 'peer', 'bridge', 'plugin']) {
+        for (const kind of ['task-notification', 'peer', 'plugin', 'unclassified']) {
           const id = `${kind}-${surface}-${columns}`
           const ui = await $.ui.mount(row(surface, columns, id, 'not typed here', kind))
           expect(await ui.find({ type: 'Text', text: 'engine row' })).toBeDefined()
@@ -207,6 +207,29 @@ describe('row button under a typed message', () => {
         }
       }
     }
+  })
+
+  test('a Remote Control or SDK host row draws the button too, and saves, on every surface and width', async ($, on) => {
+    // User ruling 2026-10-24: the option is on every message the person sends while the plugin is on.
+    const world = stubs(on)
+    await start($)
+    let n = 0
+    for (const kind of ['bridge', 'sdk']) {
+      for (const surface of SURFACES) {
+        for (const columns of WIDTHS) {
+          n += 1
+          const id = `${kind}-${surface}-${columns}`
+          const ui = await $.ui.mount(row(surface, columns, id, `requirement ${n} sent through ${kind}`, kind))
+          expect(await ui.find({ type: 'Text', text: 'engine row' })).toBeDefined()
+          expect(await ui.find({ key: `rd-save-${id}` })).toBeDefined()
+          await ui.press({ key: `rd-save-${id}` })
+          expect(world.writes[n - 1]?.text).toContain(`message-id: "${id}"`)
+          expect(await ui.find({ type: 'Text', text: /^✓ saved as requirement draft / })).toBeDefined()
+          await ui.unmount()
+        }
+      }
+    }
+    expect(world.writes.length).toBe(8)
   })
 
   test('the placeholder id of a first draw gets no button', async ($, on) => {
@@ -257,6 +280,18 @@ describe('/requirements-drafts-save', () => {
     expect(world.writes[0]!.text).toContain('\nsecond requirement\n')
     expect(world.writes[0]!.text).toContain('via: "command"')
     expect(world.writes[0]!.text).toContain('message-id: ""')
+  })
+
+  test('a message sent through Remote Control or an SDK host is recorded and saved', async ($, on) => {
+    const world = stubs(on)
+    await start($)
+    await $.prompt.submit({ text: 'requirement from the phone', wait: false, origin: { kind: 'bridge' } })
+    await command($, 'requirements-drafts-save')
+    await $.prompt.submit({ text: 'requirement from the desktop app', wait: false, origin: { kind: 'sdk' } })
+    await command($, 'requirements-drafts-save')
+    expect(world.writes.length).toBe(2)
+    expect(world.writes[0]!.text).toContain('\nrequirement from the phone\n')
+    expect(world.writes[1]!.text).toContain('\nrequirement from the desktop app\n')
   })
 
   test('a prompt from another origin is not recorded', async ($, on) => {

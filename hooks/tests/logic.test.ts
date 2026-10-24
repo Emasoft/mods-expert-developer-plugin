@@ -24,11 +24,19 @@ describe('shouldRecord', () => {
   test('records text the person typed and sent', () => {
     expect(shouldRecord(typed)).toBe(true)
   })
-  test('skips a prompt raised by a plugin, not by Claude Code', () => {
-    expect(shouldRecord({ ...typed, raisedBy: 'other-mod' })).toBe(false)
+  test('skips a prompt raised by a plugin, not by Claude Code, whatever its origin', () => {
+    for (const originKind of ['composer', 'bridge', 'sdk']) {
+      expect(shouldRecord({ ...typed, originKind, raisedBy: 'other-mod' })).toBe(false)
+    }
   })
-  test('skips every origin other than the composer', () => {
-    for (const originKind of ['bridge', 'sdk', 'task-notification', 'peer', 'plugin', 'unclassified']) {
+  test('records a message from the composer, Remote Control and an SDK host', () => {
+    // User ruling 2026-10-24: the option is on every message the person sends while the plugin is on.
+    for (const originKind of ['composer', 'bridge', 'sdk']) {
+      expect(shouldRecord({ ...typed, originKind })).toBe(true)
+    }
+  })
+  test('skips every other origin', () => {
+    for (const originKind of ['task-notification', 'peer', 'plugin', 'unclassified', 'scheduled-trigger', 'channel']) {
       expect(shouldRecord({ ...typed, originKind })).toBe(false)
     }
   })
@@ -52,11 +60,15 @@ describe('pushRecent', () => {
 })
 
 describe('rowIsSaveable', () => {
-  test('only a composer row with its real id', () => {
-    expect(rowIsSaveable('composer', 'msg-1')).toBe(true)
-    expect(rowIsSaveable('composer', 'placeholder')).toBe(false)
-    expect(rowIsSaveable('composer', '')).toBe(false)
-    expect(rowIsSaveable('task-notification', 'msg-1')).toBe(false)
+  test('a composer, Remote Control or SDK host row with its real id', () => {
+    for (const kind of ['composer', 'bridge', 'sdk']) {
+      expect(rowIsSaveable(kind, 'msg-1')).toBe(true)
+      expect(rowIsSaveable(kind, 'placeholder')).toBe(false)
+      expect(rowIsSaveable(kind, '')).toBe(false)
+    }
+    for (const kind of ['task-notification', 'peer', 'plugin', 'unclassified']) {
+      expect(rowIsSaveable(kind, 'msg-1')).toBe(false)
+    }
   })
 })
 
@@ -128,11 +140,27 @@ describe('refusal', () => {
       // Basic auth after authorization and : or =, even with a token of letters only.
       'Authorization: Basic QWxhZGRpbjpvcGVuSesame',
       'authorization=basic QWxhZGRpbjpvcGVuSesame',
-      // Basic auth anywhere when the token holds a digit, +, / or = (one sample per character kind).
+      // Basic auth anywhere when the token decodes to user:password: plain, with a + or / inside, or padded with ==.
       'send Basic YWRtaW46czNjcjN0UGFzcw with curl',
       'send Basic QWxhZGRpbjpvcGVu+SesameAB with curl',
       'send Basic QWxhZGRpbjpvcGVu/SesameAB with curl',
       'send Basic QWxhZGRpbjpvcGVuSesameAB== with curl',
+      // The credential names passphrase and credentials (2026-10-24): both were saved before.
+      'passphrase=Xk29fjs82kdQ7pLm',
+      'aws_credentials=Xk29fjs82kdQ7pLm',
+      // A JSON header: the quote before "Basic" hides authorization, and the token decodes to user:password.
+      '"Authorization": "Basic QWxhZGRpbjpvcGVuU2VzYW1l"',
+      '{"Authorization": "Basic QWxhZGRpbjpvcGVuSesame"}',
+      // A letters-only token that decodes to user:password counts with no authorization before it.
+      'send Basic QWxhZGRpbjpvcGVuSesameAB with curl',
+      // A UTF-8 user name: the colon comes after bytes above 0x7E, which do not end the run (2026-10-24).
+      'send Basic Sm9zw6k6czNjcmV0UGFzc3cwcmQ with curl',
+      // The empty-user shape of a personal access token: a leading colon and 8 or more bytes after it.
+      'send Basic OmFiY2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6MDEyMw with curl',
+      // A space before the separator, and Proxy-Authorization, with a token that decodes to no colon,
+      // so only the authorization rule can refuse them.
+      'Authorization : Basic QWxhZGRpbk9wZW5TZXNhbWU',
+      'Proxy-Authorization: Basic QWxhZGRpbk9wZW5TZXNhbWU',
     ]
     // cspell:enable
     // One assertion over the list, so a red run names every sample that slipped through.
@@ -184,9 +212,42 @@ describe('refusal', () => {
       // "basic" before a long word of letters is ordinary requirement text.
       'Add basic internationalization support',
       'a basic authentication flow for administrators',
+      // A slash list after "basic" is ordinary text: it does not decode to user:password.
+      'Add basic read/write/execute permissions',
+      // A capitalised word starting O[g-v] decodes to a leading colon; its next bytes are not all ASCII.
+      'Add basic OpenTelemetryExporter support',
+      // The new credential words in prose, with no secret value after them.
+      'the passphrase field is required',
+      'passphrase: required, min length',
+      'credentials: see the vault documentation',
     ]
     expect(ordinary.filter((text) => looksSecret(text))).toEqual([])
     expect(refusal('Add a search box to the drafts list')).toBeUndefined()
+  })
+  test('a Basic token with no authorization before it counts only when it decodes to user:password', () => {
+    // cspell:disable
+    // The token behind the authorization samples decodes to no colon at all, so alone it is saved.
+    expect(looksSecret('send Basic QWxhZGRpbk9wZW5TZXNhbWU with curl')).toBe(false)
+    // A leading colon with 7 printable bytes after it before a control byte: too short for a token.
+    expect(looksSecret('send Basic OmFiY2RlZmcBQUJD with curl')).toBe(false)
+    // A leading colon with 8 printable bytes after it: the empty-user shape counts.
+    expect(looksSecret('send Basic OmFiY2RlZmdoAUFC with curl')).toBe(true)
+    // A leading colon with a space among the next 8 bytes: not a token's shape, so saved.
+    expect(looksSecret('send Basic OmFiYyBkZWZnaGlq with curl')).toBe(false)
+    // The token of ":openSesameAbcd": a leading colon and 8 printable bytes, so refused.
+    expect(looksSecret('send Basic Om9wZW5TZXNhbWVBYmNk with curl')).toBe(true)
+    // The colon comes after a control byte (0x01), outside the leading run.
+    expect(looksSecret('send Basic AWFiOm9wZW5TZXNhbWU with curl')).toBe(false)
+    // DEL (0x7F) ends the run too.
+    expect(looksSecret('send Basic QX9iOm9wZW5TZXNhbWU with curl')).toBe(false)
+    // High bytes before the colon that are not valid UTF-8 (0xFF 0xFE): not a user name, so saved.
+    expect(looksSecret('send Basic //5hOm9wZW5TZXNhbWU5OQ with curl')).toBe(false)
+    // A 4n+1 token decodes its first 4n characters: user:password there still counts.
+    expect(looksSecret('send Basic QWxhZGRpbjpvcGVuSesameABC with curl')).toBe(true)
+    // Missing padding is tolerated: the same user:password token with and without its ==.
+    expect(looksSecret('send Basic YWRtaW46b3BlblNlc2FtZQ== with curl')).toBe(true)
+    expect(looksSecret('send Basic YWRtaW46b3BlblNlc2FtZQ with curl')).toBe(true)
+    // cspell:enable
   })
   test('empty and oversize text are refused', () => {
     expect(refusal('  ')).toMatch(/empty/)

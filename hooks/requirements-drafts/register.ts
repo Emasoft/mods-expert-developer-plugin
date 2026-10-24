@@ -1,4 +1,4 @@
-// requirements-drafts (TRDD-O5LUMKPW): save the person's own typed messages as Markdown drafts
+// requirements-drafts (TRDD-O5LUMKPW): save the messages the person sends as Markdown drafts
 // in ~/.claude/requirements-drafts/, one file per draft, for every agent and session to read.
 // Thin wiring only: every decision is a function in ./logic.ts.
 import type { EngineInterface, On } from 'claude-code'
@@ -161,7 +161,7 @@ export function registerRequirementsDrafts(on: On): void {
     return next(e)
   })
 
-  // /clear, /resume and /branch start another conversation: its "last typed message" starts empty.
+  // /clear, /resume and /branch start another conversation: its last sent message starts empty.
   // Only this session's entry is dropped; another session served by this module keeps its own.
   on('classic.SessionStart', async ($, e, next) => {
     if (e.source === 'clear' || e.source === 'resume' || e.source === 'fork') {
@@ -236,7 +236,7 @@ export function registerRequirementsDrafts(on: On): void {
     })
   })
 
-  // A Button under a typed message (a click fired it in the fullscreen terminal on 2.1.309; the
+  // A Button under a message the person sent (a click fired it in the fullscreen terminal on 2.1.309; the
   // classic renderer delivered no click). One render path for every surface.
   on('ui.render', { component: 'UserMessage' }, async ($, e, next) => {
     const theirs = await next(e)

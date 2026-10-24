@@ -16,17 +16,28 @@ export type Via = 'row' | 'command' | 'picker'
 export type SubmitFacts = {
   /** next.origin.plugin: who raised prompt.submit; Claude Code itself is 'engine'. */
   raisedBy: string
-  /** e.origin.kind: where the prompt came from; the person's Enter is 'composer'. */
+  /** e.origin.kind: where the prompt came from; PERSON_ORIGINS lists the kinds the person sends. */
   originKind: string
   hasCommand: boolean
   isMeta: boolean
   text: string
 }
 
-/** Only text the person typed and sent counts: no slash command, no meta or plugin prompt. */
+// The origins of a message the person sent: Enter at the terminal (composer), Remote Control
+// (bridge) and an SDK host's turn (sdk). User ruling 2026-10-24: the option "should appear on all
+// messages as long the plugin is installed and enabled", read as every message of the person's
+// own, not assistant, task, peer or unclassified rows. The Desktop app is an SDK host: as
+// measured by the coordinator across recent transcripts on 2026-10-24, it stores the person's
+// messages with origin human and promptSource sdk, scheduled and cron prompts with origin null and
+// promptSource system, and task notifications as task-notification. How those stored values render
+// as UserMessage origin.kind is not verified. Widening is safe because nothing is saved on its own:
+// a save needs a click or a command.
+const PERSON_ORIGINS: ReadonlySet<string> = new Set(['composer', 'bridge', 'sdk'])
+
+/** Only text the person sent counts: no slash command, no meta, task, peer or plugin prompt. */
 export function shouldRecord(facts: SubmitFacts): boolean {
   if (facts.raisedBy !== 'engine') return false
-  if (facts.originKind !== 'composer') return false
+  if (!PERSON_ORIGINS.has(facts.originKind)) return false
   if (facts.hasCommand || facts.isMeta) return false
   const text = facts.text.trim()
   return text !== '' && !text.startsWith('/')
@@ -37,9 +48,9 @@ export function pushRecent(list: readonly string[], text: string): string[] {
   return [text, ...list.filter((t) => t !== text)].slice(0, MAX_RECENT)
 }
 
-/** The row button is drawn only under a typed message that already has its real id. */
+/** The row button is drawn only under a message the person sent that already has its real id. */
 export function rowIsSaveable(originKind: string, requestId: string): boolean {
-  return originKind === 'composer' && requestId !== '' && requestId !== PLACEHOLDER_ID
+  return PERSON_ORIGINS.has(originKind) && requestId !== '' && requestId !== PLACEHOLDER_ID
 }
 
 export type SwitchAnswer = { enabled: boolean; text: string } | { usage: string }
@@ -71,7 +82,8 @@ const SECRET_PATTERNS: readonly RegExp[] = [
 // followed by more quantified parts is a catastrophic-backtracking risk on long text (CPV
 // skillaudit REGEX_DOS, 2026-10-23). The scans below visit each character a bounded number of times.
 const CREDENTIAL_WORDS = [
-  'password', 'passwd', 'pass', 'pwd', 'secret', 'token', 'api_key', 'api-key', 'apikey', 'private_key', 'credential',
+  'password', 'passwd', 'pass', 'pwd', 'passphrase', 'secret', 'token', 'api_key', 'api-key', 'apikey', 'private_key',
+  'credential', 'credentials',
 ]
 // Short words that are also inside ordinary words (bypass, compass, OLDPWD): they count only as a
 // whole part of the name. The long words still count inside a name: PGPASSWORD is PostgreSQL's
@@ -240,17 +252,128 @@ function credentialValueIsSecret(text: string): boolean {
   return false
 }
 
+const BASE64_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+
 /**
- * HTTP basic auth: "basic" and a base64 token, counted only after authorization and : or =, or when
- * the token holds a digit, +, / or =. Ordinary requirement text says "basic internationalization",
- * a long word of letters only, which an unconditional pattern refused (coordinator, 2026-10-23).
+ * The leading run of non-control bytes in the base64 decoding of token, or undefined for a character
+ * outside the base64 alphabet. Missing padding is tolerated, and so is a 4n+1 length: its last
+ * character completes no byte, so the first 4n decode as usual. Rejecting 4n+1 would have saved two
+ * pinned leak samples (the +SesameAB and /SesameAB tokens, 2026-10-24). Plain string steps, no regex.
+ */
+function decodedLeadingRun(token: string): number[] | undefined {
+  let end = token.length
+  while (end > 0 && token.charAt(end - 1) === '=') end -= 1
+  const out: number[] = []
+  let bits = 0
+  let count = 0
+  for (let i = 0; i < end; i += 1) {
+    const value = BASE64_ALPHABET.indexOf(token.charAt(i))
+    if (value < 0) return undefined
+    // A byte is read from the last 12 bits at most, so the 14-bit mask keeps the number small.
+    bits = ((bits << 6) | value) & 0x3fff
+    count += 6
+    if (count >= 8) {
+      count -= 8
+      const byte = (bits >> count) & 0xff
+      // Only control bytes end the run (below 0x20, and DEL): a byte above 0x7E may belong to a
+      // UTF-8 user name such as José; decodesToUserPassword checks that it is valid UTF-8.
+      if (byte < 0x20 || byte === 0x7f) return out
+      out.push(byte)
+    }
+  }
+  return out
+}
+
+// The empty-user shape, base64(":" + token), is how a personal access token is sent as Basic. A
+// leading colon counts only when the next this-many bytes are printable non-space ASCII (0x21 to
+// 0x7E): real PATs and API keys are, while random bytes pass about (94/256)^8, roughly 3e-4. Any
+// non-control byte was not enough: it refused about 1 in 3 "basic O..." words, such as
+// OpenTelemetryExporter (coordinator, 2026-10-24).
+const EMPTY_USER_MIN_SECRET = 8
+
+/** Whether the count bytes from index from are all printable non-space ASCII (0x21 to 0x7E). */
+function allPrintableAscii(bytes: readonly number[], from: number, count: number): boolean {
+  if (bytes.length < from + count) return false
+  for (let at = from; at < from + count; at += 1) {
+    const byte = bytes[at] ?? -1
+    if (byte < 0x21 || byte > 0x7e) return false
+  }
+  return true
+}
+const COLON = 0x3a
+
+/**
+ * For a UTF-8 lead byte: how many continuation bytes follow and the range the first of them must
+ * fall in (Unicode table 3-7, as RFC 3629 restricts UTF-8: no overlong forms, no surrogates,
+ * nothing above U+10FFFF), or undefined for a byte that cannot lead a sequence.
+ */
+function utf8Lead(lead: number): { follow: number; lo: number; hi: number } | undefined {
+  if (lead >= 0xc2 && lead <= 0xdf) return { follow: 1, lo: 0x80, hi: 0xbf }
+  if (lead === 0xe0) return { follow: 2, lo: 0xa0, hi: 0xbf }
+  if (lead === 0xed) return { follow: 2, lo: 0x80, hi: 0x9f }
+  if (lead >= 0xe1 && lead <= 0xef) return { follow: 2, lo: 0x80, hi: 0xbf }
+  if (lead === 0xf0) return { follow: 3, lo: 0x90, hi: 0xbf }
+  if (lead >= 0xf1 && lead <= 0xf3) return { follow: 3, lo: 0x80, hi: 0xbf }
+  if (lead === 0xf4) return { follow: 3, lo: 0x80, hi: 0x8f }
+  return undefined
+}
+
+/**
+ * Whether bytes are valid UTF-8: random high bytes from an ordinary word almost never are, while a
+ * real user name is. Plain steps, not TextDecoder: the hooks environment's TextDecoder is declared
+ * with a label only (claude-code types, 2.1.309), so a { fatal: true } option is not part of its
+ * contract, and a decoder that ignored it would accept every byte run without a word.
+ */
+function isUtf8(bytes: readonly number[]): boolean {
+  let at = 0
+  while (at < bytes.length) {
+    const lead = bytes[at] ?? -1
+    if (lead < 0x80) {
+      at += 1
+      continue
+    }
+    const shape = utf8Lead(lead)
+    if (shape === undefined || at + shape.follow >= bytes.length) return false
+    const first = bytes[at + 1] ?? -1
+    if (first < shape.lo || first > shape.hi) return false
+    for (let k = 2; k <= shape.follow; k += 1) {
+      const next = bytes[at + k] ?? -1
+      if (next < 0x80 || next > 0xbf) return false
+    }
+    at += shape.follow + 1
+  }
+  return true
+}
+
+/**
+ * The user:password shape in the leading run: a : at index 1 or later whose bytes before it are
+ * valid UTF-8 (so base64("José:pw...") counts), or a leading : whose next EMPTY_USER_MIN_SECRET
+ * bytes are printable non-space ASCII. The UTF-8 test keeps ordinary letter tokens saved: by the
+ * coordinator's estimate, a run that only stopped at control bytes would refuse about 2-3% of
+ * "basic <word>" instead of about 0.1% (review of 2026-10-24, not measured here).
+ */
+function decodesToUserPassword(token: string): boolean {
+  const run = decodedLeadingRun(token)
+  if (run === undefined) return false
+  if (run[0] === COLON && allPrintableAscii(run, 1, EMPTY_USER_MIN_SECRET)) return true
+  const colon = run.indexOf(COLON, 1)
+  return colon >= 1 && isUtf8(run.slice(0, colon))
+}
+
+/**
+ * HTTP basic auth: "basic" and a base64 token, counted after authorization and : or =, or anywhere
+ * when the token decodes to user:password. Ordinary text such as "basic internationalization" or
+ * "basic read/write/execute" decodes to no such shape, so it is saved. A quoted header
+ * ("Authorization": "Basic ...") hides authorization from followsAuthorization, so the decode is
+ * what catches it, even with a token of letters only (2026-10-24, replacing the earlier "holds a
+ * digit, +, / or =" test, which refused the slash list and missed the quoted header).
  */
 function hasBasicCredential(text: string): boolean {
   // Local, so the g flag's lastIndex never leaks between calls. \s+ and the token class share no
   // character and the class excludes =, so no quantifier overlaps another (CPV REGEX_DOS).
   const basic = /\bbasic\s+([A-Za-z0-9+/]{16,}={0,2})/gi
   for (let match = basic.exec(text); match !== null; match = basic.exec(text)) {
-    if (/[0-9+/=]/.test(match[1] ?? '')) return true
+    if (decodesToUserPassword(match[1] ?? '')) return true
     if (followsAuthorization(text, match.index)) return true
   }
   return false
