@@ -98,7 +98,7 @@ The `requirements-drafts` mod (`hooks/requirements-drafts/`) saves messages you 
 
 Setup is installing and enabling the plugin; nothing else is needed. The mod is on by default, and `/requirements-drafts off` turns it off.
 
-A dim line, `+ save as requirement draft`, appears under every message you send: pressing Enter at the terminal, in the Desktop app, and in Remote Control. It does not appear under assistant replies, task notifications or messages from other sessions. It also does not appear under messages from conversations stored before Claude Code recorded where a message came from. Clicking the line saves the message; after a save it reads `✓ saved as requirement draft <id>`.
+A dim line, `+ save as requirement draft`, appears under every message you send. That was checked live for messages sent with Enter at the terminal; the code also accepts messages from the Desktop app and from Remote Control, which have not yet been confirmed on a live session. It does not appear under assistant replies, task notifications or messages from other sessions, and it may not appear under messages from conversations stored before Claude Code recorded where a message came from. Clicking the line saves the message; after a save it reads `✓ saved as requirement draft <id>`.
 
 In the classic (non-fullscreen) terminal view a click on the line is not delivered on Claude Code 2.1.309 (measured). Use fullscreen (`CLAUDE_CODE_NO_FLICKER=1`) or the commands. Three commands do the rest:
 
