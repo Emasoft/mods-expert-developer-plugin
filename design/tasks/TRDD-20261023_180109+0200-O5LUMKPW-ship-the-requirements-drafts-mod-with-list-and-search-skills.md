@@ -1,10 +1,10 @@
 ---
 trdd-id: O5LUMKPW
 title: Ship the requirements-drafts mod with list and search skills
-column: human_review
+column: dev
 status: tasked
 created: 2026-10-23T18:01:09+0200
-updated: 2026-10-24T05:56:35+0200
+updated: 2026-10-24T06:16:28+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -79,6 +79,8 @@ Let the user save their own messages into a requirements-drafts store that every
 - 2026-10-24 user ruling on the on/off default: "Keep the requirements-drafts mod on by default for other installers." No code change: the mod already starts ON, pinned by a test.
 - 2026-10-24 user ruling on how the plugin is loaded: "you only need to install the plugin, and the option/link/button to import a message as a requirement-draft should appear on all messages as long the plugin is installed and enabled ." Read as: no extra loading step (no CLAUDE_CODE_PLUGIN_DIRS), and the button shows on every message the person typed while the plugin is enabled, which is what register.ts already does (rowIsSaveable: origin kind composer). Known gap told to the user: in the classic (non-fullscreen) terminal view the row click was not delivered on 2.1.309; the slash commands are the path there.
 - 2026-10-24 user delegation (verbatim): "the other questions you can decide yourself. base your decisions on verified facts and accurate comparisons." Decided under it: items (3), (4) and (6) of NEXT ACTION, recorded under Build decisions.
+- 2026-10-24T06:16+0200 Ownership change, user verbatim: "take over the requirements-drafts fixes here through the mods expert developer agent as your subagent, and tell the drafts session to stop all work, including the mod-finder entry, and hand you its state." The main session (the one that owns TRDD-H26OG8AP) now owns this card; the drafts session is stopped. Code review of v0.5.0..6513ae8: reports/drafts-mod-review/20261024_060743+0200-main-review.md and 20261024_061233+0200-independent-review.md (gitignored). Leaks re-checked by a bun probe of logic.ts looksSecret at 6513ae8, all SAVED: a quoted key ({"password": "Xk29fjs82kdQ"}, {"api_key":"abcd1234efgh5678"}), secret := and password => assignments, a PGP PRIVATE KEY BLOCK, Authorization: Token, curl -u user:pass, camelCase secretKey, Stripe sk_live_, glpat-, npm_, hf_, Slack webhook URLs. None is on this card's accepted-gaps list. Settled: $.fs.write creates missing folders (types index.d.ts line 3333). Fix plan, one increment each, done by mods-expert-developer-agent as a subagent and reviewed before commit: (1) secret check: quoted keys, := and => separators, PGP and PuTTY keys, Token header, curl -u and -p/--password flags, camelCase names, the missing vendor token prefixes, each pinned by a test; (2) dedup per project and hash of the stored text (independent review M6, L3); (3) run hooks/tests in CI, limited to hooks/tests (M5). Ordinary text refused with no override (M4) needs a user ruling, not a fix.
+- 2026-10-24T06:16:28+0200 — column → dev. code review found secret-check leaks; fixes taken over by the main session through a mods-expert-developer subagent
 
 ## Build decisions
 
