@@ -4,7 +4,7 @@ title: Depend on mod-finder from the aidojo marketplace
 column: todo
 status: tasked
 created: 2026-10-24T05:26:10+0200
-updated: 2026-10-24T05:26:10+0200
+updated: 2026-10-24T05:33:01+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -23,21 +23,23 @@ User request 2026-10-24 (verbatim): "another thing the plugin should do is to in
 
 Facts checked 2026-10-24 (gh api):
 - The marketplace repo karanb192/awesome-claude-code-mods is public, default branch main, head b89e7db (2026-10-22). Its marketplace.json is named aidojo and lists mod-finder at ./finder.
-- mod-finder 0.1.1 is licensed CC0-1.0. It is an MCP server (node server.mjs) with two read-only tools, search_mods and get_mod. It fetches a catalogue snapshot from raw.githubusercontent.com and api.github.com and caches it under ~/.cache/claude-mods. No exec or spawn was found.
+- mod-finder 0.1.1 is licensed CC0-1.0. It is an MCP server (node server.mjs) with two read-only tools, search_mods and get_mod. It fetches a catalogue snapshot from raw.githubusercontent.com and api.github.com and caches it under ~/.cache/claude-mods. A read of the plugin files at b89e7db (search.mjs lines 110-431, the README and the tests checked by pattern search only) found no exec, spawn, eval or dynamic import; one new RegExp is built from catalogue data (a low ReDoS risk).
 - The repo has no git tags, so a version constraint cannot resolve; the dependency is left unconstrained.
 - Our plugin is listed in Emasoft/emasoft-plugins (marketplace name emasoft-plugins), which has no allowCrossMarketplaceDependenciesOn.
 - The vendored dependencies chapter (skills/mods-doc-plugins-depending-on-other-plugins/references/chapter.md, lines 98-123) says auto-install covers same-marketplace dependencies. A dependency from another marketplace installs only when the root marketplace lists it in allowCrossMarketplaceDependenciesOn. Declared in plugin.json without that, the install completes without the dependency and our plugin then FAILS TO LOAD.
-- Unverified: whether the aidojo marketplace must already be added on the user's machine.
+- Measured 2026-10-24 on claude 2.1.310, local-path marketplace sources, throwaway HOMEs (reports/requirements-drafts/20261024_053049+0200-mod-finder-dependency-live-test.md): a cross-marketplace dependency in plugin.json installs only when the user has already added aidojo; otherwise the install or a plugin update from 0.5.0 succeeds and our plugin fails to load. Listing mod-finder in emasoft-plugins as a git-subdir entry pinned to b89e7db, with a bare dependency, auto-installs it on a fresh install with nothing added (reports/requirements-drafts/20261024_053219+0200-mod-finder-same-marketplace-live-test.md), but claude plugin update 0.5.0 to 0.6.0 does not install it, and our plugin fails to load until the user runs claude plugin install mod-finder@emasoft-plugins. A user with mod-finder@aidojo already installed gets two copies, each declaring an MCP server named mods (effect unmeasured). The emasoft-plugins update-submodules workflow handles only github and url sources, so it leaves a git-subdir pin alone, and its json rewrite keeps unknown top-level keys.
 
 Plan:
-1. Add dependencies [{name: mod-finder, marketplace: aidojo}] to .claude-plugin/plugin.json.
-2. Add aidojo to allowCrossMarketplaceDependenciesOn in Emasoft/emasoft-plugins (another repo; first check whether its tooling regenerates marketplace.json).
-3. Test the install live in a throwaway HOME before release.
-4. Document it in the README.
-5. Release.
+1. (Pending the user's choice of design.) Add the dependency to .claude-plugin/plugin.json.
+2. Change Emasoft/emasoft-plugins for the chosen design: the aidojo allowlist (authorized) or a pinned mod-finder entry (needs the user's go-ahead).
+3. Done: live tests in throwaway HOMEs, see Facts.
+4. Document it in the README and NOTICE (credit Karan Bansal; tell updaters the one install command).
+5. Release, only after the live test passes, in this order: push the emasoft-plugins change, confirm it is on its main, then push the plugin repo and its tag; tell the TRDD-H26OG8AP session first.
 
 Never publish step 1 before step 2 is live.
 
 ## Approval log
 
 - 2026-10-24T05:26:10+0200 — MANDATE issued by main-agent@emasoft-mods-expert-developer (min-approval-requirement: none). Pre-approved: issuer authority >= required approver. No approval request was sent.
+- 2026-10-24 user authorization (verbatim): "Yes: add aidojo to allowCrossMarketplaceDependenciesOn in Emasoft/emasoft-plugins and push it together with the release."
+- Release order (follows from the facts above): (1) push the emasoft-plugins allowlist commit; (2) confirm it is on emasoft-plugins main; (3) only then push the plugin repo and its tag. Our emasoft-plugins entry is a github source, so a plugin push that lands first could reach installs before the allowlist exists. The pushed plugin repo also carries other sessions' unpushed commits; tell the TRDD-H26OG8AP session before pushing.
