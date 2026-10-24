@@ -4,7 +4,7 @@ title: Depend on mod-finder from the aidojo marketplace
 column: todo
 status: tasked
 created: 2026-10-24T05:26:10+0200
-updated: 2026-10-24T05:33:01+0200
+updated: 2026-10-24T06:18:01+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -43,3 +43,4 @@ Never publish step 1 before step 2 is live.
 - 2026-10-24T05:26:10+0200 — MANDATE issued by main-agent@emasoft-mods-expert-developer (min-approval-requirement: none). Pre-approved: issuer authority >= required approver. No approval request was sent.
 - 2026-10-24 user authorization (verbatim): "Yes: add aidojo to allowCrossMarketplaceDependenciesOn in Emasoft/emasoft-plugins and push it together with the release."
 - Release order (follows from the facts above): (1) push the emasoft-plugins allowlist commit; (2) confirm it is on emasoft-plugins main; (3) only then push the plugin repo and its tag. Our emasoft-plugins entry is a github source, so a plugin push that lands first could reach installs before the allowlist exists. The pushed plugin repo also carries other sessions' unpushed commits; tell the TRDD-H26OG8AP session before pushing.
+- 2026-10-24T06:18+0200 User rulings of 2026-10-24 recorded from the drafts session handoff (reports/drafts-mod-review/20261024_061643+0200-drafts-session-handoff.md, section 2), not written here earlier because of the freeze. First: "Yes: add mod-finder to Emasoft/emasoft-plugins as a git-subdir entry pinned to b89e7db, make it a dependency of the plugin, and tell updaters in the README to run claude plugin install mod-finder@emasoft-plugins." Then, reversing it: "i don't really see the need to pin the mod-finder plugin into the marketplace. being part of the mods expert developer plugin is enough to ensure it is installed along with the plugin." Then: "are you sure? check the documentstion in this very plugin skills". So how mod-finder reaches users is OPEN. Measured facts behind it (reports/requirements-drafts/20261024_053049+0200-mod-finder-dependency-live-test.md and 20261024_053219+0200-mod-finder-same-marketplace-live-test.md, claude 2.1.310): a cross-marketplace dependency installs only when the aidojo marketplace was already added, else the plugin fails to load; a same-marketplace pinned git-subdir entry auto-installed on a fresh install; claude plugin update from 0.5.0 to 0.6.0 did not install it. The emasoft-plugins work (scratch clone commits 80a9082 and 025dbb4, unpushed, plus a thin bundle in the session notes folder) is stopped. Owner since the user's takeover ruling of 2026-10-24: the main session.
