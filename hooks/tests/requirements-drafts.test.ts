@@ -2,6 +2,8 @@
 // Every row test draws on both surfaces at a narrow and a wide width with the same assertions.
 import { describe, expect, mock, test } from 'claude-code/testing'
 
+import { draftId } from '../requirements-drafts/logic'
+
 const PLUGIN = 'mods-expert-developer-plugin'
 const HOME = '/home/tester'
 const DIR = `${HOME}/.claude/requirements-drafts`
@@ -15,6 +17,8 @@ type World = {
   logs: string[]
   store: Map<string, unknown>
   files: string[]
+  /** File name -> text, for $.fs.read: every seeded file and every file the mod wrote. */
+  contents: Map<string, string>
   closed: string[]
   /** What $.session.id() answers; a test switches it to play a second session in the same module. */
   session: string
@@ -25,8 +29,11 @@ type World = {
 }
 
 // Register every stub the mod's calls need; the kit wants them before the first call on $.
-function stubs(on: any, files: string[] = []): World {
-  const world: World = { writes: [], toasts: [], logs: [], store: new Map(), files: [...files], closed: [], session: 'sess-1', writeError: undefined, sessionError: undefined }
+// A seeded name with no text of its own holds a draft of this test's project, /work, the root the
+// session.root stub answers, so a hash match there is this project's draft.
+function stubs(on: any, files: string[] = [], contents: Record<string, string> = {}): World {
+  const world: World = { writes: [], toasts: [], logs: [], store: new Map(), files: [...files], contents: new Map(), closed: [], session: 'sess-1', writeError: undefined, sessionError: undefined }
+  for (const name of files) world.contents.set(name, contents[name] ?? firstReleaseDraft(name.slice(0, -'.md'.length), '/work', 'a seeded draft'))
   mock.clock(on, { now: Date.UTC(2026, 9, 23, 16, 1, 9) })
   on('store.get', ($: any, e: any) => ({ value: world.store.get(e.key) }))
   on('store.set', ($: any, e: any) => {
@@ -36,11 +43,18 @@ function stubs(on: any, files: string[] = []): World {
   on('env.get', ($: any, e: any) => ({ value: e.name === 'HOME' ? HOME : undefined }))
   on('fs.exists', () => ({ value: world.files.length > 0 }))
   on('fs.list', () => ({ value: world.files.map((name) => ({ name, kind: 'file', size: 1, mtimeMs: 1, isLink: false })) }))
+  // A draft file the mod reads to learn its project; a name with no content is a file that cannot be read.
+  on('fs.read', ($: any, e: any) => {
+    const text = world.contents.get(e.path.slice(e.path.lastIndexOf('/') + 1))
+    return text === undefined ? { deny: `cannot read ${e.path}` } : { value: text }
+  })
   on('fs.write', ($: any, e: any) => {
     // A throwing test hook is skipped by the kit; { deny } is how a call on $ is made to reject.
     if (world.writeError !== undefined) return { deny: world.writeError }
     world.writes.push({ path: e.path, text: e.text })
-    world.files.push(e.path.slice(e.path.lastIndexOf('/') + 1))
+    const name = e.path.slice(e.path.lastIndexOf('/') + 1)
+    world.files.push(name)
+    world.contents.set(name, e.text)
     return { value: undefined }
   })
   on('session.repo', () => ({ value: { root: '/work', remote: null, internal: false, name: null } }))
@@ -66,6 +80,35 @@ function stubs(on: any, files: string[] = []): World {
   // What Claude Code itself draws for the message row, under which the mod adds its line.
   on('ui.render', () => ({ type: 'Text', props: {}, children: ['engine row'] }))
   return world
+}
+
+async function hash12(text: string): Promise<string> {
+  const bytes = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)))
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('').slice(0, 12)
+}
+
+/**
+ * A draft as the mod's first release wrote it (renderDraft at ac621e6, its first commit). A literal,
+ * not renderDraft: a change of the on-disk format must turn the old-draft test red.
+ */
+function firstReleaseDraft(id: string, projectRoot: string, text: string): string {
+  return [
+    '---',
+    `id: "${id}"`,
+    'created: "2026-10-01T09:00:00+0200"',
+    `project-root: "${projectRoot}"`,
+    `repo: "${projectRoot}"`,
+    'session: "old-session"',
+    'message-id: "old-message"',
+    'via: "row"',
+    'surface: "terminal"',
+    '---',
+    '',
+    text,
+    '',
+    '<!-- requirements-drafts:end -->',
+    '',
+  ].join('\n')
 }
 
 async function start($: any) {
@@ -155,6 +198,81 @@ describe('row button under a sent message', () => {
     expect(world.toasts).toEqual(Array(4).fill(`already saved as ${existing}`))
   })
 
+  test('a draft the first release saved in this project is found: no second file on the row or the command', async ($, on) => {
+    const text = 'a requirement saved by the first release'
+    const existing = `20261001_090000+0200-${await hash12(text)}`
+    const world = stubs(on, [`${existing}.md`], { [`${existing}.md`]: firstReleaseDraft(existing, '/work', text) })
+    await start($)
+    for (const surface of SURFACES) {
+      for (const columns of WIDTHS) {
+        const id = `old-${surface}-${columns}`
+        const ui = await $.ui.mount(row(surface, columns, id, text))
+        await ui.press({ key: `rd-save-${id}` })
+        expect(await ui.find({ type: 'Text', text: `✓ saved as requirement draft ${existing}` })).toBeDefined()
+        await ui.unmount()
+      }
+    }
+    await typed($, text)
+    await command($, 'requirements-drafts-save')
+    expect(world.writes.length).toBe(0)
+    expect(world.toasts).toEqual(Array(5).fill(`already saved as ${existing}`))
+  })
+
+  test('the same text saved from another project gets its own draft here, and a repeat here is already saved', async ($, on) => {
+    const text = 'one requirement sent in two repositories'
+    const elsewhere = `20261001_090000+0200-${await hash12(text)}`
+    const world = stubs(on, [`${elsewhere}.md`], { [`${elsewhere}.md`]: firstReleaseDraft(elsewhere, '/elsewhere', text) })
+    await start($)
+    for (const surface of SURFACES) {
+      for (const columns of WIDTHS) {
+        const id = `two-${surface}-${columns}`
+        const ui = await $.ui.mount(row(surface, columns, id, text))
+        await ui.press({ key: `rd-save-${id}` })
+        await ui.unmount()
+      }
+    }
+    expect(world.writes.length).toBe(1)
+    const written = world.writes[0]!
+    expect(written.text).toContain('project-root: "/work"')
+    expect(written.text).toContain(text)
+    const ours = written.path.slice(written.path.lastIndexOf('/') + 1, -'.md'.length)
+    expect(ours).not.toBe(elsewhere)
+    expect(world.toasts).toEqual([`Saved requirement draft ${ours}`, ...Array(3).fill(`already saved as ${ours}`)])
+  })
+
+  test('a failed read of a draft with this hash is a toast and no file, never a silent duplicate', async ($, on) => {
+    const text = 'a requirement whose old draft cannot be read'
+    const unreadable = `20261001_090000+0200-${await hash12(text)}.md`
+    const world = stubs(on, [unreadable])
+    world.contents.delete(unreadable)
+    await start($)
+    const ui = await $.ui.mount(row('terminal', 80, 'unreadable', text))
+    await ui.press({ key: 'rd-save-unreadable' })
+    expect(world.writes.length).toBe(0)
+    expect(world.toasts.length).toBe(1)
+    expect(world.toasts[0]!.startsWith('Not saved: ')).toBe(true)
+    expect(await ui.find({ key: 'rd-save-unreadable' })).toBeDefined()
+    await ui.unmount()
+  })
+  test('the same text saved from another project in the same second is refused, and that draft is left as it was', async ($, on) => {
+    const text = 'a requirement two projects save in one second'
+    const now = Date.UTC(2026, 9, 23, 16, 1, 9)
+    const digest = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text))), (b) => b.toString(16).padStart(2, '0')).join('')
+    // The clock stubs() fixes, with the host's own offset, as saveDraft computes it.
+    const colliding = draftId(now, -new Date(now).getTimezoneOffset(), digest)
+    const theirs = firstReleaseDraft(colliding, '/elsewhere', text)
+    const world = stubs(on, [`${colliding}.md`], { [`${colliding}.md`]: theirs })
+    await start($)
+    const ui = await $.ui.mount(row('terminal', 80, 'collide', text))
+    await ui.press({ key: 'rd-save-collide' })
+    expect(world.writes.length).toBe(0)
+    expect(world.toasts.length).toBe(1)
+    expect(world.toasts[0]!.startsWith('Not saved: ')).toBe(true)
+    expect(world.toasts[0]!).toContain(`${colliding}.md`)
+    expect(world.contents.get(`${colliding}.md`)).toBe(theirs)
+    expect(await ui.find({ key: 'rd-save-collide' })).toBeDefined()
+    await ui.unmount()
+  })
   test('switch off: no button on any surface or width, and the state is stored', async ($, on) => {
     const world = stubs(on)
     await start($)

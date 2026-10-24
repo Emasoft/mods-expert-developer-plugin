@@ -8,6 +8,8 @@ import {
   HOTKEYS,
   type Via,
   draftId,
+  draftIsFromProject,
+  draftsWithHash,
   existingDraft,
   hex,
   isoLocal,
@@ -54,7 +56,7 @@ async function markSaved($: EngineInterface, requestId: string, id: string): Pro
 
 type Saved = { id: string } | undefined
 
-/** Shared by the row, the command and the picker: refuse, dedup by hash, then write once. */
+/** Shared by the row, the command and the picker: refuse, dedup by hash within this project, then write once. */
 async function saveDraft(
   $: EngineInterface,
   text: string,
@@ -75,7 +77,15 @@ async function saveDraft(
   const dir = `${home}/${DRAFTS_SUBDIR}`
   const digest = hex(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)))
   const names = (await $.fs.exists(dir)) ? (await $.fs.list(dir)).map((entry) => entry.name) : []
-  const already = existingDraft(names, digest)
+  const projectRoot = await $.session.root()
+  // Dedup per project, not per machine (review finding M6, 2026-10-24): a draft with this hash
+  // saved from another project is that project's draft, and the list skill never shows it here.
+  // A read that fails (the file vanished, a mod refused the read) rejects, and trySave reports it.
+  const mine: string[] = []
+  for (const name of draftsWithHash(names, digest)) {
+    if (draftIsFromProject(await $.fs.read(`${dir}/${name}`), projectRoot)) mine.push(name)
+  }
+  const already = existingDraft(mine, digest)
   if (already !== undefined) {
     // A reload forgets which rows were saved; the file on disk still knows.
     $.ui.toast(`already saved as ${already}`)
@@ -85,11 +95,21 @@ async function saveDraft(
   // Minutes east of UTC; getTimezoneOffset counts the other way.
   const offset = -new Date(now).getTimezoneOffset()
   const id = draftId(now, offset, digest)
+  // The id is <stamp>-<hash12>, so the same text saved from another project in the same second gets
+  // this very name. The duplicate check above is per project, so a file of that name here was not
+  // recognised as this project's draft (another project's, this project's under another spelling of
+  // its root, or a file without a readable project-root), and $.fs.write would silently replace it
+  // (adversarial review, 2026-10-24). Refuse loudly instead: no rename, since drafts.py expects the
+  // id shape as it is. This covers only files already listed above; a file another session writes
+  // between the list and the write is not covered.
+  if (names.includes(`${id}.md`)) {
+    throw new Error(`a file named ${id}.md already exists; save again in a second to make a separate draft`)
+  }
   const repo = await $.session.repo()
   const body = renderDraft({
     id,
     created: isoLocal(now, offset),
-    projectRoot: await $.session.root(),
+    projectRoot,
     repo: repo === null ? '' : repo.root,
     session: await $.session.id(),
     messageId,

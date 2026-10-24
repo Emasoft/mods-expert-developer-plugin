@@ -596,11 +596,64 @@ export function isoLocal(ms: number, offsetMinutes: number): string {
   return `${p.isoDate}T${p.isoTime}${p.zone}`
 }
 
+/** The folder entry names that carry this hash, oldest first within one time zone. */
+export function draftsWithHash(names: readonly string[], sha256Hex: string): string[] {
+  const tail = `-${sha256Hex.slice(0, 12)}.md`
+  return names.filter((n) => n.endsWith(tail)).sort()
+}
+
 /** The id of a draft already saved for this hash, from the folder's entry names. */
 export function existingDraft(names: readonly string[], sha256Hex: string): string | undefined {
-  const tail = `-${sha256Hex.slice(0, 12)}.md`
-  const found = names.filter((n) => n.endsWith(tail)).sort()[0]
+  const found = draftsWithHash(names, sha256Hex)[0]
   return found === undefined ? undefined : found.slice(0, -'.md'.length)
+}
+
+const PROJECT_ROOT_KEY = 'project-root'
+
+/**
+ * A frontmatter value decoded the way drafts.py decode_value does: a quoted value is JSON-decoded,
+ * and a value that is not quoted, or does not decode to a string, is kept as written. The rule is
+ * the list skill's own, not a fallback: the duplicate check must file a draft under the same
+ * project the list shows it under.
+ */
+function frontmatterValue(raw: string): string {
+  if (!raw.startsWith('"')) return raw
+  let decoded: unknown
+  try {
+    decoded = JSON.parse(raw)
+  } catch {
+    return raw
+  }
+  return typeof decoded === 'string' ? decoded : raw
+}
+
+/**
+ * The project-root a draft names, read as drafts.py split_frontmatter reads it: a first line of
+ * ---, top-level key: value lines, a closing ---. undefined when the text has no frontmatter, no
+ * closing fence or no project-root line. Every draft the mod has written carries the field: the
+ * frontmatter has been the same since the mod's first commit (ac621e6).
+ */
+function draftProjectRoot(draft: string): string | undefined {
+  const lines = draft.split('\n')
+  if (lines[0]?.trim() !== '---') return undefined
+  let root: string | undefined
+  for (const line of lines.slice(1)) {
+    if (line.trim() === '---') return root
+    const colon = line.indexOf(':')
+    if (colon < 0 || line.startsWith(' ')) continue
+    if (line.slice(0, colon).trim() === PROJECT_ROOT_KEY) root = frontmatterValue(line.slice(colon + 1).trim())
+  }
+  return undefined
+}
+
+/**
+ * True when a saved draft belongs to this project: its project-root is this one, exactly
+ * (review finding M6, 2026-10-24). The list skill shows a draft only under its project-root, so a
+ * draft saved from another project is not "already saved" here: answering so would leave this
+ * project's list without it. An empty root names no project, and the list never matches one.
+ */
+export function draftIsFromProject(draft: string, projectRoot: string): boolean {
+  return projectRoot !== '' && draftProjectRoot(draft) === projectRoot
 }
 
 export type DraftFacts = {

@@ -6,6 +6,8 @@ import {
   MAX_RECENT,
   MAX_TEXT_BYTES,
   draftId,
+  draftIsFromProject,
+  draftsWithHash,
   existingDraft,
   isoLocal,
   looksSecret,
@@ -388,6 +390,39 @@ describe('names and dates', () => {
   })
 })
 
+describe('duplicate check per project', () => {
+  const hash = 'abcdef0123456789'.padEnd(64, '0')
+  const draft = (root: string) => renderDraft({
+    id: 'X', created: '2026-10-23T18:01:09+0200', projectRoot: root, repo: '', session: 's',
+    messageId: 'm', via: 'row', surface: 'terminal', text: 'project-root: "/work"\nthe body may say anything',
+  })
+  test('every name with the hash, oldest first, and nothing else', () => {
+    const names = ['20261024_090000+0200-abcdef012345.md', 'other.md', '20261023_180109+0200-abcdef012345.md', '20261023_180110+0200-ffffffffffff.md']
+    expect(draftsWithHash(names, hash)).toEqual(['20261023_180109+0200-abcdef012345.md', '20261024_090000+0200-abcdef012345.md'])
+    expect(draftsWithHash(['other.md'], hash)).toEqual([])
+  })
+  test('a draft belongs to the project its frontmatter names, exactly', () => {
+    expect(draftIsFromProject(draft('/work'), '/work')).toBe(true)
+    expect(draftIsFromProject(draft('/elsewhere'), '/work')).toBe(false)
+    expect(draftIsFromProject(draft('/work/sub'), '/work')).toBe(false)
+    expect(draftIsFromProject(draft('/p "q"'), '/p "q"')).toBe(true)
+  })
+  test('the body never counts: only the frontmatter names the project', () => {
+    expect(draftIsFromProject(draft('/elsewhere'), '/work')).toBe(false)
+    expect(draftIsFromProject('project-root: "/work"\n', '/work')).toBe(false)
+    expect(draftIsFromProject('---\nproject-root: "/work"\n', '/work')).toBe(false)
+  })
+  test('no project-root, or an empty one, matches no project', () => {
+    expect(draftIsFromProject('---\nid: "X"\n---\ntext\n', '/work')).toBe(false)
+    expect(draftIsFromProject(draft(''), '')).toBe(false)
+  })
+  test('a value is read as drafts.py reads it: JSON when quoted, as written otherwise', () => {
+    expect(draftIsFromProject('---\nproject-root: /work\n---\n', '/work')).toBe(true)
+    expect(draftIsFromProject('---\nproject-root: "/wo\\u0072k"\n---\n', '/work')).toBe(true)
+    expect(draftIsFromProject('---\nproject-root: "/work\n---\n', '"/work')).toBe(true)
+    expect(draftIsFromProject('---\n  project-root: "/work"\n---\n', '/work')).toBe(false)
+  })
+})
 describe('renderDraft', () => {
   test('frontmatter fields are JSON-quoted and the file ends with the end line', () => {
     const body = renderDraft({
