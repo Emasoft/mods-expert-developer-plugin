@@ -4,7 +4,7 @@ title: Ship the requirements-drafts mod with list and search skills
 column: human_review
 status: tasked
 created: 2026-10-23T18:01:09+0200
-updated: 2026-10-24T05:15:48+0200
+updated: 2026-10-24T05:19:50+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -20,13 +20,13 @@ implementation-commits: [b17e4b5, be732a4, 1bfccce, 94d1778, 58fc002, ac621e6, 9
 
 # Ship the requirements-drafts mod with list and search skills
 
-## ⏵ STATE — READ THIS FIRST ON RESUME (authoritative; supersedes the body) — 2026-10-23
+## ⏵ STATE — READ THIS FIRST ON RESUME (authoritative; supersedes the body) — 2026-10-24
 
 - Approved by the user on 2026-10-23: "Approve the outline, but put the mod in this repo as a tutorial example and create the TRDD card here." Then, mid-turn: "the requirements-drafts mod must be part of this plugin."
 - Reading of the two: the mod ships LIVE as part of mods-expert-developer-plugin (its hooks module in the plugin's own `hooks/`, its two skills in `skills/`), and the interface tutorial points to it as a worked example. It is NOT an unloaded copy under `examples/`.
-- NEXT ACTION: owner-run only. (1) The Desktop click test: add the repo root to CLAUDE_CODE_PLUGIN_DIRS, restart the Desktop app, type a message, click the dim '+ save as requirement draft' line. (2) Settled 2026-10-24: the mod stays ON by default (see Approval log). (3) Rule on the secret-check trade-offs listed under Build decisions. (4) Say whether to delete the four test drafts in ~/.claude/requirements-drafts/: 20261023_211419+0200-68790fd39323.md, 20261023_211558+0200-d215e455a838.md, 20261023_231950+0200-14c4b806242c.md and 20261023_232124+0200-b0da7aba0411.md. (5) Say how the plugin is loaded so every session gets the skills. (6) Say whether to add an allow rule for subagents reading the drafts folder. The terminal live check passed at a1d4648. Observed: row clicks reach the mod one click per placement; the classic-renderer placement is unconfirmed.
+- NEXT ACTION: owner-run only. (1) The Desktop click test: install the plugin version that ships the mod (none is published yet; a release needs the user's go-ahead to push), type a message, click the dim '+ save as requirement draft' line. (2) Settled 2026-10-24: the mod stays ON by default (see Approval log). (3) Rule on the secret-check trade-offs listed under Build decisions. (4) Say whether to delete the four test drafts in ~/.claude/requirements-drafts/: 20261023_211419+0200-68790fd39323.md, 20261023_211558+0200-d215e455a838.md, 20261023_231950+0200-14c4b806242c.md and 20261023_232124+0200-b0da7aba0411.md. (5) Settled 2026-10-24: installing and enabling the plugin is the whole setup (see Approval log). (6) Say whether to add an allow rule for subagents reading the drafts folder. The terminal live check passed at a1d4648. Observed: row clicks reach the mod one click per placement; the classic-renderer placement is unconfirmed.
 - STANDING AGREEMENT: tell the TRDD-H26OG8AP session before editing skills/mods-tutorial-quickstart/SKILL.md or references/house-conventions.md.
-- Defaults taken from the approved outline's recommendations (the user did not override them; each can still change): drafts folder `~/.claude/requirements-drafts/`; a secret-looking message is refused with a toast; the slash commands and the row button both ship (the spike showed a fullscreen-terminal click fires); the mod starts ON and `/requirements-drafts off` turns it off (the ON default confirmed by the user on 2026-10-24).
+- Defaults taken from the approved outline's recommendations (all unconfirmed by the user except the ON default, confirmed 2026-10-24; each can still change): drafts folder `~/.claude/requirements-drafts/`; a secret-looking message is refused with a toast; the slash commands and the row button both ship (the spike showed a fullscreen-terminal click fires); the mod starts ON and `/requirements-drafts off` turns it off.
 - Open with the user (owner-run): see NEXT ACTION in STATE.
 - Do not touch TRDD-H26OG8AP or its files (unrelated work in flight).
 - Built and committed 2026-10-23: mod ac621e6 plus fixes 87f9560 (per-session state keyed by $.session.id, which may matter when one process hosts several sessions — unverified; save-error toasts; a narrower linear secret check; CPV gate fixes); skills 96fac93, 4de69c6, 1f3c768; menu TOC 9c0a68e. Gates at 87f9560: claude plugin validate 0, pytest 334, check-mod on a staging copy == PASS 35/35, CPV 5.22.3 strict exit 0 (no CRITICAL/MAJOR/MINOR/NIT, 27 WARNINGs), CPV 5.23.0 strict exit 2 only on five pre-existing chapter MAJORs.
@@ -77,6 +77,7 @@ Let the user save their own messages into a requirements-drafts store that every
 - 2026-10-23 — The user approved the outline and ruled the mod ships in this plugin (quoted in STATE). The defaults listed in STATE (folder, refusing secrets, start ON for every installer, skill names, immediate: true) were chosen by main-agent@emasoft-mods-expert-developer from the outline's recommendations and are NOT user-approved; the user may change any of them.
 - 2026-10-23T23:23:01+0200 — column → human_review. terminal live check passed at a1d4648; Desktop test and three rulings are owner-run
 - 2026-10-24 user ruling on the on/off default: "Keep the requirements-drafts mod on by default for other installers." No code change: the mod already starts ON, pinned by a test.
+- 2026-10-24 user ruling on how the plugin is loaded: "you only need to install the plugin, and the option/link/button to import a message as a requirement-draft should appear on all messages as long the plugin is installed and enabled ." Read as: no extra loading step (no CLAUDE_CODE_PLUGIN_DIRS), and the button shows on every message the person typed while the plugin is enabled, which is what register.ts already does (rowIsSaveable: origin kind composer). Known gap told to the user: in the classic (non-fullscreen) terminal view the row click was not delivered on 2.1.309; the slash commands are the path there.
 
 ## Build decisions
 
