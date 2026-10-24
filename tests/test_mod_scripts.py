@@ -1,7 +1,8 @@
 """Tests for the shell tools under skills/mods-tutorial-quickstart/scripts/ (TRDD-BNBDNR2V, TRDD-71SH1V5W).
 
 Every test runs the real script with bash on tmp dirs. No PATH shim and no stub is used, and no test
-invokes the claude CLI: CI has none, so only the branches that never reach it are covered here.
+invokes the claude CLI: these tests cover the branches that never reach it, and the ones that need it
+absent run with a PATH that leaves it out. CI installs claude for tests/test_mod_tests.py.
 """
 
 from __future__ import annotations
