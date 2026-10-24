@@ -4,7 +4,7 @@ title: Ship the requirements-drafts mod with list and search skills
 column: dev
 status: tasked
 created: 2026-10-23T18:01:09+0200
-updated: 2026-10-24T06:19:46+0200
+updated: 2026-10-24T06:35:14+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -15,7 +15,7 @@ mandated-by: user
 approved: true
 approval-judge: main-agent@emasoft-mods-expert-developer
 approval-datetime: 2026-10-23T18:01:09+0200
-implementation-commits: [b17e4b5, be732a4, 1bfccce, 94d1778, 58fc002, ac621e6, 96fac93, 4de69c6, 1f3c768, 9c0a68e, 87f9560, a1d4648, ef2558c, e9d3358, a3547ea]
+implementation-commits: [b17e4b5, be732a4, 1bfccce, 94d1778, 58fc002, ac621e6, 96fac93, 4de69c6, 1f3c768, 9c0a68e, 87f9560, a1d4648, ef2558c, e9d3358, a3547ea, 313d0c8]
 ---
 
 # Ship the requirements-drafts mod with list and search skills
@@ -83,6 +83,7 @@ Let the user save their own messages into a requirements-drafts store that every
 - 2026-10-24T06:16+0200 Ownership change, user verbatim: "take over the requirements-drafts fixes here through the mods expert developer agent as your subagent, and tell the drafts session to stop all work, including the mod-finder entry, and hand you its state." The main session (the one that owns TRDD-H26OG8AP) now owns this card; the drafts session is stopped. Code review of v0.5.0..6513ae8: reports/drafts-mod-review/20261024_060743+0200-main-review.md and 20261024_061233+0200-independent-review.md (gitignored). Leaks re-checked by a bun probe of logic.ts looksSecret at 6513ae8, all SAVED: a quoted key ({"password": "Xk29fjs82kdQ"}, {"api_key":"abcd1234efgh5678"}), secret := and password => assignments, a PGP PRIVATE KEY BLOCK, Authorization: Token, curl -u user:pass, camelCase secretKey, Stripe sk_live_, glpat-, npm_, hf_, Slack webhook URLs. None is on this card's accepted-gaps list. Settled: $.fs.write creates missing folders (types index.d.ts line 3333). Fix plan, one increment each, done by mods-expert-developer-agent as a subagent and reviewed before commit: (1) secret check: quoted keys, := and => separators, PGP and PuTTY keys, Token header, curl -u and -p/--password flags, camelCase names, the missing vendor token prefixes, each pinned by a test; (2) dedup per project and hash of the stored text (independent review M6, L3); (3) run hooks/tests in CI, limited to hooks/tests (M5). Ordinary text refused with no override (M4) needs a user ruling, not a fix.
 - 2026-10-24T06:16:28+0200 — column → dev. code review found secret-check leaks; fixes taken over by the main session through a mods-expert-developer subagent
 - 2026-10-24T06:19+0200 Open items from the drafts session handoff (reports/drafts-mod-review/20261024_061643+0200-drafts-session-handoff.md), recorded here so they outlive the gitignored report: (1) the row button saves e.props.text (register.ts:254) and the command and picker save prompt.submit e.text; whether either is the full paste or the [Pasted text #N] placeholder is unverified and needs a live paste test; (2) no live check ran on e9d3358 or later; the last is a1d4648; (3) the classic (non-fullscreen) terminal does not deliver the row click on 2.1.309, and Desktop is unverified; (4) the four test drafts from the live checks were moved to samples_dev/requirements-drafts-live-check/ (gitignored); (5) whether ~/.claude/requirements-drafts existed before the first live save was not recorded; the types say $.fs.write creates missing folders.
+- 2026-10-24T06:35+0200 Increment 1 committed as 313d0c8 (secret-check leaks), done by mods-expert-developer-agent as a subagent; report reports/drafts-mod-review/20261024_063130+0200-increment1-secret-check.md. Checked by the main session: tsc 0; 40 mod tests pass on a staging copy; cspell 0; a bun probe refuses every listed leak and saves the ordinary texts; CPV 5.22.3 strict on a clean export exit 0, CRITICAL/MAJOR/MINOR/NIT 0, 27 WARNINGs, no REGEX_DOS. Reviewed by a fork before commit. Behaviour change for the user (probe): sample API payloads with a random-looking token value under a credential name ({"access_token": "abc123def456ghi7"}, {"next_page_token": "CiAKGjBpNDd2Nmp1"}, "token": "<uuid>") are now refused; they were saved before. New accepted gaps: an unquoted secret := Xk29fjs82kdQ (read as a call), a Docker auth entry in single quotes or YAML, and the pre-existing PEM header regex [A-Z ]* (quadratic only on long all-caps lines). Left out on purpose, for the user to rule on together with a save-anyway option: Cookie sessionid=, ?key= and Azure sig= query values, ENCRYPTION_KEY / JWT_SIGNING_KEY / AUTH= names. Next: increment 2 (dedup per project and hash of the stored text).
 
 ## Build decisions
 
