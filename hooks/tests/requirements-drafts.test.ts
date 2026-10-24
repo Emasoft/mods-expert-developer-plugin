@@ -26,13 +26,29 @@ type World = {
   writeError: string | undefined
   /** When set, $.session.id() rejects with this reason. */
   sessionError: string | undefined
+  /** What $.session.root() answers. */
+  root: string
+  /** The root $.session.repo() answers, or null outside a repository. */
+  repoRoot: string | null
+  /** For $.fs.stat with resolve: a path spelling and the real path it lands on. */
+  realPaths: Map<string, string>
+  /** Paths $.fs.stat rejects as missing. */
+  missing: Set<string>
+  /** Paths $.fs.stat answers without a realPath. */
+  nowhere: Set<string>
+  /** Every path $.fs.stat was asked about, in order. */
+  stats: string[]
+  /** When set, $.fs.stat rejects every path, as when a hook refuses the call. */
+  statRefused: boolean
+  /** Paths that exist but whose $.fs.stat a hook refuses. */
+  refused: Set<string>
 }
 
 // Register every stub the mod's calls need; the kit wants them before the first call on $.
 // A seeded name with no text of its own holds a draft of this test's project, /work, the root the
 // session.root stub answers, so a hash match there is this project's draft.
 function stubs(on: any, files: string[] = [], contents: Record<string, string> = {}): World {
-  const world: World = { writes: [], toasts: [], logs: [], store: new Map(), files: [...files], contents: new Map(), closed: [], session: 'sess-1', writeError: undefined, sessionError: undefined }
+  const world: World = { writes: [], toasts: [], logs: [], store: new Map(), files: [...files], contents: new Map(), closed: [], session: 'sess-1', writeError: undefined, sessionError: undefined, root: '/work', repoRoot: '/work', realPaths: new Map(), missing: new Set(), nowhere: new Set(), stats: [], statRefused: false, refused: new Set() }
   for (const name of files) world.contents.set(name, contents[name] ?? firstReleaseDraft(name.slice(0, -'.md'.length), '/work', 'a seeded draft'))
   mock.clock(on, { now: Date.UTC(2026, 9, 23, 16, 1, 9) })
   on('store.get', ($: any, e: any) => ({ value: world.store.get(e.key) }))
@@ -41,9 +57,21 @@ function stubs(on: any, files: string[] = [], contents: Record<string, string> =
     return { value: undefined }
   })
   on('env.get', ($: any, e: any) => ({ value: e.name === 'HOME' ? HOME : undefined }))
-  on('fs.exists', () => ({ value: world.files.length > 0 }))
+  // The drafts folder exists when it holds files; any other path exists unless it is in missing.
+  on('fs.exists', ($: any, e: any) => ({ value: e.path === DIR ? world.files.length > 0 : !world.missing.has(e.path) }))
   on('fs.list', () => ({ value: world.files.map((name) => ({ name, kind: 'file', size: 1, mtimeMs: 1, isLink: false })) }))
   // A draft file the mod reads to learn its project; a name with no content is a file that cannot be read.
+  // Where a path lands: a spelling in realPaths lands on its target, any other path on itself. A path
+  // in missing does not exist (stat rejects); one in nowhere stats but resolves to no realPath.
+  on('fs.stat', ($: any, e: any) => {
+    world.stats.push(e.path)
+    if (world.statRefused) return { deny: 'a hook refused fs.stat' }
+    if (world.refused.has(e.path)) return { deny: `a hook refused fs.stat of ${e.path}` }
+    if (world.missing.has(e.path)) return { deny: `ENOENT: no such file or directory, stat '${e.path}'` }
+    const stat = { kind: 'dir', size: 0, mtimeMs: 0, isLink: world.realPaths.has(e.path) }
+    if (!e.resolve || world.nowhere.has(e.path)) return { value: stat }
+    return { value: { ...stat, realPath: world.realPaths.get(e.path) ?? e.path } }
+  })
   on('fs.read', ($: any, e: any) => {
     const text = world.contents.get(e.path.slice(e.path.lastIndexOf('/') + 1))
     return text === undefined ? { deny: `cannot read ${e.path}` } : { value: text }
@@ -57,8 +85,8 @@ function stubs(on: any, files: string[] = [], contents: Record<string, string> =
     world.contents.set(name, e.text)
     return { value: undefined }
   })
-  on('session.repo', () => ({ value: { root: '/work', remote: null, internal: false, name: null } }))
-  on('session.root', () => ({ value: '/work' }))
+  on('session.repo', () => ({ value: world.repoRoot === null ? null : { root: world.repoRoot, remote: null, internal: false, name: null } }))
+  on('session.root', () => ({ value: world.root }))
   on('session.id', () => (world.sessionError !== undefined ? { deny: world.sessionError } : { value: world.session }))
   on('ui.toast', ($: any, e: any) => {
     world.toasts.push(e.text)
@@ -272,6 +300,178 @@ describe('row button under a sent message', () => {
     expect(world.contents.get(`${colliding}.md`)).toBe(theirs)
     expect(await ui.find({ key: 'rd-save-collide' })).toBeDefined()
     await ui.unmount()
+  })
+  // Increment 2b: "already saved here" follows the list skill's own project rule (drafts.py
+  // default_project and run): the git top and its subfolders by real path, unless the top is the
+  // home folder; else the session root exactly. Each seed is a complete first-release draft of `text`.
+  async function pressWith($: any, on: any, text: string, roots: string[], setup: (world: World) => void = () => {}) {
+    const h = await hash12(text)
+    const names = roots.map((_, i) => `20261001_09000${i}+0200-${h}.md`)
+    const world = stubs(on, names, Object.fromEntries(names.map((name, i) => [name, firstReleaseDraft(name.slice(0, -'.md'.length), roots[i]!, text)])))
+    setup(world)
+    await start($)
+    const ui = await $.ui.mount(row('terminal', 80, 'scope', text))
+    await ui.press({ key: 'rd-save-scope' })
+    await ui.unmount()
+    return { world, names }
+  }
+
+  test('scope: a draft saved from a subfolder of this repository is already saved', async ($, on) => {
+    const { world, names } = await pressWith($, on, 'saved from a subfolder', ['/work/sub'])
+    expect(world.writes.length).toBe(0)
+    expect(world.toasts).toEqual([`already saved as ${names[0]!.slice(0, -'.md'.length)}`])
+  })
+
+  test('scope: a sibling folder whose name starts like the repository is another project', async ($, on) => {
+    const { world } = await pressWith($, on, 'saved from a sibling', ['/work2', '/work2/sub'])
+    expect(world.writes.length).toBe(1)
+    expect(world.toasts[0]!.startsWith('Saved requirement draft ')).toBe(true)
+  })
+
+  test('scope: symlinked spellings on both sides are compared by real path', async ($, on) => {
+    const { world, names } = await pressWith($, on, 'saved under a link', ['/other/link'], (w) => {
+      w.repoRoot = '/link/work'
+      w.realPaths.set('/link/work', '/real/work')
+      w.realPaths.set('/other/link', '/real/work/pkg')
+    })
+    expect(world.writes.length).toBe(0)
+    expect(world.toasts).toEqual([`already saved as ${names[0]!.slice(0, -'.md'.length)}`])
+  })
+
+  test('scope: a repository at the home folder counts only the session root, exactly', async ($, on) => {
+    // The subfolder draft sorts first, so an answer naming the second proves the subfolder did not match.
+    const { world, names } = await pressWith($, on, 'a home repository', [`${HOME}/proj/sub`, `${HOME}/proj`], (w) => {
+      w.repoRoot = HOME
+      w.root = `${HOME}/proj`
+    })
+    expect(world.writes.length).toBe(0)
+    expect(world.toasts).toEqual([`already saved as ${names[1]!.slice(0, -'.md'.length)}`])
+  })
+
+  test('scope: outside git, the exact session root is already saved and a subfolder is not', async ($, on) => {
+    const { world, names } = await pressWith($, on, 'outside git', ['/work/sub', '/work'], (w) => {
+      w.repoRoot = null
+    })
+    expect(world.writes.length).toBe(0)
+    expect(world.toasts).toEqual([`already saved as ${names[1]!.slice(0, -'.md'.length)}`])
+  })
+
+  test('scope: a stored root that is gone or resolves nowhere does not match, and the save goes on', async ($, on) => {
+    const { world } = await pressWith($, on, 'its project folder is gone', ['/gone', '/work/nowhere'], (w) => {
+      w.missing.add('/gone')
+      w.nowhere.add('/work/nowhere')
+    })
+    expect(world.writes.length).toBe(1)
+    expect(world.toasts.length).toBe(1)
+    expect(world.toasts[0]!.startsWith('Saved requirement draft ')).toBe(true)
+  })
+
+  test('scope: a draft whose subfolder of this repository was deleted is still already saved', async ($, on) => {
+    // drafts.py resolves a missing path as Python's non-strict realpath does: the deepest existing
+    // ancestor resolved, the rest kept as written. Here two levels are gone under a symlinked repo.
+    const { world, names } = await pressWith($, on, 'saved from a deleted subfolder', ['/link/work/gone/deeper'], (w) => {
+      w.repoRoot = '/link/work'
+      w.realPaths.set('/link/work', '/real/work')
+      w.missing.add('/link/work/gone/deeper')
+      w.missing.add('/link/work/gone')
+    })
+    expect(world.writes.length).toBe(0)
+    expect(world.toasts).toEqual([`already saved as ${names[0]!.slice(0, -'.md'.length)}`])
+    expect(world.logs).toEqual([])
+  })
+
+  test('scope: a refused stat on a stored root does not match, leaves one log line, and the save goes on', async ($, on) => {
+    const { world } = await pressWith($, on, 'its project folder is refused', ['/work/guarded'], (w) => {
+      w.refused.add('/work/guarded')
+    })
+    expect(world.writes.length).toBe(1)
+    expect(world.toasts.length).toBe(1)
+    expect(world.toasts[0]!.startsWith('Saved requirement draft ')).toBe(true)
+    expect(world.logs.length).toBe(1)
+    expect(world.logs[0]!).toContain('/work/guarded')
+    expect(world.logs[0]!).toContain('a hook refused fs.stat of /work/guarded')
+  })
+  test('scope: a stored root with no existing ancestor gives no match, silently, and the save goes on', async ($, on) => {
+    // Every level up to the root is missing, so the walk ends without an ancestor. A relative root
+    // is the real-world case (only a hand-edited file has one); a missing root folder reaches the
+    // same branch without depending on how the kit spells a relative path.
+    const { world } = await pressWith($, on, 'no ancestor exists', ['/gone/deeper'], (w) => {
+      w.missing.add('/gone/deeper')
+      w.missing.add('/gone')
+      w.missing.add('/')
+    })
+    expect(world.writes.length).toBe(1)
+    expect(world.toasts[0]!.startsWith('Saved requirement draft ')).toBe(true)
+    expect(world.logs).toEqual([])
+  })
+
+  test('scope: with a candidate present, this session\'s own path that cannot be resolved fails the save loudly', async ($, on) => {
+    const text = 'the own root cannot be resolved'
+    // A file carrying this hash, so the save must resolve this session's scope to compare it.
+    const seeded = `20261001_090000+0200-${await hash12(text)}.md`
+    const world = stubs(on, [seeded], { [seeded]: firstReleaseDraft(seeded.slice(0, -'.md'.length), '/work', text) })
+    await start($)
+    const steps: Array<(w: World) => void> = [
+      (w) => w.missing.add('/work'),
+      (w) => { w.missing.clear(); w.nowhere.add('/work') },
+      (w) => { w.nowhere.clear(); w.repoRoot = null; w.missing.add('/work') },
+    ]
+    for (const [i, step] of steps.entries()) {
+      step(world)
+      const ui = await $.ui.mount(row('terminal', 80, `own-${i}`, text))
+      await ui.press({ key: `rd-save-own-${i}` })
+      await ui.unmount()
+    }
+    expect(world.writes.length).toBe(0)
+    expect(world.toasts.length).toBe(3)
+    for (const toast of world.toasts) expect(toast.startsWith('Not saved: ')).toBe(true)
+    expect(world.toasts[1]!).toContain('/work cannot be resolved to a real path')
+    // Cases 1 and 3 are refused stats of this session's own /work, not some other failure in the save.
+    expect(world.toasts[0]!).toContain("stat '/work'")
+    expect(world.toasts[2]!).toContain("stat '/work'")
+  })
+
+  test('scope: with no file carrying the hash, a refused $.fs.stat does not stop the save', async ($, on) => {
+    // Another draft is in the folder, so the list is read, but its hash differs: nothing to compare.
+    const world = stubs(on, ['20261001_090000+0200-0123456789ab.md'])
+    world.statRefused = true
+    await start($)
+    const ui = await $.ui.mount(row('terminal', 80, 'no-stat', 'no candidate, no stat'))
+    await ui.press({ key: 'rd-save-no-stat' })
+    await ui.unmount()
+    expect(world.writes.length).toBe(1)
+    expect(world.toasts.length).toBe(1)
+    expect(world.toasts[0]!.startsWith('Saved requirement draft ')).toBe(true)
+    expect(world.stats).toEqual([])
+  })
+
+  test('an incomplete draft of this project is not already saved: a fresh draft is written beside it', async ($, on) => {
+    const text = 'a draft cut off before its end line'
+    const cut = `20261001_090000+0200-${await hash12(text)}.md`
+    const partial = firstReleaseDraft(cut.slice(0, -'.md'.length), '/work', text).replace('<!-- requirements-drafts:end -->\n', '')
+    const world = stubs(on, [cut], { [cut]: partial })
+    await start($)
+    const ui = await $.ui.mount(row('terminal', 80, 'cut', text))
+    await ui.press({ key: 'rd-save-cut' })
+    await ui.unmount()
+    expect(world.writes.length).toBe(1)
+    expect(world.writes[0]!.path.endsWith(`/${cut}`)).toBe(false)
+    expect(world.contents.get(cut)).toBe(partial)
+    expect(world.toasts[0]!.startsWith('Saved requirement draft ')).toBe(true)
+  })
+
+  test('the same message with and without trailing whitespace is one draft', async ($, on) => {
+    const world = stubs(on)
+    await start($)
+    for (const [i, text] of ['one requirement\n\n  ', 'one requirement'].entries()) {
+      const ui = await $.ui.mount(row('terminal', 80, `ws-${i}`, text))
+      await ui.press({ key: `rd-save-ws-${i}` })
+      await ui.unmount()
+    }
+    expect(world.writes.length).toBe(1)
+    const id = world.writes[0]!.path.slice(world.writes[0]!.path.lastIndexOf('/') + 1, -'.md'.length)
+    expect(id.endsWith(`-${await hash12('one requirement')}`)).toBe(true)
+    expect(world.toasts).toEqual([`Saved requirement draft ${id}`, `already saved as ${id}`])
   })
   test('switch off: no button on any surface or width, and the state is stored', async ($, on) => {
     const world = stubs(on)

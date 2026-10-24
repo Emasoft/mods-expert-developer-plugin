@@ -5,12 +5,17 @@ import {
   END_LINE,
   MAX_RECENT,
   MAX_TEXT_BYTES,
+  appendRest,
   draftId,
-  draftIsFromProject,
+  draftIsComplete,
+  draftProjectRoot,
   draftsWithHash,
   existingDraft,
+  inProjectScope,
+  isUnderPath,
   isoLocal,
   looksSecret,
+  parentPath,
   parseSwitch,
   preview,
   pushRecent,
@@ -18,6 +23,7 @@ import {
   renderDraft,
   rowIsSaveable,
   shouldRecord,
+  storedText,
 } from '../requirements-drafts/logic'
 
 const typed = { raisedBy: 'engine', originKind: 'composer', hasCommand: false, isMeta: false, text: 'the list must sort by date' }
@@ -401,26 +407,83 @@ describe('duplicate check per project', () => {
     expect(draftsWithHash(names, hash)).toEqual(['20261023_180109+0200-abcdef012345.md', '20261024_090000+0200-abcdef012345.md'])
     expect(draftsWithHash(['other.md'], hash)).toEqual([])
   })
-  test('a draft belongs to the project its frontmatter names, exactly', () => {
-    expect(draftIsFromProject(draft('/work'), '/work')).toBe(true)
-    expect(draftIsFromProject(draft('/elsewhere'), '/work')).toBe(false)
-    expect(draftIsFromProject(draft('/work/sub'), '/work')).toBe(false)
-    expect(draftIsFromProject(draft('/p "q"'), '/p "q"')).toBe(true)
+  test('a draft names the project its frontmatter names, exactly as written', () => {
+    expect(draftProjectRoot(draft('/work'))).toBe('/work')
+    expect(draftProjectRoot(draft('/elsewhere'))).toBe('/elsewhere')
+    expect(draftProjectRoot(draft('/work/sub'))).toBe('/work/sub')
+    expect(draftProjectRoot(draft('/p "q"'))).toBe('/p "q"')
   })
   test('the body never counts: only the frontmatter names the project', () => {
-    expect(draftIsFromProject(draft('/elsewhere'), '/work')).toBe(false)
-    expect(draftIsFromProject('project-root: "/work"\n', '/work')).toBe(false)
-    expect(draftIsFromProject('---\nproject-root: "/work"\n', '/work')).toBe(false)
+    // The body of draft() says project-root: "/work"; the frontmatter's value wins.
+    expect(draftProjectRoot(draft('/elsewhere'))).toBe('/elsewhere')
+    expect(draftProjectRoot('project-root: "/work"\n')).toBeUndefined()
+    expect(draftProjectRoot('---\nproject-root: "/work"\n')).toBeUndefined()
   })
-  test('no project-root, or an empty one, matches no project', () => {
-    expect(draftIsFromProject('---\nid: "X"\n---\ntext\n', '/work')).toBe(false)
-    expect(draftIsFromProject(draft(''), '')).toBe(false)
+  test('no project-root gives no project, and an empty one gives the empty string', () => {
+    expect(draftProjectRoot('---\nid: "X"\n---\ntext\n')).toBeUndefined()
+    // That an empty root matches no project is inProjectScope's rule, tested in increment 2b below.
+    expect(draftProjectRoot(draft(''))).toBe('')
   })
   test('a value is read as drafts.py reads it: JSON when quoted, as written otherwise', () => {
-    expect(draftIsFromProject('---\nproject-root: /work\n---\n', '/work')).toBe(true)
-    expect(draftIsFromProject('---\nproject-root: "/wo\\u0072k"\n---\n', '/work')).toBe(true)
-    expect(draftIsFromProject('---\nproject-root: "/work\n---\n', '"/work')).toBe(true)
-    expect(draftIsFromProject('---\n  project-root: "/work"\n---\n', '/work')).toBe(false)
+    expect(draftProjectRoot('---\nproject-root: /work\n---\n')).toBe('/work')
+    expect(draftProjectRoot('---\nproject-root: "/wo\\u0072k"\n---\n')).toBe('/work')
+    expect(draftProjectRoot('---\nproject-root: "/work\n---\n')).toBe('"/work')
+    expect(draftProjectRoot('---\n  project-root: "/work"\n---\n')).toBeUndefined()
+  })
+})
+describe('increment 2b: complete drafts, project scope, stored text', () => {
+  test('a draft is complete only when its last non-blank line is the end line, as in drafts.py', () => {
+    expect(draftIsComplete(`---\nid: "X"\n---\n\nbody\n\n${END_LINE}\n`)).toBe(true)
+    expect(draftIsComplete(`---\n---\nbody\n${END_LINE}\n \n\t\n`)).toBe(true)
+    expect(draftIsComplete(`---\n---\nbody\n  ${END_LINE}  `)).toBe(true)
+    expect(draftIsComplete('---\nid: "X"\n---\n\nbody\n')).toBe(false)
+    expect(draftIsComplete(`---\n---\n${END_LINE}\nmore text\n`)).toBe(false)
+    expect(draftIsComplete('')).toBe(false)
+  })
+  test('under a path means whole path components', () => {
+    expect(isUnderPath('/x/proj', '/x/proj')).toBe(true)
+    expect(isUnderPath('/x/proj/sub', '/x/proj')).toBe(true)
+    expect(isUnderPath('/x/proj2', '/x/proj')).toBe(false)
+    expect(isUnderPath('/x', '/x/proj')).toBe(false)
+    expect(isUnderPath('/anything', '/')).toBe(true)
+    expect(isUnderPath('C:\\x\\proj\\sub', 'C:\\x\\proj')).toBe(true)
+  })
+  test('the scope matches subfolders only when it says so, and never an empty or unknown root', () => {
+    const repo = { base: '/x/proj', subfolders: true }
+    const exact = { base: '/x/proj', subfolders: false }
+    expect(inProjectScope('/x/proj/sub', repo)).toBe(true)
+    expect(inProjectScope('/x/proj2', repo)).toBe(false)
+    expect(inProjectScope('/x/proj/sub', exact)).toBe(false)
+    expect(inProjectScope('/x/proj', exact)).toBe(true)
+    expect(inProjectScope(undefined, repo)).toBe(false)
+    expect(inProjectScope('', repo)).toBe(false)
+    expect(inProjectScope('/x', { base: '', subfolders: true })).toBe(false)
+  })
+  test('a path\'s parent by spelling, down to a root that has none', () => {
+    expect(parentPath('/a/b')).toBe('/a')
+    expect(parentPath('/a')).toBe('/')
+    expect(parentPath('/a/b/')).toBe('/a')
+    expect(parentPath('/')).toBeUndefined()
+    expect(parentPath('name')).toBeUndefined()
+    expect(parentPath('C:\\a\\b')).toBe('C:\\a')
+    expect(parentPath('C:\\a')).toBe('C:\\')
+    expect(parentPath('C:\\')).toBeUndefined()
+  })
+  test('the missing rest is kept as written under where the ancestor lands', () => {
+    expect(appendRest('/real/repo', '/repo/sub/x', '/repo')).toBe('/real/repo/sub/x')
+    expect(appendRest('/real/repo/', '/repo/sub', '/repo')).toBe('/real/repo/sub')
+    expect(appendRest('/', '/gone', '/')).toBe('/gone')
+    expect(appendRest('D:\\real', 'C:\\repo\\sub', 'C:\\repo')).toBe('D:\\real\\sub')
+    expect(appendRest('C:\\', 'C:\\gone', 'C:\\')).toBe('C:\\gone')
+  })
+  test('the stored text drops trailing whitespace only, and renderDraft stores exactly it', () => {
+    expect(storedText('a b \n\t \n')).toBe('a b')
+    expect(storedText('  lead\n\nmid\n')).toBe('  lead\n\nmid')
+    expect(storedText('x\u00a0\u3000')).toBe('x')
+    const body = renderDraft({
+      id: 'X', created: 'c', projectRoot: '/p', repo: '', session: 's', messageId: 'm', via: 'row', surface: 'terminal', text: 'keep\n \n',
+    })
+    expect(body).toContain(`\n${storedText('keep\n \n')}\n\n${END_LINE}\n`)
   })
 })
 describe('renderDraft', () => {

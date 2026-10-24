@@ -1,18 +1,23 @@
 // requirements-drafts (TRDD-O5LUMKPW): save the messages the person sends as Markdown drafts
 // in ~/.claude/requirements-drafts/, one file per draft, for every agent and session to read.
 // Thin wiring only: every decision is a function in ./logic.ts.
-import type { EngineInterface, On } from 'claude-code'
+import type { EngineInterface, On, SessionRepo } from 'claude-code'
 
 import {
   DRAFTS_SUBDIR,
   HOTKEYS,
+  type ProjectScope,
   type Via,
+  appendRest,
   draftId,
-  draftIsFromProject,
+  draftIsComplete,
+  draftProjectRoot,
   draftsWithHash,
   existingDraft,
   hex,
+  inProjectScope,
   isoLocal,
+  parentPath,
   parseSwitch,
   preview,
   pushRecent,
@@ -20,6 +25,7 @@ import {
   renderDraft,
   rowIsSaveable,
   shouldRecord,
+  storedText,
 } from './logic'
 
 const PANE = 'requirements-drafts-pick'
@@ -54,6 +60,90 @@ async function markSaved($: EngineInterface, requestId: string, id: string): Pro
   savedRowsBySession.set(session, rows)
 }
 
+/** Where `path` lands, every link followed. Rejects when it cannot be resolved: the save fails loudly. */
+async function realPathOf($: EngineInterface, path: string): Promise<string> {
+  const real = (await $.fs.stat(path, { resolve: true })).realPath
+  if (real === undefined) throw new Error(`${path} cannot be resolved to a real path`)
+  return real
+}
+
+/**
+ * The project the list skill would show here, by drafts.py default_project() and run(): the git top
+ * level with its subfolders, unless its real path is the home folder's; else the session root,
+ * matched exactly. This session's paths are resolved at most once per save, and only when some file
+ * carries the message's hash (see saveDraft); then a failure fails the save.
+ *
+ * Known gap: for a linked git worktree, $.session.repo().root is the MAIN working tree's root (the
+ * SessionRepo type says so), while drafts.py's `git rev-parse --show-toplevel` answers the
+ * worktree's own folder; what root a submodule gets is undocumented in the types. In those cases the
+ * two rules can disagree, so a draft may be taken as saved here that the list in the worktree or
+ * submodule does not show.
+ */
+async function projectScopeOf(
+  $: EngineInterface,
+  home: string,
+  root: string,
+  repo: SessionRepo | null,
+): Promise<ProjectScope> {
+  if (repo !== null) {
+    const top = await realPathOf($, repo.root)
+    if (top !== await realPathOf($, home)) return { base: top, subfolders: true }
+  }
+  return { base: root === '' ? '' : await realPathOf($, root), subfolders: false }
+}
+
+/**
+ * Where `path` lands, the way Python's os.path.realpath (strict=False) answers it, which drafts.py
+ * uses (review MAJOR, 2026-10-24): a path that exists resolves in full; a path that does not exist
+ * resolves its deepest existing ancestor and keeps the rest as written, so a draft whose subfolder
+ * was deleted is still filed under its project. "Does not exist" is told apart from a refusal by
+ * $.fs.exists, which the types document as answering whether a path exists: a stat that rejects on
+ * a path that exists (a hook's refusal, an OS error) rejects here too. undefined when the path, or
+ * the ancestor it ends on, stats but leads nowhere, or when no ancestor exists at all. Unlike Python
+ * it does not fold ".." or "." in the kept rest; the mod stores absolute session roots, which carry
+ * neither. Known gaps, unverified and reachable only through a hand-edited or unusual root: a
+ * dangling symlink most likely makes stat reject and exists answer false, so its own spelling is kept
+ * under its ancestor where Python follows the link's text (if exists does not follow links, it is a
+ * logged no-match instead); a relative root is made absolute against the engine's working folder,
+ * which can differ from the folder drafts.py runs in; per the types, a network (UNC) root makes
+ * $.fs.exists reject, which is logged. A stat refused on a path that does not exist is walked past
+ * silently, as Python would; a refusal on a path that exists is logged with no match, where Python
+ * keeps its spelling, a difference that can only make an extra draft.
+ */
+async function nonStrictRealPath($: EngineInterface, path: string): Promise<string | undefined> {
+  let at = path
+  for (;;) {
+    let real: string | undefined
+    try {
+      real = (await $.fs.stat(at, { resolve: true })).realPath
+    } catch (error) {
+      if (await $.fs.exists(at)) throw error
+      const up = parentPath(at)
+      if (up === undefined) return undefined
+      at = up
+      continue
+    }
+    if (real === undefined) return undefined
+    return at === path ? real : appendRest(real, path, at)
+  }
+}
+
+/**
+ * Where a saved draft's project-root lands now, or undefined for no match. A refused or failed
+ * resolve is logged with the path and the error, and only means that draft does not match: it must
+ * not fail this save, because the folder is another draft's project, and another project's folder
+ * must not block saving in this one (coordinator ruling, 2026-10-24).
+ */
+async function storedRealPath($: EngineInterface, root: string | undefined): Promise<string | undefined> {
+  if (root === undefined || root === '') return undefined
+  try {
+    return await nonStrictRealPath($, root)
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error)
+    $.ui.log(`requirements-drafts: a saved draft's project-root ${root} could not be resolved, so it is not compared: ${reason}`)
+    return undefined
+  }
+}
 type Saved = { id: string } | undefined
 
 /** Shared by the row, the command and the picker: refuse, dedup by hash within this project, then write once. */
@@ -75,15 +165,30 @@ async function saveDraft(
     return undefined
   }
   const dir = `${home}/${DRAFTS_SUBDIR}`
-  const digest = hex(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)))
+  // The hash covers the text exactly as the file stores it (finding L3): "X" and "X" plus a newline
+  // are one draft. See storedText for why no saved draft is orphaned by this.
+  const digest = hex(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(storedText(text))))
   const names = (await $.fs.exists(dir)) ? (await $.fs.list(dir)).map((entry) => entry.name) : []
   const projectRoot = await $.session.root()
+  const repo = await $.session.repo()
   // Dedup per project, not per machine (review finding M6, 2026-10-24): a draft with this hash
-  // saved from another project is that project's draft, and the list skill never shows it here.
-  // A read that fails (the file vanished, a mod refused the read) rejects, and trySave reports it.
+  // counts as "already saved" only when the list skill would show it in this project, by its own
+  // rule (projectScopeOf). A read that fails (the file vanished, a mod refused the read) rejects,
+  // and trySave reports it.
   const mine: string[] = []
-  for (const name of draftsWithHash(names, digest)) {
-    if (draftIsFromProject(await $.fs.read(`${dir}/${name}`), projectRoot)) mine.push(name)
+  const candidates = draftsWithHash(names, digest)
+  // The project scope is resolved only when some file carries this hash (coordinator decision after
+  // the 2b review, 2026-10-24): a save with nothing to compare must not depend on $.fs.stat, so a
+  // stat that a hook refuses or a path that resolves nowhere cannot stop it. With candidates present,
+  // a failure to resolve this session's own paths still fails the save loudly.
+  if (candidates.length > 0) {
+    const scope = await projectScopeOf($, home, projectRoot, repo)
+    for (const name of candidates) {
+      const draft = await $.fs.read(`${dir}/${name}`)
+      // drafts.py never lists a file without its end line (finding L2): such a file gets a fresh draft.
+      if (!draftIsComplete(draft)) continue
+      if (inProjectScope(await storedRealPath($, draftProjectRoot(draft)), scope)) mine.push(name)
+    }
   }
   const already = existingDraft(mine, digest)
   if (already !== undefined) {
@@ -105,7 +210,6 @@ async function saveDraft(
   if (names.includes(`${id}.md`)) {
     throw new Error(`a file named ${id}.md already exists; save again in a second to make a separate draft`)
   }
-  const repo = await $.session.repo()
   const body = renderDraft({
     id,
     created: isoLocal(now, offset),

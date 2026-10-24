@@ -565,6 +565,17 @@ export function refusal(text: string): string | undefined {
   return undefined
 }
 
+/**
+ * The message as the draft file stores it: trailing whitespace removed. The duplicate check hashes
+ * this same text, so "X" and "X" plus a newline are one draft (review finding L3, 2026-10-24).
+ * Changing what the hash covers orphans no saved draft: the mod is not released, and the drafts
+ * folder on the development machine exists but was empty when this changed. trimEnd removes the same
+ * characters as the old /\s+$/ (ECMAScript \s and trimEnd use one set: WhiteSpace and
+ * LineTerminator) in one pass, where that regex could rescan a long run of inner spaces.
+ */
+export function storedText(text: string): string {
+  return text.trimEnd()
+}
 export function hex(bytes: ArrayBuffer): string {
   return Array.from(new Uint8Array(bytes), (b) => b.toString(16).padStart(2, '0')).join('')
 }
@@ -624,6 +635,8 @@ function frontmatterValue(raw: string): string {
   } catch {
     return raw
   }
+  // Valid JSON that starts with a quote is always a string, so `: raw` cannot be reached at run
+  // time; it stays because it narrows `unknown` to string for the type checker.
   return typeof decoded === 'string' ? decoded : raw
 }
 
@@ -633,7 +646,7 @@ function frontmatterValue(raw: string): string {
  * closing fence or no project-root line. Every draft the mod has written carries the field: the
  * frontmatter has been the same since the mod's first commit (ac621e6).
  */
-function draftProjectRoot(draft: string): string | undefined {
+export function draftProjectRoot(draft: string): string | undefined {
   const lines = draft.split('\n')
   if (lines[0]?.trim() !== '---') return undefined
   let root: string | undefined
@@ -647,13 +660,82 @@ function draftProjectRoot(draft: string): string | undefined {
 }
 
 /**
- * True when a saved draft belongs to this project: its project-root is this one, exactly
- * (review finding M6, 2026-10-24). The list skill shows a draft only under its project-root, so a
- * draft saved from another project is not "already saved" here: answering so would leave this
- * project's list without it. An empty root names no project, and the list never matches one.
+ * True when a draft file was written to its end: its last non-blank line is END_LINE, the rule
+ * drafts.py parse() uses (review finding L2, 2026-10-24). drafts.py reports an incomplete file
+ * apart and never lists it as a draft, so taking one as "already saved" would leave the message in
+ * no list. JavaScript's trimEnd and trim differ from the strip methods of Python's str: Python also strips
+ * \x1c-\x1f and \x85, JavaScript also strips U+FEFF. That matters only for a hand-edited file, since
+ * every file the mod writes ends with END_LINE and a newline.
  */
-export function draftIsFromProject(draft: string, projectRoot: string): boolean {
-  return projectRoot !== '' && draftProjectRoot(draft) === projectRoot
+export function draftIsComplete(draft: string): boolean {
+  const kept = draft.trimEnd()
+  return kept.slice(kept.lastIndexOf('\n') + 1).trim() === END_LINE
+}
+
+/**
+ * The project the list skill shows by default, as real paths (review, 2026-10-24). drafts.py
+ * default_project() takes the git top level and counts its subfolders, unless that top is the home
+ * folder (a dotfiles repo), and outside git takes the working folder, matched exactly; run() then
+ * resolves both sides with realpath and tests "inside" by path components (drafts.py:40-51,
+ * 118-139). An empty base names no project.
+ */
+export type ProjectScope = { base: string; subfolders: boolean }
+
+/**
+ * True when `path` is `base` or lies under it by whole path components: /x/proj2 is not under /x/proj.
+ * Case-sensitive, and it does not equate "/" with "\\", so on Windows it differs from drafts.py's
+ * PureWindowsPath.is_relative_to, which ignores case and mixes separators: a difference that can
+ * only make an extra draft, never lose one.
+ */
+export function isUnderPath(path: string, base: string): boolean {
+  if (path === base) return true
+  if (!path.startsWith(base)) return false
+  const last = base.charAt(base.length - 1)
+  if (last === '/' || last === '\\') return true
+  const next = path.charAt(base.length)
+  return next === '/' || next === '\\'
+}
+
+/**
+ * True when a saved draft, whose project-root resolved to `storedReal` (undefined when it could not
+ * be resolved), is one the list shows in this scope. An empty stored root never matches, as in
+ * drafts.py, and neither does an empty base.
+ */
+export function inProjectScope(storedReal: string | undefined, scope: ProjectScope): boolean {
+  if (storedReal === undefined || storedReal === '' || scope.base === '') return false
+  return scope.subfolders ? isUnderPath(storedReal, scope.base) : storedReal === scope.base
+}
+
+/** True for a drive name with no separator after it, such as "C:". */
+function isDriveName(text: string): boolean {
+  return text.length === 2 && text.charAt(1) === ':' && /^[A-Za-z]$/.test(text.charAt(0))
+}
+
+/**
+ * The folder `path` sits in, by spelling, or undefined at a root or for a bare name: "/a/b" gives
+ * "/a", "/a" gives "/", "C:\\a" gives "C:\\", and "/a/b/" gives "/a". Used to walk up to the
+ * deepest ancestor that exists, as Python's non-strict realpath does (review MAJOR, 2026-10-24).
+ */
+export function parentPath(path: string): string | undefined {
+  const cut = Math.max(path.lastIndexOf('/'), path.lastIndexOf('\\'))
+  if (cut < 0) return undefined
+  const head = path.slice(0, cut)
+  const atRoot = head === '' || isDriveName(head)
+  // A trailing separator: a root ("/", "C:\\") has no parent; any other path drops it first.
+  if (cut === path.length - 1) return atRoot ? undefined : parentPath(head)
+  return atRoot ? path.slice(0, cut + 1) : head
+}
+
+/**
+ * The rest of `path` after its ancestor `ancestor`, kept as written, placed under `real`, where the
+ * ancestor lands: ("/real/repo", "/repo/sub/x", "/repo") gives "/real/repo/sub/x", and a root
+ * ancestor ("/", "/gone", "/") gives "/gone". `ancestor` is a parentPath step of `path`.
+ */
+export function appendRest(real: string, path: string, ancestor: string): string {
+  const rest = path.slice(ancestor.length)
+  const base = real.endsWith('/') || real.endsWith('\\') ? real.slice(0, -1) : real
+  const first = rest.charAt(0)
+  return first === '/' || first === '\\' ? base + rest : base + ancestor.charAt(ancestor.length - 1) + rest
 }
 
 export type DraftFacts = {
@@ -683,7 +765,7 @@ export function renderDraft(f: DraftFacts): string {
     field('surface', f.surface),
     '---',
     '',
-    f.text.replace(/\s+$/, ''),
+    storedText(f.text),
     '',
     END_LINE,
     '',
