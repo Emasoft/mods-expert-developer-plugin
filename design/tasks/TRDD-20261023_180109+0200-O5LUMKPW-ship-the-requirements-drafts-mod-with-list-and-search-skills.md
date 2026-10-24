@@ -4,7 +4,7 @@ title: Ship the requirements-drafts mod with list and search skills
 column: dev
 status: tasked
 created: 2026-10-23T18:01:09+0200
-updated: 2026-10-24T06:35:14+0200
+updated: 2026-10-24T06:36:59+0200
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -84,6 +84,7 @@ Let the user save their own messages into a requirements-drafts store that every
 - 2026-10-24T06:16:28+0200 — column → dev. code review found secret-check leaks; fixes taken over by the main session through a mods-expert-developer subagent
 - 2026-10-24T06:19+0200 Open items from the drafts session handoff (reports/drafts-mod-review/20261024_061643+0200-drafts-session-handoff.md), recorded here so they outlive the gitignored report: (1) the row button saves e.props.text (register.ts:254) and the command and picker save prompt.submit e.text; whether either is the full paste or the [Pasted text #N] placeholder is unverified and needs a live paste test; (2) no live check ran on e9d3358 or later; the last is a1d4648; (3) the classic (non-fullscreen) terminal does not deliver the row click on 2.1.309, and Desktop is unverified; (4) the four test drafts from the live checks were moved to samples_dev/requirements-drafts-live-check/ (gitignored); (5) whether ~/.claude/requirements-drafts existed before the first live save was not recorded; the types say $.fs.write creates missing folders.
 - 2026-10-24T06:35+0200 Increment 1 committed as 313d0c8 (secret-check leaks), done by mods-expert-developer-agent as a subagent; report reports/drafts-mod-review/20261024_063130+0200-increment1-secret-check.md. Checked by the main session: tsc 0; 40 mod tests pass on a staging copy; cspell 0; a bun probe refuses every listed leak and saves the ordinary texts; CPV 5.22.3 strict on a clean export exit 0, CRITICAL/MAJOR/MINOR/NIT 0, 27 WARNINGs, no REGEX_DOS. Reviewed by a fork before commit. Behaviour change for the user (probe): sample API payloads with a random-looking token value under a credential name ({"access_token": "abc123def456ghi7"}, {"next_page_token": "CiAKGjBpNDd2Nmp1"}, "token": "<uuid>") are now refused; they were saved before. New accepted gaps: an unquoted secret := Xk29fjs82kdQ (read as a call), a Docker auth entry in single quotes or YAML, and the pre-existing PEM header regex [A-Z ]* (quadratic only on long all-caps lines). Left out on purpose, for the user to rule on together with a save-anyway option: Cookie sessionid=, ?key= and Azure sig= query values, ENCRYPTION_KEY / JWT_SIGNING_KEY / AUTH= names. Next: increment 2 (dedup per project and hash of the stored text).
+- 2026-10-24T06:36+0200 Scope note on the previous line: the main session's own probes of 313d0c8 first covered the quoted keys, :=, =>, PGP, Token header, curl -u, camelCase, sk_live_, Slack webhook, glpat-, npm_, hf_, fullwidth colon and Docker auths; a later probe covered the rest (PuTTY, SendGrid, xapp-, Discord and Telegram URLs, ASIA, rk_live_, sk_test_, --password, mysql -p, curl --user=), all REFUSED. So every listed leak is now checked by the main session, not only by the agent's 67-input probe. The 98 added test lines were not read by the main session; their coverage rests on the agent's report and its 29-mutation run.
 
 ## Build decisions
 
