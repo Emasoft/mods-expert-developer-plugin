@@ -102,7 +102,7 @@ function pane(surface: 'terminal' | 'desktop', columns: number) {
   } as any
 }
 
-describe('row button under a typed message', () => {
+describe('row button under a sent message', () => {
   test('draws, saves the message with its frontmatter, then shows the saved mark', async ($, on) => {
     const world = stubs(on)
     await start($)
@@ -268,7 +268,7 @@ describe('/requirements-drafts', () => {
 })
 
 describe('/requirements-drafts-save', () => {
-  test('saves the last typed message, never a slash command, and prints nothing', async ($, on) => {
+  test('saves the last sent message, never a slash command, and prints nothing', async ($, on) => {
     const world = stubs(on)
     await start($)
     await typed($, 'first requirement')
@@ -300,7 +300,7 @@ describe('/requirements-drafts-save', () => {
     await $.prompt.submit({ text: 'a task notification', wait: false, origin: { kind: 'task-notification' } })
     await command($, 'requirements-drafts-save')
     expect(world.writes.length).toBe(0)
-    expect(world.toasts).toEqual(['No typed message to save yet in this conversation.'])
+    expect(world.toasts).toEqual(['No sent message to save yet in this conversation.'])
   })
 
   test('nothing is recorded while the switch is off', async ($, on) => {
@@ -323,7 +323,7 @@ describe('/requirements-drafts-save', () => {
     expect(world.toasts[0]).toMatch(/secret/)
   })
 
-  test('/clear, /resume and /branch empty the list of typed messages; compaction keeps it', async ($, on) => {
+  test('/clear, /resume and /branch empty the list of sent messages; compaction keeps it', async ($, on) => {
     const world = stubs(on)
     await start($)
     for (const source of ['clear', 'resume', 'fork'] as const) {
@@ -332,7 +332,7 @@ describe('/requirements-drafts-save', () => {
       await command($, 'requirements-drafts-save')
     }
     expect(world.writes.length).toBe(0)
-    expect(world.toasts).toEqual(Array(3).fill('No typed message to save yet in this conversation.'))
+    expect(world.toasts).toEqual(Array(3).fill('No sent message to save yet in this conversation.'))
     await typed($, 'before compact')
     await $.classic.SessionStart({ source: 'compact' })
     await command($, 'requirements-drafts-save')
@@ -350,7 +350,7 @@ describe('one module serving two sessions', () => {
     // B has typed nothing: A's message must not be saved from B.
     await command($, 'requirements-drafts-save')
     expect(world.writes.length).toBe(0)
-    expect(world.toasts).toEqual(['No typed message to save yet in this conversation.'])
+    expect(world.toasts).toEqual(['No sent message to save yet in this conversation.'])
     await typed($, 'requirement typed in B')
     await command($, 'requirements-drafts-save')
     expect(world.writes.length).toBe(1)
@@ -385,7 +385,7 @@ describe('one module serving two sessions', () => {
     world.session = 'sess-B'
     await command($, 'requirements-drafts-save')
     expect(world.writes.length).toBe(3)
-    expect(world.toasts.at(-1)).toBe('No typed message to save yet in this conversation.')
+    expect(world.toasts.at(-1)).toBe('No sent message to save yet in this conversation.')
   })
 })
 
@@ -422,13 +422,13 @@ describe('a failed write', () => {
 })
 
 describe('a failed session lookup', () => {
-  test('recording a typed message logs why it failed and still passes the prompt on', async ($, on) => {
+  test('recording a sent message logs why it failed and still passes the prompt on', async ($, on) => {
     const world = stubs(on)
     await start($)
     world.sessionError = 'session gone'
     const passed = await $.prompt.submit({ text: 'a requirement while the lookup fails', wait: false, origin: { kind: 'composer' } })
     expect(passed.text).toBe('a requirement while the lookup fails')
-    const line = world.logs.find((l) => l.startsWith('requirements-drafts: could not record a typed message: '))
+    const line = world.logs.find((l) => l.startsWith('requirements-drafts: could not record a sent message: '))
     expect(line).toBeDefined()
     expect(line).toContain('session gone')
   })
@@ -438,7 +438,7 @@ describe('a failed session lookup', () => {
     await start($)
     world.sessionError = 'session gone'
     await $.classic.SessionStart({ source: 'clear' })
-    const line = world.logs.find((l) => l.startsWith('requirements-drafts: could not reset the typed messages: '))
+    const line = world.logs.find((l) => l.startsWith('requirements-drafts: could not reset the sent messages: '))
     expect(line).toBeDefined()
     expect(line).toContain('session gone')
   })
@@ -477,7 +477,7 @@ describe('/requirements-drafts-pick', () => {
     await start($)
     await command($, 'requirements-drafts-pick')
     const ui = await $.ui.mount(pane('terminal', 80))
-    expect(await ui.find({ type: 'Text', text: 'No typed message yet in this conversation.' })).toBeDefined()
+    expect(await ui.find({ type: 'Text', text: 'No sent message yet in this conversation.' })).toBeDefined()
     expect(await ui.find({ key: 'pick-0' })).toBeUndefined()
   })
 })

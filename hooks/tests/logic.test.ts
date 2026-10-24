@@ -155,6 +155,8 @@ describe('refusal', () => {
       'send Basic QWxhZGRpbjpvcGVuSesameAB with curl',
       // A UTF-8 user name: the colon comes after bytes above 0x7E, which do not end the run (2026-10-24).
       'send Basic Sm9zw6k6czNjcmV0UGFzc3cwcmQ with curl',
+      // A 3-byte UTF-8 user name (CJK): the E1..EF lead branch of the UTF-8 check must accept it, so this is refused.
+      'send Basic 5bGx55SwOnMzY3JldFBhc3N3MHJk with curl',
       // The empty-user shape of a personal access token: a leading colon and 8 or more bytes after it.
       'send Basic OmFiY2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6MDEyMw with curl',
       // A space before the separator, and Proxy-Authorization, with a token that decodes to no colon,
@@ -216,6 +218,7 @@ describe('refusal', () => {
       'Add basic read/write/execute permissions',
       // A capitalised word starting O[g-v] decodes to a leading colon; its next bytes are not all ASCII.
       'Add basic OpenTelemetryExporter support',
+      'Add basic OrchestrationLayerFactory support',
       // The new credential words in prose, with no secret value after them.
       'the passphrase field is required',
       'passphrase: required, min length',

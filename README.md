@@ -94,15 +94,21 @@ More mods written by others are listed at [timoncool/givememod](https://github.c
 
 ## Requirements drafts mod
 
-The `requirements-drafts` mod (`hooks/requirements-drafts/`) saves what you typed as a requirements draft: one Markdown file per message in `~/.claude/requirements-drafts/`. A dim line, `+ save as requirement draft`, appears under each message you typed in this session; after a save it reads `✓ saved as requirement draft <id>`. Drafts are plain text in your home folder, and every agent and session on the machine can read them. Three commands do the rest:
+The `requirements-drafts` mod (`hooks/requirements-drafts/`) saves messages you send as requirements drafts: one Markdown file per message in `~/.claude/requirements-drafts/`. Drafts are plain text in your home folder, and every agent and session on the machine can read them.
 
-- `/requirements-drafts [on|off]` sets the switch (on by default); with no argument it toggles.
-- `/requirements-drafts-save` saves your last typed message.
+Setup is installing and enabling the plugin; nothing else is needed. The mod is on by default, and `/requirements-drafts off` turns it off.
+
+A dim line, `+ save as requirement draft`, appears under every message you send: pressing Enter at the terminal, in the Desktop app, and in Remote Control. It does not appear under assistant replies, task notifications or messages from other sessions. It also does not appear under messages from conversations stored before Claude Code recorded where a message came from. Clicking the line saves the message; after a save it reads `✓ saved as requirement draft <id>`.
+
+In the classic (non-fullscreen) terminal view a click on the line is not delivered on Claude Code 2.1.309 (measured). Use fullscreen (`CLAUDE_CODE_NO_FLICKER=1`) or the commands. Three commands do the rest:
+
+- `/requirements-drafts [on|off]` sets the switch; with no argument it toggles.
+- `/requirements-drafts-save` saves your last sent message.
 - `/requirements-drafts-pick` opens a picker of your recent messages and saves the one you choose.
 
 Two skills, which you or Claude can invoke, read the drafts back: `mods-requirements-drafts-list` (newest first, for this project or `--all`) and `mods-requirements-drafts-search` (every keyword must match).
 
-On Claude Code 2.1.309 a click under a message reached the mod with `CLAUDE_CODE_NO_FLICKER=1` and not in the classic renderer (one click each). The commands work in any display. The recent list resets on `/clear`, `/resume` and fork, and on a module reload. Messages that look like they hold a secret (a key, token or password) are refused.
+The recent list resets on `/clear`, `/resume` and fork, and on a module reload. Messages that look like they hold a secret are refused, with a toast that says why. The check looks for API-key and token shapes, JWTs, credentials in URLs, Basic auth headers, and credential names followed by a value (password, passphrase, credentials, token, secret, api_key and similar). It is a heuristic: it can refuse ordinary text or miss a secret, so do not paste secrets into messages you plan to save.
 
 ## Prerequisites
 

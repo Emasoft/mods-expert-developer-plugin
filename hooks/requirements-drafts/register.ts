@@ -132,7 +132,7 @@ export async function startRequirementsDrafts($: EngineInterface): Promise<void>
   enabled = stored !== false
   try {
     await $.command.register({ name: 'requirements-drafts', description: 'Turn requirement drafts on or off', argumentHint: '[on|off]' })
-    await $.command.register({ name: 'requirements-drafts-save', description: 'Save your last typed message as a requirement draft', immediate: true })
+    await $.command.register({ name: 'requirements-drafts-save', description: 'Save your last sent message as a requirement draft', immediate: true })
     await $.command.register({ name: 'requirements-drafts-pick', description: 'Pick one of your recent messages to save as a requirement draft' })
   } catch (error) {
     $.ui.log(`requirements-drafts: command registration failed: ${String(error)}`)
@@ -157,7 +157,7 @@ export function registerRequirementsDrafts(on: On): void {
   }).catch(async ($, e, next) => {
     // A throw (from $.session.id, say) must not drop the message silently: log why, pass the prompt on.
     // || not ??: an empty message falls back to the failure kind too.
-    $.ui.log(`requirements-drafts: could not record a typed message: ${next.error.message || next.error.kind}`)
+    $.ui.log(`requirements-drafts: could not record a sent message: ${next.error.message || next.error.kind}`)
     return next(e)
   })
 
@@ -172,7 +172,7 @@ export function registerRequirementsDrafts(on: On): void {
     return next(e)
   }).catch(async ($, e, next) => {
     // Same rule for the reset: a failure is logged, and the event goes on.
-    $.ui.log(`requirements-drafts: could not reset the typed messages: ${next.error.message || next.error.kind}`)
+    $.ui.log(`requirements-drafts: could not reset the sent messages: ${next.error.message || next.error.kind}`)
     return next(e)
   })
 
@@ -192,7 +192,7 @@ export function registerRequirementsDrafts(on: On): void {
     }
     const last = (await recentOf($))[0]
     if (last === undefined) {
-      $.ui.toast('No typed message to save yet in this conversation.')
+      $.ui.toast('No sent message to save yet in this conversation.')
       return {}
     }
     // command.run names no surface, and the command's message has no id it can read: both stay empty.
@@ -217,7 +217,7 @@ export function registerRequirementsDrafts(on: On): void {
       flexDirection: 'column',
       children: [
         choices.length === 0
-          ? Text({ dimColor: true, children: ['No typed message yet in this conversation.'] })
+          ? Text({ dimColor: true, children: ['No sent message yet in this conversation.'] })
           : Text({ children: ['Press a letter to save that message as a requirement draft.'] }),
         ...choices.map((text, i) =>
           Button({
