@@ -19,7 +19,7 @@ implementation-commits: [b17e4b5, be732a4, 1bfccce, 94d1778, 58fc002, ac621e6, 9
 ---
 
 # Ship the requirements-drafts mod with list and search skills
-<!-- cspell:ignore efgh glpat -->
+<!-- cspell:ignore efgh glpat sessionid -->
 
 ## ⏵ STATE — READ THIS FIRST ON RESUME (authoritative; supersedes the body) — 2026-10-24
 
