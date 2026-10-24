@@ -15,6 +15,7 @@ import os
 import subprocess
 import sys
 from dataclasses import dataclass
+from datetime import date
 from pathlib import Path
 
 END_MARKER = "<!-- requirements-drafts:end -->"
@@ -121,7 +122,7 @@ def run(args: argparse.Namespace) -> int:
         else:
             default, subfolders = default_project()
             project = os.path.realpath(default)
-    since = args.since.replace("-", "") if args.since else None
+    since: str | None = args.since
     chosen: list[Draft] = []
     incomplete: list[Path] = []
     for path in sorted(folder.glob("*.md"), reverse=True):
@@ -168,6 +169,25 @@ def positive_int(raw: str) -> int:
     return value
 
 
+def since_date(raw: str) -> str:
+    """--since as the YYYYMMDD the file name stamp starts with; only a real YYYY-MM-DD date is accepted.
+
+    Stripping the dashes from any text used to turn 2026-1-5 into 202615, which then compared as a
+    string against the stamps and filtered wrongly without an error (review finding 7, 2026-10-24).
+    The fixed shape is checked first because date.fromisoformat also accepts 20260105 and other forms.
+    """
+    digits = raw[:4] + raw[5:7] + raw[8:]
+    shaped = len(raw) == 10 and raw[4] == "-" and raw[7] == "-" and len(digits) == 8 and all(c in "0123456789" for c in digits)
+    if shaped:
+        try:
+            date.fromisoformat(raw)
+        except ValueError:
+            shaped = False
+    if not shaped:
+        raise argparse.ArgumentTypeError(f"must be a date written YYYY-MM-DD, got {raw!r}")
+    return digits
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
@@ -178,7 +198,7 @@ def main() -> int:
         p.add_argument("--all", action="store_true", help="every project, not only the current one")
         p.add_argument("--project", help="project root to filter by (default: git root or cwd)")
         p.add_argument("--limit", type=positive_int, default=20)
-        p.add_argument("--since", help="YYYY-MM-DD")
+        p.add_argument("--since", type=since_date, help="YYYY-MM-DD")
         p.set_defaults(func=run)
     args = parser.parse_args()
     code: int = args.func(args)

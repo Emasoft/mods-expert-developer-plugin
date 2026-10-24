@@ -61,6 +61,16 @@ def test_since(tmp_path: Path) -> None:
     assert "march" in out and "january" not in out
 
 
+def test_since_rejects_anything_but_a_real_yyyy_mm_dd_date(tmp_path: Path) -> None:
+    """--since 2026-1-5, 20260105, 2026-13-01, 2026-02-30 or a word exits 2 naming YYYY-MM-DD; nothing is listed."""
+    _draft(tmp_path, "20260101_100000+0200", "january")
+    for value in ("2026-1-5", "20260105", "2026-13-01", "2026-02-30", "yesterday", "2026-01-0x", ""):
+        result = _run(tmp_path, "list", "--all", "--since", value)
+        assert result.returncode == 2, value
+        assert "YYYY-MM-DD" in result.stderr, value
+        assert "january" not in result.stdout, value
+
+
 def test_all_keywords_must_match(tmp_path: Path) -> None:
     """Search returns only drafts that contain every keyword."""
     _draft(tmp_path, "20260101_100000+0200", "login and token")
