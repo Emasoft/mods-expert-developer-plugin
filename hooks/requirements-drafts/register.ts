@@ -335,7 +335,9 @@ export function registerRequirementsDrafts(on: On): void {
 
   on('ui.render', { component: 'Pane', requestId: PANE }, async ($, e) => {
     const { Box, Button, Text } = $.ui.resolve(e)
-    const width = e.props.bodyColumns - 4
+    // The preview gets what is left of the pane body after the brackets `[ ` and ` ]` (4 columns), the
+    // "a: " prefix (3) and one spare column, so a choice never wraps onto a second line.
+    const room = e.props.bodyColumns - 8
     const choices = (await recentOf($)).slice(0, HOTKEYS.length)
     return Box({
       flexDirection: 'column',
@@ -343,12 +345,13 @@ export function registerRequirementsDrafts(on: On): void {
         choices.length === 0
           ? Text({ dimColor: true, children: ['No sent message yet in this conversation.'] })
           : Text({ children: ['Press a letter to save that message as a requirement draft.'] }),
+        // Bracketed Buttons, as every button in this mod (house convention): the terminal draws `[ label ]` and
+        // shows no hotkey, so the label names its letter itself; the hotkey prop still makes the letter work.
         ...choices.map((text, i) =>
           Button({
             key: `pick-${i}`,
-            label: preview(text, width),
+            label: `${HOTKEYS[i]}: ${preview(text, room)}`,
             hotkey: HOTKEYS[i],
-            plain: true,
             onPress: async (pe) => {
               await trySave($, text, 'picker', pe.surface, '')
               await $.ui.close({ id: PANE })
@@ -372,7 +375,6 @@ export function registerRequirementsDrafts(on: On): void {
       : Button({
           key: `rd-save-${e.requestId}`,
           label: '+ save as requirement draft',
-          plain: true,
           dimColor: true,
           onPress: async (pe) => {
             const saved = await trySave($, e.props.text, 'row', pe.surface, e.requestId)

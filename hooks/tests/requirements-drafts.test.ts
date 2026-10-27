@@ -185,7 +185,12 @@ describe('row button under a sent message', () => {
         const text = `requirement ${n}: the drafts list sorts newest first`
         const ui = await $.ui.mount(row(surface, columns, id, text))
         expect(await ui.find({ type: 'Text', text: 'engine row' })).toBeDefined()
-        expect(await ui.find({ key: `rd-save-${id}` })).toBeDefined()
+        const button = await ui.find({ key: `rd-save-${id}` })
+        // Bracketed, as every button in this mod: no plain prop, so the terminal draws
+        // `[ + save as requirement draft ]`, which fits the narrowest width tested.
+        expect(button?.props.label).toBe('+ save as requirement draft')
+        expect(button?.props.plain).toBeUndefined()
+        expect(`[ ${button?.props.label} ]`.length).toBeLessThanOrEqual(columns)
         await ui.press({ key: `rd-save-${id}` })
         const written = world.writes[n - 1]
         expect(written).toBeDefined()
@@ -775,8 +780,13 @@ describe('/requirements-drafts-pick', () => {
         const ui = await $.ui.mount(pane(surface, columns))
         const first = await ui.find({ key: 'pick-0' })
         expect(first?.props.hotkey).toBe('a')
-        expect(first?.props.label).toBe('newer requirement')
-        expect((await ui.find({ key: 'pick-1' }))?.props.hotkey).toBe('b')
+        expect(first?.props.label).toBe('a: newer requirement')
+        // Bracketed, as every button in this mod: no plain prop, so the terminal draws `[ a: newer requirement ]`.
+        expect(first?.props.plain).toBeUndefined()
+        const second = await ui.find({ key: 'pick-1' })
+        expect(second?.props.hotkey).toBe('b')
+        expect(second?.props.label).toBe('b: older requirement')
+        expect(second?.props.plain).toBeUndefined()
         expect(await ui.find({ type: 'Text', text: 'Esc closes' })).toBeDefined()
         await ui.press({ key: 'pick-1' })
         saves += 1
@@ -788,6 +798,26 @@ describe('/requirements-drafts-pick', () => {
     expect(world.writes[0]!.text).toContain('via: "picker"')
     expect(world.writes[0]!.text).toContain('\nolder requirement\n')
     expect(world.closed.length).toBe(saves)
+  })
+
+  test('a long message is cut so its bracketed choice fits the pane body on both apps and widths', async ($, on) => {
+    stubs(on)
+    await start($)
+    const long = 'the drafts list sorts newest first and keeps every older draft reachable from the picker'
+    await typed($, long)
+    await command($, 'requirements-drafts-pick')
+    for (const surface of SURFACES) {
+      for (const columns of WIDTHS) {
+        const ui = await $.ui.mount(pane(surface, columns))
+        const label = String((await ui.find({ key: 'pick-0' }))?.props.label)
+        const body = columns - 4
+        // The terminal draws `[ label ]` with no hotkey shown, so the whole bracketed label must fit the body.
+        expect(`[ ${label} ]`.length).toBeLessThanOrEqual(body)
+        if (columns === 160) expect(label).toBe(`a: ${long}`)
+        else expect(label.startsWith('a: the drafts list') && label.endsWith('…')).toBe(true)
+        await ui.unmount()
+      }
+    }
   })
 
   test('an empty list says so', async ($, on) => {
