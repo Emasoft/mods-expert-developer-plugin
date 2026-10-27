@@ -1,10 +1,10 @@
 ---
 trdd-id: J4HRAQF0
 title: Port mod-manager as a universal plugin manager
-column: todo
+column: dev
 status: tasked
 created: 2026-10-22T20:10:35+0200
-updated: 2026-10-22T21:59:21+0200
+updated: 2026-10-27T12:30:51+0100
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -26,7 +26,7 @@ approval-datetime: 2026-10-22T20:10:35+0200
 
 ## STATE
 
-CURRENT STATE 2026-10-22: planned, not started; NEXT ACTION: strict CPV gate measurement on probe.py and self-command code, then implement.
+CURRENT STATE 2026-10-27: increment 1 (core) is built in hooks/mod-manager/ with hooks/tests/mod-manager.test.ts; 13 kit tests pass in a staged tree wired as the Integration block says; not yet applied to hooks/index.ts, so the same tests fail in the real tree until it is. NEXT ACTION: the orchestrator applies the Integration block, then increment 2 (the card's Increment 2 list).
 
 ## User directive
 
@@ -87,3 +87,11 @@ CURRENT STATE 2026-10-22: planned, not started; NEXT ACTION: strict CPV gate mea
 - UNVERIFIED until /plugin-types runs: the fields $.command.list returns (plugin, source, argument hint), the $.prompt.fill argument shape, what $.settings.read returns.
 - Shared helper hooks/resolve-bin.ts, built in the first card implemented (A), resolves claude, tmux, python3 and git to absolute paths from candidate lists, cached per session; B and C use it, no second resolver.
 - Evidence: reports/measure/20261022_200806+0200-mod-port-assumptions.md, reports/measure/20261022_200938+0200-command-hub-merge.md.
+
+## Increment 1
+
+Scope (core, built): list the installed plugins from claude plugin list --json, scope-aware; mark each mod (hooks/hooks.json lists one or more modules); enable, disable and uninstall per row, each behind a confirmation question. Deferred to increment 2: available-not-installed entries, marketplace versions and update arrows, Update all, presets, per-marketplace collapsible sections, filter Input, the file-read fallback when claude is not found, the Desktop manual check.
+Requirement (orchestrator, 2026-10-27, the user's words): "detect and show the list of all installed mods, and showing the active ones on top". Ordering rule (orchestrator directive, 2026-10-27, mods first): the enabled mods, then the disabled mods, then the other plugins, enabled first and then disabled; each of the four groups sorted by name, then id, then scope. Tests: the test named lists mods first pins the full order on both surfaces at both widths; the test named an enabled mod is above a disabled mod fails when a disabled mod is listed above an enabled one, or a plugin above a mod. Mutations: dropping the enabled term and dropping the mod term each fail the kit.
+Confirmation (how it is enforced): no tool is registered, so a model cannot call a change. The command takes no arguments and only opens the pane. A change is a pane button press: confirmAndAct($, row, action, ask) hands the question and the run to confirmThenRun in logic.ts, a pure function that asks once and runs only on the action's own confirm label (isConfirmed). The pane passes the ask as engineAsk($), a wrapper over $.ui.ask; the tests pass plain answer functions. The ask is a seam, not a mock of the engine. A declined, dismissed or other answer runs nothing. The busy guard refuses a press while claude reads the list or runs an action, with a toast and before any question; the test named a press while claude reads the list is refused fails when that guard is removed. Mutation check: removing isConfirmed's use in confirmThenRun fails the decline and other-label tests (red); the rejected-ask test stays green, as it should.
+PROVEN in the kit, with plain answer functions (the test group named the confirm guard, with plain answer functions): confirmThenRun runs the action exactly once on its confirm label and reports ran; a decline, a rejected ask (dismissed) and any other label run nothing and report declined or dismissed. M3 (the guard neutralised) turns the decline and other-label tests red. STILL NEEDS THE LIVE CHECK: the engine dialog itself. The kit cannot answer AskUserQuestion (earlier attempts: a drawn dialog found no engine node, and a tool.call stub returning a result did not answer it), so the live check must press Turn off on each pane, answer the dialog with the confirm label once, then with Keep, and confirm the argv runs once and the list refreshes. Still to check live: that a dismissed engine question runs nothing (confirmAndAct logs it at debug level), and the question text and option labels as the real dialog shows them.
+Dropped as the card says: CATALOG, PRESETS, MARKETPLACE, the add-marketplace message, the star toast. Open item: hooks/resolve-bin.ts has only the PATH-free candidates for claude (no cliPath userConfig, no ~/.local/share/claude/versions, no Windows); this mod uses it as it is. Unverified live: Desktop surface behaviour (kit mount on both surfaces only; the manual Desktop check is still owed); the enable and disable argv is from claude plugin enable/disable --help, not run; the plugin list JSON was read from claude 2.1.311.

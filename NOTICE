@@ -12,6 +12,8 @@ with the one exception noted below. This includes:
 
 The probe-runner mod (hooks/probe-runner/ and scripts/probe.py) is adapted for this plugin from plugins/probe-runner of KilimcininKorOglu/claude-code-mods (https://github.com/KilimcininKorOglu/claude-code-mods, commit 887502f), copyright Kerem Gok. It is used under the MIT license of Kerem Gok, reproduced below under "The self-command dev tools".
 
+The mod-manager mod (hooks/mod-manager/) takes its installed-plugins approach from plugins/mod-manager of mishgoldenberg/claude-mods (https://github.com/mishgoldenberg/claude-mods, commit 0954c97), copyright Michael Goldenberg. It is rewritten for this plugin, and it is covered by the MIT license of Michael Goldenberg, reproduced below under "The self-command dev tools".
+
 Every skills/*/references/chapter.md file is adapted from Anthropic's Claude Code
 documentation (https://code.claude.com/docs), copyright Anthropic (section-level tables of
 contents added, section titles reworded to describe what each section covers, one subsection

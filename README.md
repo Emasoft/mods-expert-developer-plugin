@@ -125,6 +125,20 @@ The pane uses only elements both the terminal and the Desktop app draw; it was c
 
 Off unless the dev tools are on (`/mods-dev-tools on`, then a new session). The tool `probe` and the command `/probe-runner [--model <model>] <plugin,...> <step> ;; <step>` run a live check of Claude Code plugins in a fresh tmux session: a new git repository in the system temp directory, only the given plugins loaded, and the steps typed one after another. The report arrives when the probe ends. Afterwards the temp directory of the probe, its transcripts and the inline store files it wrote are removed; a removal that fails is named in the report as left behind. tmux and claude must be installed; they are looked for in the standard locations, not on PATH.
 
+## mod-manager
+
+The `mod-manager` mod (`hooks/mod-manager/`) shows the installed plugins in one pane, opened with `/mod-manager`. Mods come first, then the other plugins; within each group the enabled ones are on top, above the disabled ones.
+
+Each row turns a plugin on or off, or uninstalls it. Every change first asks you in a dialog that names the plugin, its scope and what the change does. The change runs only when you pick its confirm label, for example `Turn it off`. Picking `Keep it as it is`, or dismissing the dialog, runs nothing. A change applies in your next session.
+
+The mod is always on: it has no switch and no tool, only the pane. It was checked in the test kit on the terminal and Desktop surfaces, not yet in a live session, and the confirm dialog and the enable, disable and uninstall commands have not been run live.
+
+## Install and uninstall skills
+
+`/mods-install-mod` installs one mod plugin from a marketplace, and `/mods-uninstall-mod` uninstalls one from an approximate name. Both run the `claude` CLI and act only on the names or the row you give. When the marketplace declares a command that runs during the install, the install skill shows that command and its `sha256` and continues only after you say yes. The uninstall skill lists the matching plugins for you to pick, asks whether to keep the data of the plugin, and runs only after both answers.
+
+After a change, each skill reloads the plugins through the `run` tool. That tool exists only while the developer tools are on: turn them on with `/mods-dev-tools on`, then start a new session. Without it, the skill ends with a `FAILED: reload not run` line that names the fix.
+
 ## Prerequisites
 
 The expert agent delegates to the user-scope agents `fast-worker` and `cheap-worker`, which are NOT bundled with this plugin. Node is required because mods are written in TypeScript and their tests run on Node; the `quicksilver` skill also uses it.

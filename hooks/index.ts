@@ -8,6 +8,7 @@ import { registerDevTools, startDevTools } from './dev-tools'
 import { registerRequirementsDrafts, startRequirementsDrafts } from './requirements-drafts/register'
 import { registerSelfCommand, startSelfCommand } from './self-command/register'
 import { registerProbeRunner, startProbeRunner } from './probe-runner/register'
+import { registerModManager, startModManager } from './mod-manager/register'
 
 export const register: Register = (on) => {
   on('session.start', async ($, e, next) => {
@@ -20,6 +21,11 @@ export const register: Register = (on) => {
       await startSelfCommand($)
     } catch (error) {
       $.ui.log(`self-command: start failed: ${String(error)}`)
+    }
+    try {
+      await startModManager($)
+    } catch (error) {
+      $.ui.log(`mod-manager: start failed: ${String(error)}`)
     }
     try {
       await startProbeRunner($)
@@ -35,6 +41,7 @@ export const register: Register = (on) => {
   })
   registerRequirementsDrafts(on)
   registerSelfCommand(on)
+  registerModManager(on)
   registerProbeRunner(on)
   registerDevTools(on)
 }
