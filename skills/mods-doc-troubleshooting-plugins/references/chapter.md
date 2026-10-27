@@ -1065,7 +1065,7 @@ Claude Code copies an installed plugin into its cache and loads it from there, s
   `${CLAUDE_PLUGIN_ROOT}` shows forward slashes on Windows
 </h3>
 
-On Windows, a plugin hook receives `${CLAUDE_PLUGIN_ROOT}` as `C:/...` rather than `C:\...`, and a script that expected backslashes breaks.
+On Windows, a plugin hook receives `${CLAUDE_PLUGIN_ROOT}` as the expanded form of `%USERPROFILE%/...` rather than of `%USERPROFILE%\...`, and a script that expected backslashes breaks.
 
 Claude Code runs shell-form hooks through Git Bash on Windows and substitutes the plugin root in the forward-slash Win32 form on purpose. Bash builtins, MSYS tools, and native Windows binaries all accept that form.
 

@@ -1102,7 +1102,7 @@ To run a PowerShell script as your status line, invoke it via `powershell`. This
   {
     "statusLine": {
       "type": "command",
-      "command": "powershell -NoProfile -File ~/.claude/statusline.ps1"
+      "command": "powershell -NoProfile -File $HOME/.claude/statusline.ps1"
     }
   }
   ```

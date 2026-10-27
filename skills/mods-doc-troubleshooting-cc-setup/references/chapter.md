@@ -140,7 +140,7 @@ This example sets both proxy variables, then runs the installer through your pro
 
 If installation succeeded but you get a `command not found` or `not recognized` error when running `claude`, the install directory isn't in your PATH. Your shell searches for programs in directories listed in PATH, and the installer places `claude` at `~/.local/bin/claude` on macOS/Linux or `%USERPROFILE%\.local\bin\claude.exe` on Windows.
 
-The installer detects this case and reports it under `Setup notes:` in its output: `Native installation exists but ~/.local/bin is not in your PATH.` on macOS and Linux, or `Native installation exists but %USERPROFILE%\.local\bin is not in your PATH.` on Windows. It prints the fix with that note but doesn't change PATH itself.
+The installer detects this case and reports it under `Setup notes:` in its output: `Native installation exists but ~/.local/bin is not in your PATH.` on macOS and Linux, or `Native installation exists but %USERPROFILE%\.local\bin is not in your PATH.` on Windows. In the real output, each message names the expanded path of that folder in place of the `~/` or `%USERPROFILE%\` form shown here. It prints the fix with that note but doesn't change PATH itself.
 
 <Note>
   The [VS Code extension](https://code.claude.com/docs/en/vs-code) does not place `claude` at this location. It bundles a private copy of the CLI inside the extension directory for its own chat panel and does not add it to PATH. If you have only installed the extension, `~/.local/bin/claude` will not exist. Run the [standalone install](https://code.claude.com/docs/en/setup) to use `claude` from a terminal, then continue below.
@@ -165,7 +165,7 @@ First check that the program is there at all, then check whether its folder is i
     echo $PATH | tr ':' '\n' | grep -Fx "$HOME/.local/bin"
     ```
 
-    If this prints the full path of `~/.local/bin`, the directory is in your PATH and you can skip to [Check for conflicting installations](https://code.claude.com/docs/en/troubleshoot-install#check-for-conflicting-installations). If there's no output, add it to your shell configuration with the two commands for your shell. The `echo` command saves the setting for every new terminal, and `source` applies it to the window you're in. The `echo` command prints nothing when it succeeds.
+    If this prints the expanded form of `~/.local/bin`, the directory is in your PATH and you can skip to [Check for conflicting installations](https://code.claude.com/docs/en/troubleshoot-install#check-for-conflicting-installations). If there's no output, add it to your shell configuration with the two commands for your shell. The `echo` command saves the setting for every new terminal, and `source` applies it to the window you're in. The `echo` command prints nothing when it succeeds.
 
     For Zsh, the default on macOS:
 
@@ -226,7 +226,7 @@ First check that the program is there at all, then check whether its folder is i
     $env:PATH -split ';' | Select-String '\.local\\bin'
     ```
 
-    If this prints the full path of `%USERPROFILE%\.local\bin`, the directory is in your PATH and you can skip to [Check for conflicting installations](https://code.claude.com/docs/en/troubleshoot-install#check-for-conflicting-installations). If there's no output, add the install directory to your User PATH:
+    If this prints the expanded form of `$env:USERPROFILE\.local\bin`, the directory is in your PATH and you can skip to [Check for conflicting installations](https://code.claude.com/docs/en/troubleshoot-install#check-for-conflicting-installations). If there's no output, add the install directory to your User PATH:
 
     ```powershell
     $currentPath = [Environment]::GetEnvironmentVariable('PATH', 'User')
@@ -463,7 +463,7 @@ file, or operable program.
 
 When `irm` can parse the response as XML, it returns an XML object instead of text, and `iex` then tries to run that object's type name as a command. The install script is PowerShell code and doesn't parse as XML, so this error also means the response was something other than the script. The wording around the type name varies with the PowerShell version and system language, but `System.Xml.XmlDocument` itself stays the same, so match on the type name.
 
-**CMD**: you see this error, followed by the HTML of the returned page.
+**CMD**: you see this error, followed by the HTML of the returned page. The prompt in front of that HTML shows your user folder in its expanded form, which this text writes as `%USERPROFILE%`.
 
 ```text
 < was unexpected at this time.
@@ -951,7 +951,7 @@ This can happen on glibc-based systems that have musl cross-compilation packages
    ```
    Output mentioning `GNU libc` or `GLIBC` means glibc. Output mentioning `musl` means musl.
 
-2. **If you're on glibc but got the musl binary**, remove the installation and reinstall. You can also manually download the correct binary using the manifest at `https://downloads.claude.ai/claude-code-releases/{VERSION}/manifest.json`. File a [GitHub issue](https://github.com/anthropics/claude-code/issues) with the output of `ldd --version` and `ls /lib/libc.musl*`.
+2. **If you're on glibc but got the musl binary**, remove the installation and reinstall. You can also manually download the correct binary using the manifest at `https://downloads.claude.ai/claude-code-releases/{VERSION}/manifest.json`. File a [GitHub issue](https://github.com/anthropics/claude-code/issues) with the output of `ldd --version` and of `ls` on the `libc.musl*` files in the system `lib` folder.
 
 3. **If you're actually on musl**, such as Alpine Linux, install the required packages:
    ```bash
