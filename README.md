@@ -121,6 +121,10 @@ The `self-command` mod (`hooks/self-command/`) lets Claude run a slash command o
 
 The pane uses only elements both the terminal and the Desktop app draw; it was checked in the test kit on both surfaces, not yet in a live Desktop session.
 
+## probe-runner (dev tools)
+
+Off unless the dev tools are on (`/mods-dev-tools on`, then a new session). The tool `probe` and the command `/probe-runner [--model <model>] <plugin,...> <step> ;; <step>` run a live check of Claude Code plugins in a fresh tmux session: a new git repository in the system temp directory, only the given plugins loaded, and the steps typed one after another. The report arrives when the probe ends. Afterwards the temp directory of the probe, its transcripts and the inline store files it wrote are removed; a removal that fails is named in the report as left behind. tmux and claude must be installed; they are looked for in the standard locations, not on PATH.
+
 ## Prerequisites
 
 The expert agent delegates to the user-scope agents `fast-worker` and `cheap-worker`, which are NOT bundled with this plugin. Node is required because mods are written in TypeScript and their tests run on Node; the `quicksilver` skill also uses it.

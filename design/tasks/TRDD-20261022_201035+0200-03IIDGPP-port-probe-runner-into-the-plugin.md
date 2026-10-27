@@ -1,10 +1,10 @@
 ---
 trdd-id: 03IIDGPP
 title: Port probe-runner into the plugin
-column: todo
+column: dev
 status: tasked
 created: 2026-10-22T20:10:35+0200
-updated: 2026-10-22T21:59:21+0200
+updated: 2026-10-27T12:29:57+0100
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -26,7 +26,7 @@ approval-datetime: 2026-10-22T20:10:35+0200
 
 ## STATE
 
-CURRENT STATE 2026-10-22: planned, not started; NEXT ACTION: strict CPV gate measurement on probe.py and self-command code, then implement.
+CURRENT STATE 2026-10-27: increment 1 written in the tree, not committed (hooks/probe-runner, scripts/probe.py, tests). Checks and open items: see the Increment 1 section. NEXT ACTION: the orchestrator applies the Integration block (hooks/index.ts wiring, NOTICE, README) and updates the self-command test expectation, then commits; the CPV strict gate and the later increments follow.
 
 ## User directive
 
@@ -83,3 +83,13 @@ CURRENT STATE 2026-10-22: planned, not started; NEXT ACTION: strict CPV gate mea
 - UNVERIFIED until /plugin-types runs: the fields $.command.list returns (plugin, source, argument hint), the $.prompt.fill argument shape, what $.settings.read returns.
 - Shared helper hooks/resolve-bin.ts, built in the first card implemented (A), resolves claude, tmux, python3 and git to absolute paths from candidate lists, cached per session; B and C use it, no second resolver.
 - Evidence: reports/measure/20261022_200806+0200-mod-port-assumptions.md, reports/measure/20261022_200938+0200-command-hub-merge.md.
+
+## Increment 1
+
+- Files: hooks/probe-runner/logic.ts (pure: arguments, plugin directories, script argument vector, texts), hooks/probe-runner/register.ts (thin: startProbeRunner, registerProbeRunner), scripts/probe.py, tests/test_probe.py, hooks/tests/probe-runner.test.ts. The card's hooks/probe-runner.ts and hooks/probe.ts are superseded by the house folder layout (hooks/<mod>/logic.ts and register.ts, as requirements-drafts and self-command).
+- Deviations from the source: tool.describe hook replaced by isDeferred false at tool.register (Measured API constraints); the prompt.submit fallback for an undeliverable report is dropped (fail fast: a failed send is logged and toasted, as self-command does); the /private/tmp literal is the resolved system temp directory (the source's own fallback meaning; the absolute-path test forbids the literal); ps is replaced by os.kill(pid, 0) so no PATH lookup remains.
+- Binaries: python3, claude, tmux and git come from hooks/resolve-bin.ts (absolute candidates, cached per session) and reach probe.py as --claude, --tmux, --git and the interpreter. Each script value is one --name=value argument, so a step that starts with a dash is never read as an option.
+- Bug fix: remove() deletes an inline store file only when it was absent before the probe started AND its name starts with <plugin>_inline- for a plugin under test (the plugin name is read from its manifest). Without the snapshot, a pre-existing file or another session's file was deleted with the probe's own.
+- UNVERIFIED live: the inline store naming (<plugin>_inline-*.json, inferred from the source glob) and the manifest name as its prefix. Not confirmed against Claude Code's plugin store; no in-repo document or type settles it.
+- Gate: the tool and the command answer and register only while /mods-dev-tools is on; startProbeRunner registers the command last. hooks/index.ts must call startProbeRunner after the self-command start and before the dev-tools start (commands register last), and call registerProbeRunner after registerSelfCommand. The kit refuses engine calls from a hook that hooks/index.ts does not reach, so the tests need that wiring (verified in a scratch copy, not the repo).
+- Raw check results, the Integration block (hooks/index.ts, NOTICE, README) and the open items: reports/probe-runner/20261027_122907+0100-increment1.md. The repo kit gate stays red until the index.ts wiring is applied.

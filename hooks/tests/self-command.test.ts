@@ -286,7 +286,7 @@ describe('the dev-tools gate', () => {
       expect(w.store.get(DEV_TOOLS_KEY)).toBe(true)
       expect(w.registered).toEqual([])
       await start($, surface)
-      expect(w.registered).toEqual([{ name: 'run', isDeferred: false }, { name: 'list_commands', isDeferred: false }])
+      expect(w.registered).toEqual([{ name: 'run', isDeferred: false }, { name: 'list_commands', isDeferred: false }, { name: 'probe', isDeferred: false }])
       expect((await $.tool.call({ tool: RUN, command: 'compact' } as any)).result).toBeDefined()
       expect((await devTools($)).text).toMatch(/^The mods dev tools are off\. Every call to them is refused from now on/)
       expect(w.store.get(DEV_TOOLS_KEY)).toBe(false)

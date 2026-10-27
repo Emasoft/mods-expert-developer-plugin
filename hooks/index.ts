@@ -7,6 +7,7 @@ import type { Register } from 'claude-code'
 import { registerDevTools, startDevTools } from './dev-tools'
 import { registerRequirementsDrafts, startRequirementsDrafts } from './requirements-drafts/register'
 import { registerSelfCommand, startSelfCommand } from './self-command/register'
+import { registerProbeRunner, startProbeRunner } from './probe-runner/register'
 
 export const register: Register = (on) => {
   on('session.start', async ($, e, next) => {
@@ -21,6 +22,11 @@ export const register: Register = (on) => {
       $.ui.log(`self-command: start failed: ${String(error)}`)
     }
     try {
+      await startProbeRunner($)
+    } catch (error) {
+      $.ui.log(`probe-runner: start failed: ${String(error)}`)
+    }
+    try {
       await startDevTools($)
     } catch (error) {
       $.ui.log(`mods-dev-tools: start failed: ${String(error)}`)
@@ -29,5 +35,6 @@ export const register: Register = (on) => {
   })
   registerRequirementsDrafts(on)
   registerSelfCommand(on)
+  registerProbeRunner(on)
   registerDevTools(on)
 }
