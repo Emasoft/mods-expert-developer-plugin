@@ -13,6 +13,7 @@ import {
   OUTPUT_PREVIEW,
   type HistoryEntry,
   draftTarget,
+  listFailure,
   listText,
   recordRun,
   requestOf,
@@ -590,6 +591,45 @@ describe('the /self-command pane', () => {
       expect(await ui.find({ type: 'Text', text: '8 commands · 0 queued' })).toBeDefined()
       await ui.unmount()
     }
+  })
+
+  test('a command saved from the form shows in the list at once, without a reopen', async ($, on) => {
+    const w = world(on, { [DEV_TOOLS_KEY]: true })
+    for (const { surface, columns } of PLACES) {
+      w.session = `saved-${surface}-${columns}`
+      w.writes = []
+      w.files.clear()
+      await start($, surface)
+      await selfCommand($)
+      const ui = await mountPane($, surface, columns)
+      await ui.press({ key: 'sc-view-new' })
+      await ui.input({ key: 'sc-name', text: 'notes' })
+      await ui.input({ key: 'sc-body', text: 'Summarize my notes.' })
+      await ui.press({ key: 'sc-save' })
+      expect(w.writes.map((x) => x.path)).toEqual([`${ROOT}/.claude/commands/notes.md`])
+      await ui.press({ key: 'sc-view-commands' })
+      expect(await ui.find({ type: 'Text', text: '8 commands · 0 queued' })).toBeDefined()
+      expect(await ui.find({ key: 'sc-cmd-notes' })).toBeDefined()
+      await ui.unmount()
+    }
+  })
+
+  test('a command list that fails on open stops the command, naming the cause, and opens nothing', async ($, on) => {
+    // The message, as the engine reports the skipped hook: the kit offers no way to read that report.
+    expect(listFailure(new Error('the command list is unavailable'))).toBe('could not read the command list: the command list is unavailable')
+    const w = world(on, { [DEV_TOOLS_KEY]: true })
+    for (const { surface } of PLACES) {
+      w.session = `list-fails-${surface}`
+      w.attempted = []
+      w.listFails = true
+      await start($, surface)
+      await selfCommand($)
+      // The hook threw, so the engine skipped it and the run fell through to the test's own hook: a
+      // swallowed failure would have answered the command itself.
+      expect(w.attempted).toEqual(['self-command'])
+      w.listFails = false
+    }
+    expect(w.opened).toEqual([])
   })
 
   test('a long command name is cut to fit its bracketed button at a narrow width and whole at a wide one', async ($, on) => {

@@ -4,7 +4,7 @@ title: Port self-command with the command-hub features into the plugin
 column: dev
 status: tasked
 created: 2026-10-22T20:10:35+0200
-updated: 2026-10-27T12:10:41+0100
+updated: 2026-10-27T12:17:54+0100
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -113,6 +113,8 @@ Report: reports/self-command/20261027_115918+0100-A2.md.
 Review of A2 (adversarial fork): addQueued moved after $.clock.after so a throw leaves no phantom queue entry. Both fail-safe choices were ruled by the orchestrator on 2026-10-27 as recorded above (unset plugin refused, shared name refused).
 Follow-up (orchestrator review of 4012502): draftTarget replaces draftProblem and joins the file path from the very name it checked (commandPath is private), and refuses a HOME or session root that is unset, empty or not absolute; the existing-file check is the last await before the write (no exclusive create in $.fs, so the race is narrowed, not closed, as the code comment says); a refused command row stays dim and its press fills the prompt with no toast; command buttons cut their label with an ellipsis to the body width less 4 (fitLabel), tested with a 67-character fixture name at 40 and 160 columns; $.command.list is read once per open of the pane and reused for redraws and search keystrokes (a save re-reads it for the clash check).
 Report: reports/self-command/20261027_121142+0100-A2-followup.md.
+Review item 4 closed: no change needed: the only toast on a row press reports a failed prompt fill, not a refusal.
+Fixes 2 (orchestrator review of 194f0a9): a command saved from the form is added to the pane's per-open list at once (source user, the description the file carries); a command list that rejects on /self-command open is re-thrown as "could not read the command list: <reason>", so the engine skips the hook, reports the message and opens nothing. Report: reports/self-command/20261027_121753+0100-A2-fixes2.md.
 
 ## Owner live checks
 

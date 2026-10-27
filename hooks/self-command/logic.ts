@@ -278,12 +278,19 @@ const commandPath = (base: string, name: string): string => `${base}/.claude/com
 export const fitLabel = (label: string, room: number): string =>
   label.length <= room ? label : `${label.slice(0, Math.max(1, room - 1))}…`
 
+/** The error /self-command raises when the command list cannot be read, naming the cause. */
+export const listFailure = (error: unknown): string =>
+  `could not read the command list: ${error instanceof Error ? error.message : String(error)}`
+
+/** The description the command file carries: the one written, or the name when none is. */
+export const commandDescription = (d: CommandDraft): string => (d.description.trim() === '' ? draftName(d) : d.description.trim())
+
 /**
  * The command file. The description is JSON-quoted, which YAML reads as a double-quoted string, so
  * a colon or a quote in it cannot break the frontmatter. A body that uses $ARGUMENTS gets a hint.
  */
 export function commandFile(d: CommandDraft): string {
-  const description = d.description.trim() === '' ? draftName(d) : d.description.trim()
+  const description = commandDescription(d)
   const hint = d.body.includes('$ARGUMENTS') ? ['argument-hint: <text>'] : []
   return ['---', `description: ${JSON.stringify(description)}`, ...hint, '---', '', d.body.trim(), ''].join('\n')
 }

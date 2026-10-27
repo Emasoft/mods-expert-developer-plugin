@@ -10,7 +10,9 @@ import {
   type CommandDraft,
   EMPTY_DRAFT,
   HISTORY_KEY,
+  commandDescription,
   commandFile,
+  listFailure,
   draftTarget,
   fitLabel,
   groupBySource,
@@ -85,6 +87,11 @@ async function saveCommand($: EngineInterface): Promise<void> {
       return
     }
     await $.fs.write(target.path, commandFile(draft))
+    // Into this open's cached list at once: the pane shows the new command without a reopen, while
+    // Claude Code itself lists it only once it reads the folder again.
+    const session = await $.session.id()
+    const listed = await commandsOf($, session)
+    commandsBySession.set(session, [...listed, { name: target.name, description: commandDescription(draft), source: 'user' }])
     await update($, (s) => ({ ...s, draft: { ...EMPTY_DRAFT, scope: draft.scope } }))
     $.ui.toast(`Saved /${target.name} as ${target.path}. It shows in the / menu once Claude Code reads the folder again.`)
   } catch (error) {
@@ -103,7 +110,16 @@ export function registerPane(on: On): void {
   on('command.run', { command: 'self-command' }, async ($) => {
     if (!(await isDevToolsOn($))) return { text: DEV_TOOLS_OFF }
     // One read of the command list per open; redraws and search keystrokes reuse it.
-    commandsBySession.set(await $.session.id(), await $.command.list())
+    // Re-thrown with its cause named, never swallowed: a pane without its list would mislead. The
+    // engine then skips this hook and reports the message, so /self-command opens nothing.
+    const session = await $.session.id()
+    let commands: readonly CommandInfo[]
+    try {
+      commands = await $.command.list()
+    } catch (error) {
+      throw new Error(listFailure(error))
+    }
+    commandsBySession.set(session, commands)
     await $.ui.open({ id: PANE, title: 'Slash commands', focus: true, closeOnEscape: true })
     return {}
   })
