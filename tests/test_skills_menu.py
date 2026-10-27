@@ -512,9 +512,10 @@ _GUARD_EXEMPT_DIRS = ("tests",)
 # happens to be written.
 # The judgement of whether a segment is a NAME is the plugin's own and does
 # not depend on the shape; the shapes are what a home path LOOKS like, and
-# the corpus demonstrates all three. The Linux shape additionally keeps
-# upstream's own three `/home/user/` lines honest — `user` is on the
-# generic list, so they are allowed, exactly as the macOS ones are.
+# the corpus demonstrated all three. The Linux shape also kept the
+# corpus's Linux-root examples honest (`user` is on the generic list).
+# Since the no-absolute-paths sweep, tests/test_no_absolute_paths.py
+# forbids every home path in a tracked file, so this rule is a backstop.
 _HOME_PATH = re.compile(
     r"(?:/Users/|/home/|C:[\\/]Users[\\/])([A-Za-z0-9_.~-]+)"
 )
@@ -592,14 +593,15 @@ def test_no_tracked_file_contains_a_home_path_that_reads_as_a_person() -> None:
 def test_adapted_payloads_keep_one_home_path_convention() -> None:
     """Each payload must use ONE home-path convention, not two.
 
-    The hooks chapter's own convention is the macOS-shaped elision
-    (`/Users/.../`), used on 60+ lines; a few upstream payloads use
-    `/home/user/`. Mixing a `/home/user/` cwd with a `/Users/...` transcript
-    path in the SAME JSON object reads as a Linux home beside a macOS
+    The hooks chapter's payloads once used a macOS-shaped elided home path
+    on 60+ lines and a Linux-root `user` path in a few. Mixing the two unix
+    home shapes in the SAME JSON object reads as a Linux home beside a macOS
     transcript, which is incoherent — so each payload must pick one home
-    shape and use it for every path in that payload.
+    shape and use it for every path in that payload. Since the
+    no-absolute-paths sweep no payload carries a home path at all, and this
+    check stays as a backstop in case one comes back.
 
-    The Windows home shape (`C:/Users/...`) counts as a THIRD shape, and a
+    The Windows home shape (a drive letter, then `Users`) counts as a THIRD shape, and a
     payload that shows it is not incoherent on its own — the corpus
     documents Windows behaviour, and one payload legitimately shows a
     PowerShell command with a Windows path. What is incoherent is a payload

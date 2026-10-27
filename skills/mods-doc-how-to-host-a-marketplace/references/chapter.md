@@ -47,7 +47,7 @@ You can host the marketplace on GitHub, on another git host, as a hosted `market
 | GitHub | `/plugin marketplace add your-org/your-marketplace` | `git`, and for a private repository the access described under [Grant access to a private marketplace](https://code.claude.com/docs/en/plugins/host-marketplace#grant-access-to-a-private-marketplace) |
 | GitLab, Bitbucket, GitHub Enterprise Server, or another git host | `/plugin marketplace add https://gitlab.example.com/team/plugins.git` | `git`, and access to the host from their machine. Send the full URL, because `owner/repo` shorthand always means github.com |
 | A hosted `marketplace.json` URL | `/plugin marketplace add https://plugins.example.com/marketplace.json` | HTTPS access to the URL. Users don't need `git` for the catalog itself |
-| A directory on a shared filesystem | `/plugin marketplace add /Volumes/shared/claude-plugins` | Read access to the path |
+| A directory on a shared filesystem | `/plugin marketplace add <shared-volume>/claude-plugins` | Read access to the path |
 
 To pin a branch or tag of a GitHub or git-URL marketplace, tell users to append `#<ref>`, as in `your-org/your-marketplace#stable`. The [plugin commands reference](https://code.claude.com/docs/en/plugins/cli-reference#plugin-marketplace-add) lists every form the command accepts.
 

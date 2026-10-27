@@ -350,7 +350,7 @@ This example excludes a top-level CLAUDE.md and a rules directory from a parent 
 {
   "claudeMdExcludes": [
     "**/monorepo/CLAUDE.md",
-    "/home/user/monorepo/other-team/.claude/rules/**"
+    "<monorepo-dir>/other-team/.claude/rules/**"
   ]
 }
 ```
@@ -386,7 +386,7 @@ By default, Claude reads `AGENTS.md` only when you have no `CLAUDE.md` in your w
 
 When none count, here's what Claude reads and how you can tell:
 
-* **At session start**: every `AGENTS.md` and `.claude/AGENTS.md` in your working directory and the directories above it. In an interactive session you see a line such as `no CLAUDE.md found; AGENTS.md loaded: /home/you/repo/AGENTS.md` in the conversation
+* **At session start**: every `AGENTS.md` and `.claude/AGENTS.md` in your working directory and the directories above it. In an interactive session you see a line such as `no CLAUDE.md found; AGENTS.md loaded: ~/repo/AGENTS.md` in the conversation
 * **As Claude works in subdirectories**: a subdirectory's `AGENTS.md`, when Claude opens a file there with the Read tool and that subdirectory has none of the three `CLAUDE.md` files of its own
 * **Inside each `AGENTS.md`**: [`@path` imports](https://code.claude.com/docs/en/memory#import-additional-files) are expanded, [`claudeMdExcludes`](https://code.claude.com/docs/en/memory#exclude-specific-claude-md-files) patterns apply, and subagents that [skip project instructions](https://code.claude.com/docs/en/sub-agents#what-loads-at-startup) skip these files too
 * **Not read**: `AGENTS.local.md`, `AGENTS.override.md`, or anything under a `.agents/` directory

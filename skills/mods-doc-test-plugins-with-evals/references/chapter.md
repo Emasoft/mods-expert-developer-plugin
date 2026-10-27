@@ -115,7 +115,7 @@ This walkthrough writes one case for your own plugin, runs it, and reads the res
     first-case  1.00  0.33  +0.67  6    $0.41
 
     1 case(s) · mean Δ +0.67 · 74s · $0.41
-    Report: /Users/you/my-plugin/evals/results/2026-09-10T17-02-11-482Z/report.html
+    Report: ~/my-plugin/evals/results/2026-09-10T17-02-11-482Z/report.html
     Published: https://claude.ai/... · keep local next time with --no-publish
     ```
 

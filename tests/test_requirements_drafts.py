@@ -132,27 +132,27 @@ def _mod_draft(folder: Path, draft_id: str, project: str, message_id: str, via: 
 
 def test_mod_format_row_and_command_paths(tmp_path: Path) -> None:
     """Drafts in the mod exact format (JSON-quoted values, empty surface on the command path) decode cleanly."""
+    # Built from tmp_path so the source holds no literal absolute path (tests/test_no_absolute_paths.py).
+    project = str(tmp_path / "home" / "project")
     _mod_draft(
         tmp_path,
         "20261023_101010+0200-aaaaaaaaaaaa",
-        "/home/user/project",
+        project,
         "msg-1",
         "row",
         "terminal",
         "row path message",
     )
-    _mod_draft(
-        tmp_path, "20261023_111111+0200-bbbbbbbbbbbb", "/home/user/project", "", "command", "", "command path message"
-    )
-    out = _run(tmp_path, "list", "--project", "/home/user/project").stdout
-    assert "| 20261023_101010+0200-aaaaaaaaaaaa | 20261023_101010+0200 | /home/user/project |" in out
-    assert "| 20261023_111111+0200-bbbbbbbbbbbb | 20261023_111111+0200 | /home/user/project |" in out
+    _mod_draft(tmp_path, "20261023_111111+0200-bbbbbbbbbbbb", project, "", "command", "", "command path message")
+    out = _run(tmp_path, "list", "--project", project).stdout
+    assert f"| 20261023_101010+0200-aaaaaaaaaaaa | 20261023_101010+0200 | {project} |" in out
+    assert f"| 20261023_111111+0200-bbbbbbbbbbbb | 20261023_111111+0200 | {project} |" in out
     assert "2 of 2" in out
 
 
 def test_quoted_values_are_json_decoded(tmp_path: Path) -> None:
     """A project root holding a quote is decoded by json.loads, not stripped of its quote."""
-    project = "/home/user/" + chr(34) + "name"
+    project = str(tmp_path / "home") + "/" + chr(34) + "name"
     _mod_draft(tmp_path, "20261023_101010+0200-aaaaaaaaaaaa", project, "", "command", "", "quoted")
     out = _run(tmp_path, "list", "--project", project).stdout
     assert "quoted" in out and project in out
@@ -161,14 +161,16 @@ def test_quoted_values_are_json_decoded(tmp_path: Path) -> None:
 def test_end_line_inside_message_does_not_cut_it(tmp_path: Path) -> None:
     """A message that contains the end line keeps its text; only the last non-empty line marks completeness."""
     text = f"before\n{END}\nafter the marker"
-    _mod_draft(tmp_path, "20261023_101010+0200-aaaaaaaaaaaa", "/home/user/project", "", "command", "", text)
+    _mod_draft(tmp_path, "20261023_101010+0200-aaaaaaaaaaaa", str(tmp_path / "project"), "", "command", "", text)
     out = _run(tmp_path, "search", "after", "the", "marker", "--all").stdout
     assert "1 of 1" in out and "Incomplete" not in out
 
 
 def test_text_after_the_end_line_means_incomplete(tmp_path: Path) -> None:
     """A file whose last non-empty line is not the end line is incomplete."""
-    path = _mod_draft(tmp_path, "20261023_101010+0200-aaaaaaaaaaaa", "/home/user/project", "", "command", "", "cut off")
+    path = _mod_draft(
+        tmp_path, "20261023_101010+0200-aaaaaaaaaaaa", str(tmp_path / "project"), "", "command", "", "cut off"
+    )
     path.write_text(path.read_text(encoding="utf-8") + "partial tail\n", encoding="utf-8")
     out = _run(tmp_path, "list", "--all").stdout
     assert "0 of 0" in out and f"- {path}" in out
@@ -324,3 +326,19 @@ def test_search_skill_script_path_exists_and_is_executable() -> None:
     script = root / "skills/mods-requirements-drafts-search/../mods-requirements-drafts-list/scripts/drafts.py"
     assert script.is_file()
     assert os.access(script, os.X_OK)
+
+
+def test_every_button_in_the_mod_is_bracketed() -> None:
+    """No Button in the mod sets `plain`, so the terminal draws each one as `[ label ]` (user ruling: CLI buttons are bracketed)."""
+    mod = Path(__file__).resolve().parent.parent / "hooks/requirements-drafts"
+    sources = sorted(mod.glob("*.ts"))
+    assert sources
+    buttons = 0
+    for source in sources:
+        text = source.read_text(encoding="utf-8")
+        buttons += text.count("Button({")
+        # Any `plain:` key in the mod source fails, not only one inside a Button call: no other element the
+        # mod draws takes it, so the wider check cannot red on correct code and cannot miss a Button.
+        assert re.search(r"\bplain\s*:", text) is None, f"{source.name} sets a plain prop"
+    # The row button and the picker buttons: a guard that finds no Button checks nothing.
+    assert buttons >= 2

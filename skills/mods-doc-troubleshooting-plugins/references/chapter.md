@@ -671,7 +671,7 @@ What to do depends on whether the summary shortened the reason:
 When you install a plugin, Claude Code downloads a fresh copy of its files and moves it into that version's folder in the [plugin cache](https://code.claude.com/docs/en/plugins/loading#find-plugins-on-disk). This message means the move failed, usually because another program was using the folder while the install ran. The file-system code appears in parentheses:
 
 ```text theme={null}
-Could not move the new copy of this plugin version into /home/user/.claude/plugins/cache/acme-tools/formatter/1.2.0: the new copy or the version folder stayed busy while the install ran (ENOTEMPTY) — usually a scanner still reading the freshly downloaded files, another program using that folder, or another process re-creating it. The previously installed copy was moved back. Run the install again once other Claude Code sessions or programs using that folder have finished.
+Could not move the new copy of this plugin version into ~/.claude/plugins/cache/acme-tools/formatter/1.2.0: the new copy or the version folder stayed busy while the install ran (ENOTEMPTY) — usually a scanner still reading the freshly downloaded files, another program using that folder, or another process re-creating it. The previously installed copy was moved back. Run the install again once other Claude Code sessions or programs using that folder have finished.
 ```
 
 The message says what happened to the copy that was installed before, which tells you whether the plugin still works:
@@ -845,7 +845,7 @@ Fix the error the warning names. For a value Claude Code doesn't accept, [Fix a 
 The warning follows the success line of `claude plugin install`, `enable`, `disable`, or `claude plugin marketplace add` in your shell:
 
 ```text theme={null}
-⚠ /home/user/.claude/settings.json does not load (its "permissions" is not valid), so Claude Code ignores the whole file, including anything this command wrote there. Fix the file, then run this command again if its change is missing. If a newer Claude Code wrote the file, update Claude Code instead.
+⚠ ~/.claude/settings.json does not load (its "permissions" is not valid), so Claude Code ignores the whole file, including anything this command wrote there. Fix the file, then run this command again if its change is missing. If a newer Claude Code wrote the file, update Claude Code instead.
 ```
 
 The text in parentheses names the error:
@@ -1065,7 +1065,7 @@ Claude Code copies an installed plugin into its cache and loads it from there, s
   `${CLAUDE_PLUGIN_ROOT}` shows forward slashes on Windows
 </h3>
 
-On Windows, a plugin hook receives `${CLAUDE_PLUGIN_ROOT}` as `C:/Users/you/...` rather than `C:\Users\you\...`, and a script that expected backslashes breaks.
+On Windows, a plugin hook receives `${CLAUDE_PLUGIN_ROOT}` as `C:/...` rather than `C:\...`, and a script that expected backslashes breaks.
 
 Claude Code runs shell-form hooks through Git Bash on Windows and substitutes the plugin root in the forward-slash Win32 form on purpose. Bash builtins, MSYS tools, and native Windows binaries all accept that form.
 

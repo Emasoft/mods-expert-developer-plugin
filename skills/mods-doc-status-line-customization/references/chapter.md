@@ -106,7 +106,7 @@ These examples use Bash scripts, which work on macOS and Linux. On Windows, see 
   <Step title="Create a script that reads JSON and prints output">
     Claude Code sends JSON data to your script via stdin. This script uses [`jq`](https://jqlang.org/), a command-line JSON parser you may need to install, to extract the model name, directory, and context percentage, then prints a formatted line.
 
-    Save this to `~/.claude/statusline.sh` (where `~` is your home directory, such as `/Users/username` on macOS or `/home/username` on Linux):
+    Save this to `~/.claude/statusline.sh` (where `~` is your home directory, such as your user folder under `/Users` on macOS or under `/home` on Linux):
 
     ```bash
     #!/bin/bash
@@ -1092,7 +1092,7 @@ Each script checks if the cache file is missing or older than 5 seconds before r
 
 On Windows, Claude Code runs status line commands through Git Bash when Git Bash is installed, or through PowerShell when Git Bash is absent.
 
-Git Bash treats unquoted backslashes as escape characters, so a Windows-style path such as `C:\Users\username\script.mjs` reaches the script runner with its separators removed and the command fails without a visible error. Write file paths in the `command` string with forward slashes, as shown in the examples below. The `~` shorthand also works and expands to your Windows home directory.
+Git Bash treats unquoted backslashes as escape characters, so a Windows-style path such as `%USERPROFILE%\script.mjs` reaches the script runner with its separators removed and the command fails without a visible error. Write file paths in the `command` string with forward slashes, as shown in the examples below. The `~` shorthand also works and expands to your Windows home directory.
 
 To run a PowerShell script as your status line, invoke it via `powershell`. This works whether Claude Code routes the command through Git Bash or PowerShell:
 
@@ -1102,7 +1102,7 @@ To run a PowerShell script as your status line, invoke it via `powershell`. This
   {
     "statusLine": {
       "type": "command",
-      "command": "powershell -NoProfile -File C:/Users/username/.claude/statusline.ps1"
+      "command": "powershell -NoProfile -File ~/.claude/statusline.ps1"
     }
   }
   ```
@@ -1187,7 +1187,7 @@ Each entry in the `tasks` array describes one subagent row with the fields below
 
 #### Tips
 
-* **Test with mock input**: `echo '{"model":{"display_name":"Opus"},"workspace":{"current_dir":"/home/user/project"},"context_window":{"used_percentage":25},"session_id":"test-session-abc"}' | ./statusline.sh`
+* **Test with mock input**: `echo '{"model":{"display_name":"Opus"},"workspace":{"current_dir":"~/project"},"context_window":{"used_percentage":25},"session_id":"test-session-abc"}' | ./statusline.sh`
 * **Keep output short**: the status bar has limited width, so long output may get truncated or wrap awkwardly
 * **Cache slow operations**: your script runs frequently during active sessions, so commands like `git status` can cause lag. See the [caching example](https://code.claude.com/docs/en/statusline#cache-expensive-operations) for how to handle this.
 

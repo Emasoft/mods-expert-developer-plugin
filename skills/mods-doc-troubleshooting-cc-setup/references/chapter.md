@@ -30,7 +30,7 @@ Match the error message or symptom you're seeing to a fix:
 | `command not found: claude` or `'claude' is not recognized` | [Fix your PATH](https://code.claude.com/docs/en/troubleshoot-install#command-not-found-claude-after-installation) |
 | `Native installation exists but ... is not in your PATH` | [Add the install directory to your PATH](https://code.claude.com/docs/en/troubleshoot-install#verify-your-path) |
 | `INFO: Could not find files for the given pattern(s).` from `where.exe claude` | [Check whether Claude Code is installed](https://code.claude.com/docs/en/troubleshoot-install#check-for-conflicting-installations) |
-| `zsh: permission denied: /Users/you/.zshrc` or `bash: /home/you/.bashrc: Permission denied` | [Make your shell config file writable](https://code.claude.com/docs/en/troubleshoot-install#permission-denied-when-adding-to-your-path) |
+| `zsh: permission denied: ~/.zshrc` or `bash: ~/.bashrc: Permission denied` | [Make your shell config file writable](https://code.claude.com/docs/en/troubleshoot-install#permission-denied-when-adding-to-your-path) |
 | `syntax error near unexpected token '<'` | [Install script returns HTML](https://code.claude.com/docs/en/troubleshoot-install#install-script-returns-html-instead-of-a-shell-script) |
 | `< was unexpected at this time` in CMD | [Install script returns HTML](https://code.claude.com/docs/en/troubleshoot-install#install-script-returns-html-instead-of-a-shell-script) |
 | `The term 'System.Xml.XmlDocument' is not recognized` | [Install script returns HTML](https://code.claude.com/docs/en/troubleshoot-install#install-script-returns-html-instead-of-a-shell-script) |
@@ -140,7 +140,7 @@ This example sets both proxy variables, then runs the installer through your pro
 
 If installation succeeded but you get a `command not found` or `not recognized` error when running `claude`, the install directory isn't in your PATH. Your shell searches for programs in directories listed in PATH, and the installer places `claude` at `~/.local/bin/claude` on macOS/Linux or `%USERPROFILE%\.local\bin\claude.exe` on Windows.
 
-The installer detects this case and reports it under `Setup notes:` in its output: `Native installation exists but ~/.local/bin is not in your PATH.` on macOS and Linux, or `Native installation exists but C:\Users\you\.local\bin is not in your PATH.` on Windows. It prints the fix with that note but doesn't change PATH itself.
+The installer detects this case and reports it under `Setup notes:` in its output: `Native installation exists but ~/.local/bin is not in your PATH.` on macOS and Linux, or `Native installation exists but %USERPROFILE%\.local\bin is not in your PATH.` on Windows. It prints the fix with that note but doesn't change PATH itself.
 
 <Note>
   The [VS Code extension](https://code.claude.com/docs/en/vs-code) does not place `claude` at this location. It bundles a private copy of the CLI inside the extension directory for its own chat panel and does not add it to PATH. If you have only installed the extension, `~/.local/bin/claude` will not exist. Run the [standalone install](https://code.claude.com/docs/en/setup) to use `claude` from a terminal, then continue below.
@@ -165,7 +165,7 @@ First check that the program is there at all, then check whether its folder is i
     echo $PATH | tr ':' '\n' | grep -Fx "$HOME/.local/bin"
     ```
 
-    If this prints `/Users/you/.local/bin` or `/home/you/.local/bin`, the directory is in your PATH and you can skip to [Check for conflicting installations](https://code.claude.com/docs/en/troubleshoot-install#check-for-conflicting-installations). If there's no output, add it to your shell configuration with the two commands for your shell. The `echo` command saves the setting for every new terminal, and `source` applies it to the window you're in. The `echo` command prints nothing when it succeeds.
+    If this prints the full path of `~/.local/bin`, the directory is in your PATH and you can skip to [Check for conflicting installations](https://code.claude.com/docs/en/troubleshoot-install#check-for-conflicting-installations). If there's no output, add it to your shell configuration with the two commands for your shell. The `echo` command saves the setting for every new terminal, and `source` applies it to the window you're in. The `echo` command prints nothing when it succeeds.
 
     For Zsh, the default on macOS:
 
@@ -226,7 +226,7 @@ First check that the program is there at all, then check whether its folder is i
     $env:PATH -split ';' | Select-String '\.local\\bin'
     ```
 
-    If this prints `C:\Users\you\.local\bin`, the directory is in your PATH and you can skip to [Check for conflicting installations](https://code.claude.com/docs/en/troubleshoot-install#check-for-conflicting-installations). If there's no output, add the install directory to your User PATH:
+    If this prints the full path of `%USERPROFILE%\.local\bin`, the directory is in your PATH and you can skip to [Check for conflicting installations](https://code.claude.com/docs/en/troubleshoot-install#check-for-conflicting-installations). If there's no output, add the install directory to your User PATH:
 
     ```powershell
     $currentPath = [Environment]::GetEnvironmentVariable('PATH', 'User')
@@ -468,7 +468,7 @@ When `irm` can parse the response as XML, it returns an XML object instead of te
 ```text
 < was unexpected at this time.
 
-C:\Users\you><!DOCTYPE html>...
+%USERPROFILE%><!DOCTYPE html>...
 ```
 
 The first line appears in your system language, so look for the HTML that follows it.
@@ -522,7 +522,7 @@ Otherwise, see [Verify your PATH](https://code.claude.com/docs/en/troubleshoot-i
 
 ##### `permission denied` when adding to your PATH
 
-If the `echo` command that adds `~/.local/bin` to your PATH prints `zsh: permission denied: /Users/you/.zshrc` or `bash: /home/you/.bashrc: Permission denied`, your user can't write to that file and nothing was saved. In your terminal, check who owns the file, using your shell's file name in place of `~/.zshrc`:
+If the `echo` command that adds `~/.local/bin` to your PATH prints `zsh: permission denied: ~/.zshrc` or `bash: ~/.bashrc: Permission denied`, your user can't write to that file and nothing was saved. In your terminal, check who owns the file, using your shell's file name in place of `~/.zshrc`:
 
 Warning: the following code could be malicious. Audit it for safety before executing it!
 ```bash
@@ -1104,8 +1104,8 @@ When you run `npm install -g @anthropic-ai/claude-code` over an existing install
 ```text
 npm error code ENOTEMPTY
 npm error syscall rename
-npm error path /home/you/.nvm/versions/node/v22.13.1/lib/node_modules/@anthropic-ai/claude-code
-npm error dest /home/you/.nvm/versions/node/v22.13.1/lib/node_modules/@anthropic-ai/.claude-code-tVWAnUUt
+npm error path ~/.nvm/versions/node/v22.13.1/lib/node_modules/@anthropic-ai/claude-code
+npm error dest ~/.nvm/versions/node/v22.13.1/lib/node_modules/@anthropic-ai/.claude-code-tVWAnUUt
 npm error errno -39
 npm error ENOTEMPTY: directory not empty, rename '...'
 ```

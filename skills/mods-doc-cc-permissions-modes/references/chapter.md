@@ -713,7 +713,7 @@ Claude Code treats an `rm` or `rmdir` target as a critical path when it is any o
 
 * The filesystem root
 * Top-level directories, meaning any direct child of the root, such as `/usr`, `/etc`, or `/data`
-* Your home directory. On Windows, its 8.3 short name counts too, such as `C:\Users\LONGNA~1`
+* Your home directory. On Windows, its 8.3 short name, the `LONGNA~1` form, counts too
 * Windows drive roots and their top-level directories, such as `C:\` and `C:\Windows`. Spellings such as `\\?\C:\` and `\\localhost\C$` count as `C:\`
 * Your working directory and its parents
 * Your additional working directories and their parents, but only when the removal is a glob under one of them, such as `rm -rf <dir>/*`. `rm -rf <dir>` on the directory itself doesn't trigger this check

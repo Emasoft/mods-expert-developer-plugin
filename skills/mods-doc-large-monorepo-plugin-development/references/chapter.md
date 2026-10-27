@@ -157,7 +157,7 @@ These patterns cover other common cases:
 
 * `"**/packages/*/CLAUDE.md"`: excludes every package's CLAUDE.md while keeping the root
 * `"**/packages/legacy-*/**"`: excludes every package whose name matches the glob, including rules
-* `"/home/user/monorepo/legacy/CLAUDE.md"`: excludes one specific file by absolute path
+* `"<monorepo-dir>/legacy/CLAUDE.md"`: excludes one specific file by absolute path
 
 Managed policy CLAUDE.md files cannot be excluded, so organization-wide instructions always apply. You can set `claudeMdExcludes` at any [settings scope](https://code.claude.com/docs/en/settings#where-settings-live): user, project, local, or managed. Arrays merge across scopes, so a team can set project-level defaults while individuals add local overrides.
 

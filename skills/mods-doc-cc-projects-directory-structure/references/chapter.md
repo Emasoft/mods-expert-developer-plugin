@@ -642,17 +642,17 @@ claude purge ~/work/my-repo --dry-run
 The plan lists each matching item and why it is included:
 
 ```text theme={null}
-Purge plan for /home/user/work/my-repo:
+Purge plan for ~/work/my-repo:
 
-  dir:    /home/user/.claude/projects/-home-user-work-my-repo
+  dir:    ~/.claude/projects/-home-user-work-my-repo
            project transcripts (.jsonl) and memory/
-  config: projects["/home/user/work/my-repo"]
+  config: projects["~/work/my-repo"]
            project entry in ~/.claude.json (trust, history, MCP servers)
-  filter: /home/user/.claude/history.jsonl
+  filter: ~/.claude/history.jsonl
            12 prompt(s) typed in this project
 
 shell-snapshots/ are not project-scoped and will not be touched
-backups/ may still contain this project entry in old .claude.json snapshots (/home/user/.claude/backups); at most 5 are kept and they rotate out automatically
+backups/ may still contain this project entry in old .claude.json snapshots (~/.claude/backups); at most 5 are kept and they rotate out automatically
 Dry run: 3 item(s) would be deleted.
 ```
 
@@ -662,7 +662,7 @@ Delete with a single confirmation prompt:
 claude purge ~/work/my-repo
 ```
 
-The command prints the same plan, then asks `Delete 3 item(s) for /home/user/work/my-repo? This cannot be undone. [y/N]` and deletes only if you answer `y`.
+The command prints the same plan, then asks `Delete 3 item(s) for ~/work/my-repo? This cannot be undone. [y/N]` and deletes only if you answer `y`.
 
 Omit the path to pick a project from an interactive list.
 

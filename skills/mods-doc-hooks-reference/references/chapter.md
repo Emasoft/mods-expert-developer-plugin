@@ -408,7 +408,7 @@ This example logs all memory server operations and validates write operations fr
         "hooks": [
           {
             "type": "command",
-            "command": "/home/user/scripts/validate-mcp-write.py"
+            "command": "~/scripts/validate-mcp-write.py"
           }
         ]
       }
@@ -777,8 +777,8 @@ For example, a `PreToolUse` hook for a Bash command receives this on stdin:
 {
   "session_id": "abc123",
   "prompt_id": "550e8400-e29b-41d4-a716-446655440000",
-  "transcript_path": "/home/user/.claude/projects/.../transcript.jsonl",
-  "cwd": "/home/user/my-project",
+  "transcript_path": "~/.claude/projects/.../transcript.jsonl",
+  "cwd": "<project-dir>",
   "scratchpad_dir": "/tmp/claude-1000/-home-user-my-project/abc123/scratchpad",
   "permission_mode": "default",
   "hook_event_name": "PreToolUse",
@@ -1248,8 +1248,8 @@ This example shows the input for a session resumed 90 minutes after its last res
 ```json theme={null}
 {
   "session_id": "abc123",
-  "transcript_path": "/Users/.../.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
-  "cwd": "/Users/...",
+  "transcript_path": "~/.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
+  "cwd": "<project-dir>",
   "hook_event_name": "SessionStart",
   "source": "resume",
   "model": "claude-opus-5",
@@ -1386,8 +1386,8 @@ In addition to the [common input fields](https://code.claude.com/docs/en/hooks#c
 ```json theme={null}
 {
   "session_id": "abc123",
-  "transcript_path": "/Users/.../.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
-  "cwd": "/Users/...",
+  "transcript_path": "~/.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
+  "cwd": "<project-dir>",
   "hook_event_name": "Setup",
   "trigger": "init"
 }
@@ -1423,10 +1423,10 @@ In addition to the [common input fields](https://code.claude.com/docs/en/hooks#c
 ```json theme={null}
 {
   "session_id": "abc123",
-  "transcript_path": "/Users/.../.claude/projects/.../transcript.jsonl",
-  "cwd": "/Users/my-project",
+  "transcript_path": "~/.claude/projects/.../transcript.jsonl",
+  "cwd": "<project-dir>",
   "hook_event_name": "InstructionsLoaded",
-  "file_path": "/Users/my-project/CLAUDE.md",
+  "file_path": "<project-dir>/CLAUDE.md",
   "memory_type": "Project",
   "load_reason": "session_start"
 }
@@ -1463,8 +1463,8 @@ UserPromptSubmit hooks also receive `session_title` when the session has a custo
 ```json theme={null}
 {
   "session_id": "abc123",
-  "transcript_path": "/Users/.../.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
-  "cwd": "/Users/...",
+  "transcript_path": "~/.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
+  "cwd": "<project-dir>",
   "permission_mode": "default",
   "hook_event_name": "UserPromptSubmit",
   "prompt": "Write a function to calculate the factorial of a number"
@@ -1528,8 +1528,8 @@ In addition to the [common input fields](https://code.claude.com/docs/en/hooks#c
 ```json theme={null}
 {
   "session_id": "abc123",
-  "transcript_path": "/Users/.../00893aaf.jsonl",
-  "cwd": "/Users/...",
+  "transcript_path": "~/.../00893aaf.jsonl",
+  "cwd": "<project-dir>",
   "permission_mode": "default",
   "hook_event_name": "UserPromptExpansion",
   "expansion_type": "slash_command",
@@ -1596,8 +1596,8 @@ In addition to the [common input fields](https://code.claude.com/docs/en/hooks#c
 ```json theme={null}
 {
   "session_id": "abc123",
-  "transcript_path": "/Users/.../.claude/projects/.../transcript.jsonl",
-  "cwd": "/Users/my-project",
+  "transcript_path": "~/.claude/projects/.../transcript.jsonl",
+  "cwd": "<project-dir>",
   "hook_event_name": "MessageDisplay",
   "turn_id": "0c9e6a2f-7d41-4f4e-9a15-3f4f7c2b8d10",
   "message_id": "5b2a9c8e-1f63-4d8a-b7c4-9e0d2a6f1c3b",
@@ -1914,7 +1914,7 @@ Presents a plan and asks the user to approve it before Claude leaves [plan mode]
 | Field | Type | Example | Description |
 | :- | :- | :- | :- |
 | `plan` | string | `"## Refactor auth\n1. Extract..."` | Plan content in Markdown. Injected from the plan file on disk |
-| `planFilePath` | string | `"/Users/.../plans/refactor-auth.md"` | Path to the plan file. Injected |
+| `planFilePath` | string | `"~/.../plans/refactor-auth.md"` | Path to the plan file. Injected |
 | `allowedPrompts` | array | `[{"tool": "Bash", "prompt": "run tests"}]` | Deprecated. Claude Code accepts the field but ignores it. Before v2.1.205, it carried prompt-based permissions Claude requested to implement the plan |
 
 In `PostToolUse`, `tool_response` is an object with `plan` and `filePath` fields holding the approved plan, plus internal status flags. Read `tool_response.plan` for the plan content rather than re-reading the file from disk.
@@ -2056,8 +2056,8 @@ PreToolUse hooks run before every tool call, whether or not it needs permission.
 ```json theme={null}
 {
   "session_id": "abc123",
-  "transcript_path": "/Users/.../.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
-  "cwd": "/Users/...",
+  "transcript_path": "~/.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
+  "cwd": "<project-dir>",
   "permission_mode": "default",
   "hook_event_name": "PermissionRequest",
   "tool_name": "Bash",
@@ -2152,8 +2152,8 @@ Match more broadly when the tool name isn't the right filter:
 ```json theme={null}
 {
   "session_id": "abc123",
-  "transcript_path": "/Users/.../.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
-  "cwd": "/Users/...",
+  "transcript_path": "~/.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
+  "cwd": "<project-dir>",
   "permission_mode": "default",
   "hook_event_name": "PostToolUse",
   "tool_name": "Write",
@@ -2258,8 +2258,8 @@ PostToolUseFailure hooks receive the same `tool_name` and `tool_input` fields as
 ```json theme={null}
 {
   "session_id": "abc123",
-  "transcript_path": "/Users/.../.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
-  "cwd": "/Users/...",
+  "transcript_path": "~/.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
+  "cwd": "<project-dir>",
   "permission_mode": "default",
   "hook_event_name": "PostToolUseFailure",
   "tool_name": "Bash",
@@ -2314,8 +2314,8 @@ In addition to the [common input fields](https://code.claude.com/docs/en/hooks#c
 ```json theme={null}
 {
   "session_id": "abc123",
-  "transcript_path": "/Users/.../.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
-  "cwd": "/Users/...",
+  "transcript_path": "~/.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
+  "cwd": "<project-dir>",
   "permission_mode": "default",
   "hook_event_name": "PostToolBatch",
   "tool_calls": [
@@ -2373,8 +2373,8 @@ In addition to the [common input fields](https://code.claude.com/docs/en/hooks#c
 ```json theme={null}
 {
   "session_id": "abc123",
-  "transcript_path": "/Users/.../.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
-  "cwd": "/Users/...",
+  "transcript_path": "~/.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
+  "cwd": "<project-dir>",
   "permission_mode": "auto",
   "hook_event_name": "PermissionDenied",
   "tool_name": "Bash",
@@ -2489,8 +2489,8 @@ In addition to the [common input fields](https://code.claude.com/docs/en/hooks#c
 ```json theme={null}
 {
   "session_id": "abc123",
-  "transcript_path": "/Users/.../.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
-  "cwd": "/Users/...",
+  "transcript_path": "~/.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
+  "cwd": "<project-dir>",
   "hook_event_name": "Notification",
   "message": "Claude needs your permission",
   "title": "Permission needed",
@@ -2513,8 +2513,8 @@ In addition to the [common input fields](https://code.claude.com/docs/en/hooks#c
 ```json theme={null}
 {
   "session_id": "abc123",
-  "transcript_path": "/Users/.../.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
-  "cwd": "/Users/...",
+  "transcript_path": "~/.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
+  "cwd": "<project-dir>",
   "hook_event_name": "SubagentStart",
   "agent_id": "agent-abc123",
   "agent_type": "Explore"
@@ -2558,7 +2558,7 @@ SubagentStop hooks also receive the `background_tasks` and `session_crons` array
 {
   "session_id": "abc123",
   "transcript_path": "~/.claude/projects/.../abc123.jsonl",
-  "cwd": "/Users/...",
+  "cwd": "<project-dir>",
   "permission_mode": "default",
   "hook_event_name": "SubagentStop",
   "stop_hook_active": false,
@@ -2586,8 +2586,8 @@ In addition to the [common input fields](https://code.claude.com/docs/en/hooks#c
 ```json theme={null}
 {
   "session_id": "abc123",
-  "transcript_path": "/Users/.../.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
-  "cwd": "/Users/...",
+  "transcript_path": "~/.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
+  "cwd": "<project-dir>",
   "hook_event_name": "TaskCreated",
   "task_id": "task-001",
   "task_subject": "Implement user authentication",
@@ -2641,8 +2641,8 @@ In addition to the [common input fields](https://code.claude.com/docs/en/hooks#c
 ```json theme={null}
 {
   "session_id": "abc123",
-  "transcript_path": "/Users/.../.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
-  "cwd": "/Users/...",
+  "transcript_path": "~/.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
+  "cwd": "<project-dir>",
   "permission_mode": "default",
   "hook_event_name": "TaskCompleted",
   "task_id": "task-001",
@@ -2734,7 +2734,7 @@ This example shows a Stop input with one in-flight shell task and one recurring 
 {
   "session_id": "abc123",
   "transcript_path": "~/.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
-  "cwd": "/Users/...",
+  "cwd": "<project-dir>",
   "permission_mode": "default",
   "hook_event_name": "Stop",
   "stop_hook_active": true,
@@ -2806,8 +2806,8 @@ In addition to the [common input fields](https://code.claude.com/docs/en/hooks#c
 ```json theme={null}
 {
   "session_id": "abc123",
-  "transcript_path": "/Users/.../.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
-  "cwd": "/Users/...",
+  "transcript_path": "~/.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
+  "cwd": "<project-dir>",
   "hook_event_name": "StopFailure",
   "error": "rate_limit",
   "error_details": "429 Too Many Requests",
@@ -2830,8 +2830,8 @@ In addition to the [common input fields](https://code.claude.com/docs/en/hooks#c
 ```json theme={null}
 {
   "session_id": "abc123",
-  "transcript_path": "/Users/.../.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
-  "cwd": "/Users/...",
+  "transcript_path": "~/.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
+  "cwd": "<project-dir>",
   "permission_mode": "default",
   "hook_event_name": "TeammateIdle",
   "teammate_name": "researcher",
@@ -2908,11 +2908,11 @@ In addition to the [common input fields](https://code.claude.com/docs/en/hooks#c
 ```json theme={null}
 {
   "session_id": "abc123",
-  "transcript_path": "/Users/.../.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
-  "cwd": "/Users/...",
+  "transcript_path": "~/.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
+  "cwd": "<project-dir>",
   "hook_event_name": "ConfigChange",
   "source": "project_settings",
-  "file_path": "/Users/.../my-project/.claude/settings.json"
+  "file_path": "<project-dir>/.claude/settings.json"
 }
 ```
 
@@ -2951,11 +2951,11 @@ In addition to the [common input fields](https://code.claude.com/docs/en/hooks#c
 ```json theme={null}
 {
   "session_id": "abc123",
-  "transcript_path": "/Users/.../.claude/projects/.../transcript.jsonl",
-  "cwd": "/Users/.../my-project/src",
+  "transcript_path": "~/.claude/projects/.../transcript.jsonl",
+  "cwd": "<project-dir>/src",
   "hook_event_name": "CwdChanged",
-  "old_cwd": "/Users/.../my-project",
-  "new_cwd": "/Users/.../my-project/src"
+  "old_cwd": "<project-dir>",
+  "new_cwd": "<project-dir>/src"
 }
 ```
 
@@ -3004,10 +3004,10 @@ In addition to the [common input fields](https://code.claude.com/docs/en/hooks#c
 ```json theme={null}
 {
   "session_id": "abc123",
-  "transcript_path": "/Users/.../.claude/projects/.../transcript.jsonl",
-  "cwd": "/Users/my-project",
+  "transcript_path": "~/.claude/projects/.../transcript.jsonl",
+  "cwd": "<project-dir>",
   "hook_event_name": "DirectoryAdded",
-  "directory": "/Users/my-other-repo",
+  "directory": "<other-project-dir>",
   "source": "slash_command"
 }
 ```
@@ -3074,10 +3074,10 @@ In addition to the [common input fields](https://code.claude.com/docs/en/hooks#c
 ```json theme={null}
 {
   "session_id": "abc123",
-  "transcript_path": "/Users/.../.claude/projects/.../transcript.jsonl",
-  "cwd": "/Users/my-project",
+  "transcript_path": "~/.claude/projects/.../transcript.jsonl",
+  "cwd": "<project-dir>",
   "hook_event_name": "FileChanged",
-  "file_path": "/Users/my-project/.envrc",
+  "file_path": "<project-dir>/.envrc",
   "event": "change"
 }
 ```
@@ -3143,8 +3143,8 @@ In addition to the [common input fields](https://code.claude.com/docs/en/hooks#c
 ```json theme={null}
 {
   "session_id": "abc123",
-  "transcript_path": "/Users/.../.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
-  "cwd": "/Users/...",
+  "transcript_path": "~/.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
+  "cwd": "<project-dir>",
   "hook_event_name": "WorktreeCreate",
   "name": "feature-auth"
 }
@@ -3221,10 +3221,10 @@ In addition to the [common input fields](https://code.claude.com/docs/en/hooks#c
 ```json theme={null}
 {
   "session_id": "abc123",
-  "transcript_path": "/Users/.../.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
-  "cwd": "/Users/...",
+  "transcript_path": "~/.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
+  "cwd": "<project-dir>",
   "hook_event_name": "WorktreeRemove",
-  "worktree_path": "/Users/.../my-project/.claude/worktrees/feature-auth"
+  "worktree_path": "<project-dir>/.claude/worktrees/feature-auth"
 }
 ```
 
@@ -3258,8 +3258,8 @@ In addition to the [common input fields](https://code.claude.com/docs/en/hooks#c
 ```json theme={null}
 {
   "session_id": "abc123",
-  "transcript_path": "/Users/.../.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
-  "cwd": "/Users/...",
+  "transcript_path": "~/.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
+  "cwd": "<project-dir>",
   "hook_event_name": "PreCompact",
   "trigger": "manual",
   "custom_instructions": null
@@ -3284,8 +3284,8 @@ In addition to the [common input fields](https://code.claude.com/docs/en/hooks#c
 ```json theme={null}
 {
   "session_id": "abc123",
-  "transcript_path": "/Users/.../.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
-  "cwd": "/Users/...",
+  "transcript_path": "~/.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
+  "cwd": "<project-dir>",
   "hook_event_name": "PostCompact",
   "trigger": "manual",
   "compact_summary": "Summary of the compacted conversation..."
@@ -3401,8 +3401,8 @@ This example shows the input for `/model opus` in a session running Sonnet 5:
 ```json theme={null}
 {
   "session_id": "abc123",
-  "transcript_path": "/Users/.../.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
-  "cwd": "/Users/...",
+  "transcript_path": "~/.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
+  "cwd": "<project-dir>",
   "hook_event_name": "PreModelSwitch",
   "from_model": "claude-sonnet-5",
   "to_model": "claude-opus-5",
@@ -3525,8 +3525,8 @@ In addition to the [common input fields](https://code.claude.com/docs/en/hooks#c
 ```json theme={null}
 {
   "session_id": "abc123",
-  "transcript_path": "/Users/.../.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
-  "cwd": "/Users/...",
+  "transcript_path": "~/.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
+  "cwd": "<project-dir>",
   "hook_event_name": "SessionEnd",
   "reason": "other"
 }
@@ -3564,8 +3564,8 @@ For form-mode elicitation, the most common case:
 ```json theme={null}
 {
   "session_id": "abc123",
-  "transcript_path": "/Users/.../.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
-  "cwd": "/Users/...",
+  "transcript_path": "~/.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
+  "cwd": "<project-dir>",
   "hook_event_name": "Elicitation",
   "mcp_server_name": "my-mcp-server",
   "message": "Please provide your credentials",
@@ -3584,8 +3584,8 @@ For URL-mode elicitation, used for browser-based authentication:
 ```json theme={null}
 {
   "session_id": "abc123",
-  "transcript_path": "/Users/.../.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
-  "cwd": "/Users/...",
+  "transcript_path": "~/.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
+  "cwd": "<project-dir>",
   "hook_event_name": "Elicitation",
   "mcp_server_name": "my-mcp-server",
   "message": "Please authenticate",
@@ -3762,8 +3762,8 @@ In addition to the [common input fields](https://code.claude.com/docs/en/hooks#c
 ```json theme={null}
 {
   "session_id": "abc123",
-  "transcript_path": "/Users/.../.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
-  "cwd": "/Users/...",
+  "transcript_path": "~/.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
+  "cwd": "<project-dir>",
   "hook_event_name": "ElicitationResult",
   "mcp_server_name": "my-mcp-server",
   "action": "accept",

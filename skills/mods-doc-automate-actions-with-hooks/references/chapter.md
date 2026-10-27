@@ -583,7 +583,7 @@ For example, the hook input for an `npm test` command looks like this:
 ```json theme={null}
 {
   "session_id": "abc123",
-  "cwd": "/Users/example/myproject",
+  "cwd": "<project-dir>",
   "hook_event_name": "PreToolUse",
   "tool_name": "Bash",
   "tool_input": {

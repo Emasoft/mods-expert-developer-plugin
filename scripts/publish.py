@@ -3524,7 +3524,7 @@ def _smoke_records_still_registered(
     cannot-check-is-not-a-pass rule the install smoke applies to itself.
 
     Paths are compared RESOLVED: on macOS a temp dir is handed out as
-    /var/folders/... while the registry records /private/var/folders/..., and a
+    the per-user temp folder path while the registry records it with the /private prefix, and a
     raw string compare would find nothing on exactly the platform that reported
     this.
     """
