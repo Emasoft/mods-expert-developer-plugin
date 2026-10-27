@@ -248,17 +248,35 @@ export const EMPTY_DRAFT: CommandDraft = { name: '', description: '', body: '', 
 /** The name as the form will save it: trimmed, one leading slash dropped. */
 export const draftName = (d: CommandDraft): string => d.name.trim().replace(/^\//, '')
 
-/** Why the draft cannot be saved, or undefined when it can: a bad name, a name taken, an empty body. */
-export function draftProblem(d: CommandDraft, commands: readonly CommandInfo[]): string | undefined {
+/** Where a valid draft is written, or why it is not: what saveCommand writes, decided in one place. */
+export type DraftTarget = { name: string; path: string } | { problem: string }
+
+/**
+ * Checks the draft and joins its path from the very name it checked, so no other string can reach
+ * the file name: the name rule (which keeps out slashes, dots and spaces), a name already listed,
+ * an empty prompt, then the folder, which must be a known absolute path (macOS and Linux only, as
+ * resolve-bin). `base` is the session root or HOME, by scope; trailing slashes are dropped.
+ */
+export function draftTarget(d: CommandDraft, commands: readonly CommandInfo[], base: string | undefined): DraftTarget {
   const name = draftName(d)
-  if (!NAME_PATTERN.test(name)) return 'Not saved: the name takes lowercase letters, digits and dashes, up to 41, starting with a letter or digit.'
-  if (commands.some((c) => normalName(c.name) === name)) return `Not saved: /${name} is already a command of this session; pick another name.`
-  if (d.body.trim() === '') return 'Not saved: write what the command should ask Claude to do.'
-  return undefined
+  if (!NAME_PATTERN.test(name)) return { problem: 'Not saved: the name takes lowercase letters, digits and dashes, up to 41, starting with a letter or digit.' }
+  if (commands.some((c) => normalName(c.name) === name)) return { problem: `Not saved: /${name} is already a command of this session; pick another name.` }
+  if (d.body.trim() === '') return { problem: 'Not saved: write what the command should ask Claude to do.' }
+  const folder = d.scope === 'user' ? 'home folder (HOME)' : 'project folder (the session root)'
+  if (base === undefined || base.trim() === '') return { problem: `Not saved: the ${folder} is not known.` }
+  if (!base.startsWith('/')) return { problem: `Not saved: the ${folder} is not an absolute path: ${base}` }
+  return { name, path: commandPath(base.replace(/\/+$/, ''), name) }
 }
 
 /** Where the command file goes: the project's or the user's .claude/commands folder. */
-export const commandPath = (base: string, name: string): string => `${base}/.claude/commands/${name}.md`
+const commandPath = (base: string, name: string): string => `${base}/.claude/commands/${name}.md`
+
+/**
+ * A label cut to `room` columns with an ellipsis, so a long command name keeps its bracketed button
+ * on one line at a narrow width. `room` below 2 still keeps one character and the ellipsis.
+ */
+export const fitLabel = (label: string, room: number): string =>
+  label.length <= room ? label : `${label.slice(0, Math.max(1, room - 1))}…`
 
 /**
  * The command file. The description is JSON-quoted, which YAML reads as a double-quoted string, so

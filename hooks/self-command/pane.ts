@@ -3,7 +3,7 @@
 // form that creates a markdown command. Gated like the tools. Thin wiring: decisions are in
 // ./logic.ts. Only elements both the terminal and the Desktop app draw (Box, Text, Button, Input,
 // Select), one render path for every surface, bracketed buttons whose label names their letter.
-import type { EngineInterface, On, RenderElement } from 'claude-code'
+import type { CommandInfo, EngineInterface, On, RenderElement } from 'claude-code'
 
 import { DEV_TOOLS_OFF, isDevToolsOn } from '../dev-tools'
 import {
@@ -11,9 +11,8 @@ import {
   EMPTY_DRAFT,
   HISTORY_KEY,
   commandFile,
-  commandPath,
-  draftName,
-  draftProblem,
+  draftTarget,
+  fitLabel,
   groupBySource,
   historyLine,
   historyOf,
@@ -39,6 +38,18 @@ async function stateOf($: EngineInterface): Promise<PaneState> {
   return stateBySession.get(await $.session.id()) ?? INITIAL
 }
 
+// The command list as read when the pane opened, per session. A pane drawn without the command (a
+// reload with the pane open) reads it once here and keeps it until the next open.
+const commandsBySession = new Map<string, readonly CommandInfo[]>()
+
+async function commandsOf($: EngineInterface, session: string): Promise<readonly CommandInfo[]> {
+  const cached = commandsBySession.get(session)
+  if (cached !== undefined) return cached
+  const read = await $.command.list()
+  commandsBySession.set(session, read)
+  return read
+}
+
 async function update($: EngineInterface, change: (s: PaneState) => PaneState): Promise<void> {
   const session = await $.session.id()
   stateBySession.set(session, change(stateBySession.get(session) ?? INITIAL))
@@ -54,30 +65,28 @@ async function fill($: EngineInterface, name: string): Promise<void> {
 /**
  * Saves the form as .claude/commands/<name>.md in the project (the session root) or the user's
  * home. Every failure reaches the person as a toast and the log, never as an engine error on a
- * press, and an existing file is never overwritten.
+ * press. The clash check reads the command list afresh, not the pane's cached copy: a save is one
+ * press, and a command added since the pane opened must still count.
  */
 async function saveCommand($: EngineInterface): Promise<void> {
   try {
     const draft = (await stateOf($)).draft
-    const problem = draftProblem(draft, await $.command.list())
-    if (problem !== undefined) {
-      $.ui.toast(problem)
-      return
-    }
     const base = draft.scope === 'user' ? await $.env.get('HOME') : await $.session.root()
-    if (base === undefined || base === '') {
-      $.ui.toast(`Not saved: the ${draft.scope === 'user' ? 'home folder (HOME)' : 'project folder'} is not known.`)
+    const target = draftTarget(draft, await $.command.list(), base)
+    if ('problem' in target) {
+      $.ui.toast(target.problem)
       return
     }
-    const name = draftName(draft)
-    const path = commandPath(base, name)
-    if (await $.fs.exists(path)) {
-      $.ui.toast(`Not saved: ${path} already exists.`)
+    // $.fs offers no exclusive create, so this check is the last step before the write and nothing
+    // else is awaited between them. A file another process creates in that gap is still overwritten:
+    // the race is narrowed, not closed.
+    if (await $.fs.exists(target.path)) {
+      $.ui.toast(`Not saved: ${target.path} already exists.`)
       return
     }
-    await $.fs.write(path, commandFile(draft))
+    await $.fs.write(target.path, commandFile(draft))
     await update($, (s) => ({ ...s, draft: { ...EMPTY_DRAFT, scope: draft.scope } }))
-    $.ui.toast(`Saved /${name} as ${path}. It shows in the / menu once Claude Code reads the folder again.`)
+    $.ui.toast(`Saved /${target.name} as ${target.path}. It shows in the / menu once Claude Code reads the folder again.`)
   } catch (error) {
     $.ui.log(`self-command: saving a command failed: ${messageOf(error)}`)
     $.ui.toast(`Not saved: ${messageOf(error)}`)
@@ -93,6 +102,8 @@ export async function registerPaneCommand($: EngineInterface): Promise<void> {
 export function registerPane(on: On): void {
   on('command.run', { command: 'self-command' }, async ($) => {
     if (!(await isDevToolsOn($))) return { text: DEV_TOOLS_OFF }
+    // One read of the command list per open; redraws and search keystrokes reuse it.
+    commandsBySession.set(await $.session.id(), await $.command.list())
     await $.ui.open({ id: PANE, title: 'Slash commands', focus: true, closeOnEscape: true })
     return {}
   })
@@ -107,7 +118,9 @@ export function registerPane(on: On): void {
     if (!(await isDevToolsOn($))) return Text({ dimColor: true, children: [DEV_TOOLS_OFF] })
     const session = await $.session.id()
     const state = await stateOf($)
-    const commands = await $.command.list()
+    const commands = await commandsOf($, session)
+    // The bracketed label's room: the body width less the brackets and their spaces.
+    const room = e.props.bodyColumns - 4
     const queued = queuedFor(session)
     const tab = (view: View, letter: string, label: string) =>
       Button({
@@ -169,7 +182,8 @@ export function registerPane(on: On): void {
                   flexDirection: 'row',
                   columnGap: 1,
                   children: [
-                    Button({ key: `sc-cmd-${c.name}`, label: `/${c.name}`, dimColor: isRefused(c), onPress: () => fill($, c.name) }),
+                    // A refused command still fills the prompt (the person may type any command); it is only dim.
+                    Button({ key: `sc-cmd-${c.name}`, label: fitLabel(`/${c.name}`, room), dimColor: isRefused(c), onPress: () => fill($, c.name) }),
                     Text({ dimColor: true, wrap: 'truncate-end', children: [c.description] }),
                   ],
                 }),

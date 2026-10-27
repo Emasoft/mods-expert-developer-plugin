@@ -12,6 +12,7 @@ import {
   MAX_SESSIONS,
   OUTPUT_PREVIEW,
   type HistoryEntry,
+  draftTarget,
   listText,
   recordRun,
   requestOf,
@@ -67,10 +68,16 @@ type World = {
   writes: Array<{ path: string; text: string }>
   /** The paths $.fs.exists answers true for; every write adds its path. */
   files: Set<string>
+  /** How many times $.command.list was read, and what it answers. */
+  listCalls: number
+  list: readonly CommandInfo[]
+  /** What session.root and HOME answer. */
+  root: string
+  home: string | undefined
 }
 
 function world(on: any, store: Record<string, unknown> = {}): World {
-  const w: World = { clock: mock.clock(on, { now: 1_000 }), store: new Map(Object.entries(store)), ran: [], attempted: [], registered: [], commands: [], logs: [], toasts: [], session: 'sess-1', failing: undefined, listFails: false, fills: [], fillRefusal: undefined, opened: [], writes: [], files: new Set() }
+  const w: World = { clock: mock.clock(on, { now: 1_000 }), store: new Map(Object.entries(store)), ran: [], attempted: [], registered: [], commands: [], logs: [], toasts: [], session: 'sess-1', failing: undefined, listFails: false, fills: [], fillRefusal: undefined, opened: [], writes: [], files: new Set(), listCalls: 0, list: COMMANDS, root: ROOT, home: HOME }
   on('session.start', ($: any, e: any) => ({ cwd: e.cwd }))
   on('session.id', () => ({ value: w.session }))
   on('store.get', ($: any, e: any) => ({ value: w.store.get(e.key) }))
@@ -89,7 +96,8 @@ function world(on: any, store: Record<string, unknown> = {}): World {
   // A throw makes $.command.list reject, as an engine failure would.
   on('command.list', () => {
     if (w.listFails) throw new Error('the command list is unavailable')
-    return { value: COMMANDS }
+    w.listCalls += 1
+    return { value: w.list }
   })
   // Only the commands a plugin runs reach here; /mods-dev-tools is answered by the mod's own hook.
   // A throw, not { deny }: the kit skips a test hook that throws, so $.command.run rejects as the
@@ -117,8 +125,8 @@ function world(on: any, store: Record<string, unknown> = {}): World {
     w.opened.push(e)
     return { value: { isPlaced: true } }
   })
-  on('session.root', () => ({ value: ROOT }))
-  on('env.get', ($: any, e: any) => ({ value: e.name === 'HOME' ? HOME : undefined }))
+  on('session.root', () => ({ value: w.root }))
+  on('env.get', ($: any, e: any) => ({ value: e.name === 'HOME' ? w.home : undefined }))
   on('fs.exists', ($: any, e: any) => ({ value: w.files.has(e.path) }))
   on('fs.write', ($: any, e: any) => {
     w.writes.push({ path: e.path, text: e.text })
@@ -406,6 +414,30 @@ function selfCommand($: any) {
   return $.command.run({ command: 'self-command', args: '', origin: { kind: 'composer' }, presentation: { isFullscreen: false, columns: 80 } })
 }
 
+describe('draftTarget', () => {
+  const draft = (name: string, scope: 'project' | 'user' = 'project') => ({ name, description: '', body: 'do it', scope })
+
+  test('the path is joined from the very name it checked: trimmed, one slash dropped, under the base', () => {
+    for (const [written, name] of [['notes', 'notes'], ['  /notes ', 'notes'], ['a', 'a'], ['x1-y2', 'x1-y2'], [`a${'b'.repeat(40)}`, `a${'b'.repeat(40)}`]]) {
+      expect(draftTarget(draft(written!), COMMANDS, '/work')).toEqual({ name, path: `/work/.claude/commands/${name}.md` })
+    }
+    expect(draftTarget(draft('notes'), COMMANDS, '/work//')).toEqual({ name: 'notes', path: '/work/.claude/commands/notes.md' })
+  })
+
+  test('a name that could leave the folder or change the file name is refused, with no path', () => {
+    for (const written of ['../x', 'a/b', '//x', 'x.md', 'A', 'a b', '-x', '', `a${'b'.repeat(41)}`, '~x']) {
+      const target = draftTarget(draft(written), COMMANDS, '/work')
+      expect('path' in target).toBe(false)
+    }
+  })
+
+  test('the folder must be known and absolute, for either scope', () => {
+    expect(draftTarget(draft('notes', 'user'), COMMANDS, undefined)).toEqual({ problem: 'Not saved: the home folder (HOME) is not known.' })
+    expect(draftTarget(draft('notes', 'user'), COMMANDS, '  ')).toEqual({ problem: 'Not saved: the home folder (HOME) is not known.' })
+    expect(draftTarget(draft('notes'), COMMANDS, '~/work')).toEqual({ problem: 'Not saved: the project folder (the session root) is not an absolute path: ~/work' })
+  })
+})
+
 describe('the /self-command pane', () => {
   test('gated: off, the command says so, opens nothing and the pane draws only that line', async ($, on) => {
     const w = world(on)
@@ -429,6 +461,8 @@ describe('the /self-command pane', () => {
       w.fills = []
       await start($, surface)
       expect(w.commands).toContain('self-command')
+      w.listCalls = 0
+      w.toasts = []
       expect(await selfCommand($)).toEqual({})
       const ui = await mountPane($, surface, columns)
       expect(await ui.find({ type: 'Text', text: '7 commands · 0 queued' })).toBeDefined()
@@ -449,10 +483,16 @@ describe('the /self-command pane', () => {
       expect((await ui.find({ key: 'sc-cmd-lint' }))?.props.dimColor).toBe(false)
       await ui.press({ key: 'sc-cmd-reload-plugins' })
       expect(w.fills).toEqual(['/reload-plugins '])
+      // A refused command still fills the prompt, with no toast; it is only dim.
+      await ui.press({ key: 'sc-cmd-clear' })
+      expect(w.fills).toEqual(['/reload-plugins ', '/clear '])
+      expect(w.toasts).toEqual([])
       await ui.input({ key: 'sc-search', text: 'PUSH' })
       expect(await ui.find({ key: 'sc-cmd-ship' })).toBeDefined()
       expect(await ui.find({ key: 'sc-cmd-reload-plugins' })).toBeUndefined()
       expect(await ui.find({ type: 'Text', text: /^1 of 7; press one/ })).toBeDefined()
+      // One read of the list per open: the press, the search keystroke and their redraws reuse it.
+      expect(w.listCalls).toBe(1)
       await ui.unmount()
     }
     expect(w.opened).toEqual(PLACES.map(() => ({ id: 'self-command', title: 'Slash commands', focus: true, closeOnEscape: true })))
@@ -530,6 +570,77 @@ describe('the /self-command pane', () => {
       await ui.select({ key: 'sc-scope', value: 'user' })
       await save('notes', 'Summarize my notes.')
       expect(w.writes[1]).toEqual({ path: `${HOME}/.claude/commands/notes.md`, text: '---\ndescription: "notes"\n---\n\nSummarize my notes.\n' })
+      await ui.unmount()
+    }
+  })
+  test('the list is read when the pane opens and kept until the next open', async ($, on) => {
+    const w = world(on, { [DEV_TOOLS_KEY]: true })
+    for (const { surface, columns } of PLACES) {
+      w.session = `cache-${surface}-${columns}`
+      w.list = COMMANDS
+      await start($, surface)
+      await selfCommand($)
+      const ui = await mountPane($, surface, columns)
+      expect(await ui.find({ type: 'Text', text: '7 commands · 0 queued' })).toBeDefined()
+      w.list = [...COMMANDS, cmd('later', 'user')]
+      await ui.redraw()
+      expect(await ui.find({ type: 'Text', text: '7 commands · 0 queued' })).toBeDefined()
+      await selfCommand($)
+      await ui.redraw()
+      expect(await ui.find({ type: 'Text', text: '8 commands · 0 queued' })).toBeDefined()
+      await ui.unmount()
+    }
+  })
+
+  test('a long command name is cut to fit its bracketed button at a narrow width and whole at a wide one', async ($, on) => {
+    const w = world(on, { [DEV_TOOLS_KEY]: true })
+    const long = `release-${'notes-'.repeat(9)}draft`
+    w.list = [...COMMANDS, cmd(long, 'user')]
+    for (const { surface, columns } of PLACES) {
+      w.session = `long-${surface}-${columns}`
+      w.fills = []
+      await start($, surface)
+      await selfCommand($)
+      const ui = await mountPane($, surface, columns)
+      const label = String((await ui.find({ key: `sc-cmd-${long}` }))?.props.label)
+      // The body is columns - 4 wide; the brackets and their spaces take 4 more.
+      expect(`[ ${label} ]`.length).toBeLessThanOrEqual(columns - 4)
+      expect(label === `/${long}` || (label.endsWith('…') && `/${long}`.startsWith(label.slice(0, -1)))).toBe(true)
+      expect(label === `/${long}`).toBe(`[ /${long} ]`.length <= columns - 4)
+      await ui.press({ key: `sc-cmd-${long}` })
+      expect(w.fills).toEqual([`/${long} `])
+      await ui.unmount()
+    }
+  })
+
+  test('a HOME or session root that is empty or not absolute refuses the save and writes nothing', async ($, on) => {
+    const w = world(on, { [DEV_TOOLS_KEY]: true })
+    const cases: Array<[scope: 'project' | 'user', root: string, home: string | undefined, toast: string]> = [
+      ['user', ROOT, undefined, 'Not saved: the home folder (HOME) is not known.'],
+      ['user', ROOT, '', 'Not saved: the home folder (HOME) is not known.'],
+      ['user', ROOT, 'relative/home', 'Not saved: the home folder (HOME) is not an absolute path: relative/home'],
+      ['project', '', HOME, 'Not saved: the project folder (the session root) is not known.'],
+      ['project', 'work', HOME, 'Not saved: the project folder (the session root) is not an absolute path: work'],
+    ]
+    for (const { surface, columns } of PLACES) {
+      w.session = `base-${surface}-${columns}`
+      w.writes = []
+      w.toasts = []
+      await start($, surface)
+      const ui = await mountPane($, surface, columns)
+      await ui.press({ key: 'sc-view-new' })
+      await ui.input({ key: 'sc-name', text: 'notes' })
+      await ui.input({ key: 'sc-body', text: 'Summarize my notes.' })
+      for (const [scope, root, home] of cases) {
+        w.root = root
+        w.home = home
+        await ui.select({ key: 'sc-scope', value: scope })
+        await ui.press({ key: 'sc-save' })
+      }
+      expect(w.writes).toEqual([])
+      expect(w.toasts).toEqual(cases.map(([, , , toast]) => toast))
+      w.root = ROOT
+      w.home = HOME
       await ui.unmount()
     }
   })

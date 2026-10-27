@@ -4,7 +4,7 @@ title: Port self-command with the command-hub features into the plugin
 column: dev
 status: tasked
 created: 2026-10-22T20:10:35+0200
-updated: 2026-10-27T12:01:22+0100
+updated: 2026-10-27T12:10:41+0100
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -30,6 +30,7 @@ approval-datetime: 2026-10-22T20:10:35+0200
 CURRENT STATE 2026-10-22: planned, not started; NEXT ACTION: strict CPV gate measurement on probe.py and self-command code, then implement.
 CURRENT STATE 2026-10-27 (supersedes the 2026-10-22 line above): column dev; increment A1 implemented and verified (claude plugin test 88 pass on the staged mod, check-mod.sh == PASS, pytest 339 pass, claude plugin validate passes), not committed. NEXT ACTION: the orchestrator reviews and commits A1, then dispatches A2 (the /self-command pane). Details under ## Increment A1.
 CURRENT STATE 2026-10-27 A2 (supersedes the A1 line above): column dev; increment A2 implemented and verified (staged claude plugin test 96 pass, check-mod.sh == PASS on the staged mod, pytest 339 pass, claude plugin validate passes, cspell 0 on changed files, 17 mutations all red), not committed. NEXT ACTION: the orchestrator reviews and commits A2; the owner's live Desktop check of the pane is open. Details under ## Increment A2.
+CURRENT STATE 2026-10-27 A2 follow-up (supersedes the A2 line above): column dev; A2 committed as 4012502; the follow-up is implemented and verified (staged claude plugin test 102 pass, check-mod.sh == PASS, 9 new mutations all red), not committed. Rulings recorded: a plugin command with an unset plugin field counts as this plugin's own and is refused; a name listed by both this plugin and another source is refused; fix 2's benefit (a foreign send stays runnable) holds only if the live $.command.list fills plugin, which is unverified. NEXT ACTION: the orchestrator reviews and commits the follow-up; the owner runs the live checks under ## Owner live checks.
 
 ## User directive
 
@@ -103,10 +104,19 @@ CURRENT STATE 2026-10-27 A2 (supersedes the A1 line above): column dev; incremen
 ## Increment A2
 
 Review fixes of e81001a: requestOf normalizes the name once (normalName: leading slashes dropped, lowercase) and runs BLOCKED, the list lookup and the own-command check against that one form; the request carries the name as the list spells it.
-This plugin's own send and mods-dev-tools are now told by the source $.command.list reports (source plugin and plugin equal to this plugin's name, the part before any @), not by a guessed prefix, so a user's or another plugin's send stays runnable. Two fail-safe choices: a plugin command whose plugin the engine leaves unnamed counts as this plugin's, and a name shared by several entries is refused when any of them is this plugin's, because which one the engine runs is not ours to know.
+This plugin's own send and mods-dev-tools are now told by the source $.command.list reports (source plugin and plugin equal to this plugin's name, the part before any @), not by a guessed prefix. Two fail-safe rulings (orchestrator, 2026-10-27): a plugin command whose plugin field is unset counts as this plugin's own, so it is refused; a name listed by both this plugin and another source is refused, because which one the engine runs is not ours to know. Fix 2's benefit, a foreign send staying runnable, holds only if the live $.command.list fills plugin, which is unverified.
 commands/send.md framing line reworded to a conditional that makes no claim about who typed the command: If you queued a slash command with the run tool, this is its outcome, as the command printed it or the reason it did not run.
 Pane /self-command (hooks/self-command/pane.ts, registered from startSelfCommand after the two tools, only while the dev-tools switch is on; the command answers the off text and the render draws only that line when off). Views c: list (search Input, commands grouped by source, refused ones dim, a press calls $.prompt.fill with /<name> and a space), h: history (queue from hooks/self-command/queue.ts, module memory per session, then this session's stored runs newest first), n: new (name, description, prompt, scope Select; name ^[a-z0-9][a-z0-9-]{0,40}$, clash with any listed command, empty prompt, existing file all refuse with a toast; writes <session root or HOME>/.claude/commands/<name>.md with a JSON-quoted description, never overwriting).
 Elements: Box, Text, Button, Input, Select only; bracketed buttons whose label names the letter; one render path. Tests mount the pane on terminal and desktop at 40 and 160 columns with identical assertions (gate, tabs, groups, dimming, fill press, refused fill toast, queue then history row, form refusals and writes by scope).
 UNVERIFIED: whether a letter hotkey fires while a search or form Input has the focus. The interfaces chapter says every printable key goes to the field while an Input has the focus, so the c/h/n/s hotkeys work only when a button holds the focus; Tab reaches them. A hook's refusal cause on prompt.fill does not reach the result in the test kit, so the toast's cause branch is untested; the engine fills it only for its own refusals. Desktop parity of the pane is unverified until the owner's Desktop check.
 Report: reports/self-command/20261027_115918+0100-A2.md.
-Review of A2 (adversarial fork): addQueued moved after $.clock.after so a throw leaves no phantom queue entry. Open for the orchestrator: the unnamed-plugin fail-safe refuses another plugin's bare send if the live list leaves plugin unset, and the shared-name refusal narrows the user's own send to differently named commands; both kept as written, details in the A2 report.
+Review of A2 (adversarial fork): addQueued moved after $.clock.after so a throw leaves no phantom queue entry. Both fail-safe choices were ruled by the orchestrator on 2026-10-27 as recorded above (unset plugin refused, shared name refused).
+Follow-up (orchestrator review of 4012502): draftTarget replaces draftProblem and joins the file path from the very name it checked (commandPath is private), and refuses a HOME or session root that is unset, empty or not absolute; the existing-file check is the last await before the write (no exclusive create in $.fs, so the race is narrowed, not closed, as the code comment says); a refused command row stays dim and its press fills the prompt with no toast; command buttons cut their label with an ellipsis to the body width less 4 (fitLabel), tested with a 67-character fixture name at 40 and 160 columns; $.command.list is read once per open of the pane and reused for redraws and search keystrokes (a save re-reads it for the clash check).
+Report: reports/self-command/20261027_121142+0100-A2-followup.md.
+
+## Owner live checks
+
+- [ ] Whether $.command.list reports the plugin field for plugin commands (fix 2's foreign send stays runnable only if it does).
+- [ ] The Input round-trip on Desktop: typing in the search box and the create form with value set from state on every keystroke (cursor, lost characters, a field that reports only on submit).
+- [ ] Whether the c, h, n and s hotkeys work while an Input has the focus (the interfaces chapter says printable keys go to the field).
+- [ ] The redraw cost of the pane, and whether $.ui.invalidate('ui.render') also redraws the requirements-drafts pane.
