@@ -28,7 +28,7 @@ Full entries for the chapter skills of `mods-expert-developer-plugin`, grouped b
 
 **Outputs:** that section of the chapter read into context; nothing is written.
 
-**Dependencies:** the chapter file in the skill's own references folder.
+**Dependencies:** the chapter file in the skill's own references folder, plus the user's own additional notes on mods beside it (not an Anthropic chapter; each claim marked DOC, TYPES, UNVERIFIED or INFERRED; the live docs and the generated types win over them).
 
 ### mods-expert-developer-plugin:mods-doc-mods-development
 
