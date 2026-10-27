@@ -164,6 +164,24 @@ jobs:
       - name: Install dependencies
         run: uv sync --extra dev
 
+      # The mod's kit tests (hooks/tests) run through tests/test_mod_tests.py, which calls
+      # `claude plugin test` (TRDD-O5LUMKPW, review M5). The CLI needs Node 22 or later (the
+      # package's engines field) and no login. The CLI version is pinned so CI runs a known CLI;
+      # the local publish gate uses whatever claude is installed, which may differ.
+      - name: Set up Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+
+      # Lifecycle scripts stay on: the package's postinstall (install.cjs) hard-links or copies the
+      # native binary from the platform optionalDependency (@anthropic-ai/claude-code-<platform>)
+      # over the bin/claude.exe stub, with no network access. With --ignore-scripts the stub stays
+      # and `claude --version` exits 1 with "claude native binary not installed" (measured on macOS).
+      # The pinned version is what keeps runs independent of the day. DISABLE_AUTOUPDATER is read by
+      # the CLI, not by npm, so it is set on the test step below, not here.
+      - name: Install the Claude Code CLI
+        run: npm install -g @anthropic-ai/claude-code@2.1.310
+
       - name: Run tests (shard ${{ matrix.group }} of 2)
         # Same serial + pytest-split shape as ci.yml (TRDD-K7P2XR4Q): each shard
         # runs WITHOUT -n, so an order-dependent serial-pollution bug still
@@ -171,6 +189,8 @@ jobs:
         # which the dev extra MUST declare (RC-9) — this matrix and pyproject's
         # `dev` list are both driven by TEST_SHARD_COUNT /
         # PYTEST_SPLIT_REQUIREMENT so they cannot desync.
+        env:
+          DISABLE_AUTOUPDATER: "1"
         run: |
           # Issue #215 — `find`, not `ls tests/test_*.py`: the glob is
           # top-level-only, so a tests/unit/ layout silently skipped the whole
