@@ -717,6 +717,16 @@ def test_plugin_tool_skills_copies_agree() -> None:
     assert module.PLUGIN_TOOL_SKILLS == PLUGIN_TOOL_SKILLS
 
 
+def test_plugin_tool_skills_reload_through_the_run_tool() -> None:
+    """Each mod install and uninstall skill allows the run tool and carries the exact FAILED line for a reload that cannot run."""
+    failed_line = "FAILED: reload not run (<reason>; turn the developer tools on with /mods-dev-tools on, then start a new session)"
+    for name in sorted(PLUGIN_TOOL_SKILLS):
+        fields, body = _split(SKILLS / name / "SKILL.md")
+        tools = [tool.strip() for tool in fields["allowed-tools"].split(",")]
+        assert "mcp__mods-expert-developer-plugin__run" in tools, f"{name} does not allow the run tool"
+        assert failed_line in body, f"{name} lacks the exact FAILED line"
+
+
 def test_every_catalog_skill_exists() -> None:
     """Every CATALOG_SKILLS member is a shipped skill; a stale exclusion would hide nothing and mislead."""
     missing = [name for name in sorted(CATALOG_SKILLS) if not (SKILLS / name / "SKILL.md").is_file()]

@@ -21,20 +21,20 @@ This skill installs one mod plugin from a marketplace with the `claude` CLI. The
 
 1. Validate the argument before any command runs. Accept only these two forms, and ask the user for anything else:
    - `<plugin>@<marketplace>`, matching `^[A-Za-z0-9][A-Za-z0-9._-]*@[A-Za-z0-9._-]+$`.
-   - `<plugin repo> <marketplace repo>`, each matching `^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$` or an `https://` URL.
+   - `<plugin repo> <marketplace repo>`, each matching `^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$` or an `https://` URL with no `'` in it.
 
-   Quote every argument with double quotes when it goes to the shell.
+   Quote every validated argument with single quotes when it goes to the shell, as `'<value>'`, so the shell expands nothing in it. An argument that contains a `'` fails this step.
 
 2. Resolve the marketplace. Run `claude plugin marketplace list --json`. An entry matches when its `name` equals the marketplace name, or when its `repo` equals the marketplace repository. An entry whose `repo` is null matches by `name` only.
-   - A matching entry: run `claude plugin marketplace update "<name>" --json`.
-   - No match: run `claude plugin marketplace add "<source>" --json`, where the source is the marketplace repository or URL. When the argument gave only names, ask the user for the source first.
+   - A matching entry: run `claude plugin marketplace update '<name>' --json`.
+   - No match: run `claude plugin marketplace add '<source>' --json`, where the source is the marketplace repository or URL. When the argument gave only names, ask the user for the source first.
 
    If the update or the add exits non-zero, stop and report its JSON result verbatim. Do not install.
 
 3. Find the plugin. Run `claude plugin list --available --json` and read its `available` list. An entry matches when its `pluginId` equals `<plugin>@<marketplace name>`. For repository arguments, an entry also matches when its `source` is an object whose `repo` equals the plugin repository, and its `marketplaceName` equals the marketplace name from step 2. When no entry matches, stop and ask the user for the exact plugin name.
 
-4. Install. Run `claude plugin install "<pluginId>" --json`, with no `-y`. Read the JSON result.
-   - When the result shows a `shownCommand`, the marketplace declares a command that runs during the install. Show the user that command and its `sha256` exactly as the JSON gives them, and ask. Only after a yes, run `claude plugin install "<pluginId>" -y --json`. A no stops the skill.
+4. Install. Run `claude plugin install '<pluginId>' --json`, with no `-y`. Read the JSON result.
+   - When the result shows a `shownCommand`, the marketplace declares a command that runs during the install. Show the user that command and its `sha256` exactly as the JSON gives them, and ask. Only after a yes, run `claude plugin install '<pluginId>' -y --json`. A no stops the skill.
    - A non-zero exit: stop and report the JSON result verbatim.
 
    Do not use `--accept-command`: it has no effect inside a session.
