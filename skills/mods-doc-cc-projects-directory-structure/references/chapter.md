@@ -656,7 +656,7 @@ backups/ may still contain this project entry in old .claude.json snapshots (~/.
 Dry run: 3 item(s) would be deleted.
 ```
 
-In this plan, `~/work/my-repo` stands for the project's absolute path: the real config key is that absolute path, and `<encoded-project-path>` is that absolute path with each `/` replaced by `-`.
+In this plan, `~/work/my-repo` stands for the project's absolute path: the real config key is that absolute path, and `<encoded-project-path>` is that absolute path with each path separator, and other characters that are not letters or digits, replaced by `-`.
 
 Delete with a single confirmation prompt:
 
