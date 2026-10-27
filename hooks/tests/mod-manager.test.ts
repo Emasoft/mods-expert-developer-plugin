@@ -8,7 +8,7 @@
 // engine's question: its dialog is drawn by the engine, so the press's question is observed and left unanswered.
 import { describe, expect, mock, test, type MockClock, type Mounted } from 'claude-code/testing'
 
-import { KEEP, actionArgv, appliesHere, classifyHooks, confirmThenRun, fitLabel, isConfirmed, isWithin, orderRows, parseInstalled, toRow, type Installed } from '../mod-manager/logic'
+import { KEEP, actionArgv, appliesHere, classifyHooks, confirmThenRun, fitLabel, hookFilesOf, isConfirmed, isWithin, orderRows, parseInstalled, toRow, type Installed } from '../mod-manager/logic'
 
 const SURFACES = ['terminal', 'desktop'] as const
 // 16 columns leaves room 8 in the pane, so the Uninstall label must be cut; 160 leaves it whole.
@@ -37,6 +37,8 @@ const HOOKS: Record<string, string> = {
   '/cache/market-b/mmm-mod/0.3.0/hooks/hooks.json': '{"modules": ["./index.ts"]}',
   '/cache/market-a/zzz-tool/2.0.0/hooks/hooks.json': '{"hooks": {}}',
   '/cache/market-b/ccc-plain/1.1.0/hooks/hooks.json': '{ not json',
+  '/cache/market-c/fff-manifest/1.0.0/.claude-plugin/plugin.json': '{"hooks": ["./hooks/missing.json", "./hooks/band.json"]}',
+  '/cache/market-c/fff-manifest/1.0.0/hooks/band.json': '{"modules": ["./band/register.tsx"]}',
 }
 
 // The order the pane must show: mods first (enabled, then disabled), then the other plugins (enabled, then
@@ -79,7 +81,7 @@ type World = {
   toasts: string[]
 }
 
-function world(on: any): World {
+function world(on: any, listed: typeof PLUGINS = PLUGINS): World {
   const w: World = { clock: mock.clock(on, { now: 1_000 }), session: 'sess-1', root: ROOT, claudeFound: true, calls: [], hold: undefined, asked: [], commands: [], tools: [], opened: [], toasts: [] }
   // The session start beneath the plugin's own: index.ts runs every mod's start, startModManager among them, then the kit answers with this.
   on('session.start', ($: any, e: any) => ({ cwd: e.cwd }))
@@ -99,7 +101,7 @@ function world(on: any): World {
       w.hold = undefined
       await hold.promise
     }
-    if (e.argv[2] === 'list') return { value: { exitCode: 0, stdout: JSON.stringify(PLUGINS), stderr: '', isStdoutTruncated: false, isStderrTruncated: false } }
+    if (e.argv[2] === 'list') return { value: { exitCode: 0, stdout: JSON.stringify(listed), stderr: '', isStdoutTruncated: false, isStderrTruncated: false } }
     return { value: { exitCode: 0, stdout: '', stderr: '', isStdoutTruncated: false, isStderrTruncated: false } }
   })
   // The engine raises its question as this tool call; the test records it and leaves it unanswered.
@@ -265,6 +267,18 @@ describe('the installed plugins pane', () => {
     // A command has no deferred form in CommandSpec, so being listed after session start is the whole check. Only the mod-manager name is counted, because the other mods register in the same start.
     expect(w.commands.filter((name) => name === 'mod-manager')).toEqual(['mod-manager'])
   })
+
+  // The manifest declares a file that does not exist first: it is logged, and the file after it still makes the plugin a mod.
+  test('a plugin whose only modules sit in a manifest-declared file is listed as a mod', async ($, on) => {
+    const plugin = { id: 'fff-manifest@market-c', version: '1.0.0', scope: 'user', enabled: true, installPath: '/cache/market-c/fff-manifest/1.0.0' }
+    const w = world(on, [plugin])
+    for (const { surface, columns } of PLACES) {
+      const ui = await openAndMount($, w, `manifest-${surface}-${columns}`, surface, columns)
+      expect(await toggleKeys(ui)).toEqual(['mm-toggle-fff-manifest@market-c|user'])
+      expect(await ui.findAll({ type: 'Text', text: /^mod$/ })).toHaveLength(1)
+      await ui.unmount()
+    }
+  })
 })
 
 describe('the confirm guard, with plain answer functions', () => {
@@ -339,6 +353,45 @@ describe('the rules under the pane', () => {
     expect(classifyHooks('{"hooks": {}}')).toEqual({ isMod: false, problem: undefined })
     expect(classifyHooks('{ not json').isMod).toBe(false)
     expect(classifyHooks('{ not json').problem).toMatch(/^not JSON/)
+  })
+
+  test('hookFilesOf: the array form reads each declared path after the default file, with a leading ./ removed and listed once', () => {
+    expect(hookFilesOf('{"hooks": ["./hooks/a.json", "hooks/b.json", "./hooks/hooks.json"]}')).toEqual({
+      paths: ['hooks/hooks.json', 'hooks/a.json', 'hooks/b.json'],
+      inlineIsMod: false,
+      rejected: [],
+      problem: undefined,
+    })
+  })
+
+  test('hookFilesOf: the string form is one more file', () => {
+    expect(hookFilesOf('{"hooks": "./hooks/a.json"}')).toEqual({ paths: ['hooks/hooks.json', 'hooks/a.json'], inlineIsMod: false, rejected: [], problem: undefined })
+  })
+
+  test('hookFilesOf: an inline hooks object is a mod only when its modules list is not empty', () => {
+    expect(hookFilesOf('{"hooks": {"modules": ["./index.ts"]}}')).toEqual({ paths: ['hooks/hooks.json'], inlineIsMod: true, rejected: [], problem: undefined })
+    expect(hookFilesOf('{"hooks": {"modules": []}}').inlineIsMod).toBe(false)
+    expect(hookFilesOf('{"hooks": {"hooks": {}}}').inlineIsMod).toBe(false)
+  })
+
+  test('hookFilesOf: a manifest with no hooks field checks only the default file', () => {
+    expect(hookFilesOf('{"name": "x"}')).toEqual({ paths: ['hooks/hooks.json'], inlineIsMod: false, rejected: [], problem: undefined })
+  })
+
+  test('hookFilesOf: an unreadable manifest checks only the default file, and a manifest that is not JSON names the problem', () => {
+    expect(hookFilesOf(undefined)).toEqual({ paths: ['hooks/hooks.json'], inlineIsMod: false, rejected: [], problem: undefined })
+    const broken = hookFilesOf('{ not json')
+    expect(broken.paths).toEqual(['hooks/hooks.json'])
+    expect(broken.problem).toMatch(/^not JSON/)
+  })
+
+  test('hookFilesOf: a declared path that is absolute or contains .. is never read, and is returned in rejected', () => {
+    expect(hookFilesOf('{"hooks": ["../escape.json", "/cache/escape.json", "./hooks/ok.json"]}')).toEqual({
+      paths: ['hooks/hooks.json', 'hooks/ok.json'],
+      inlineIsMod: false,
+      rejected: ['../escape.json', '/cache/escape.json'],
+      problem: undefined,
+    })
   })
 
   test('appliesHere: a user entry everywhere, a project or local one only in or under its folder', () => {

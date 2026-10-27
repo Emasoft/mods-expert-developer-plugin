@@ -4,7 +4,7 @@
 import type { EngineInterface } from 'claude-code'
 
 import { resolveBin } from '../resolve-bin'
-import { type Action, type Installed, type Row, actionArgv, classifyHooks, parseInstalled } from './logic'
+import { type Action, type Installed, type Row, DEFAULT_HOOKS_FILE, actionArgv, classifyHooks, hookFilesOf, parseInstalled } from './logic'
 
 const LIST_TIMEOUT_MS = 60_000
 const ACTION_TIMEOUT_MS = 120_000
@@ -21,21 +21,38 @@ export async function listInstalled($: EngineInterface): Promise<Installed[]> {
 }
 
 /**
- * Whether the plugin installed at `installPath` is a mod. A missing or unreadable hooks file is not a mod,
- * and a malformed one is not either; the reason goes to the debug log so the pane stays quiet.
+ * Whether the plugin installed at `installPath` is a mod: its manifest declares inline hooks that list modules, or a
+ * hooks file it checks does. The files checked are hooks/hooks.json and each file the manifest declares under `hooks`.
+ * A missing default hooks file is normal and goes to the debug log. A declared file that is missing, unreadable or not
+ * JSON goes to the default log, because the manifest promised it, and the other files are still checked.
  */
 export async function isMod($: EngineInterface, installPath: string): Promise<boolean> {
-  const hooksPath = `${installPath}/hooks/hooks.json`
-  let text: string
+  const manifestPath = `${installPath}/.claude-plugin/plugin.json`
+  let manifest: string | undefined
   try {
-    text = await $.fs.read(hooksPath)
+    manifest = await $.fs.read(manifestPath)
   } catch (error) {
-    $.ui.log(`mod-manager: ${hooksPath} is not readable, so the plugin is not counted as a mod: ${messageOf(error)}`, { to: 'debug' })
-    return false
+    $.ui.log(`mod-manager: ${manifestPath} is not readable, so only ${DEFAULT_HOOKS_FILE} is checked: ${messageOf(error)}`, { to: 'debug' })
   }
-  const verdict = classifyHooks(text)
-  if (verdict.problem !== undefined) $.ui.log(`mod-manager: ${hooksPath} is not counted as a mod: ${verdict.problem}`, { to: 'debug' })
-  return verdict.isMod
+  const declared = hookFilesOf(manifest)
+  if (declared.problem !== undefined) $.ui.log(`mod-manager: ${manifestPath} is ${declared.problem}, so only ${DEFAULT_HOOKS_FILE} is checked`)
+  for (const item of declared.rejected) $.ui.log(`mod-manager: ${manifestPath} declares "${item}", which is absolute or has "..", so it is skipped`)
+  let mod = declared.inlineIsMod
+  for (const relative of declared.paths) {
+    const hooksPath = `${installPath}/${relative}`
+    const level = relative === DEFAULT_HOOKS_FILE ? { to: 'debug' as const } : undefined
+    let text: string
+    try {
+      text = await $.fs.read(hooksPath)
+    } catch (error) {
+      $.ui.log(`mod-manager: ${hooksPath} is not readable, so it is not counted as a mod: ${messageOf(error)}`, level)
+      continue
+    }
+    const verdict = classifyHooks(text)
+    if (verdict.problem !== undefined) $.ui.log(`mod-manager: ${hooksPath} is not counted as a mod: ${verdict.problem}`, level)
+    if (verdict.isMod) mod = true
+  }
+  return mod
 }
 
 /**

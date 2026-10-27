@@ -60,9 +60,12 @@ export function appliesHere(entry: Installed, sessionRoot: string): boolean {
   return entry.projectPath !== undefined && isWithin(sessionRoot, entry.projectPath)
 }
 
+/** True when a `modules` value is a non-empty list: the one test a hooks file and an inline hooks object share. */
+const listsModules = (modules: unknown): boolean => Array.isArray(modules) && modules.length > 0
+
 /**
- * A plugin is a mod when its hooks/hooks.json lists one or more modules. A file that is not JSON is not
- * a mod either, and the problem is returned so the caller can log it.
+ * A hooks file is a mod file when it lists one or more modules. A file that is not JSON is not a mod file either,
+ * and the problem is returned so the caller can log it.
  */
 export function classifyHooks(text: string): { isMod: boolean; problem: string | undefined } {
   let data: unknown
@@ -72,7 +75,49 @@ export function classifyHooks(text: string): { isMod: boolean; problem: string |
     return { isMod: false, problem: `not JSON (${messageOf(error)})` }
   }
   const modules = typeof data === 'object' && data !== null ? (data as { modules?: unknown }).modules : undefined
-  return { isMod: Array.isArray(modules) && modules.length > 0, problem: undefined }
+  return { isMod: listsModules(modules), problem: undefined }
+}
+
+/** The hooks file every plugin is checked for, relative to its install folder, whether or not its manifest names it. */
+export const DEFAULT_HOOKS_FILE = 'hooks/hooks.json'
+
+/** What a plugin's manifest says about where its hooks are, as hookFilesOf reads it. */
+export type HookFiles = {
+  /** Paths relative to the plugin folder to check: the default file first, then each string path the manifest declares. */
+  paths: string[]
+  /** The manifest declares its hooks inline, and that object lists one or more modules. */
+  inlineIsMod: boolean
+  /** Declared paths refused because they are absolute or contain "..": never read, returned so the caller can log them. */
+  rejected: string[]
+  /** Why the manifest text is not a JSON value. Then only the default file is checked. */
+  problem: string | undefined
+}
+
+/**
+ * Which hooks files of a plugin to check, given the text of its `.claude-plugin/plugin.json`. Undefined means the manifest
+ * could not be read, and then only the default file is checked. A declared path loses a leading "./" and is listed once.
+ * A declared path that is absolute or contains ".." would reach outside the plugin, so it is refused, not read.
+ */
+export function hookFilesOf(manifestText: string | undefined): HookFiles {
+  const paths = [DEFAULT_HOOKS_FILE]
+  const rejected: string[] = []
+  if (manifestText === undefined) return { paths, inlineIsMod: false, rejected, problem: undefined }
+  let data: unknown
+  try {
+    data = JSON.parse(manifestText)
+  } catch (error) {
+    return { paths, inlineIsMod: false, rejected, problem: `not JSON (${messageOf(error)})` }
+  }
+  const hooks = typeof data === 'object' && data !== null ? (data as { hooks?: unknown }).hooks : undefined
+  const declared = typeof hooks === 'string' ? [hooks] : Array.isArray(hooks) ? hooks : []
+  for (const item of declared) {
+    if (typeof item !== 'string') continue
+    const relative = item.replace(/^\.\//, '')
+    if (/^(\/|\\|[A-Za-z]:)/.test(relative) || relative.includes('..')) rejected.push(item)
+    else if (!paths.includes(relative)) paths.push(relative)
+  }
+  const isInlineObject = typeof hooks === 'object' && hooks !== null && !Array.isArray(hooks)
+  return { paths, inlineIsMod: isInlineObject && listsModules((hooks as { modules?: unknown }).modules), rejected, problem: undefined }
 }
 
 export function toRow(entry: Installed, isMod: boolean): Row {
