@@ -644,7 +644,7 @@ function frontmatterValue(raw: string): string {
  * The project-root a draft names, read as drafts.py split_frontmatter reads it: a first line of
  * ---, top-level key: value lines, a closing ---. undefined when the text has no frontmatter, no
  * closing fence or no project-root line. Every draft the mod has written carries the field: the
- * frontmatter has been the same since the mod's first commit (ac621e6).
+ * frontmatter has been the same since the mod's first commit (35383fb).
  */
 export function draftProjectRoot(draft: string): string | undefined {
   const lines = draft.split('\n')

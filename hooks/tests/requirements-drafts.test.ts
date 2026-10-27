@@ -116,7 +116,7 @@ async function hash12(text: string): Promise<string> {
 }
 
 /**
- * A draft as the mod's first release wrote it (renderDraft at ac621e6, its first commit). A literal,
+ * A draft as the mod's first release wrote it (renderDraft at 35383fb, its first commit). A literal,
  * not renderDraft: a change of the on-disk format must turn the old-draft test red.
  */
 function firstReleaseDraft(id: string, projectRoot: string, text: string): string {
