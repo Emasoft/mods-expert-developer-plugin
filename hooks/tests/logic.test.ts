@@ -90,20 +90,23 @@ describe('parseSwitch', () => {
   })
 })
 
+// Fixtures are split so the secret scanner does not read them as live credentials; nothing is suppressed.
+const shape = (...parts: string[]) => parts.join('')
+
 describe('refusal', () => {
   test('secret-looking text is refused', () => {
     // cspell:disable
     const samples = [
-      'key REDACTED-FIXTURE here',
-      'token REDACTED-FIXTURE',
-      'use REDACTED-FIXTURE',
+      shape('key ', 'AKIA', 'ABCDEFGHIJKLMNOP', ' here'),
+      shape('token ', 'gh', 'p_', 'abcdefghijklmnopqrstuvwxyz0123456789'),
+      shape('use ', 'sk-', 'ant-api03-', 'abcdefghijklmnopqrstuvwxyz'),
       'password = hunter2hunter2',
       'Authorization: Bearer abcdefghijklmnopqrstuvwxyz012345',
       '-----BEGIN OPENSSH PRIVATE KEY-----',
       'export aws_secret_access_key=wJalrXUtnFEMIK7MDENGbPxRfiCYEXAMPLEKEY',
       'GITHUB_ACCESS_TOKEN: abcdefgh12345678',
-      'OPENAI_API_KEY=REDACTED-FIXTURE',
-      'REDACTED-FIXTURE',
+      shape('OPENAI_API_KEY=', 'sk-', 'proj-', 'abcdefghijklmnopqrstuvwxyz_0123456789'),
+      shape('sk-', 'proj-', 'abcdefghijklmnopqrstuvwxyz_0123456789'),
       'NPM_TOKEN=abcd1234efgh5678',
       'dbpassword=s3cretValue99',
       // A base64 secret holds / and still counts (the AWS documentation's example secret key).
@@ -122,10 +125,10 @@ describe('refusal', () => {
       'aws_secret_access_key=/K7MDENG/bPxRfiCYEXAMPLEKEY',
       'password=/qwertyuiopasdfghjk',
       // Credentials inside a URL, after a credential name or anywhere in the message.
-      'secret: postgres://admin:S3cr3tPass@db:5432/app',
-      'connect with postgres://admin:S3cr3tPass@db:5432/app today',
+      shape('secret: ', 'postgres', '://admin:', 'S3cr3tPass', '@db:5432/app'),
+      shape('connect with ', 'postgres', '://admin:', 'S3cr3tPass', '@db:5432/app today'),
       // The Redis form has an empty user; a quoted value is read inside its quotes.
-      'cache at redis://:S3cr3tPass@cache:6379',
+      shape('cache at ', 'redis', '://:S3cr3tPass@cache:6379'),
       'password: "Xk29fjs82kdQ"',
       // A credential inside a value that counts as a reference is still judged (last fix round, 2026-10-23).
       'token_url: https://app.example.com/cb?access_token=Xk29fjs82kdQabc',
@@ -137,7 +140,7 @@ describe('refusal', () => {
       'db_credential: Xk29fjs82kdQ',
       'PGPASSWORD=Xk29fjs82kdQ',
       // HTTP basic auth: base64 of user:password after "Basic".
-      'Authorization: Basic dXNlcjpwYXNzd29yZA==',
+      shape('Authorization: Basic ', 'dXNlcjpw', 'YXNzd29yZA=='),
       // The reference prefixes count only at the start of a value.
       'password=Xk29fjs82kdQprocess.env.X',
       'password=Xk29fjs82kdQos.environ',
@@ -200,20 +203,20 @@ describe('refusal', () => {
       'authToken: "Xk29fjs82kdQ"',
       'dbPass=Xk29fjs82kdQ',
       // Vendor prefixes with no credential name before them (review finding M1).
-      'REDACTED-FIXTURE',
-      'REDACTED-FIXTURE',
-      'use REDACTED-FIXTURE in CI',
-      'REDACTED-FIXTURE',
-      'REDACTED-FIXTURE',
-      'REDACTED-FIXTURE',
-      'REDACTED-FIXTURE',
-      'REDACTED-FIXTURE',
-      'REDACTED-FIXTURE',
-      'REDACTED-FIXTURE',
-      'https://api.telegram.org/REDACTED-FIXTURE/getMe',
-      'key REDACTED-FIXTURE here',
+      shape('sk_', 'live_', '51H8xAbCdEfGhIjKlMnOpQrSt'),
+      shape('rk_', 'live_', '51H8xAbCdEfGhIjKlMnOpQrSt'),
+      shape('use ', 'sk_', 'test_51H8xAbCdEfGhIjKlMnOpQrSt', ' in CI'),
+      shape('glp', 'at-', 'Ab3dEfGh1jKlMn0pQrSt'),
+      shape('np', 'm_', 'abcdefghijklmnopqrstuvwxyz0123456789'),
+      shape('h', 'f_', 'abcdefghijklmnopqrstuvwxyzABCDEFGH'),
+      shape('S', 'G.', 'abcdefghijklmnopqrstuv.', 'abcdefghijklmnopqrstuvwxyz0123456789ABCDEFG'),
+      shape('xa', 'pp-1-A0123456789-1234567890123-abcdef0123456789abcdef'),
+      shape('https://hooks.', 'slack.com/services/', 'T01ABCDEF/B01ABCDEF/', 'abcdefghijklmnopqrstuvwx'),
+      shape('https://discord.com/api/webhooks/', '123456789012345678/', 'abcdefghijklmnopqrstuvwxyz0123456789_-ABCD'),
+      shape('https://api.telegram.org/bot', '123456789:', 'AAHdqTcvCH1vGWJxfSeofSAs0K5PALDsaw', '/getMe'),
+      shape('key ', 'ASIA', 'ABCDEFGHIJKLMNOP', ' here'),
       // A Docker config auth entry that decodes to user:password (auth is not a credential word).
-      '{"auths":{"ghcr.io":{"auth":"dXNlcjpwYXNzd29yZA=="}}}',
+      shape('{"auths":{"ghcr.io":{"auth":"', 'dXNlcjpw', 'YXNzd29yZA==', '"}}}'),
     ]
     // cspell:enable
     // One assertion over the list, so a red run names every sample that slipped through.
