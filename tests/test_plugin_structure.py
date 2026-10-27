@@ -16,6 +16,7 @@ from __future__ import annotations
 import fnmatch
 import json
 import re
+import subprocess
 import tomllib
 from pathlib import Path
 
@@ -523,11 +524,12 @@ def test_examples_folder_carries_the_source_licence(tutorial: str) -> None:
 
 def _root_plugin_files(root: Path) -> list[Path]:
     """The files Claude Code loads from the plugin root: the manifest, hooks/, agents/ and commands/ (skills/ is the discovery folder)."""
-    files = [root / ".claude-plugin" / "plugin.json"]
-    for folder in ("hooks", "agents", "commands"):
-        base = root / folder
-        if base.is_dir():
-            files.extend(sorted(p for p in base.rglob("*") if p.is_file()))
+    # Only git-tracked files are part of the plugin: an untracked or ignored file such as a macOS Finder .DS_Store (not UTF-8) once crashed this test on a developer machine.
+    tracked = subprocess.run(
+        ["git", "ls-files", "-z", "--", "hooks", "agents", "commands", ".claude-plugin/plugin.json"],
+        cwd=root, check=True, capture_output=True, text=True,
+    ).stdout.split("\0")
+    files = sorted(root / name for name in tracked if name)
     return [f for f in files if f.is_file()]
 
 
@@ -576,6 +578,8 @@ def test_load_guard_detects_references_and_stray_manifests(tmp_path: Path) -> No
     )
     (tmp_path / "agents").mkdir()
     (tmp_path / "agents" / "a.md").write_text("see skills/mods-tutorial-x/examples/d/", encoding="utf-8")
+    subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
+    subprocess.run(["git", "add", "--", ".claude-plugin", "agents"], cwd=tmp_path, check=True)
     assert _example_path_references(tmp_path) == [".claude-plugin/plugin.json", "agents/a.md"]
     good = tmp_path / "skills/mods-tutorial-x/examples/d/.claude-plugin"
     good.mkdir(parents=True)
