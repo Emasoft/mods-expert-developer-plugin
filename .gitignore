@@ -36,3 +36,6 @@ skills/*/examples/*/.claude-plugin/types/
 # the types folder and a root tsconfig.json that extends it
 /.claude-plugin/types/
 /tsconfig.json
+/.trashcan/*
+!/.trashcan/.gitkeep
+!/.trashcan/README.txt
