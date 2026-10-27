@@ -10,6 +10,7 @@
 - [Sessions and Runtime](#sessions-and-runtime)
 - [Troubleshooting](#troubleshooting)
 - [Requirements drafts](#requirements-drafts)
+- [Mod install and uninstall](#mod-install-and-uninstall)
 - [Tutorials (reference only)](#tutorials-reference-only)
 
 Full entries for the chapter skills of `mods-expert-developer-plugin`, grouped by domain. Each entry is derived from the skill's own SKILL.md: its description, its H1 and its section table of contents. The four standalone tool skills (optional, recommended; user-scope, not shipped by this plugin) are described in the menu's SKILL.md, not here.
@@ -911,6 +912,38 @@ Full entries for the chapter skills of `mods-expert-developer-plugin`, grouped b
 **Outputs:** a Markdown table of the matching drafts with one snippet line each; nothing is written.
 
 **Dependencies:** Python 3.12, the drafts folder of the requirements-drafts mod, and the script of `mods-requirements-drafts-list`.
+
+## Mod install and uninstall
+
+These two skills are tools of this plugin, not chapters. Both are user-invocable, and both act only on the names the user gives and the choices the user confirms.
+
+### mods-expert-developer-plugin:mods-install-mod
+
+**Use when:** the user asks to install a mod plugin from a marketplace, given its exact plugin and marketplace names or the GitHub repositories of the plugin and its marketplace. Sections: Overview; Prerequisites; Instructions; Output; Error Handling; Examples; Resources.
+
+**Do not use when:** the user wants to remove a plugin (use `mods-expert-developer-plugin:mods-uninstall-mod`).
+
+**Load with:** `Skill({skill: "mods-expert-developer-plugin:mods-install-mod", args: "<plugin@marketplace, or plugin repo and marketplace repo>"})`
+
+**Inputs:** the exact plugin and marketplace names, or the two GitHub repositories.
+
+**Outputs:** the marketplace added or updated, the plugin installed, and a reload requested through the run tool; nothing else is written.
+
+**Dependencies:** the claude CLI, jq, and the run tool of this plugin, which is on only while the developer tools switch is on.
+
+### mods-expert-developer-plugin:mods-uninstall-mod
+
+**Use when:** the user asks to uninstall a mod plugin and names it approximately or incompletely, with or without its marketplace name.
+
+**Do not use when:** the user wants to install a plugin (use `mods-expert-developer-plugin:mods-install-mod`).
+
+**Load with:** `Skill({skill: "mods-expert-developer-plugin:mods-uninstall-mod", args: "<approximate plugin name>"})`
+
+**Inputs:** an approximate or incomplete plugin name, with or without the marketplace name.
+
+**Outputs:** the matching installed plugins for the user to pick from, one plugin uninstalled after the user confirms, and a reload requested through the run tool; nothing else.
+
+**Dependencies:** the claude CLI, jq, and the run tool of this plugin, which is on only while the developer tools switch is on.
 
 ## Tutorials (reference only)
 

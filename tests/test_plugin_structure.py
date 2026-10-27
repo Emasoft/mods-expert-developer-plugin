@@ -39,7 +39,11 @@ QUICKSTART_TOOLS_SKILL = "mods-tutorial-quickstart"
 # The requirements-drafts mod skills (TRDD-O5LUMKPW): tools, not chapters. They are user- and model-invocable, ship
 # scripts/drafts.py instead of references/chapter.md and have no README Components row. tests/test_skills_menu.py keeps an identical copy.
 DRAFTS_SKILLS = {"mods-requirements-drafts-list", "mods-requirements-drafts-search"}
-CHAPTER_DIRS = [d for d in SKILL_DIRS if d.name not in CATALOG_SKILLS | TUTORIAL_SKILLS | DRAFTS_SKILLS]
+# The mod install and uninstall skills (TRDD-1F4ZYWE1): user-invocable tools that install and uninstall mod plugins through the claude CLI and
+# reload the plugins afterwards. They are not chapters: no references/chapter.md, no README Components row, not routed by the preload list.
+# Named apart from TOOL_SKILLS, which lists the four user-scope tools this plugin does not ship. tests/test_skills_menu.py keeps an identical copy.
+PLUGIN_TOOL_SKILLS = {"mods-install-mod", "mods-uninstall-mod"}
+CHAPTER_DIRS = [d for d in SKILL_DIRS if d.name not in CATALOG_SKILLS | TUTORIAL_SKILLS | DRAFTS_SKILLS | PLUGIN_TOOL_SKILLS]
 TUTORIAL_DIRS = [d for d in SKILL_DIRS if d.name in TUTORIAL_SKILLS]
 # The example mods each tutorial carries under its examples/ folder, by folder name.
 TUTORIAL_EXAMPLES = {
@@ -112,7 +116,7 @@ def _chapter_toc(chapter: str) -> list[tuple[str, str, str]]:
 
 def test_every_skill_ships_wrapper_chapter_and_policy() -> None:
     """Every skill ships SKILL.md and agents/openai.yaml; every chapter skill also ships references/chapter.md."""
-    assert len(SKILL_DIRS) == 67
+    assert len(SKILL_DIRS) == 69
     assert len(CHAPTER_DIRS) == 61
     assert len(TUTORIAL_DIRS) == 3
     for skill in SKILL_DIRS:
@@ -146,11 +150,11 @@ def test_background_sessions_skill_keeps_token_handling_with_the_user() -> None:
 
 @pytest.mark.parametrize("skill", SKILL_DIRS, ids=lambda d: d.name)
 def test_skill_frontmatter_name_matches_directory(skill: Path) -> None:
-    """SKILL.md name equals its directory, avoids reserved words, and is not user-invocable (drafts skills are)."""
+    """SKILL.md name equals its directory, avoids reserved words, and is user-invocable only for the drafts and plugin tool skills."""
     fields = _frontmatter((skill / "SKILL.md").read_text(encoding="utf-8"))
     assert fields["name"] == skill.name
     assert not any(word in skill.name for word in RESERVED), f"reserved word in {skill.name}"
-    assert fields["user-invocable"] == ("true" if skill.name in DRAFTS_SKILLS else "false")
+    assert fields["user-invocable"] == ("true" if skill.name in DRAFTS_SKILLS | PLUGIN_TOOL_SKILLS else "false")
 
 
 @pytest.mark.parametrize("skill", CHAPTER_DIRS, ids=lambda d: d.name)

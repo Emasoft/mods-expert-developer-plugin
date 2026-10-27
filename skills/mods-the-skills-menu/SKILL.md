@@ -9,7 +9,7 @@ allowed-tools: Read
 
 ## Overview
 
-This menu lists every skill an agent of `mods-expert-developer-plugin` can load at runtime: the four optional, recommended user-scope tool skills the agents use but the plugin does not ship, the 61 chapter skills the plugin ships (60 adapted Claude Code documentation chapters and one community how-to), two tools that read the drafts of the requirements-drafts mod, and three reference-only tutorials with example mods. It names each skill once, says what it covers, and shows how to load it. It holds no chapter content itself.
+This menu lists every skill an agent of `mods-expert-developer-plugin` can load at runtime: the four optional, recommended user-scope tool skills the agents use but the plugin does not ship, the 61 chapter skills the plugin ships (60 adapted Claude Code documentation chapters and one community how-to), two tools that read the drafts of the requirements-drafts mod, two skills that install and uninstall mod plugins, and three reference-only tutorials with example mods. It names each skill once, says what it covers, and shows how to load it. It holds no chapter content itself.
 
 ## Prerequisites
 
@@ -57,6 +57,7 @@ Input: a step must read lines 1 to 80 of the hooks module before editing it.
   - [Sessions and Runtime](references/skills-catalog.md#sessions-and-runtime)
   - [Troubleshooting](references/skills-catalog.md#troubleshooting)
   - [Requirements drafts](references/skills-catalog.md#requirements-drafts)
+  - [Mod install and uninstall](references/skills-catalog.md#mod-install-and-uninstall)
   - [Tutorials (reference only)](references/skills-catalog.md#tutorials-reference-only)
 
 ## Standalone Skills
@@ -227,6 +228,15 @@ Tools of the requirements-drafts mod: they read the drafts the mod saves. Both a
 |---|---|
 | mods-expert-developer-plugin:mods-requirements-drafts-list | List the saved requirements drafts, newest first, for a project or all projects |
 | mods-expert-developer-plugin:mods-requirements-drafts-search | Find saved requirements drafts by keywords that must all match |
+
+### Mod install and uninstall
+
+Tool skills of this plugin that install and uninstall mod plugins with the claude CLI, then reload the plugins. Both are user-invocable, and both act only on the names the user gives and the choices the user confirms.
+
+| Skill | Covers |
+|---|---|
+| mods-expert-developer-plugin:mods-install-mod | Install a mod plugin from its marketplace, by exact names or GitHub repos, then reload the plugins |
+| mods-expert-developer-plugin:mods-uninstall-mod | Uninstall a mod plugin named approximately, after the user picks it, then reload the plugins |
 
 ### Tutorials (reference only)
 
