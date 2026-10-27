@@ -1102,7 +1102,7 @@ To run a PowerShell script as your status line, invoke it via `powershell`. This
   {
     "statusLine": {
       "type": "command",
-      "command": "powershell -NoProfile -File $HOME/.claude/statusline.ps1"
+      "command": "powershell -NoProfile -File <full path to statusline.ps1>"
     }
   }
   ```
@@ -1121,6 +1121,8 @@ To run a PowerShell script as your status line, invoke it via `powershell`. This
   }
   ```
 </CodeGroup>
+
+Write the script's full path there, for example the expanded form of `%USERPROFILE%\.claude\statusline.ps1`; `-File` does not expand variables such as `$HOME` or `%USERPROFILE%`.
 
 Or, when Git Bash is installed, run a Bash script directly:
 
