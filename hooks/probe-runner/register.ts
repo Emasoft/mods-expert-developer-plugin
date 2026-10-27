@@ -19,6 +19,7 @@ import {
   pluginDir,
   probeOf,
   scriptArgv,
+  sessionLocation,
   startedText,
   type Probe,
   type ProbeBins,
@@ -26,13 +27,16 @@ import {
 
 const messageOf = (error: unknown): string => (error instanceof Error ? error.message : String(error))
 
-/** The plugin directories, each checked for its manifest; a string names the first one missing. */
+/** The plugin directories, each checked for its manifest and its session locations; a string is the refusal, and nothing runs. */
 async function pluginDirs($: EngineInterface, probe: Probe): Promise<string[] | string> {
-  const cwd = await $.session.cwd()
-  const root = await $.session.root()
-  const home = (await $.env.get('HOME')) ?? ''
-  const rootIsPlugin = await $.fs.exists(`${root}/.claude-plugin/plugin.json`)
-  const dirs = probe.plugins.map((p) => pluginDir(p, root, cwd, home, rootIsPlugin))
+  const home = sessionLocation('home folder (HOME)', await $.env.get('HOME'))
+  const root = sessionLocation('session root', await $.session.root())
+  const cwd = sessionLocation('working folder', await $.session.cwd())
+  if ('problem' in home) return home.problem
+  if ('problem' in root) return root.problem
+  if ('problem' in cwd) return cwd.problem
+  const rootIsPlugin = await $.fs.exists(`${root.path}/.claude-plugin/plugin.json`)
+  const dirs = probe.plugins.map((p) => pluginDir(p, root.path, cwd.path, home.path, rootIsPlugin))
   for (const dir of dirs) {
     if (!(await $.fs.exists(`${dir}/.claude-plugin/plugin.json`))) return manifestMissing(dir)
   }
@@ -40,25 +44,24 @@ async function pluginDirs($: EngineInterface, probe: Probe): Promise<string[] | 
 }
 
 /**
- * Runs one probe and answers its report, or why it did not run. A program that is not installed
- * throws from resolveBin, naming every place it looked; a run past its timeout throws from process.run.
+ * Runs one probe, its plugin directories already checked, and answers its report. A program that is not
+ * installed throws from resolveBin, naming every place it looked; a run past its timeout throws from process.run.
  */
-async function runProbe($: EngineInterface, probe: Probe): Promise<string> {
-  const dirs = await pluginDirs($, probe)
-  if (typeof dirs === 'string') return dirs
+async function runProbe($: EngineInterface, probe: Probe, dirs: readonly string[]): Promise<string> {
   const bins: ProbeBins = { python: await resolveBin($, 'python3'), claude: await resolveBin($, 'claude'), tmux: await resolveBin($, 'tmux'), git: await resolveBin($, 'git') }
   const r = await $.process.run(scriptArgv(bins, `${$.plugin.root}/scripts/probe.py`, probe, dirs), { timeoutMs: PROBE_MS })
   return r.exitCode === 0 ? r.stdout : failureText(r.exitCode, r.stderr, r.stdout)
 }
 
 /**
- * The probe runs from a timer, not from the command's own hook: the engine rejects a command run from a
- * hook the turn waits on. Its report reaches the model only through the send command, the one path every
- * report takes; a failed send is logged and toasted, because the model would otherwise wait for it.
+ * The probe runs from a timer, not from the hook that asked for it. The engine rejects a command run from a
+ * hook the turn waits on, and a tool call that waited up to ten minutes could be cut by the engine first, which
+ * would kill the probe before its cleanup ran. The report reaches the model only through the send command, the
+ * one path every report takes; a failed send is logged and toasted, because the model would otherwise wait for it.
  */
-function runInBackground($: EngineInterface, probe: Probe): void {
+function runInBackground($: EngineInterface, probe: Probe, dirs: readonly string[]): void {
   $.clock.after(0, async () => {
-    const report = await runProbe($, probe).catch((error: unknown) => `the probe did not finish: ${messageOf(error)}`)
+    const report = await runProbe($, probe, dirs).catch((error: unknown) => `the probe did not finish: ${messageOf(error)}`)
     try {
       await $.command.run({ command: SEND_COMMAND, args: report })
     } catch (error) {
@@ -68,7 +71,7 @@ function runInBackground($: EngineInterface, probe: Probe): void {
   })
 }
 
-/** A gating hook that failed (a missing program, a run past its timeout, the store refused) refuses the call, saying why. */
+/** A gating hook that failed (the store or the engine refused a step) refuses the call, saying why. */
 const failClosed = (error: { message?: string; kind: string }): { deny: string } => ({
   deny: `${TOOL_NAME} failed: ${error.message || error.kind}`,
 })
@@ -92,7 +95,10 @@ export function registerProbeRunner(on: On): void {
     if (!(await isDevToolsOn($))) return { deny: DEV_TOOLS_OFF }
     const probe = probeOf(e as unknown as Record<string, unknown>)
     if (typeof probe === 'string') return { deny: probe }
-    return { result: await runProbe($, probe) }
+    const dirs = await pluginDirs($, probe)
+    if (typeof dirs === 'string') return { deny: dirs }
+    runInBackground($, probe, dirs)
+    return { result: startedText(probe) }
   }).catch(async ($, e, next) => failClosed(next.error))
 
   // Literal name, as in dev-tools.ts and startProbeRunner.
@@ -100,7 +106,9 @@ export function registerProbeRunner(on: On): void {
     if (!(await isDevToolsOn($))) return { text: DEV_TOOLS_OFF }
     const probe = parseArgs(String(e.args ?? ''))
     if (typeof probe === 'string') return { text: probe }
-    runInBackground($, probe)
+    const dirs = await pluginDirs($, probe)
+    if (typeof dirs === 'string') return { text: dirs }
+    runInBackground($, probe, dirs)
     return { text: startedText(probe) }
   }).catch(async ($, e, next) => ({ text: `probe-runner failed: ${next.error.message || next.error.kind}` }))
 }

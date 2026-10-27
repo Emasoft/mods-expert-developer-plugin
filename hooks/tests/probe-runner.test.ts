@@ -28,6 +28,8 @@ type World = {
   clock: MockClock
   session: string
   root: string
+  cwd: string
+  home: string | undefined
   store: Map<string, unknown>
   /** The paths $.fs.exists answers true for. */
   files: Set<string>
@@ -52,6 +54,8 @@ function world(on: any, store: Record<string, unknown> = {}, programs: string[] 
     clock: mock.clock(on, { now: 1_000 }),
     session: `probe-${(sessions += 1)}`,
     root: ROOT,
+    cwd: CWD,
+    home: HOME,
     store: new Map(Object.entries(store)),
     files: new Set([`${DEMO_DIR}/.claude-plugin/plugin.json`, ...programs]),
     tools: [],
@@ -66,9 +70,9 @@ function world(on: any, store: Record<string, unknown> = {}, programs: string[] 
   }
   on('session.start', ($: any, e: any) => ({ cwd: e.cwd }))
   on('session.id', () => ({ value: w.session }))
-  on('session.cwd', () => ({ value: CWD }))
+  on('session.cwd', () => ({ value: w.cwd }))
   on('session.root', () => ({ value: w.root }))
-  on('env.get', ($: any, e: any) => ({ value: e.name === 'HOME' ? HOME : undefined }))
+  on('env.get', ($: any, e: any) => ({ value: e.name === 'HOME' ? w.home : undefined }))
   on('fs.exists', ($: any, e: any) => ({ value: w.files.has(e.path) }))
   on('fs.stat', () => ({ value: { kind: 'file' } }))
   on('store.get', ($: any, e: any) => ({ value: w.store.get(e.key) }))
@@ -182,21 +186,24 @@ describe('the probe-runner gate', () => {
 })
 
 describe('the probe tool', () => {
-  test('resolves python3, claude, tmux and git, runs the script with them and answers its report', async ($, on) => {
+  test('answers at once, then runs the probe after the turn with python3, claude, tmux and git and sends its report', async ($, on) => {
     const w = world(on, ON)
     await start($)
     const r = await $.tool.call({ tool: TOOL, plugins: ['demo'], steps: ['/demo on'] } as any)
-    expect(r.result).toBe('# probe report')
+    expect(r.result).toBe('started: 1 step(s) with demo on sonnet; the report arrives as the next message when the probe ends')
+    expect(w.argv).toEqual([])
+    await w.clock.settle()
     expect(w.argv.length).toBe(1)
     expect(w.argv[0]![0]).toBe(PY)
     expect(w.argv[0]!.slice(2)).toEqual([`--claude=${CLAUDE}`, `--tmux=${TMUX}`, `--git=${GIT}`, '--model=sonnet', `--plugin-dir=${DEMO_DIR}`, '--step=/demo on'])
+    expect(w.sent).toEqual(['# probe report'])
   })
 
   test('a plugin with no manifest is answered before anything runs', async ($, on) => {
     const w = world(on, ON)
     await start($)
-    const r = await $.tool.call({ tool: TOOL, plugins: ['nope'], steps: ['x'] } as any)
-    expect(r.result).toBe(`no plugin at ${ROOT}/plugins/nope: it has no .claude-plugin/plugin.json`)
+    expect((await $.tool.call({ tool: TOOL, plugins: ['nope'], steps: ['x'] } as any)).deny).toBe(`no plugin at ${ROOT}/plugins/nope: it has no .claude-plugin/plugin.json`)
+    await w.clock.settle()
     expect(w.argv).toEqual([])
   })
 
@@ -205,24 +212,51 @@ describe('the probe tool', () => {
     w.files.add(`${ROOT}/.claude-plugin/plugin.json`)
     await start($)
     await $.tool.call({ tool: TOOL, plugins: ['.'], steps: ['/x'] } as any)
+    await w.clock.settle()
     expect(w.argv[0]!).toContain(`--plugin-dir=${ROOT}`)
   })
 
-  test('a missing tmux refuses the call at once, naming every place it looked, and nothing runs', async ($, on) => {
+  test('a missing tmux answers the call as started, then the report names every place it looked, and nothing runs', async ($, on) => {
     const w = world(on, ON, PROGRAMS.filter((p) => p !== TMUX))
     await start($)
     const r = await $.tool.call({ tool: TOOL, plugins: ['demo'], steps: ['x'] } as any)
-    expect(r.deny).toMatch(/^probe failed: (Error: )?tmux was not found; looked in /)
-    expect(r.deny).toContain('/opt/homebrew/bin/tmux')
+    expect(r.result).toMatch(/^started: /)
+    await w.clock.settle()
+    expect(w.sent.length).toBe(1)
+    expect(w.sent[0]).toMatch(/^the probe did not finish: (Error: )?tmux was not found; looked in /)
+    expect(w.sent[0]).toContain('/opt/homebrew/bin/tmux')
     expect(w.argv).toEqual([])
   })
 
-  test('a probe whose script exits non-zero answers the exit code and its error text', async ($, on) => {
+  test('a probe whose script exits non-zero sends the exit code and its error text as the report', async ($, on) => {
     const w = world(on, ON)
     w.processResult = { exitCode: 2, stdout: '', stderr: 'boom' }
     await start($)
-    const r = await $.tool.call({ tool: TOOL, plugins: ['demo'], steps: ['x'] } as any)
-    expect(r.result).toBe('the probe failed (exit 2): boom')
+    expect((await $.tool.call({ tool: TOOL, plugins: ['demo'], steps: ['x'] } as any)).result).toMatch(/^started: /)
+    await w.clock.settle()
+    expect(w.sent).toEqual(['the probe failed (exit 2): boom'])
+  })
+
+  test('a HOME, session root or working folder that is blank or relative refuses the call and runs nothing', async ($, on) => {
+    const w = world(on, ON)
+    await start($)
+    const cases: Array<[home: string | undefined, root: string, cwd: string, deny: string]> = [
+      [undefined, ROOT, CWD, 'Not run: the home folder (HOME) is not known.'],
+      ['', ROOT, CWD, 'Not run: the home folder (HOME) is not known.'],
+      ['relative/home', ROOT, CWD, 'Not run: the home folder (HOME) is not an absolute path: relative/home'],
+      [HOME, '', CWD, 'Not run: the session root is not known.'],
+      [HOME, 'work', CWD, 'Not run: the session root is not an absolute path: work'],
+      [HOME, ROOT, ' ', 'Not run: the working folder is not known.'],
+      [HOME, ROOT, 'sub', 'Not run: the working folder is not an absolute path: sub'],
+    ]
+    for (const [home, root, cwd, deny] of cases) {
+      w.home = home
+      w.root = root
+      w.cwd = cwd
+      expect((await $.tool.call({ tool: TOOL, plugins: ['demo'], steps: ['x'] } as any)).deny).toBe(deny)
+    }
+    await w.clock.settle()
+    expect(w.argv).toEqual([])
   })
 
   test('input that is not a probe is denied with what is missing', async ($, on) => {
@@ -237,7 +271,7 @@ describe('the probe-runner command', () => {
     const w = world(on, ON)
     await start($)
     const r = await $.command.run(run('demo /demo on'))
-    expect(r.text).toBe('started: 1 step(s) with demo on sonnet; the report follows when it ends')
+    expect(r.text).toBe('started: 1 step(s) with demo on sonnet; the report arrives as the next message when the probe ends')
     expect(w.argv).toEqual([])
     await w.clock.settle()
     expect(w.argv.length).toBe(1)
@@ -262,6 +296,14 @@ const logged = w.logs.filter((l) => l.startsWith('probe-runner:'))
     const w = world(on, ON)
     await start($)
     expect((await $.command.run(run('demo'))).text).toBe(USAGE)
+    await w.clock.settle()
+    expect(w.argv).toEqual([])
+  })
+
+  test('a plugin with no manifest answers the refusal at once and runs nothing', async ($, on) => {
+    const w = world(on, ON)
+    await start($)
+    expect((await $.command.run(run('nope /x'))).text).toBe(`no plugin at ${ROOT}/plugins/nope: it has no .claude-plugin/plugin.json`)
     await w.clock.settle()
     expect(w.argv).toEqual([])
   })

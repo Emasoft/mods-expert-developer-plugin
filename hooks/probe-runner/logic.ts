@@ -51,6 +51,19 @@ export function pluginDir(name: string, root: string, cwd: string, home: string,
   return rootIsPlugin ? root : `${root}/plugins/${name}`
 }
 
+/** A session location a plugin path is built from: its checked path, or the message that refuses the run. */
+export type SessionLocation = { path: string } | { problem: string }
+
+/**
+ * A session location, checked as the self-command create form checks its folder: it must be known and
+ * absolute. A blank or relative one would build a wrong plugin path, so the run is refused before anything runs.
+ */
+export function sessionLocation(label: string, value: string | undefined): SessionLocation {
+  if (value === undefined || value.trim() === '') return { problem: `Not run: the ${label} is not known.` }
+  if (!value.startsWith('/')) return { problem: `Not run: the ${label} is not an absolute path: ${value}` }
+  return { path: value }
+}
+
 /** The text answered for a plugin directory that has no manifest. */
 export const manifestMissing = (dir: string): string => `no plugin at ${dir}: it has no .claude-plugin/plugin.json`
 
@@ -75,14 +88,14 @@ export function scriptArgv(bins: ProbeBins, script: string, probe: Probe, dirs: 
 export const failureText = (exitCode: number, stderr: string, stdout: string): string =>
   `the probe failed (exit ${exitCode}): ${stderr.trim() || stdout.trim()}`
 
-/** The text the command answers at once; the report follows later through the send command. */
+/** The text the tool and the command answer once the run has started; the report arrives later as the next message. */
 export const startedText = (probe: Probe): string =>
-  `started: ${probe.steps.length} step(s) with ${probe.plugins.join(', ')} on ${probe.model}; the report follows when it ends`
+  `started: ${probe.steps.length} step(s) with ${probe.plugins.join(', ')} on ${probe.model}; the report arrives as the next message when the probe ends`
 
 export const TOOL_DESCRIPTION = [
   'Run a live check of Claude Code plugins in a fresh session: a new git repository in the system temp directory, tmux, only the given plugin directories loaded, and the steps typed into the prompt one after another, each once the one before has finished.',
-  'You get the pane\'s final text, the session\'s transcript (prompts, replies, tool calls, command output, the context hooks added) and the list of what was deleted afterwards: the temp directory, its transcripts and the inline store files the probe wrote.',
-  'A probe takes about 15 seconds to start and then as long as its steps; it stops at 10 minutes.',
+  'The call answers at once with the start line; the report arrives later as the next message: the final text of the pane, the transcript of the session (prompts, replies, tool calls, command output, the context hooks added) and the list of what was deleted afterwards: the temp directory, its transcripts and the inline store files the probe wrote.',
+  'A probe takes about 15 seconds to start and then as long as its steps; it stops at 10 minutes. Do not wait for it: it arrives on its own.',
 ].join(' ')
 
 export const INPUT_SCHEMA = {

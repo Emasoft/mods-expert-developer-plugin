@@ -718,12 +718,14 @@ def test_plugin_tool_skills_copies_agree() -> None:
 
 
 def test_plugin_tool_skills_reload_through_the_run_tool() -> None:
-    """Each mod install and uninstall skill allows the run tool and carries the exact FAILED line for a reload that cannot run."""
+    """Each mod install and uninstall skill allows the run tool, asks it for reload-plugins --force, and carries the exact FAILED line."""
     failed_line = "FAILED: reload not run (<reason>; turn the developer tools on with /mods-dev-tools on, then start a new session)"
     for name in sorted(PLUGIN_TOOL_SKILLS):
         fields, body = _split(SKILLS / name / "SKILL.md")
         tools = [tool.strip() for tool in fields["allowed-tools"].split(",")]
         assert "mcp__mods-expert-developer-plugin__run" in tools, f"{name} does not allow the run tool"
+        assert "reload-plugins" in body, f"{name} does not name the reload-plugins command"
+        assert "--force" in body, f"{name} does not pass --force to the reload"
         assert failed_line in body, f"{name} lacks the exact FAILED line"
 
 

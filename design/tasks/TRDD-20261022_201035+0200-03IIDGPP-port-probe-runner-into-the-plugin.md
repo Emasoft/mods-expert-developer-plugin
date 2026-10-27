@@ -4,7 +4,7 @@ title: Port probe-runner into the plugin
 column: dev
 status: tasked
 created: 2026-10-22T20:10:35+0200
-updated: 2026-10-27T12:29:57+0100
+updated: 2026-10-27T13:02:17+0100
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -27,6 +27,7 @@ approval-datetime: 2026-10-22T20:10:35+0200
 ## STATE
 
 CURRENT STATE 2026-10-27: increment 1 written in the tree, not committed (hooks/probe-runner, scripts/probe.py, tests). Checks and open items: see the Increment 1 section. NEXT ACTION: the orchestrator applies the Integration block (hooks/index.ts wiring, NOTICE, README) and updates the self-command test expectation, then commits; the CPV strict gate and the later increments follow.
+REVIEW FIXES 2026-10-27 (increment 1): the probe tool answers at once and runs from a timer; a blank or relative HOME, session root or working folder is refused before any run; test_plugin_tool_skills_reload_through_the_run_tool asserts reload-plugins and --force. See the Increment 1 review fixes section.
 
 ## User directive
 
@@ -93,3 +94,10 @@ CURRENT STATE 2026-10-27: increment 1 written in the tree, not committed (hooks/
 - UNVERIFIED live: the inline store naming (<plugin>_inline-*.json, inferred from the source glob) and the manifest name as its prefix. Not confirmed against Claude Code's plugin store; no in-repo document or type settles it.
 - Gate: the tool and the command answer and register only while /mods-dev-tools is on; startProbeRunner registers the command last. hooks/index.ts must call startProbeRunner after the self-command start and before the dev-tools start (commands register last), and call registerProbeRunner after registerSelfCommand. The kit refuses engine calls from a hook that hooks/index.ts does not reach, so the tests need that wiring (verified in a scratch copy, not the repo).
 - Raw check results, the Integration block (hooks/index.ts, NOTICE, README) and the open items: reports/probe-runner/20261027_122907+0100-increment1.md. The repo kit gate stays red until the index.ts wiring is applied.
+
+## Increment 1 review fixes
+
+- Finding 1: the probe tool answered only after its run, which takes up to 10 minutes, so the engine could cut the hook and kill the probe before its cleanup. The tool now validates the input, starts the run from the command's timer (runInBackground) and answers the started text at once; the report arrives as the next message. Mutation check: an inline await of the run turns the tool test red.
+- Finding 2: pluginDirs built paths from a blank or relative HOME, session root or working folder. Each is now checked as absolute, the same rule as the self-command create form, and the run is refused before anything runs (the tool denies, the command answers the text). Mutation check: removing the absolute check turns the HOME refusal test red.
+- Finding 3: test_plugin_tool_skills_reload_through_the_run_tool did not check reload-plugins or --force, though the review recorded that it did. It now asserts both in each mod install and uninstall skill. Mutation check: removing --force from both mentions in the install skill turns it red. Limit: the check is a substring test, so any mention passes.
+- Checks and raw output: the probe-runner review-fixes report under reports/probe-runner/ (kit tests green on a staged copy with HEAD index.ts; mod-manager failures are noise; tsc, cspell and pytest for test_skills_menu and test_probe pass).
