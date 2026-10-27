@@ -1,10 +1,10 @@
 ---
 trdd-id: GF5UDFWI
 title: Port self-command with the command-hub features into the plugin
-column: todo
+column: dev
 status: tasked
 created: 2026-10-22T20:10:35+0200
-updated: 2026-10-22T21:59:21+0200
+updated: 2026-10-27T11:19:38+0100
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -23,10 +23,12 @@ approval-datetime: 2026-10-22T20:10:35+0200
 
 - 2026-10-22T20:10:35+0200 — MANDATE issued by main-agent@emasoft-mods-expert-developer (min-approval-requirement: none). Pre-approved: issuer authority >= required approver. No approval request was sent.
 - 2026-10-22 — authority: the user's verbatim directives quoted under User directive (this session); the MANDATE line above was filled by trddgrep new.
+- 2026-10-27T11:19:38+0100 — column → dev. increment A1 implemented by mods-forge-agent; orchestrator brief of 2026-10-27
 
 ## STATE
 
 CURRENT STATE 2026-10-22: planned, not started; NEXT ACTION: strict CPV gate measurement on probe.py and self-command code, then implement.
+CURRENT STATE 2026-10-27 (supersedes the 2026-10-22 line above): column dev; increment A1 implemented and verified (claude plugin test 88 pass on the staged mod, check-mod.sh == PASS, pytest 339 pass, claude plugin validate passes), not committed. NEXT ACTION: the orchestrator reviews and commits A1, then dispatches A2 (the /self-command pane). Details under ## Increment A1.
 
 ## User directive
 
@@ -84,3 +86,14 @@ CURRENT STATE 2026-10-22: planned, not started; NEXT ACTION: strict CPV gate mea
 - UNVERIFIED until /plugin-types runs: the fields $.command.list returns (plugin, source, argument hint), the $.prompt.fill argument shape, what $.settings.read returns.
 - Shared helper hooks/resolve-bin.ts, built in the first card implemented (A), resolves claude, tmux, python3 and git to absolute paths from candidate lists, cached per session; B and C use it, no second resolver.
 - Evidence: reports/measure/20261022_200806+0200-mod-port-assumptions.md, reports/measure/20261022_200938+0200-command-hub-merge.md.
+
+## Increment A1
+
+- 2026-10-27 — A1 implemented by mods-forge-agent (uncommitted; the orchestrator commits): hooks/resolve-bin.ts, hooks/dev-tools.ts, hooks/self-command/logic.ts and register.ts, hooks/index.ts wiring, commands/send.md, hooks/tests/self-command.test.ts (21 tests), NOTICE attribution for Kerem Gok and Michael Goldenberg with the MIT text. The /self-command pane is A2.
+- Decision (orchestrator correction, 2026-10-27): run is gated by the dev-tools flag exactly like list_commands, with the same seven blocked commands. Reason: the blocked list does not stop /permissions, /config, /hooks, /mcp, /plugin, /add-dir, /model or /sandbox, so an always-on run would let the model loosen its own permissions or install code in every session. An earlier brief override to leave run ungated was dropped and is not in effect.
+- Override of the card (orchestrator, 2026-10-24): Buttons follow the house convention of hooks/requirements-drafts/register.ts (bracketed, no plain prop, the label names its letter); the card line asking for plain: true is superseded. Reason: measured live on 2026-10-24, on the terminal only; Desktop parity is UNVERIFIED until the owner's Desktop check. A1 draws no button, so this applies from A2.
+- Settled from the generated types (.claude-plugin/types/claude-code/index.d.ts, Claude Code 2.1.310): CommandInfo is name, description, source (builtin, plugin, user, mcp) and plugin; it has NO argument hint, so list_commands shows none; source user covers both the user's and the project's own commands, so they share the group 'user or project'. ToolSpec.isDeferred is passed false (no tool.describe hook). command.run runs a slash command as if typed, queued until the session is idle, and rejects inside a hook the turn waits on (hence clock.after). PromptFillArgs is text, mode (replace by default), decorations, cursor (for A2). settings.read resolves the merged settings, one source's, or one key's value. The Anthropic copy in the scratchpad (written by 2.1.277) agrees on command.run.
+- Decision: the outcome reaches the model only through the send command (mods-expert-developer-plugin:send). The source's fallback to a plain plugin prompt was dropped (no fallbacks): a failed send is logged and toasted so the person sees it. That the namespaced send command resolves live is UNVERIFIED (the kit stubs command.run).
+- Decision: the dev-tools flag and /mods-dev-tools live in the shared hooks/dev-tools.ts (probe-runner will use the same gate). The flag is read from $.store on every call, defaults to off, and /mods-dev-tools takes no argument (toggle), on or off, else answers usage. On takes effect at the next session start; off refuses the next call at once.
+- Decision: history is one $.store key (self-command-history), an object keyed by session id, each with lastAt and at most 50 entries; only the 20 sessions with the latest lastAt are kept (ranked by stamp, not key order). Each row keeps the first 400 characters of the output. A stored value of another shape is reported in the log, never reset.
+- Known gaps: resolve-bin candidate lists cover macOS and Linux only (no Windows); nothing in A1 calls resolveBin yet. The README section for the tools and the switch, the strict CPV gate run and the manual Desktop check remain open.
