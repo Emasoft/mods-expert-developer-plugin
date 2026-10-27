@@ -4,7 +4,7 @@ title: Port self-command with the command-hub features into the plugin
 column: dev
 status: tasked
 created: 2026-10-22T20:10:35+0200
-updated: 2026-10-27T11:19:38+0100
+updated: 2026-10-27T11:37:45+0100
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -97,3 +97,4 @@ CURRENT STATE 2026-10-27 (supersedes the 2026-10-22 line above): column dev; inc
 - Decision: the dev-tools flag and /mods-dev-tools live in the shared hooks/dev-tools.ts (probe-runner will use the same gate). The flag is read from $.store on every call, defaults to off, and /mods-dev-tools takes no argument (toggle), on or off, else answers usage. On takes effect at the next session start; off refuses the next call at once.
 - Decision: history is one $.store key (self-command-history), an object keyed by session id, each with lastAt and at most 50 entries; only the 20 sessions with the latest lastAt are kept (ranked by stamp, not key order). Each row keeps the first 400 characters of the output. A stored value of another shape is reported in the log, never reset.
 - Known gaps: resolve-bin candidate lists cover macOS and Linux only (no Windows); nothing in A1 calls resolveBin yet. The README section for the tools and the switch, the strict CPV gate run and the manual Desktop check remain open.
+- 2026-10-27 follow-up to 5117f56 (orchestrator ruling): run now refuses NINE names. They are the seven session-ending commands plus this plugin's own send and mods-dev-tools, in any spelling $.command.list may give: bare or prefixed with mods-expert-developer-plugin:, in any case. Reason: through send the model would write its own next prompt, and through mods-dev-tools it would flip the switch the person set. A bare send of another source is refused too, because the list alone cannot tell them apart. list_commands marks all nine (blocked). The wider list (/permissions, /config, /hooks, /mcp, /plugin, /add-dir, /model, /sandbox) stays a decision for the user. In the same follow-up, commands/send.md gained a framing line before $ARGUMENTS (CPV strict MINOR: body under 100 characters), and the resolve-bin tests use a placeholder home instead of a machine path (tests/test_no_absolute_paths.py).

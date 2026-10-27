@@ -18,13 +18,31 @@ export const OUTPUT_PREVIEW = 400
 /** The commands that clear, end or swap the session: the model may not run them. */
 export const BLOCKED: ReadonlySet<string> = new Set(['clear', 'exit', 'quit', 'logout', 'login', 'resume', 'rewind'])
 
-const blockedList = [...BLOCKED].map((name) => `/${name}`).join(', ')
+/**
+ * This plugin's own commands the model may not run either, which makes nine refused names with
+ * BLOCKED. Through send the model would write its own next prompt; through mods-dev-tools it would
+ * flip the switch the person set (orchestrator ruling, 2026-10-27).
+ */
+export const OWN_COMMANDS: ReadonlySet<string> = new Set(['send', 'mods-dev-tools'])
+
+/**
+ * Whether `name` is one of OWN_COMMANDS in any spelling $.command.list may give: bare or with this
+ * plugin's prefix, in any case. A bare `send` of another source is refused too, as the list alone
+ * cannot tell them apart; it stays reachable by its own prefixed name.
+ */
+export function isOwnCommand(name: string): boolean {
+  const lower = name.toLowerCase()
+  const prefix = `${PLUGIN}:`
+  return OWN_COMMANDS.has(lower.startsWith(prefix) ? lower.slice(prefix.length) : lower)
+}
+
+const blockedList = [...BLOCKED, ...OWN_COMMANDS].map((name) => `/${name}`).join(', ')
 
 export const RUN_DESCRIPTION = [
   'Runs a slash command of this session as if the person had typed it, for example reload-plugins.',
   'A command cannot run during your turn, so it is queued and runs after the turn ends; its output',
   'reaches you as the next prompt. Call this tool last in a turn, then end the turn.',
-  `Refused: ${blockedList}, because they clear, end or swap the session. list_commands names the rest.`,
+  `Refused: ${blockedList}, because they clear, end or swap the session or are this plugin's own report and switch commands. list_commands names the rest.`,
 ].join(' ')
 
 export const RUN_SCHEMA = {
@@ -63,6 +81,7 @@ export function requestOf(input: Record<string, unknown>, known: readonly string
   const [name = '', ...rest] = written.split(/\s+/)
   if (name === '') return 'command is required: the command name without its slash'
   if (BLOCKED.has(name)) return `/${name} clears, ends or swaps the session, so the run tool refuses it`
+  if (isOwnCommand(name)) return `/${name} is this plugin's own report or switch command, so the run tool refuses it`
   if (!known.includes(name)) return `/${name} is not a command of this session (list_commands names them)`
   const args = typeof input.args === 'string' ? input.args.trim() : rest.join(' ')
   return { command: name, args }
@@ -124,7 +143,7 @@ export const WHEN_TO_USE: Readonly<Record<string, string>> = {
   usage: 'to see plan limits and when they reset',
 }
 
-const marked = (name: string): string => (BLOCKED.has(name) ? `${name} (blocked)` : name)
+const marked = (name: string): string => (BLOCKED.has(name) || isOwnCommand(name) ? `${name} (blocked)` : name)
 
 /** The list_commands answer: names by source without a query, matching commands with details with one. */
 export function listText(commands: readonly CommandInfo[], query = ''): string {

@@ -117,6 +117,18 @@ describe('requestOf', () => {
     expect(requestOf({}, NAMES)).toBe('command is required: the command name without its slash')
     expect(requestOf({ command: '  /  ' }, NAMES)).toBe('command is required: the command name without its slash')
   })
+
+  test('refuses the plugin\'s own send and mods-dev-tools in every spelling, listed or not', () => {
+    const spellings = ['send', SEND, 'SEND', `${PLUGIN.toUpperCase()}:Send`, 'mods-dev-tools', `${PLUGIN}:mods-dev-tools`, 'Mods-Dev-Tools']
+    for (const name of spellings) {
+      const reason = `/${name} is this plugin's own report or switch command, so the run tool refuses it`
+      expect(requestOf({ command: name }, [...NAMES, ...spellings])).toBe(reason)
+      expect(requestOf({ command: `/${name} some text` }, [])).toBe(reason)
+    }
+    // Only the exact own names: another plugin's send and a look-alike stay runnable.
+    expect(requestOf({ command: 'other-tools:send' }, ['other-tools:send'])).toEqual({ command: 'other-tools:send', args: '' })
+    expect(requestOf({ command: 'sender' }, ['sender'])).toEqual({ command: 'sender', args: '' })
+  })
 })
 
 describe('listText', () => {
@@ -126,7 +138,7 @@ describe('listText', () => {
       'built-in: reload-plugins, clear (blocked), compact',
       'user or project: ship',
       'plugin other-tools: lint',
-      `plugin ${PLUGIN}: ${SEND}`,
+      `plugin ${PLUGIN}: ${SEND} (blocked)`,
     ].join('\n'))
   })
 
@@ -243,6 +255,10 @@ describe('the run tool', () => {
       await start($, surface)
       expect((await $.tool.call({ tool: RUN, command: 'clear' } as any)).deny).toBe('/clear clears, ends or swaps the session, so the run tool refuses it')
       expect((await $.tool.call({ tool: RUN, command: 'deploy' } as any)).deny).toBe('/deploy is not a command of this session (list_commands names them)')
+      // The plugin's own report and switch commands, listed or not, in every spelling.
+      for (const name of [SEND, 'mods-dev-tools', `${PLUGIN}:mods-dev-tools`]) {
+        expect((await $.tool.call({ tool: RUN, command: name } as any)).deny).toBe(`/${name} is this plugin's own report or switch command, so the run tool refuses it`)
+      }
       await w.clock.settle()
       expect(w.ran).toEqual([])
       expect(w.store.get(HISTORY_KEY)).toBeUndefined()
@@ -310,10 +326,16 @@ describe('the list_commands tool', () => {
 })
 
 describe('resolve-bin', () => {
+  // A placeholder home, not a real one: candidatesFor only joins strings, and a literal machine
+  // path in a tracked file fails tests/test_no_absolute_paths.py.
+  const HOME = '<home>'
+  const SYSTEM = (name: string) => ['/opt/homebrew/bin', '/usr/local/bin', '/usr/bin', '/bin'].map((dir) => `${dir}/${name}`)
+
   test('looks in the user\'s folders first, then the system\'s, never on PATH', () => {
-    expect(candidatesFor('git', '/home/u')).toEqual(['/home/u/.local/bin/git', '/opt/homebrew/bin/git', '/usr/local/bin/git', '/usr/bin/git', '/bin/git'])
-    expect(candidatesFor('claude', '/home/u').slice(0, 3)).toEqual(['/home/u/.local/bin/claude', '/home/u/.claude/local/claude', '/home/u/.npm-global/bin/claude'])
-    expect(candidatesFor('tmux', undefined)).toEqual(['/opt/homebrew/bin/tmux', '/usr/local/bin/tmux', '/usr/bin/tmux', '/bin/tmux'])
+    expect(candidatesFor('git', HOME)).toEqual([`${HOME}/.local/bin/git`, ...SYSTEM('git')])
+    expect(candidatesFor('claude', HOME)).toEqual([`${HOME}/.local/bin/claude`, `${HOME}/.claude/local/claude`, `${HOME}/.npm-global/bin/claude`, ...SYSTEM('claude')])
+    expect(candidatesFor('tmux', undefined)).toEqual(SYSTEM('tmux'))
+    expect(candidatesFor('python3', '')).toEqual(SYSTEM('python3'))
   })
 
   test('picks the first candidate that is a file, and none when no candidate is', async () => {
@@ -323,8 +345,8 @@ describe('resolve-bin', () => {
       asked.push(p)
       return files.has(p)
     }
-    expect(await firstFile(candidatesFor('git', '/home/u'), isFile)).toBe('/usr/bin/git')
-    expect(asked).toEqual(['/home/u/.local/bin/git', '/opt/homebrew/bin/git', '/usr/local/bin/git', '/usr/bin/git'])
-    expect(await firstFile(candidatesFor('python3', '/home/u'), isFile)).toBeUndefined()
+    expect(await firstFile(candidatesFor('git', HOME), isFile)).toBe('/usr/bin/git')
+    expect(asked).toEqual([`${HOME}/.local/bin/git`, '/opt/homebrew/bin/git', '/usr/local/bin/git', '/usr/bin/git'])
+    expect(await firstFile(candidatesFor('python3', HOME), isFile)).toBeUndefined()
   })
 })
