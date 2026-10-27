@@ -4,7 +4,7 @@ title: Port self-command with the command-hub features into the plugin
 column: dev
 status: tasked
 created: 2026-10-22T20:10:35+0200
-updated: 2026-10-27T11:37:45+0100
+updated: 2026-10-27T12:01:22+0100
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -29,6 +29,7 @@ approval-datetime: 2026-10-22T20:10:35+0200
 
 CURRENT STATE 2026-10-22: planned, not started; NEXT ACTION: strict CPV gate measurement on probe.py and self-command code, then implement.
 CURRENT STATE 2026-10-27 (supersedes the 2026-10-22 line above): column dev; increment A1 implemented and verified (claude plugin test 88 pass on the staged mod, check-mod.sh == PASS, pytest 339 pass, claude plugin validate passes), not committed. NEXT ACTION: the orchestrator reviews and commits A1, then dispatches A2 (the /self-command pane). Details under ## Increment A1.
+CURRENT STATE 2026-10-27 A2 (supersedes the A1 line above): column dev; increment A2 implemented and verified (staged claude plugin test 96 pass, check-mod.sh == PASS on the staged mod, pytest 339 pass, claude plugin validate passes, cspell 0 on changed files, 17 mutations all red), not committed. NEXT ACTION: the orchestrator reviews and commits A2; the owner's live Desktop check of the pane is open. Details under ## Increment A2.
 
 ## User directive
 
@@ -98,3 +99,14 @@ CURRENT STATE 2026-10-27 (supersedes the 2026-10-22 line above): column dev; inc
 - Decision: history is one $.store key (self-command-history), an object keyed by session id, each with lastAt and at most 50 entries; only the 20 sessions with the latest lastAt are kept (ranked by stamp, not key order). Each row keeps the first 400 characters of the output. A stored value of another shape is reported in the log, never reset.
 - Known gaps: resolve-bin candidate lists cover macOS and Linux only (no Windows); nothing in A1 calls resolveBin yet. The README section for the tools and the switch, the strict CPV gate run and the manual Desktop check remain open.
 - 2026-10-27 follow-up to 5117f56 (orchestrator ruling): run now refuses NINE names. They are the seven session-ending commands plus this plugin's own send and mods-dev-tools, in any spelling $.command.list may give: bare or prefixed with mods-expert-developer-plugin:, in any case. Reason: through send the model would write its own next prompt, and through mods-dev-tools it would flip the switch the person set. A bare send of another source is refused too, because the list alone cannot tell them apart. list_commands marks all nine (blocked). The wider list (/permissions, /config, /hooks, /mcp, /plugin, /add-dir, /model, /sandbox) stays a decision for the user. In the same follow-up, commands/send.md gained a framing line before $ARGUMENTS (CPV strict MINOR: body under 100 characters), and the resolve-bin tests use a placeholder home instead of a machine path (tests/test_no_absolute_paths.py).
+
+## Increment A2
+
+Review fixes of e81001a: requestOf normalizes the name once (normalName: leading slashes dropped, lowercase) and runs BLOCKED, the list lookup and the own-command check against that one form; the request carries the name as the list spells it.
+This plugin's own send and mods-dev-tools are now told by the source $.command.list reports (source plugin and plugin equal to this plugin's name, the part before any @), not by a guessed prefix, so a user's or another plugin's send stays runnable. Two fail-safe choices: a plugin command whose plugin the engine leaves unnamed counts as this plugin's, and a name shared by several entries is refused when any of them is this plugin's, because which one the engine runs is not ours to know.
+commands/send.md framing line reworded to a conditional that makes no claim about who typed the command: If you queued a slash command with the run tool, this is its outcome, as the command printed it or the reason it did not run.
+Pane /self-command (hooks/self-command/pane.ts, registered from startSelfCommand after the two tools, only while the dev-tools switch is on; the command answers the off text and the render draws only that line when off). Views c: list (search Input, commands grouped by source, refused ones dim, a press calls $.prompt.fill with /<name> and a space), h: history (queue from hooks/self-command/queue.ts, module memory per session, then this session's stored runs newest first), n: new (name, description, prompt, scope Select; name ^[a-z0-9][a-z0-9-]{0,40}$, clash with any listed command, empty prompt, existing file all refuse with a toast; writes <session root or HOME>/.claude/commands/<name>.md with a JSON-quoted description, never overwriting).
+Elements: Box, Text, Button, Input, Select only; bracketed buttons whose label names the letter; one render path. Tests mount the pane on terminal and desktop at 40 and 160 columns with identical assertions (gate, tabs, groups, dimming, fill press, refused fill toast, queue then history row, form refusals and writes by scope).
+UNVERIFIED: whether a letter hotkey fires while a search or form Input has the focus. The interfaces chapter says every printable key goes to the field while an Input has the focus, so the c/h/n/s hotkeys work only when a button holds the focus; Tab reaches them. A hook's refusal cause on prompt.fill does not reach the result in the test kit, so the toast's cause branch is untested; the engine fills it only for its own refusals. Desktop parity of the pane is unverified until the owner's Desktop check.
+Report: reports/self-command/20261027_115918+0100-A2.md.
+Review of A2 (adversarial fork): addQueued moved after $.clock.after so a throw leaves no phantom queue entry. Open for the orchestrator: the unnamed-plugin fail-safe refuses another plugin's bare send if the live list leaves plugin unset, and the shared-name refusal narrows the user's own send to differently named commands; both kept as written, details in the A2 report.

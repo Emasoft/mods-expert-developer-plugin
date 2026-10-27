@@ -1,6 +1,8 @@
-// Tests of the dev tools run and list_commands, the /mods-dev-tools gate and the resolve-bin helper.
-// Every wiring test starts the session on both surfaces with the same assertions (no pane in A1).
-import { describe, expect, mock, test, type MockClock } from 'claude-code/testing'
+// Tests of the dev tools run and list_commands, the /self-command pane, the /mods-dev-tools gate and
+// the resolve-bin helper. Every wiring test starts the session on both surfaces, and every pane test
+// mounts the pane on surface terminal and desktop at a narrow and a wide width, with the same assertions.
+import type { CommandInfo } from 'claude-code'
+import { describe, expect, mock, test, type MockClock, type Mounted } from 'claude-code/testing'
 
 import { DEV_TOOLS_KEY, parseDevToolsSwitch } from '../dev-tools'
 import { candidatesFor, firstFile } from '../resolve-bin'
@@ -20,6 +22,11 @@ const RUN = `mcp__${PLUGIN}__run`
 const LIST = `mcp__${PLUGIN}__list_commands`
 const SEND = `${PLUGIN}:send`
 const SURFACES = ['terminal', 'desktop'] as const
+// Absolute, because $.fs resolves a relative path against the working folder, yet no machine's path:
+// /work is the session cwd of these tests and <user> is a placeholder segment, which
+// tests/test_no_absolute_paths.py does not count.
+const ROOT = '/work'
+const HOME = '/home/<user>'
 
 const COMMANDS = [
   { name: 'reload-plugins', description: 'Reload every plugin', source: 'builtin' as const },
@@ -28,8 +35,12 @@ const COMMANDS = [
   { name: 'ship', description: 'Run the tests, then push', source: 'user' as const },
   { name: 'lint', description: 'Lint the tree', source: 'plugin' as const, plugin: 'other-tools' },
   { name: SEND, description: 'Hands the model an outcome', source: 'plugin' as const, plugin: PLUGIN },
+  { name: 'mods-dev-tools', description: 'Turn the dev tools on or off', source: 'plugin' as const, plugin: PLUGIN },
 ]
-const NAMES = COMMANDS.map((c) => c.name)
+
+/** One command as $.command.list gives it. */
+const cmd = (name: string, source: CommandInfo['source'] = 'builtin', plugin?: string): CommandInfo =>
+  plugin === undefined ? { name, description: name, source } : { name, description: name, source, plugin }
 
 type World = {
   clock: MockClock
@@ -47,10 +58,19 @@ type World = {
   failing: string | undefined
   /** When true, $.command.list rejects. */
   listFails: boolean
+  /** The text of every $.prompt.fill. */
+  fills: string[]
+  /** When set, the prompt box refuses a fill with this cause. */
+  fillRefusal: 'no_composer' | 'dialog' | undefined
+  /** The args of every $.ui.open. */
+  opened: unknown[]
+  writes: Array<{ path: string; text: string }>
+  /** The paths $.fs.exists answers true for; every write adds its path. */
+  files: Set<string>
 }
 
 function world(on: any, store: Record<string, unknown> = {}): World {
-  const w: World = { clock: mock.clock(on, { now: 1_000 }), store: new Map(Object.entries(store)), ran: [], attempted: [], registered: [], commands: [], logs: [], toasts: [], session: 'sess-1', failing: undefined, listFails: false }
+  const w: World = { clock: mock.clock(on, { now: 1_000 }), store: new Map(Object.entries(store)), ran: [], attempted: [], registered: [], commands: [], logs: [], toasts: [], session: 'sess-1', failing: undefined, listFails: false, fills: [], fillRefusal: undefined, opened: [], writes: [], files: new Set() }
   on('session.start', ($: any, e: any) => ({ cwd: e.cwd }))
   on('session.id', () => ({ value: w.session }))
   on('store.get', ($: any, e: any) => ({ value: w.store.get(e.key) }))
@@ -89,6 +109,22 @@ function world(on: any, store: Record<string, unknown> = {}): World {
     w.toasts.push(e.text)
     return { value: undefined }
   })
+  on('prompt.fill', ($: any, e: any) => {
+    w.fills.push(e.text)
+    return w.fillRefusal === undefined ? { isFilled: true } : { isFilled: false, refusal: w.fillRefusal }
+  })
+  on('ui.open', ($: any, e: any) => {
+    w.opened.push(e)
+    return { value: { isPlaced: true } }
+  })
+  on('session.root', () => ({ value: ROOT }))
+  on('env.get', ($: any, e: any) => ({ value: e.name === 'HOME' ? HOME : undefined }))
+  on('fs.exists', ($: any, e: any) => ({ value: w.files.has(e.path) }))
+  on('fs.write', ($: any, e: any) => {
+    w.writes.push({ path: e.path, text: e.text })
+    w.files.add(e.path)
+    return { value: undefined }
+  })
   return w
 }
 
@@ -104,54 +140,75 @@ const entry = (at: number, command = 'compact'): HistoryEntry => ({ at, command,
 
 describe('requestOf', () => {
   test('drops a leading slash and splits a name written with its arguments', () => {
-    expect(requestOf({ command: '/reload-plugins' }, NAMES)).toEqual({ command: 'reload-plugins', args: '' })
-    expect(requestOf({ command: 'compact keep the API notes' }, NAMES)).toEqual({ command: 'compact', args: 'keep the API notes' })
-    expect(requestOf({ command: 'compact', args: '  keep it ' }, NAMES)).toEqual({ command: 'compact', args: 'keep it' })
+    expect(requestOf({ command: '/reload-plugins' }, COMMANDS)).toEqual({ command: 'reload-plugins', args: '' })
+    expect(requestOf({ command: 'compact keep the API notes' }, COMMANDS)).toEqual({ command: 'compact', args: 'keep the API notes' })
+    expect(requestOf({ command: 'compact', args: '  keep it ' }, COMMANDS)).toEqual({ command: 'compact', args: 'keep it' })
+  })
+
+  test('compares one normalized name, and runs the command as the list spells it', () => {
+    expect(requestOf({ command: '//Reload-Plugins' }, COMMANDS)).toEqual({ command: 'reload-plugins', args: '' })
+    expect(requestOf({ command: 'CLEAR' }, COMMANDS)).toBe('/clear clears, ends or swaps the session, so the run tool refuses it')
+    expect(requestOf({ command: 'Ship it now' }, [cmd('Ship', 'user')])).toEqual({ command: 'Ship', args: 'it now' })
   })
 
   test('refuses every blocked command, an unknown name and a missing one', () => {
     for (const name of ['clear', 'exit', 'quit', 'logout', 'login', 'resume', 'rewind']) {
-      expect(requestOf({ command: name }, [...NAMES, name])).toBe(`/${name} clears, ends or swaps the session, so the run tool refuses it`)
+      expect(requestOf({ command: name }, [...COMMANDS, cmd(name)])).toBe(`/${name} clears, ends or swaps the session, so the run tool refuses it`)
     }
-    expect(requestOf({ command: 'deploy' }, NAMES)).toBe('/deploy is not a command of this session (list_commands names them)')
-    expect(requestOf({}, NAMES)).toBe('command is required: the command name without its slash')
-    expect(requestOf({ command: '  /  ' }, NAMES)).toBe('command is required: the command name without its slash')
+    expect(requestOf({ command: 'deploy' }, COMMANDS)).toBe('/deploy is not a command of this session (list_commands names them)')
+    expect(requestOf({}, COMMANDS)).toBe('command is required: the command name without its slash')
+    expect(requestOf({ command: '  /  ' }, COMMANDS)).toBe('command is required: the command name without its slash')
   })
 
-  test('refuses the plugin\'s own send and mods-dev-tools in every spelling, listed or not', () => {
-    const spellings = ['send', SEND, 'SEND', `${PLUGIN.toUpperCase()}:Send`, 'mods-dev-tools', `${PLUGIN}:mods-dev-tools`, 'Mods-Dev-Tools']
-    for (const name of spellings) {
-      const reason = `/${name} is this plugin's own report or switch command, so the run tool refuses it`
-      expect(requestOf({ command: name }, [...NAMES, ...spellings])).toBe(reason)
-      expect(requestOf({ command: `/${name} some text` }, [])).toBe(reason)
+  test('refuses this plugin\'s own send and mods-dev-tools in every shape the list can give', () => {
+    for (const base of ['send', 'mods-dev-tools']) {
+      const own = [
+        cmd(base, 'plugin', PLUGIN),
+        cmd(`${PLUGIN}:${base}`, 'plugin', PLUGIN),
+        cmd(base, 'plugin', `${PLUGIN}@some-marketplace`),
+        cmd(base, 'plugin', undefined),
+        cmd(`${PLUGIN.toUpperCase()}:${base.toUpperCase()}`, 'plugin', PLUGIN),
+      ]
+      for (const c of own) {
+        for (const written of [c.name, `/${c.name} some text`, c.name.toLowerCase()]) {
+          expect(requestOf({ command: written }, [c])).toBe(`/${c.name.toLowerCase()} is this plugin's own report or switch command, so the run tool refuses it`)
+        }
+      }
+      // A user's own command of the same name next to this plugin's: which one runs is the engine's
+      // choice, so the name is refused.
+      expect(requestOf({ command: base }, [cmd(base, 'user'), cmd(base, 'plugin', PLUGIN)])).toBe(`/${base} is this plugin's own report or switch command, so the run tool refuses it`)
     }
-    // Only the exact own names: another plugin's send and a look-alike stay runnable.
-    expect(requestOf({ command: 'other-tools:send' }, ['other-tools:send'])).toEqual({ command: 'other-tools:send', args: '' })
-    expect(requestOf({ command: 'sender' }, ['sender'])).toEqual({ command: 'sender', args: '' })
+  })
+
+  test('another plugin\'s or the user\'s own send stays runnable', () => {
+    for (const c of [cmd('send', 'user'), cmd('send', 'plugin', 'other-tools'), cmd('other-tools:send', 'plugin', 'other-tools'), cmd('send', 'mcp'), cmd('mods-dev-tools', 'user')]) {
+      expect(requestOf({ command: c.name }, [c])).toEqual({ command: c.name, args: '' })
+    }
+    expect(requestOf({ command: 'sender' }, [cmd('sender', 'plugin', PLUGIN)])).toEqual({ command: 'sender', args: '' })
   })
 })
 
 describe('listText', () => {
   test('without a query: names only, grouped by source in list order, blocked ones marked', () => {
     expect(listText(COMMANDS)).toBe([
-      '6 commands. Pass query for descriptions; (blocked) means the run tool refuses it.',
+      '7 commands. Pass query for descriptions; (blocked) means the run tool refuses it.',
       'built-in: reload-plugins, clear (blocked), compact',
       'user or project: ship',
       'plugin other-tools: lint',
-      `plugin ${PLUGIN}: ${SEND} (blocked)`,
+      `plugin ${PLUGIN}: ${SEND} (blocked), mods-dev-tools (blocked)`,
     ].join('\n'))
   })
 
   test('a query matches name or description in any case, with details and a built-in\'s use line', () => {
     expect(listText(COMMANDS, 'CONVERSATION')).toBe([
-      '2 of 6 commands match "CONVERSATION".',
+      '2 of 7 commands match "CONVERSATION".',
       'built-in:',
       '- /clear (blocked): Empty the conversation',
       '  use it when starting unrelated work; it empties the conversation (blocked for the run tool)',
       '- /compact: Summarize the conversation',
       '  use it when the context is filling up; text after the name says what the summary must keep',
     ].join('\n'))
-    expect(listText(COMMANDS, 'push')).toBe(['1 of 6 commands match "push".', 'user or project:', '- /ship: Run the tests, then push'].join('\n'))
+    expect(listText(COMMANDS, 'push')).toBe(['1 of 7 commands match "push".', 'user or project:', '- /ship: Run the tests, then push'].join('\n'))
     expect(listText(COMMANDS, 'nothing-like-it')).toBe('No command matches "nothing-like-it".')
   })
 })
@@ -255,8 +312,8 @@ describe('the run tool', () => {
       await start($, surface)
       expect((await $.tool.call({ tool: RUN, command: 'clear' } as any)).deny).toBe('/clear clears, ends or swaps the session, so the run tool refuses it')
       expect((await $.tool.call({ tool: RUN, command: 'deploy' } as any)).deny).toBe('/deploy is not a command of this session (list_commands names them)')
-      // The plugin's own report and switch commands, listed or not, in every spelling.
-      for (const name of [SEND, 'mods-dev-tools', `${PLUGIN}:mods-dev-tools`]) {
+      // The plugin's own report and switch commands, as the list gives them.
+      for (const name of [SEND, 'mods-dev-tools']) {
         expect((await $.tool.call({ tool: RUN, command: name } as any)).deny).toBe(`/${name} is this plugin's own report or switch command, so the run tool refuses it`)
       }
       await w.clock.settle()
@@ -322,6 +379,159 @@ describe('the list_commands tool', () => {
       expect((await $.tool.call({ tool: LIST, query: 'push' } as any)).result).toBe(listText(COMMANDS, 'push'))
     }
     expect(w.ran).toEqual([])
+  })
+})
+
+const WIDTHS = [40, 160] as const
+/** Every surface at a narrow and a wide width: each pane test runs the same assertions on all four. */
+const PLACES = SURFACES.flatMap((surface) => WIDTHS.map((columns) => ({ surface, columns })))
+
+function pane(surface: (typeof SURFACES)[number], columns: number) {
+  return {
+    plugin: PLUGIN,
+    surface,
+    component: 'Pane' as const,
+    requestId: 'self-command',
+    viewport: { columns, rows: 40 },
+    props: { title: 'Slash commands', isFocused: true, bodyColumns: columns - 4, placement: 'inline', scroll: { offset: 0, bodyRows: 36 }, view: {} },
+  } as any
+}
+
+/** Both surfaces draw Input and Select, so the mounted pane offers input and select on each. */
+function mountPane($: any, surface: (typeof SURFACES)[number], columns: number): Promise<Mounted<'terminal' | 'desktop'>> {
+  return $.ui.mount(pane(surface, columns))
+}
+
+function selfCommand($: any) {
+  return $.command.run({ command: 'self-command', args: '', origin: { kind: 'composer' }, presentation: { isFullscreen: false, columns: 80 } })
+}
+
+describe('the /self-command pane', () => {
+  test('gated: off, the command says so, opens nothing and the pane draws only that line', async ($, on) => {
+    const w = world(on)
+    for (const { surface, columns } of PLACES) {
+      w.session = `off-${surface}-${columns}`
+      await start($, surface)
+      expect(w.commands).not.toContain('self-command')
+      expect((await selfCommand($)).text).toBe('The mods dev tools are off. /mods-dev-tools on turns them on from the next session.')
+      const ui = await mountPane($, surface, columns)
+      expect(await ui.find({ type: 'Text', text: 'The mods dev tools are off. /mods-dev-tools on turns them on from the next session.' })).toBeDefined()
+      expect(await ui.find({ type: 'Button' })).toBeUndefined()
+      await ui.unmount()
+    }
+    expect(w.opened).toEqual([])
+  })
+
+  test('on: the command opens the focused pane; the list groups by source, dims refused ones, and a press fills the prompt', async ($, on) => {
+    const w = world(on, { [DEV_TOOLS_KEY]: true })
+    for (const { surface, columns } of PLACES) {
+      w.session = `list-${surface}-${columns}`
+      w.fills = []
+      await start($, surface)
+      expect(w.commands).toContain('self-command')
+      expect(await selfCommand($)).toEqual({})
+      const ui = await mountPane($, surface, columns)
+      expect(await ui.find({ type: 'Text', text: '7 commands · 0 queued' })).toBeDefined()
+      for (const [key, label] of [['sc-view-commands', 'c: list'], ['sc-view-history', 'h: history'], ['sc-view-new', 'n: new']]) {
+        const tab = await ui.find({ key })
+        expect(tab?.props.label).toBe(label)
+        expect(tab?.props.plain).toBeUndefined()
+        expect(`[ ${label} ]`.length).toBeLessThanOrEqual(columns - 4)
+      }
+      expect(await ui.find({ key: 'sc-search' })).toBeDefined()
+      for (const label of ['built-in', 'user or project', 'plugin other-tools', `plugin ${PLUGIN}`]) {
+        expect(await ui.find({ type: 'Text', text: label })).toBeDefined()
+      }
+      expect((await ui.find({ key: 'sc-cmd-clear' }))?.props.dimColor).toBe(true)
+      expect((await ui.find({ key: `sc-cmd-${SEND}` }))?.props.dimColor).toBe(true)
+      expect((await ui.find({ key: 'sc-cmd-mods-dev-tools' }))?.props.dimColor).toBe(true)
+      expect((await ui.find({ key: 'sc-cmd-ship' }))?.props.dimColor).toBe(false)
+      expect((await ui.find({ key: 'sc-cmd-lint' }))?.props.dimColor).toBe(false)
+      await ui.press({ key: 'sc-cmd-reload-plugins' })
+      expect(w.fills).toEqual(['/reload-plugins '])
+      await ui.input({ key: 'sc-search', text: 'PUSH' })
+      expect(await ui.find({ key: 'sc-cmd-ship' })).toBeDefined()
+      expect(await ui.find({ key: 'sc-cmd-reload-plugins' })).toBeUndefined()
+      expect(await ui.find({ type: 'Text', text: /^1 of 7; press one/ })).toBeDefined()
+      await ui.unmount()
+    }
+    expect(w.opened).toEqual(PLACES.map(() => ({ id: 'self-command', title: 'Slash commands', focus: true, closeOnEscape: true })))
+  })
+
+  test('a prompt box that does not take the command says so in a toast', async ($, on) => {
+    const w = world(on, { [DEV_TOOLS_KEY]: true })
+    // The engine keeps a hook's refusal cause out of the result (it fills that field only for the
+    // refusals it answers itself), so the toast here names no cause.
+    w.fillRefusal = 'dialog'
+    for (const { surface, columns } of PLACES) {
+      w.session = `refused-${surface}-${columns}`
+      w.toasts = []
+      await start($, surface)
+      const ui = await mountPane($, surface, columns)
+      await ui.press({ key: 'sc-cmd-ship' })
+      expect(w.toasts).toEqual(['The prompt box did not take /ship.'])
+      await ui.unmount()
+    }
+  })
+
+  test('history: a queued run shows under Queued, then under the runs once it ran', async ($, on) => {
+    const w = world(on, { [DEV_TOOLS_KEY]: true })
+    for (const { surface, columns } of PLACES) {
+      w.session = `hist-${surface}-${columns}`
+      await start($, surface)
+      const ui = await mountPane($, surface, columns)
+      await ui.press({ key: 'sc-view-history' })
+      expect(await ui.find({ type: 'Text', text: 'Nothing queued.' })).toBeDefined()
+      expect(await ui.find({ type: 'Text', text: 'No run yet.' })).toBeDefined()
+      await $.tool.call({ tool: RUN, command: 'reload-plugins' } as any)
+      await ui.redraw()
+      expect(await ui.find({ type: 'Text', text: '/reload-plugins' })).toBeDefined()
+      expect(await ui.find({ type: 'Text', text: '7 commands · 1 queued' })).toBeDefined()
+      await w.clock.settle()
+      await ui.redraw()
+      expect(await ui.find({ type: 'Text', text: 'Nothing queued.' })).toBeDefined()
+      expect(await ui.find({ type: 'Text', text: '✓ /reload-plugins · Reloaded 12 plugins' })).toBeDefined()
+      await ui.unmount()
+    }
+  })
+
+  test('new command: name rule, clash, empty prompt and existing file refuse; a valid form writes by scope', async ($, on) => {
+    const w = world(on, { [DEV_TOOLS_KEY]: true })
+    for (const { surface, columns } of PLACES) {
+      w.session = `new-${surface}-${columns}`
+      w.writes = []
+      w.toasts = []
+      w.files.clear()
+      await start($, surface)
+      const ui = await mountPane($, surface, columns)
+      await ui.press({ key: 'sc-view-new' })
+      for (const key of ['sc-name', 'sc-description', 'sc-body', 'sc-scope', 'sc-save']) expect(await ui.find({ key })).toBeDefined()
+      const save = async (name: string, body: string) => {
+        await ui.input({ key: 'sc-name', text: name })
+        await ui.input({ key: 'sc-body', text: body })
+        await ui.press({ key: 'sc-save' })
+      }
+      await save('Bad Name', 'do it')
+      await save('ship', 'do it')
+      await save('deploy-app', '   ')
+      w.files.add(`${ROOT}/.claude/commands/taken.md`)
+      await save('taken', 'do it')
+      expect(w.writes).toEqual([])
+      expect(w.toasts).toEqual([
+        'Not saved: the name takes lowercase letters, digits and dashes, up to 41, starting with a letter or digit.',
+        'Not saved: /ship is already a command of this session; pick another name.',
+        'Not saved: write what the command should ask Claude to do.',
+        `Not saved: ${ROOT}/.claude/commands/taken.md already exists.`,
+      ])
+      await ui.input({ key: 'sc-description', text: 'Deploy: build, then push' })
+      await save('/deploy-app', 'Deploy $ARGUMENTS now.')
+      expect(w.writes).toEqual([{ path: `${ROOT}/.claude/commands/deploy-app.md`, text: '---\ndescription: "Deploy: build, then push"\nargument-hint: <text>\n---\n\nDeploy $ARGUMENTS now.\n' }])
+      expect((await ui.find({ key: 'sc-name' }))?.props.value).toBe('')
+      await ui.select({ key: 'sc-scope', value: 'user' })
+      await save('notes', 'Summarize my notes.')
+      expect(w.writes[1]).toEqual({ path: `${HOME}/.claude/commands/notes.md`, text: '---\ndescription: "notes"\n---\n\nSummarize my notes.\n' })
+      await ui.unmount()
+    }
   })
 })
 

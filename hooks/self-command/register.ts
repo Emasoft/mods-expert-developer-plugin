@@ -23,6 +23,8 @@ import {
   requestOf,
   shown,
 } from './logic'
+import { registerPane, registerPaneCommand } from './pane'
+import { addQueued, removeQueued } from './queue'
 
 const messageOf = (error: unknown): string => (error instanceof Error ? error.message : String(error))
 
@@ -35,6 +37,8 @@ export async function startSelfCommand($: EngineInterface): Promise<void> {
   if (!(await isDevToolsOn($))) return
   await $.tool.register({ name: RUN_TOOL, description: RUN_DESCRIPTION, inputSchema: RUN_SCHEMA, isDeferred: false })
   await $.tool.register({ name: LIST_TOOL, description: LIST_DESCRIPTION, inputSchema: LIST_SCHEMA, isDeferred: false })
+  // The pane's command last: a command registers after the tools, and a taken name throws.
+  await registerPaneCommand($)
 }
 
 /**
@@ -42,7 +46,10 @@ export async function startSelfCommand($: EngineInterface): Promise<void> {
  * The report goes only through the send command (no second path): if that fails, the person is told
  * by a toast and the log, because the model would otherwise wait for an output that never comes.
  */
-async function runQueued($: EngineInterface, request: RunRequest): Promise<void> {
+async function runQueued($: EngineInterface, session: string, request: RunRequest): Promise<void> {
+  // Off the queue before it runs: the pane then shows it in neither list until it is recorded.
+  removeQueued(session, request)
+  $.ui.invalidate('ui.render')
   const outcome: Outcome = await $.command.run(request).then(
     (r) => ({ text: r.text }),
     (error: unknown) => ({ error: messageOf(error) }),
@@ -56,8 +63,8 @@ async function runQueued($: EngineInterface, request: RunRequest): Promise<void>
     $.ui.toast(`The outcome of ${shown(request)} did not reach the model: ${messageOf(error)}`)
   }
   try {
-    const session = await $.session.id()
     await $.store.set(HISTORY_KEY, recordRun(await $.store.get(HISTORY_KEY), session, entry))
+    $.ui.invalidate('ui.render')
   } catch (error) {
     $.ui.log(`self-command: the run of ${shown(request)} was not added to the history: ${messageOf(error)}`)
   }
@@ -69,19 +76,23 @@ const failClosed = (tool: string, error: { message?: string; kind: string }): { 
 })
 
 export function registerSelfCommand(on: On): void {
+  registerPane(on)
   // Each call checks the gate again: turning it off cannot unregister a tool mid-session.
   // RegExp literals, not strings: the matcher's string form takes only built-in tool names, and a
   // literal is what claude plugin validate can read. The names are mcp__<plugin>__<tool>.
   on('tool.call', { tool: /^mcp__mods-expert-developer-plugin__run$/ }, async ($, e) => {
     if (!(await isDevToolsOn($))) return { deny: DEV_TOOLS_OFF }
-    const known = (await $.command.list()).map((c) => c.name)
-    const request = requestOf(e as unknown as Record<string, unknown>, known)
+    const request = requestOf(e as unknown as Record<string, unknown>, await $.command.list())
     if (typeof request === 'string') return { deny: request }
+    const session = await $.session.id()
     // From a timer, not from this hook: the engine runs a plugin's command once the session is idle
     // and rejects one from a hook the turn waits on.
     $.clock.after(0, () => {
-      void runQueued($, request).catch((error: unknown) => $.ui.log(`self-command: ${shown(request)} failed: ${messageOf(error)}`))
+      void runQueued($, session, request).catch((error: unknown) => $.ui.log(`self-command: ${shown(request)} failed: ${messageOf(error)}`))
     })
+    // Queued only once the timer is set: a throw above leaves no entry the pane would show forever.
+    addQueued(session, request)
+    $.ui.invalidate('ui.render')
     return { result: queuedText(request) }
   }).catch(async ($, e, next) => failClosed(RUN_TOOL, next.error))
 

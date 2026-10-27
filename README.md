@@ -110,6 +110,17 @@ Two skills, which you or Claude can invoke, read the drafts back: `mods-requirem
 
 The recent list resets on `/clear`, `/resume` and fork, and on a module reload. Messages that look like they hold a secret are refused, with a toast that says why. The check looks for API-key and token shapes (including Stripe, GitLab, npm, Hugging Face, SendGrid and Slack app tokens, and Slack, Discord and Telegram webhook or bot URLs), JWTs, private key blocks (PEM, PGP and PuTTY), credentials in URLs, Basic and Token authorization headers, Docker config `auth` entries, passwords in `curl -u`, `--password` and MySQL `-p` flags, and credential names followed by a value (password, passphrase, credentials, token, secret, api_key and similar, in snake_case, camelCase or quoted as a JSON key). It is a heuristic: it can refuse ordinary text or miss a secret, so do not paste secrets into messages you plan to save.
 
+## Self-command dev tools
+
+The `self-command` mod (`hooks/self-command/`) lets Claude run a slash command of the session, and gives you a pane to browse, search and create commands. It is off by default.
+
+- `/mods-dev-tools [on|off]` sets the switch; with no argument it toggles. Turning it on takes effect from the next session, because tools register only when a session starts. Turning it off refuses every call at once; the tools leave the tool list at the next session.
+- `run` (an MCP tool of this plugin) queues a slash command, for example `reload-plugins`. A command cannot run during Claude's turn, so it runs after the turn ends, and its output reaches Claude as the next prompt through the plugin's `/send` command. Nine commands are refused: `/clear`, `/exit`, `/quit`, `/logout`, `/login`, `/resume` and `/rewind`, which clear, end or swap the session, and this plugin's own `/send` and `/mods-dev-tools`. A user's or another plugin's command of the same name stays runnable, unless it shares its name with one of this plugin's, because then which one runs is not known. Each run is logged and kept in a history of the last 50 runs of each of the last 20 sessions.
+- `list_commands` lists the session's commands grouped by source, with the refused ones marked; with `query` it lists the matches with their descriptions.
+- `/self-command` opens a pane with three views. `c: list` shows the commands grouped by source with a search box; the refused ones are dim, and pressing one puts `/<name> ` in the prompt box. `h: history` shows what `run` has queued and the runs of this session. `n: new` creates a command: a name of lowercase letters, digits and dashes, a description, the prompt (`$ARGUMENTS` stands for the text typed after the name) and the scope, this project (`.claude/commands/`) or every project (`~/.claude/commands/`). It refuses a name already in use and never overwrites a file.
+
+The pane uses only elements both the terminal and the Desktop app draw; it was checked in the test kit on both surfaces, not yet in a live Desktop session.
+
 ## Prerequisites
 
 The expert agent delegates to the user-scope agents `fast-worker` and `cheap-worker`, which are NOT bundled with this plugin. Node is required because mods are written in TypeScript and their tests run on Node; the `quicksilver` skill also uses it.

@@ -25,16 +25,28 @@ export const BLOCKED: ReadonlySet<string> = new Set(['clear', 'exit', 'quit', 'l
  */
 export const OWN_COMMANDS: ReadonlySet<string> = new Set(['send', 'mods-dev-tools'])
 
+/** The one form a command name is compared in: leading slashes dropped, lowercase. */
+export const normalName = (name: string): string => name.replace(/^\/+/, '').toLowerCase()
+
+/** The name without a `<namespace>:` prefix, the part after the last colon. */
+const baseName = (name: string): string => name.slice(name.lastIndexOf(':') + 1)
+
 /**
- * Whether `name` is one of OWN_COMMANDS in any spelling $.command.list may give: bare or with this
- * plugin's prefix, in any case. A bare `send` of another source is refused too, as the list alone
- * cannot tell them apart; it stays reachable by its own prefixed name.
+ * Whether a listed command is one of OWN_COMMANDS of this plugin, told by the source the list
+ * reports, never by a guessed prefix: a user's own or another plugin's `send` stays runnable.
+ * A plugin command whose plugin the engine does not name is counted as this plugin's (it may be),
+ * so the refusal fails safe. `plugin` may carry a marketplace after `@`, so only the part before is
+ * compared.
  */
-export function isOwnCommand(name: string): boolean {
-  const lower = name.toLowerCase()
-  const prefix = `${PLUGIN}:`
-  return OWN_COMMANDS.has(lower.startsWith(prefix) ? lower.slice(prefix.length) : lower)
+export function isOwnCommand(c: Pick<CommandInfo, 'name' | 'source' | 'plugin'>): boolean {
+  if (c.source !== 'plugin') return false
+  if (c.plugin !== undefined && c.plugin.split('@')[0] !== PLUGIN) return false
+  return OWN_COMMANDS.has(baseName(normalName(c.name)))
 }
+
+/** Whether the run tool refuses a listed command: one of the nine, by its normalized name and source. */
+export const isRefused = (c: Pick<CommandInfo, 'name' | 'source' | 'plugin'>): boolean =>
+  BLOCKED.has(normalName(c.name)) || isOwnCommand(c)
 
 const blockedList = [...BLOCKED, ...OWN_COMMANDS].map((name) => `/${name}`).join(', ')
 
@@ -72,19 +84,25 @@ export const LIST_SCHEMA = {
 export type RunRequest = { command: string; args: string }
 
 /**
- * The command a `run` call asks for, or the reason it is refused. A leading slash is dropped, and a
- * name written with its arguments (`compact keep the API`) is split at the first space when `args`
- * is left out.
+ * The command a `run` call asks for, or the reason it is refused. The name is normalized once
+ * (normalName) and every check compares that one form: the seven BLOCKED names, then the entry
+ * $.command.list gives for it, then whether that entry is this plugin's own. The request carries
+ * the name as the list spells it. A name written with its arguments (`compact keep the API`) is
+ * split at the first space when `args` is left out.
  */
-export function requestOf(input: Record<string, unknown>, known: readonly string[]): RunRequest | string {
-  const written = typeof input.command === 'string' ? input.command.trim().replace(/^\//, '') : ''
-  const [name = '', ...rest] = written.split(/\s+/)
+export function requestOf(input: Record<string, unknown>, commands: readonly CommandInfo[]): RunRequest | string {
+  const written = typeof input.command === 'string' ? input.command.trim() : ''
+  const [first = '', ...rest] = written.split(/\s+/)
+  const name = normalName(first)
   if (name === '') return 'command is required: the command name without its slash'
   if (BLOCKED.has(name)) return `/${name} clears, ends or swaps the session, so the run tool refuses it`
-  if (isOwnCommand(name)) return `/${name} is this plugin's own report or switch command, so the run tool refuses it`
-  if (!known.includes(name)) return `/${name} is not a command of this session (list_commands names them)`
+  // Every entry with this name counts: when this plugin's own command shares a name with another
+  // (a user's bare `send`), which one the engine runs is not ours to know, so the run is refused.
+  const listed = commands.filter((c) => normalName(c.name) === name)
+  if (listed.length === 0) return `/${name} is not a command of this session (list_commands names them)`
+  if (listed.some(isOwnCommand)) return `/${name} is this plugin's own report or switch command, so the run tool refuses it`
   const args = typeof input.args === 'string' ? input.args.trim() : rest.join(' ')
-  return { command: name, args }
+  return { command: listed[0]!.name, args }
 }
 
 export const shown = (r: RunRequest): string => (r.args === '' ? `/${r.command}` : `/${r.command} ${r.args}`)
@@ -143,22 +161,22 @@ export const WHEN_TO_USE: Readonly<Record<string, string>> = {
   usage: 'to see plan limits and when they reset',
 }
 
-const marked = (name: string): string => (BLOCKED.has(name) || isOwnCommand(name) ? `${name} (blocked)` : name)
+const marked = (c: CommandInfo): string => (isRefused(c) ? `${c.name} (blocked)` : c.name)
 
 /** The list_commands answer: names by source without a query, matching commands with details with one. */
 export function listText(commands: readonly CommandInfo[], query = ''): string {
   const q = query.trim().toLowerCase()
   if (q === '') {
-    const lines = groupBySource(commands).map(([label, members]) => `${label}: ${members.map((c) => marked(c.name)).join(', ')}`)
+    const lines = groupBySource(commands).map(([label, members]) => `${label}: ${members.map((c) => marked(c)).join(', ')}`)
     return [`${commands.length} commands. Pass query for descriptions; (blocked) means the run tool refuses it.`, ...lines].join('\n')
   }
-  const hits = commands.filter((c) => c.name.toLowerCase().includes(q) || c.description.toLowerCase().includes(q))
+  const hits = matching(commands, q)
   if (hits.length === 0) return `No command matches "${query.trim()}".`
   const lines: string[] = [`${hits.length} of ${commands.length} commands match "${query.trim()}".`]
   for (const [label, members] of groupBySource(hits)) {
     lines.push(`${label}:`)
     for (const c of members) {
-      lines.push(`- /${marked(c.name)}: ${c.description}`)
+      lines.push(`- /${marked(c)}: ${c.description}`)
       const when = c.source === 'builtin' ? WHEN_TO_USE[c.name] : undefined
       if (when !== undefined) lines.push(`  use it ${when}`)
     }
@@ -203,4 +221,57 @@ export function recordRun(stored: unknown, session: string, entry: HistoryEntry)
     .sort(([, a], [, b]) => b.lastAt - a.lastAt)
     .slice(0, MAX_SESSIONS)
   return Object.fromEntries(kept)
+}
+
+/**
+ * This session's runs from the stored history, newest first. A stored value of another shape gives
+ * none here: the pane only reads, and recordRun reports a corrupt store when the next run writes.
+ */
+export function historyOf(stored: unknown, session: string): HistoryEntry[] {
+  if (typeof stored !== 'object' || stored === null || Array.isArray(stored)) return []
+  const entries = (stored as Record<string, { entries?: unknown }>)[session]?.entries
+  return Array.isArray(entries) ? [...(entries as HistoryEntry[])].reverse() : []
+}
+
+/** One history row as the pane draws it. */
+export const historyLine = (e: HistoryEntry): string =>
+  `${e.ok ? '✓' : '✗'} ${shown(e)}${e.output === '' ? '' : ` · ${e.output.split('\n')[0]}`}`
+
+// The create-command form (card Design): a markdown command file under .claude/commands.
+/** A name the form accepts: lowercase letters, digits and dashes, starting with a letter or digit. */
+export const NAME_PATTERN = /^[a-z0-9][a-z0-9-]{0,40}$/
+
+export type Scope = 'project' | 'user'
+export type CommandDraft = { name: string; description: string; body: string; scope: Scope }
+export const EMPTY_DRAFT: CommandDraft = { name: '', description: '', body: '', scope: 'project' }
+
+/** The name as the form will save it: trimmed, one leading slash dropped. */
+export const draftName = (d: CommandDraft): string => d.name.trim().replace(/^\//, '')
+
+/** Why the draft cannot be saved, or undefined when it can: a bad name, a name taken, an empty body. */
+export function draftProblem(d: CommandDraft, commands: readonly CommandInfo[]): string | undefined {
+  const name = draftName(d)
+  if (!NAME_PATTERN.test(name)) return 'Not saved: the name takes lowercase letters, digits and dashes, up to 41, starting with a letter or digit.'
+  if (commands.some((c) => normalName(c.name) === name)) return `Not saved: /${name} is already a command of this session; pick another name.`
+  if (d.body.trim() === '') return 'Not saved: write what the command should ask Claude to do.'
+  return undefined
+}
+
+/** Where the command file goes: the project's or the user's .claude/commands folder. */
+export const commandPath = (base: string, name: string): string => `${base}/.claude/commands/${name}.md`
+
+/**
+ * The command file. The description is JSON-quoted, which YAML reads as a double-quoted string, so
+ * a colon or a quote in it cannot break the frontmatter. A body that uses $ARGUMENTS gets a hint.
+ */
+export function commandFile(d: CommandDraft): string {
+  const description = d.description.trim() === '' ? draftName(d) : d.description.trim()
+  const hint = d.body.includes('$ARGUMENTS') ? ['argument-hint: <text>'] : []
+  return ['---', `description: ${JSON.stringify(description)}`, ...hint, '---', '', d.body.trim(), ''].join('\n')
+}
+
+/** The commands whose name or description holds `query`, any case; all of them for an empty query. */
+export function matching(commands: readonly CommandInfo[], query: string): CommandInfo[] {
+  const q = query.trim().toLowerCase()
+  return q === '' ? [...commands] : commands.filter((c) => c.name.toLowerCase().includes(q) || c.description.toLowerCase().includes(q))
 }
