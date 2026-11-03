@@ -1,7 +1,7 @@
 # mods-expert-developer-plugin
 
 <!--BADGES-START-->
-![Version](https://img.shields.io/badge/version-0.6.1-blue)
+![Version](https://img.shields.io/badge/version-0.6.2-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 <!--BADGES-END-->
 

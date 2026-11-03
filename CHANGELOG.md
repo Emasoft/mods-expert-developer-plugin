@@ -2,12 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.2] — 2026-11-03
+
+### Bug Fixes
+
+- **mod-manager:** Read every plugin scope so one entry no longer blanks the pane (TRDD-J4HRAQF0) (7d2552d)
+
+### Miscellaneous Tasks
+
+- **cspell:** Know the five words of the mod-manager pane tests (TRDD-J4HRAQF0) (926401c)
 ## [0.6.1] — 2026-10-27
 
 ### Miscellaneous Tasks
 
 - **release:** Install the claude CLI before the release test shards (TRDD-O5LUMKPW) (65c83ce)
 - **cspell:** Know sessionid and xapp from the 0.6.0 changelog (TRDD-O5LUMKPW) (6b715f6)
+- Bump version to 0.6.1 (0604608)
 ## [0.6.0] — 2026-10-27
 
 ### Bug Fixes
