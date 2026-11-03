@@ -4,7 +4,7 @@
 import type { EngineInterface } from 'claude-code'
 
 import { resolveBin } from '../resolve-bin'
-import { type Action, type Installed, type Row, DEFAULT_HOOKS_FILE, actionArgv, classifyHooks, hookFilesOf, parseInstalled } from './logic'
+import { type Action, type InstalledList, type Row, DEFAULT_HOOKS_FILE, actionArgv, actionCwd, classifyHooks, hookFilesOf, parseInstalled } from './logic'
 
 const LIST_TIMEOUT_MS = 60_000
 const ACTION_TIMEOUT_MS = 120_000
@@ -12,8 +12,11 @@ const ACTION_TIMEOUT_MS = 120_000
 const messageOf = (error: unknown): string => (error instanceof Error ? error.message : String(error))
 const lastLine = (text: string): string => text.trim().split('\n').at(-1) ?? ''
 
-/** Every installed entry of every scope, as `claude plugin list --json` lists them. Rejects with claude's own message. */
-export async function listInstalled($: EngineInterface): Promise<Installed[]> {
+/**
+ * Every entry of every scope, as `claude plugin list --json` lists them, and each entry it could not read (see
+ * parseInstalled). Rejects with claude's own message.
+ */
+export async function listInstalled($: EngineInterface): Promise<InstalledList> {
   const claude = await resolveBin($, 'claude')
   const result = await $.process.run([claude, 'plugin', 'list', '--json'], { timeoutMs: LIST_TIMEOUT_MS })
   if (result.exitCode !== 0) throw new Error(lastLine(result.stderr) || `claude plugin list exited ${result.exitCode}`)
@@ -21,13 +24,14 @@ export async function listInstalled($: EngineInterface): Promise<Installed[]> {
 }
 
 /**
- * Whether the plugin installed at `installPath` is a mod: its manifest declares inline hooks that list modules, or a
- * hooks file it checks does. The files checked are hooks/hooks.json and each file the manifest declares under `hooks`.
- * A missing default hooks file is normal and goes to the debug log. A declared file that is missing, unreadable or not
- * JSON goes to the default log, because the manifest promised it, and the other files are still checked.
+ * Whether the plugin whose files are in `folder` (modFolder: its readFromFolder when it loads in place, else its
+ * installPath) is a mod: its manifest declares inline hooks that list modules, or a hooks file it checks does. The
+ * files checked are hooks/hooks.json and each file the manifest declares under `hooks`. A missing default hooks file is
+ * normal and goes to the debug log. A declared file that is missing, unreadable or not JSON goes to the default log,
+ * because the manifest promised it, and the other files are still checked.
  */
-export async function isMod($: EngineInterface, installPath: string): Promise<boolean> {
-  const manifestPath = `${installPath}/.claude-plugin/plugin.json`
+export async function isMod($: EngineInterface, folder: string): Promise<boolean> {
+  const manifestPath = `${folder}/.claude-plugin/plugin.json`
   let manifest: string | undefined
   try {
     manifest = await $.fs.read(manifestPath)
@@ -39,7 +43,7 @@ export async function isMod($: EngineInterface, installPath: string): Promise<bo
   for (const item of declared.rejected) $.ui.log(`mod-manager: ${manifestPath} declares "${item}", which is absolute or has "..", so it is skipped`)
   let mod = declared.inlineIsMod
   for (const relative of declared.paths) {
-    const hooksPath = `${installPath}/${relative}`
+    const hooksPath = `${folder}/${relative}`
     const level = relative === DEFAULT_HOOKS_FILE ? { to: 'debug' as const } : undefined
     let text: string
     try {
@@ -56,12 +60,12 @@ export async function isMod($: EngineInterface, installPath: string): Promise<bo
 }
 
 /**
- * Runs one action through claude and rejects with claude's own last line when it fails. A project or local
- * install is changed from the folder it was made in, because the CLI resolves those scopes from there.
+ * Runs one action through claude, in the folder actionCwd names, and rejects with claude's own last line when it
+ * fails.
  */
 export async function runAction($: EngineInterface, row: Row, action: Action): Promise<void> {
   const claude = await resolveBin($, 'claude')
-  const cwd = row.scope === 'user' ? undefined : row.projectPath
+  const cwd = actionCwd(row)
   const result = await $.process.run(actionArgv(claude, action, row), {
     timeoutMs: ACTION_TIMEOUT_MS,
     ...(cwd === undefined ? {} : { cwd }),

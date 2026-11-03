@@ -125,11 +125,15 @@ The pane uses only elements both the terminal and the Desktop app draw; it was c
 
 Off unless the dev tools are on (`/mods-dev-tools on`, then a new session). The tool `probe` and the command `/probe-runner [--model <model>] <plugin,...> <step> ;; <step>` run a live check of Claude Code plugins in a fresh tmux session: a new git repository in the system temp directory, only the given plugins loaded, and the steps typed one after another. The report arrives when the probe ends. Afterwards the temp directory of the probe, its transcripts and the inline store files it wrote are removed; a removal that fails is named in the report as left behind. tmux and claude must be installed; they are looked for in the standard locations, not on PATH.
 
+The probe runner and the mod-manager look for `claude` in fixed folders, not on PATH. Set `claudePath` (in the plugin settings) when `claude` is installed outside `~/.local/bin`, its versions folder, `~/.claude/local`, `~/.npm-global/bin`, `/opt/homebrew/bin`, `/usr/local/bin`, `/usr/bin` and `/bin`; a set path must be absolute (`~` is not expanded) and is the only place looked; a wrong one is reported, never replaced. `tmux`, `python3` and `git` must be in one of those system folders.
+
 ## mod-manager
 
 The `mod-manager` mod (`hooks/mod-manager/`) shows the installed plugins in one pane, opened with `/mod-manager`. Mods come first, then the other plugins; within each group the enabled ones are on top, above the disabled ones.
 
 Each row turns a plugin on or off, or uninstalls it. Every change first asks you in a dialog that names the plugin, its scope and what the change does. The change runs only when you pick its confirm label, for example `Turn it off`. Picking `Keep it as it is`, or dismissing the dialog, runs nothing. A change applies in your next session.
+
+The pane lists all six scopes that `claude plugin list --json` reports. A `user`, `project` or `local` row can be turned on or off, or uninstalled; a `synced` row (from claude.ai) only turned on or off, because it is removed on claude.ai; a `session` row (loaded with `--plugin-dir`) only turned off; a `managed` row (installed by your organization) not changed at all. A row from a skills folder (`<name>@skills-dir`) can be turned on or off but not uninstalled: delete its folder to remove it. A row whose id is not a lowercase `name@marketplace` offers no change, and says so. An entry the pane cannot read is named on a line of its own, with its index and the reason, and the other rows are still shown; the pane names the first five such entries and counts the rest, and the debug log (`claude --debug`) names every one.
 
 The mod is always on: it has no switch and no tool, only the pane. It was checked in the test kit on the terminal and Desktop surfaces, not yet in a live session, and the confirm dialog and the enable, disable and uninstall commands have not been run live.
 

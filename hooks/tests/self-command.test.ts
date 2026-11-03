@@ -5,7 +5,7 @@ import type { CommandInfo } from 'claude-code'
 import { describe, expect, mock, test, type MockClock, type Mounted } from 'claude-code/testing'
 
 import { DEV_TOOLS_KEY, parseDevToolsSwitch } from '../dev-tools'
-import { candidatesFor, firstFile } from '../resolve-bin'
+import { candidatesFor, firstFile, newestVersion } from '../resolve-bin'
 import {
   HISTORY_KEY,
   MAX_ENTRIES,
@@ -69,6 +69,15 @@ type World = {
   writes: Array<{ path: string; text: string }>
   /** The paths $.fs.exists answers true for; every write adds its path. */
   files: Set<string>
+  /** What $.fs.stat answers per path; a path not listed is a file. */
+  kinds: Map<string, 'file' | 'dir'>
+  /** What $.fs.list answers per folder, and every folder it was asked for. */
+  dirs: Map<string, Array<{ name: string; kind: 'file' | 'dir' }>>
+  listed: string[]
+  /** Every path $.fs.exists was asked about. */
+  existsAsked: string[]
+  /** Every process the engine was asked to run, as its argument vector. */
+  argv: string[][]
   /** How many times $.command.list was read, and what it answers. */
   listCalls: number
   list: readonly CommandInfo[]
@@ -78,7 +87,7 @@ type World = {
 }
 
 function world(on: any, store: Record<string, unknown> = {}): World {
-  const w: World = { clock: mock.clock(on, { now: 1_000 }), store: new Map(Object.entries(store)), ran: [], attempted: [], registered: [], commands: [], logs: [], toasts: [], session: 'sess-1', failing: undefined, listFails: false, fills: [], fillRefusal: undefined, opened: [], writes: [], files: new Set(), listCalls: 0, list: COMMANDS, root: ROOT, home: HOME }
+  const w: World = { clock: mock.clock(on, { now: 1_000 }), store: new Map(Object.entries(store)), ran: [], attempted: [], registered: [], commands: [], logs: [], toasts: [], session: 'sess-1', failing: undefined, listFails: false, fills: [], fillRefusal: undefined, opened: [], writes: [], files: new Set(), kinds: new Map(), dirs: new Map(), listed: [], existsAsked: [], argv: [], listCalls: 0, list: COMMANDS, root: ROOT, home: HOME }
   on('session.start', ($: any, e: any) => ({ cwd: e.cwd }))
   on('session.id', () => ({ value: w.session }))
   on('store.get', ($: any, e: any) => ({ value: w.store.get(e.key) }))
@@ -127,8 +136,21 @@ function world(on: any, store: Record<string, unknown> = {}): World {
     return { value: { isPlaced: true } }
   })
   on('session.root', () => ({ value: w.root }))
+  on('session.cwd', () => ({ value: w.root }))
+  on('process.run', ($: any, e: any) => {
+    w.argv.push([...e.argv])
+    return { value: { exitCode: 0, stdout: '# probe report', stderr: '' } }
+  })
   on('env.get', ($: any, e: any) => ({ value: e.name === 'HOME' ? w.home : undefined }))
-  on('fs.exists', ($: any, e: any) => ({ value: w.files.has(e.path) }))
+  on('fs.exists', ($: any, e: any) => {
+    w.existsAsked.push(e.path)
+    return { value: w.files.has(e.path) }
+  })
+  on('fs.stat', ($: any, e: any) => ({ value: { kind: w.kinds.get(e.path) ?? 'file' } }))
+  on('fs.list', ($: any, e: any) => {
+    w.listed.push(e.path)
+    return { value: (w.dirs.get(e.path) ?? []).map((entry) => ({ ...entry, size: 1, mtimeMs: 1, isLink: false })) }
+  })
   on('fs.write', ($: any, e: any) => {
     w.writes.push({ path: e.path, text: e.text })
     w.files.add(e.path)
@@ -709,5 +731,134 @@ describe('resolve-bin', () => {
     expect(await firstFile(candidatesFor('git', HOME), isFile)).toBe('/usr/bin/git')
     expect(asked).toEqual([`${HOME}/.local/bin/git`, '/opt/homebrew/bin/git', '/usr/local/bin/git', '/usr/bin/git'])
     expect(await firstFile(candidatesFor('python3', HOME), isFile)).toBeUndefined()
+  })
+
+  test('newestVersion compares numbers, not strings, and ignores every name that is not x.y.z', () => {
+    expect(newestVersion(['2.1.9', '2.1.10'])).toBe('2.1.10')
+    expect(newestVersion(['2.1.311', '2.1.310'])).toBe('2.1.311')
+    expect(newestVersion(['2.1.9', 'latest', '.DS_Store', '2.1', '2.2.0-beta', '2.1.10'])).toBe('2.1.10')
+    expect(newestVersion(['latest', '.DS_Store', '2.1', '2.2.0-beta'])).toBeUndefined()
+    expect(newestVersion([])).toBeUndefined()
+  })
+
+  test('the versions candidate comes right after ~/.local/bin/claude, and is left out with no newest', () => {
+    const versions = `${HOME}/.local/share/claude/versions/2.1.10`
+    expect(candidatesFor('claude', HOME, undefined, '2.1.10')).toEqual([`${HOME}/.local/bin/claude`, versions, `${HOME}/.claude/local/claude`, `${HOME}/.npm-global/bin/claude`, ...SYSTEM('claude')])
+    expect(candidatesFor('claude', HOME, undefined, undefined)).toEqual(candidatesFor('claude', HOME))
+    expect(candidatesFor('claude', HOME)).not.toContain(versions)
+    expect(candidatesFor('git', HOME, undefined, '2.1.10')).toEqual(candidatesFor('git', HOME))
+  })
+
+  test('the Windows claude location is last, only with a non-empty userProfile and only for claude: candidate string only, not run on Windows', () => {
+    const exe = '<profile>/.local/bin/claude.exe'
+    expect(candidatesFor('claude', HOME, '<profile>').at(-1)).toBe(exe)
+    expect(candidatesFor('claude', undefined, '<profile>')).toEqual([...SYSTEM('claude'), exe])
+    expect(candidatesFor('claude', HOME, '')).toEqual(candidatesFor('claude', HOME))
+    expect(candidatesFor('claude', HOME, undefined)).not.toContain(exe)
+    expect(candidatesFor('tmux', HOME, '<profile>')).toEqual(candidatesFor('tmux', HOME))
+  })
+
+  test('the probe tool, with ~/.local/bin/claude missing, resolves claude to the newest file in the versions folder, and lists only a folder that exists', async ($, on) => {
+    const w = world(on, { [DEV_TOOLS_KEY]: true })
+    // The world's HOME, not this block's placeholder: resolve-bin reads it through $.env.get.
+    const home = w.home!
+    const dir = `${home}/.local/share/claude/versions`
+    const probe = () => $.tool.call({ tool: `mcp__${PLUGIN}__probe`, plugins: ['demo'], steps: ['/demo on'] } as any)
+    for (const file of [`${ROOT}/plugins/demo/.claude-plugin/plugin.json`, '/usr/bin/python3', '/opt/homebrew/bin/tmux', '/usr/bin/git']) w.files.add(file)
+    await start($, 'terminal')
+
+    w.session = 'resolve-with-versions'
+    w.files.add(dir)
+    w.files.add(`${dir}/2.1.9`)
+    w.files.add(`${dir}/2.1.10`)
+    w.dirs.set(dir, [{ name: '2.1.9', kind: 'file' }, { name: '2.1.10', kind: 'file' }, { name: '2.1.11', kind: 'dir' }])
+    expect((await probe()).result).toMatch(/^started: /)
+    await w.clock.settle()
+    expect(w.argv.map((argv) => argv.find((a) => a.startsWith('--claude=')))).toEqual([`--claude=${dir}/2.1.10`])
+    expect(w.listed).toEqual([dir])
+
+    // The folder is absent: it is not listed, and the old candidates still decide.
+    w.session = 'resolve-without-versions'
+    w.listed = []
+    w.files.delete(dir)
+    w.files.add(`${home}/.local/bin/claude`)
+    expect((await probe()).result).toMatch(/^started: /)
+    await w.clock.settle()
+    expect(w.argv.map((argv) => argv.find((a) => a.startsWith('--claude=')))).toEqual([`--claude=${dir}/2.1.10`, `--claude=${home}/.local/bin/claude`])
+    expect(w.listed).toEqual([])
+  })
+
+  // The probe resolves python3, claude, tmux and git in turn; these files let every other program resolve.
+  const OTHERS = ['/usr/bin/python3', '/opt/homebrew/bin/tmux', '/usr/bin/git']
+  const claudeArgs = (w: { argv: string[][] }) => w.argv.map((argv) => argv.find((a) => a.startsWith('--claude=')))
+
+  // The kit hands register(on, options) the test's options, as a load does; so the setting is driven through them.
+  const CUSTOM = { options: { claudePath: '/custom/claude' } }
+
+  test('a configured claude path is the only candidate: it is used, and no folder is listed', CUSTOM, async ($, on) => {
+    const w = world(on, { [DEV_TOOLS_KEY]: true })
+    const dir = `${w.home}/.local/share/claude/versions`
+    const probe = () => $.tool.call({ tool: `mcp__${PLUGIN}__probe`, plugins: ['demo'], steps: ['/demo on'] } as any)
+    for (const file of [`${ROOT}/plugins/demo/.claude-plugin/plugin.json`, ...OTHERS, '/custom/claude', dir, `${dir}/2.1.10`]) w.files.add(file)
+    w.dirs.set(dir, [{ name: '2.1.10', kind: 'file' }])
+    await start($, 'terminal')
+    w.session = 'configured-present'
+    expect((await probe()).result).toMatch(/^started: /)
+    await w.clock.settle()
+    expect(claudeArgs(w)).toEqual(['--claude=/custom/claude'])
+    expect(w.listed).toEqual([])
+  })
+
+  test('a configured claude path that is absent is rejected naming the setting, and no other candidate is used', CUSTOM, async ($, on) => {
+    const w = world(on, { [DEV_TOOLS_KEY]: true })
+    const probe = () => $.tool.call({ tool: `mcp__${PLUGIN}__probe`, plugins: ['demo'], steps: ['/demo on'] } as any)
+    // ~/.local/bin/claude exists, yet must not be used.
+    for (const file of [`${ROOT}/plugins/demo/.claude-plugin/plugin.json`, ...OTHERS, `${w.home}/.local/bin/claude`]) w.files.add(file)
+    await start($, 'terminal')
+    w.session = 'configured-absent'
+    expect((await probe()).result).toMatch(/^started: /)
+    await w.clock.settle()
+    expect(w.argv).toEqual([])
+    const sent = w.ran.find((line) => line.startsWith(`${SEND} `))
+    expect(sent).toContain('claude was not found; looked in /custom/claude (the claudePath setting)')
+    expect(sent).not.toContain('.local/bin')
+  })
+
+  test('a configured claude path that is not absolute is rejected at once, naming the setting, without looking up that path', { options: { claudePath: '~/bin/claude' } }, async ($, on) => {
+    const w = world(on, { [DEV_TOOLS_KEY]: true })
+    const probe = () => $.tool.call({ tool: `mcp__${PLUGIN}__probe`, plugins: ['demo'], steps: ['/demo on'] } as any)
+    for (const file of [`${ROOT}/plugins/demo/.claude-plugin/plugin.json`, ...OTHERS]) w.files.add(file)
+    await start($, 'terminal')
+    w.session = 'configured-relative'
+    w.existsAsked = []
+    expect((await probe()).result).toMatch(/^started: /)
+    await w.clock.settle()
+    expect(w.argv).toEqual([])
+    const sent = w.ran.find((line) => line.startsWith(`${SEND} `))
+    expect(sent).toContain('claudePath must be an absolute path, not ~/bin/claude')
+    expect(w.existsAsked).not.toContain('~/bin/claude')
+  })
+
+  test('a configured claude path of only spaces counts as not configured', { options: { claudePath: '   ' } }, async ($, on) => {
+    const w = world(on, { [DEV_TOOLS_KEY]: true })
+    const probe = () => $.tool.call({ tool: `mcp__${PLUGIN}__probe`, plugins: ['demo'], steps: ['/demo on'] } as any)
+    for (const file of [`${ROOT}/plugins/demo/.claude-plugin/plugin.json`, ...OTHERS, `${w.home}/.local/bin/claude`]) w.files.add(file)
+    await start($, 'terminal')
+    w.session = 'configured-blank'
+    expect((await probe()).result).toMatch(/^started: /)
+    await w.clock.settle()
+    expect(claudeArgs(w)).toEqual([`--claude=${w.home}/.local/bin/claude`])
+  })
+  test('a candidate that exists but is a folder is skipped', async ($, on) => {
+    const w = world(on, { [DEV_TOOLS_KEY]: true })
+    const probe = () => $.tool.call({ tool: `mcp__${PLUGIN}__probe`, plugins: ['demo'], steps: ['/demo on'] } as any)
+    const folder = `${w.home}/.local/bin/claude`
+    for (const file of [`${ROOT}/plugins/demo/.claude-plugin/plugin.json`, ...OTHERS, folder, '/usr/local/bin/claude']) w.files.add(file)
+    w.kinds.set(folder, 'dir')
+    await start($, 'terminal')
+    w.session = 'stat-folder'
+    expect((await probe()).result).toMatch(/^started: /)
+    await w.clock.settle()
+    expect(claudeArgs(w)).toEqual(['--claude=/usr/local/bin/claude'])
   })
 })

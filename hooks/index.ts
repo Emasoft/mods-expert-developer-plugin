@@ -9,8 +9,10 @@ import { registerRequirementsDrafts, startRequirementsDrafts } from './requireme
 import { registerSelfCommand, startSelfCommand } from './self-command/register'
 import { registerProbeRunner, startProbeRunner } from './probe-runner/register'
 import { registerModManager, startModManager } from './mod-manager/register'
+import { configureBins } from './resolve-bin'
 
-export const register: Register = (on) => {
+export const register: Register = (on, options) => {
+  configureBins({ claude: typeof options?.claudePath === 'string' ? options.claudePath : undefined })
   on('session.start', async ($, e, next) => {
     try {
       await startRequirementsDrafts($)

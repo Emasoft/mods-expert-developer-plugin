@@ -4,10 +4,39 @@
 import type { EngineInterface } from 'claude-code'
 
 import { isMod, listInstalled, runAction } from './cli'
-import { type Action, KEEP, type Row, appliesHere, confirmLabel, confirmThenRun, doneText, orderRows, questionFor, toRow } from './logic'
+import {
+  type Action,
+  ENABLED_KEY,
+  KEEP,
+  type Rejected,
+  type Row,
+  appliesHere,
+  confirmLabel,
+  confirmThenRun,
+  doneText,
+  forcesOpen,
+  modFolder,
+  orderRows,
+  questionFor,
+  rejectedText,
+  toRow,
+} from './logic'
 
-export type ModState = { loaded: boolean; rows: Row[]; busy: string | undefined; message: string; needsRestart: boolean }
-const INITIAL: ModState = { loaded: false, rows: [], busy: undefined, message: '', needsRestart: false }
+/**
+ * `expanded` holds the keys of the open sections: the Enabled section starts open, every marketplace section of disabled
+ * rows starts closed. `rejected` holds each entry of the list that could not be read; the pane names the first few.
+ */
+export type ModState = {
+  loaded: boolean
+  rows: Row[]
+  rejected: readonly Rejected[]
+  busy: string | undefined
+  message: string
+  needsRestart: boolean
+  expanded: ReadonlySet<string>
+  filter: string
+}
+const INITIAL: ModState = { loaded: false, rows: [], rejected: [], busy: undefined, message: '', needsRestart: false, expanded: new Set([ENABLED_KEY]), filter: '' }
 const stateBySession = new Map<string, ModState>()
 
 /** Asks the person a question with the given labels; resolves to the label picked, rejects when dismissed. */
@@ -34,6 +63,22 @@ async function update($: EngineInterface, patch: Partial<ModState>): Promise<voi
   $.ui.invalidate('ui.render')
 }
 
+/** Expands the section with this key, or collapses it again. Row data is untouched; only the redraw changes. */
+export async function toggleSection($: EngineInterface, key: string): Promise<void> {
+  const state = stateIn(await $.session.id())
+  // While the filter forces the sections open they are drawn open whatever the stored set says, so a toggle would
+  // change state the person cannot see (and would surprise them once the filter is cleared): the press does nothing.
+  if (forcesOpen(state.filter)) return
+  const expanded = new Set(state.expanded)
+  if (!expanded.delete(key)) expanded.add(key)
+  await update($, { expanded })
+}
+
+/** Keeps what the person typed in the filter field, so a redraw shows it again. It only redraws; it never calls claude. */
+export async function setFilter($: EngineInterface, filter: string): Promise<void> {
+  await update($, { filter })
+}
+
 /**
  * Marks the session busy with `busy`, synchronously, so two presses cannot both pass the check. Returns the
  * text of what is still running when the claim is refused, or undefined when this call holds the claim.
@@ -48,20 +93,28 @@ function claim(session: string, busy: string): string | undefined {
 const refusedToast = (running: string): string => `Wait: ${running} is still running. Nothing was changed.`
 
 /**
- * Reads what is installed, keeps what applies in this session, and orders it. Every failure becomes the
- * pane's message and a log line; nothing is thrown into the engine from here.
+ * Reads what is installed, keeps what applies in this session, and orders it. An entry the list holds but
+ * parseInstalled cannot read is kept, so the pane names it (rejectedLines) and the other rows are still shown, and
+ * every such entry is logged in full to the debug log, so nothing is dropped unseen. Every failure becomes the pane's
+ * message and a log line; nothing is thrown into the engine from here.
  */
 export async function refresh($: EngineInterface): Promise<void> {
   try {
     await update($, { busy: 'reading the installed plugins…', message: '' })
     const root = await $.session.root()
-    const applying = (await listInstalled($)).filter((entry) => appliesHere(entry, root))
+    const listed = await listInstalled($)
+    // The debug log, not the transcript: the pane already names the first few and counts the rest, and a list of
+    // hundreds of entries of an unknown shape would otherwise add hundreds of rows to the transcript on every refresh.
+    for (const entry of listed.rejected) $.ui.log(`mod-manager: ${rejectedText(entry)}`, { to: 'debug' })
+    const applying = listed.entries.filter((entry) => appliesHere(entry, root))
     const rows: Row[] = []
-    for (const entry of applying) rows.push(toRow(entry, await isMod($, entry.installPath)))
-    await update($, { loaded: true, rows: orderRows(rows), busy: undefined })
+    for (const entry of applying) rows.push(toRow(entry, await isMod($, modFolder(entry))))
+    await update($, { loaded: true, rows: orderRows(rows), rejected: listed.rejected, busy: undefined })
   } catch (error) {
     $.ui.log(`mod-manager: reading the installed plugins failed: ${messageOf(error)}`)
-    await update($, { loaded: true, busy: undefined, message: `Couldn't read the installed plugins: ${messageOf(error)}` })
+    // The entries the last read could not read are cleared: kept, they would sit beside this message as if this read
+    // had found them. The rows are kept as they were.
+    await update($, { loaded: true, busy: undefined, rejected: [], message: `Couldn't read the installed plugins: ${messageOf(error)}` })
   }
 }
 

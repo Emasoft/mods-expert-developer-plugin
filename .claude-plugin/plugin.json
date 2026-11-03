@@ -9,6 +9,13 @@
   "license": "MIT",
   "repository": "https://github.com/Emasoft/mods-expert-developer-plugin",
   "homepage": "https://github.com/Emasoft/mods-expert-developer-plugin",
+  "userConfig": {
+    "claudePath": {
+      "type": "file",
+      "title": "Claude program",
+      "description": "Full path of the claude program. Leave empty to search the standard install folders."
+    }
+  },
   "keywords": [
     "claude-code",
     "plugins",
