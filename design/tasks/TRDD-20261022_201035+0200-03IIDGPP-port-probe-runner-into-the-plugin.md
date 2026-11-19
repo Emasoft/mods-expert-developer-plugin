@@ -1,10 +1,10 @@
 ---
 trdd-id: 03IIDGPP
 title: Port probe-runner into the plugin
-column: dev
+column: human_review
 status: tasked
 created: 2026-10-22T20:10:35+0200
-updated: 2026-10-27T13:02:17+0100
+updated: 2026-10-27T16:48:58+0100
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -15,6 +15,7 @@ mandated-by: none
 approved: true
 approval-judge: main-agent@emasoft-mods-expert-developer
 approval-datetime: 2026-10-22T20:10:35+0200
+implementation-commits: [397fd47, 60cf88f]
 ---
 
 # Port probe-runner into the plugin
@@ -23,11 +24,14 @@ approval-datetime: 2026-10-22T20:10:35+0200
 
 - 2026-10-22T20:10:35+0200 — MANDATE issued by main-agent@emasoft-mods-expert-developer (min-approval-requirement: none). Pre-approved: issuer authority >= required approver. No approval request was sent.
 - 2026-10-22 — authority: the user's verbatim directives quoted under User directive (this session); the MANDATE line above was filled by trddgrep new.
+- 2026-10-27T16:47:35+0100 — column → human_review. code shipped in 0.6.0/0.6.1; owner live probe left
 
 ## STATE
 
 CURRENT STATE 2026-10-27: increment 1 written in the tree, not committed (hooks/probe-runner, scripts/probe.py, tests). Checks and open items: see the Increment 1 section. NEXT ACTION: the orchestrator applies the Integration block (hooks/index.ts wiring, NOTICE, README) and updates the self-command test expectation, then commits; the CPV strict gate and the later increments follow.
 REVIEW FIXES 2026-10-27 (increment 1): the probe tool answers at once and runs from a timer; a blank or relative HOME, session root or working folder is refused before any run; test_plugin_tool_skills_reload_through_the_run_tool asserts reload-plugins and --force. See the Increment 1 review fixes section.
+CURRENT STATE 2026-10-27 (supersedes the lines above): column human_review. Increment 1 and its review fixes are committed (397fd47, 60cf88f) with the Integration block applied (hooks/index.ts wires startProbeRunner and registerProbeRunner) and shipped in 0.6.0 and 0.6.1, whose publish ran the strict CPV gate. The card defines no later increment. The unticked boxes are superseded by this line. Typecheck against the generated types was not run (needs the /plugin-types login); kit tests and pytest pass. NEXT ACTION: the owner runs a live probe (tmux and claude) on the terminal and on Desktop and confirms the inline store naming <plugin>_inline-*.json, then the card moves to complete.
+Correction 2026-10-27 (review of ea39045, supersedes the line above where they differ): the strict CPV gate is VERIFIED only as a publish step (scripts/publish.py step 5, cpv-remote-validate --strict; 0.6.0 and 0.6.1 were tagged); pytest 470 passed this session, the kit tests were not re-run. The older line's later increments were never defined in the card: if the owner wants more than increment 1, they become a new card. The acceptance boxes stay unticked until each has its own evidence.
 
 ## User directive
 

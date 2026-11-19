@@ -47,3 +47,5 @@ Full chapter: [the chapter](references/chapter.md), with the section-level Mods 
   - [Change and test a mod](references/chapter.md#change-and-test-a-mod)
   - [Share your mod](references/chapter.md#share-your-mod)
   - [Related Topics](references/chapter.md#related-topics)
+
+Typed tests: the chapter's test example fires `$.command.run` in the short form, which runs under `claude plugin test` but fails `tsc` against the generated types; see the trap table in the `mods-tutorial-quickstart` skill.

@@ -1,0 +1,114 @@
+#!/bin/sh
+# Pre-commit hook: UBS (Ultimate Bug Scanner) on the staged files.
+#
+# Owner directive 2026-11-09: run the bug scanner before every commit, automatically,
+# through a git hook rather than by remembering to.
+#
+# INSTALLING IT. `scripts/publish.py --install-hook` installs git-hooks/pre-push; this
+# hook rides the same core.hooksPath, so installing it means the same two steps:
+#
+#   cp git-hooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+#   git config core.hooksPath git-hooks
+#
+# or, with core.hooksPath already pointing at git-hooks/, nothing else is needed.
+#
+# SCOPE OF THE SCAN: the staged source files, never the whole tree. A whole-tree run of
+# this repository does not finish (it was still scanning the JS module after 900 s), so
+# gating commits on it would make every commit impossible; a staged set scans in
+# seconds. A staged file is exactly what the commit is about to publish, which is the
+# thing worth refusing.
+#
+# WHAT REFUSES THE COMMIT: a critical finding, an environment or usage error (exit 2),
+# nothing scanned (exit 3) and a scan that overran its bound (exit 124). Warnings and
+# info are printed, never fatal: this scanner's warning class includes switch fallthrough
+# on a switch whose every case returns, and a gate that refuses on those gets bypassed
+# with --no-verify until it protects nothing. A critical finding is the class worth
+# stopping for. A reviewed false positive is suppressed where it lives, with
+# `// ubs:ignore` on the line or the line above plus a comment saying why — never by
+# weakening this hook. A deliberate bypass is `git commit --no-verify`: it is visible in
+# the command history as a choice, unlike a hook that silently passes.
+set -u
+# Homebrew's bin goes first for the scanner and for timeout(1) below. Written as a plain
+# assignment rather than an exported one: PATH is already exported in the environment git
+# hands a hook, so the assignment reaches every child either way, while the exported form is
+# what CPV's skillaudit ENV_INJECTION rule reads as environment poisoning. That is a false
+# positive here — this hook extends PATH for its own process tree and poisons nothing — and
+# CPV's own publish.py dropped the same prepend for `trufflehog` (issue #231).
+PATH="/opt/homebrew/bin:${PATH}"
+
+# A merge, cherry-pick, revert or rebase commit carries somebody else's tree, not this
+# change: the review of that content belongs to the operation that brought it in.
+git_dir=$(git rev-parse --git-dir 2>/dev/null) || exit 0
+for state in MERGE_HEAD CHERRY_PICK_HEAD REVERT_HEAD rebase-merge rebase-apply; do
+  [ -e "$git_dir/$state" ] && exit 0
+done
+
+# NO SCAN FROM A LINKED WORKTREE (owner directive 2026-11-10). A linked worktree shares the
+# main checkout's .git but is a second tree, and the scan belongs to the main checkout.
+#
+# --path-format=absolute is required on BOTH sides, not cosmetic: the plain --git-common-dir
+# is printed relative to the caller's cwd, so comparing the plain forms from a subdirectory
+# reports a difference that does not exist and would skip a main checkout.
+#
+# The skip is PRINTED, never silent: this file's own rule is that a bypass should be a
+# visible choice. The coverage cost, stated plainly: a file that exists only on a worktree's
+# branch is scanned by nothing until it reaches a main checkout, so scan it there before
+# relying on this gate.
+wt_git_dir=$(git rev-parse --path-format=absolute --git-dir 2>/dev/null) || wt_git_dir=""
+wt_common=$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null) || wt_common=""
+# Both must resolve before the comparison means anything. Either one coming back empty is an
+# environment condition, NOT evidence that this tree is a worktree, so it FALLS THROUGH and scans:
+# exiting 0 here would turn one broken git into a silent bypass of this gate. The guard may skip
+# only after proving the tree is linked.
+if [ -n "$wt_git_dir" ] && [ -n "$wt_common" ] && [ "$wt_git_dir" != "$wt_common" ]; then
+  printf "%s\n" "pre-commit: linked worktree - UBS skipped by owner directive (the scan runs in the main checkout)." >&2
+  exit 0
+fi
+if ! command -v ubs >/dev/null 2>&1; then
+  printf "%s\n" "pre-commit: ubs (Ultimate Bug Scanner) is not on PATH, so nothing was scanned." \
+    "  Install it, or commit with: git commit --no-verify" >&2
+  exit 1
+fi
+
+# Added, copied, modified and renamed files: the ones this commit introduces. Deletions
+# have nothing to scan.
+files=$(git diff --cached --name-only --diff-filter=ACMR 2>/dev/null \
+  | grep -E "\.(ts|tsx|js|jsx|mjs|cjs|py|sh|bash)$" || true)
+[ -z "$files" ] && exit 0
+
+# --files takes one comma-separated list, which keeps the scan to a single run.
+list=$(printf "%s\n" "$files" | paste -sd, -)
+count=$(printf "%s\n" "$files" | wc -l | tr -d " ")
+
+printf "%s\n" "pre-commit: UBS on $count staged file(s)..."
+report=$(mktemp "${TMPDIR:-/tmp}/ubs-pre-commit.XXXXXX") || exit 1
+
+# Bounded: an unresponsive scanner must not hold a commit forever. 300 s is far above
+# the measured cost of a staged set here (under a second to a few seconds) and far below
+# a whole-tree run.
+timeout 300 ubs --files "$list" --format=text >"$report" 2>&1
+status=$?
+
+if [ "$status" -ne 0 ]; then
+  case "$status" in
+    1) printf "%s\n" "pre-commit: UBS found a critical issue in the staged files." >&2 ;;
+    2) printf "%s\n" "pre-commit: UBS reported an environment or usage error." >&2 ;;
+    3) printf "%s\n" "pre-commit: UBS read no file it could analyse (exit 3), which is not a pass." >&2 ;;
+    124) printf "%s\n" "pre-commit: UBS did not finish within 300 s." >&2 ;;
+    *) printf "%s\n" "pre-commit: UBS exited $status." >&2 ;;
+  esac
+  printf "%s\n\n%s\n" "  Fix it, suppress a reviewed false positive with '// ubs:ignore', or commit with: git commit --no-verify" \
+    "----- UBS output (also kept at $report) -----" >&2
+  cat "$report" >&2
+  exit 1
+fi
+
+# Passed. Warnings and info stay visible: the last block of the report carries the counts.
+warned=$(sed -n 's/^Warning issues: //p' "$report" | head -1)
+info=$(sed -n 's/^Info items: //p' "$report" | head -1)
+if [ "${warned:-0}" != "0" ] || [ "${info:-0}" != "0" ]; then
+  printf "%s\n" "pre-commit: no critical issue; ${warned:-0} warning(s) and ${info:-0} info item(s), kept at $report" >&2
+else
+  rm -f "$report"
+fi
+exit 0

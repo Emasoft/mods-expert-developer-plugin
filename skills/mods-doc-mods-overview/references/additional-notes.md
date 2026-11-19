@@ -23,7 +23,7 @@ Last Updated: 2026-10-24. Installed Claude Code: 2.1.310.
 ## How to read the markers
 
 - DOC: stated in the live docs (https://code.claude.com/docs/en/plugins/mods/...) or the local chapters.
-- TYPES: stated in the declaration file Claude Code 2.1.309 generates when it loads the plugin, at `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/types/claude-code/index.d.ts` (not shipped; Claude Code wrote it when it loaded this plugin from its source folder, an installed copy may not have it, and its contents follow the Claude Code version that wrote it)
+- TYPES: stated in the declaration file Claude Code 2.1.309 generates when it loads the plugin, `index.d.ts` under `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/types/claude-code/` (not shipped; Claude Code wrote it when it loaded this plugin from its source folder, an installed copy may not have it, and its contents follow the Claude Code version that wrote it)
   (header marks it EARLY ACCESS). Signatures and doc comments only, behaviour not run.
 - UNVERIFIED: no source settles it; needs a live probe before implementing.
 - INFERRED: conclusion from documented facts; but no page states it outright.
@@ -134,7 +134,7 @@ plugins run after the last mod; if a mod answers the call, the tool and those ho
   Source: index.d.ts lines ~3142-3170 and CommandRunInput/CommandRunResult ~1790-1900.
 - UNVERIFIED. Whether /clear, /reload-plugins (and /model, /login) actually execute through $.command.run. Neither
   the docs nor the types list which built-ins are allowed, and the local quickstart flags even
-  $.command.run({command:'compact'}) as unverified (${CLAUDE_PLUGIN_ROOT}/skills/mods-tutorial-quickstart/SKILL.md, trap table).
+  $.command.run({command:'compact'}) as unverified (${CLAUDE_PLUGIN_ROOT}/skills/mods-tutorial-quickstart/references/traps-table.md).
   This is the single gating fact for removing keystroke injection. Probe: a throwaway mod with a /probe-clear
   command whose command.run hook calls $.command.run({command:'clear', args:''}) after the turn ends, loaded with
   claude --plugin-dir and claude --debug; check whether the transcript clears and session.end fires with reason
@@ -252,6 +252,7 @@ plugins run after the last mod; if a mod answers the call, the tool and those ho
   dirs, tsconfig.json). claude plugin test runs *.test.ts with claude-code/testing, stubs, mock.clock, mock.store,
   mock.env, mock.session (v2.1.293+), $.ui.mount for drawings, tier() and inline plugins for policy mods; exits 1
   on failure, so it works in CI. Source: create.md; test.md.
+  - NOTE. The chapters' short test fires (for example `$.command.run` or `turn.complete` with fewer fields, `{ value: undefined }` from a stubbed `command.register`) run under `claude plugin test` but fail `tsc`; see the trap table in `mods-tutorial-quickstart`.
 
 ## 9. Stability, limitations, troubleshooting
 

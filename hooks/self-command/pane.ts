@@ -1,11 +1,14 @@
 // The /self-command pane (TRDD-GF5UDFWI A2): the run tool's queue and history, the session's slash
 // commands grouped by source with a search box (a press puts the command in the prompt box), and a
-// form that creates a markdown command. Gated like the tools. Thin wiring: decisions are in
+// form that creates a markdown command. Behind its own switch, like each tool. Thin wiring: decisions are in
 // ./logic.ts. Only elements both the terminal and the Desktop app draw (Box, Text, Button, Input,
 // Select), one render path for every surface, bracketed buttons whose label names their letter.
 import type { CommandInfo, EngineInterface, On, RenderElement } from 'claude-code'
 
-import { DEV_TOOLS_OFF, isDevToolsOn } from '../dev-tools'
+import { logEvent, maskedLine } from '../debug-log/register'
+import { DEV_TOOLS_OFF, PANE as PANE_SWITCH } from '../dev-tools'
+import { printable } from '../mod-manager/logic'
+import { isOn } from '../switches/register'
 import {
   type CommandDraft,
   EMPTY_DRAFT,
@@ -29,7 +32,7 @@ type View = 'commands' | 'history' | 'new'
 type PaneState = { view: View; query: string; draft: CommandDraft }
 const INITIAL: PaneState = { view: 'commands', query: '', draft: EMPTY_DRAFT }
 
-// Module memory per session, as requirements-drafts keeps its lists: $.state would need a types
+// Module memory per session: $.state would need a types
 // contract in the manifest. A reload empties it, which only resets the view, the search and the form.
 const stateBySession = new Map<string, PaneState>()
 
@@ -58,10 +61,23 @@ async function update($: EngineInterface, change: (s: PaneState) => PaneState): 
   $.ui.invalidate('ui.render')
 }
 
+/**
+ * Whether the pane's switch is off; if so, a toast says it and the pane is drawn again. A pane drawn before its switch
+ * went off in another session is not drawn again here ($.ui.invalidate reaches only its own session), so its buttons
+ * still press: each press that acts outside the pane reads the switch first (review of 01cc4d8).
+ */
+async function refusedWhileOff($: EngineInterface): Promise<boolean> {
+  if (await isOn($, PANE_SWITCH)) return false
+  $.ui.toast(DEV_TOOLS_OFF)
+  $.ui.invalidate('ui.render')
+  return true
+}
+
 /** Puts `/<name> ` in the prompt box; a box that did not take it says so in a toast. */
 async function fill($: EngineInterface, name: string): Promise<void> {
+  if (await refusedWhileOff($)) return
   const filled = await $.prompt.fill({ text: `/${name} ` })
-  if (!filled.isFilled) $.ui.toast(`The prompt box did not take /${name}${filled.refusal === undefined ? '' : ` (${filled.refusal})`}.`)
+  if (!filled.isFilled) $.ui.toast(maskedLine(`The prompt box did not take /${name}${filled.refusal === undefined ? '' : ` (${filled.refusal})`}.`))
 }
 
 /**
@@ -72,18 +88,19 @@ async function fill($: EngineInterface, name: string): Promise<void> {
  */
 async function saveCommand($: EngineInterface): Promise<void> {
   try {
+    if (await refusedWhileOff($)) return
     const draft = (await stateOf($)).draft
     const base = draft.scope === 'user' ? await $.env.get('HOME') : await $.session.root()
     const target = draftTarget(draft, await $.command.list(), base)
     if ('problem' in target) {
-      $.ui.toast(target.problem)
+      $.ui.toast(maskedLine(target.problem))
       return
     }
     // $.fs offers no exclusive create, so this check is the last step before the write and nothing
     // else is awaited between them. A file another process creates in that gap is still overwritten:
     // the race is narrowed, not closed.
     if (await $.fs.exists(target.path)) {
-      $.ui.toast(`Not saved: ${target.path} already exists.`)
+      $.ui.toast(maskedLine(`Not saved: ${target.path} already exists.`))
       return
     }
     await $.fs.write(target.path, commandFile(draft))
@@ -93,14 +110,14 @@ async function saveCommand($: EngineInterface): Promise<void> {
     const listed = await commandsOf($, session)
     commandsBySession.set(session, [...listed, { name: target.name, description: commandDescription(draft), source: 'user' }])
     await update($, (s) => ({ ...s, draft: { ...EMPTY_DRAFT, scope: draft.scope } }))
-    $.ui.toast(`Saved /${target.name} as ${target.path}. It shows in the / menu once Claude Code reads the folder again.`)
+    $.ui.toast(maskedLine(`Saved /${target.name} as ${target.path}. It shows in the / menu once Claude Code reads the folder again.`))
   } catch (error) {
-    $.ui.log(`self-command: saving a command failed: ${messageOf(error)}`)
-    $.ui.toast(`Not saved: ${messageOf(error)}`)
+    logEvent($, 'self-command', `self-command: saving a command failed: ${messageOf(error)}`)
+    $.ui.toast(maskedLine(`Not saved: ${messageOf(error)}`))
   }
 }
 
-/** Called by startSelfCommand while the gate is on: the pane's command registers with the tools. */
+/** Called by startSelfCommand while the pane's switch is on, after the tools: the pane's command registers last. */
 export async function registerPaneCommand($: EngineInterface): Promise<void> {
   // A literal name here and in the matcher below, so claude plugin validate can pair them.
   await $.command.register({ name: 'self-command', description: 'Open the slash command pane: queue, history, search, create' })
@@ -108,7 +125,7 @@ export async function registerPaneCommand($: EngineInterface): Promise<void> {
 
 export function registerPane(on: On): void {
   on('command.run', { command: 'self-command' }, async ($) => {
-    if (!(await isDevToolsOn($))) return { text: DEV_TOOLS_OFF }
+    if (!(await isOn($, PANE_SWITCH))) return { text: DEV_TOOLS_OFF }
     // One read of the command list per open; redraws and search keystrokes reuse it.
     // Re-thrown with its cause named, never swallowed: a pane without its list would mislead. The
     // engine then skips this hook and reports the message, so /self-command opens nothing.
@@ -131,7 +148,7 @@ export function registerPane(on: On): void {
     // them (mobile) from failing, and says why there.
     const Input = 'Input' in els ? els.Input : undefined
     const Select = 'Select' in els ? els.Select : undefined
-    if (!(await isDevToolsOn($))) return Text({ dimColor: true, children: [DEV_TOOLS_OFF] })
+    if (!(await isOn($, PANE_SWITCH))) return Text({ dimColor: true, children: [DEV_TOOLS_OFF] })
     const session = await $.session.id()
     const state = await stateOf($)
     const commands = await commandsOf($, session)
@@ -155,9 +172,9 @@ export function registerPane(on: On): void {
       const runs = historyOf(await $.store.get(HISTORY_KEY), session)
       body = [
         Text({ dimColor: true, children: ['Queued by the run tool, not run yet'] }),
-        ...(queued.length === 0 ? [Text({ dimColor: true, children: ['Nothing queued.'] })] : queued.map((r) => Text({ children: [shown(r)] }))),
+        ...(queued.length === 0 ? [Text({ dimColor: true, children: ['Nothing queued.'] })] : queued.map((r) => Text({ children: [maskedLine(shown(r))] }))),
         Text({ dimColor: true, children: ['Run in this session, newest first'] }),
-        ...(runs.length === 0 ? [Text({ dimColor: true, children: ['No run yet.'] })] : runs.map((r) => Text({ wrap: 'truncate-end', children: [historyLine(r)] }))),
+        ...(runs.length === 0 ? [Text({ dimColor: true, children: ['No run yet.'] })] : runs.map((r) => Text({ wrap: 'truncate-end', children: [maskedLine(historyLine(r))] }))),
       ]
     } else if (state.view === 'new') {
       const d = state.draft
@@ -191,7 +208,7 @@ export function registerPane(on: On): void {
             key: `sc-group-${label}`,
             flexDirection: 'column',
             children: [
-              Text({ dimColor: true, children: [label] }),
+              Text({ dimColor: true, children: [printable(label)] }),
               ...members.map((c) =>
                 Box({
                   key: `sc-row-${c.name}`,
@@ -199,8 +216,8 @@ export function registerPane(on: On): void {
                   columnGap: 1,
                   children: [
                     // A refused command still fills the prompt (the person may type any command); it is only dim.
-                    Button({ key: `sc-cmd-${c.name}`, label: fitLabel(`/${c.name}`, room), dimColor: isRefused(c), onPress: () => fill($, c.name) }),
-                    Text({ dimColor: true, wrap: 'truncate-end', children: [c.description] }),
+                    Button({ key: `sc-cmd-${c.name}`, label: printable(fitLabel(`/${c.name}`, room)), dimColor: isRefused(c), onPress: () => fill($, c.name) }),
+                    Text({ dimColor: true, wrap: 'truncate-end', children: [printable(c.description)] }),
                   ],
                 }),
               ),

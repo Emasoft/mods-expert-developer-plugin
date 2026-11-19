@@ -55,7 +55,7 @@ jobs:
 
       - name: Upload Mega-Linter reports
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: mega-linter-reports
           path: |
@@ -109,7 +109,7 @@ jobs:
           # zizmor artipacked: don't persist the token in .git/config (issue #151).
           persist-credentials: false
       - name: Run zizmor
-        uses: zizmorcore/zizmor-action@192e21d79ab29983730a13d1382995c2307fbcaa # v0.5.7
+        uses: zizmorcore/zizmor-action@53290badfa369cb0bf7ad16342cb62c2fa47ac7b # v0.8.0
 
   validate:
     name: Validate
@@ -137,8 +137,10 @@ jobs:
         # cold `uvx --from git+…` build of CPV (12-20 min, issue #114) is
         # paid ONCE per lockfile/runner; every later run restores the warm
         # uv cache and resolves in seconds.
-        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
+        uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
         with:
+          # Pinned: with no version input setup-uv floats to the newest uv; pin so a new uv release cannot change CI or release behaviour unreviewed (TRDD-TR37CWQ7).
+          version: "0.13.6"
           enable-cache: true
 
       - name: Set up Python
@@ -152,11 +154,11 @@ jobs:
       # change to the validator's own source busts the cache automatically;
       # the restore-keys fallback still hits a same-OS warm cache on the
       # first run after a CPV bump so we don't pay the full cold-scan cost.
-      # actions/cache@v5.0.5 is the latest SHA at scaffold time —
-      # pinact-compatible (the `# v5.0.5` comment is kept in sync on `uv
-      # lock`). gh-actions.md §"Pin third-party actions to a full commit SHA".
+      # actions/cache is pinned to the v6.1.0 release commit SHA (bumped in
+      # TRDD-TR37CWQ7); the `# v6.1.0` comment is pinact-compatible.
+      # gh-actions.md §"Pin third-party actions to a full commit SHA".
       - name: Restore CPV scan-cache
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/cpv
           key: cpv-scan-cache-${{ runner.os }}-${{ hashFiles('**/.cpv-self-hashes.json') }}
@@ -220,6 +222,53 @@ jobs:
           echo "::error::CPV validator FAILED TO RUN (exit $exit_code) — infra/network/install failure, NOT a validation verdict. No findings were produced; do not read this as CRITICAL/MAJOR/MINOR/NIT. See the log above (a cold 'uvx --from git+...' build can fail on a transient GitHub git-fetch)."
           exit 1
 
+  no-copy-sources:
+    # The no-copy test (tests/test_no_copy_unlicensed.py) reads every forbidden mod at its pinned public commits
+    # (TRDD-R2GILGKU). This job fetches them once and uploads them as one archive for the test lanes. The fetch is
+    # shallow, checks nothing out, fetches no submodule and runs nothing from the fetched repositories
+    # (scripts/fetch_no_copy_sources.py, which needs only Python's standard library and git, so no uv here).
+    name: No-copy sources
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # zizmor artipacked: don't persist the token in .git/config (issue #151).
+          persist-credentials: false
+
+      # The fetched sources are kept between runs, so CI still gets them while GitHub cannot serve a pinned repository
+      # (TRDD-R2GILGKU). The key is the hash of the pin table alone (every pin's repository and commit), so an edit
+      # elsewhere in scripts/excerpt_lock.py never makes CI fetch again. No restore-keys: a cache restored by prefix
+      # could carry pins the table dropped, while an exact key holds just these pins. The fetch below is idempotent, and
+      # its --prune removes anything no pin names before the archive is made. Not in release.yml: a release must not
+      # restore a cache that a less trusted run could have written (zizmor cache-poisoning).
+      - name: Hash the pin table
+        id: pins
+        run: |
+          pin_hash=$(python3 scripts/fetch_no_copy_sources.py --pin-hash)
+          echo "hash=$pin_hash" >> "$GITHUB_OUTPUT"
+
+      - name: Restore the no-copy sources
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: downloads_dev/no-copy-sources
+          key: no-copy-sources-${{ steps.pins.outputs.hash }}
+
+      - name: Fetch the pinned no-copy sources
+        run: |
+          python3 scripts/fetch_no_copy_sources.py --prune
+          tar -cf "$RUNNER_TEMP/no-copy-sources.tar" -C downloads_dev no-copy-sources
+
+      - name: Upload the no-copy sources
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: no-copy-sources
+          path: ${{ runner.temp }}/no-copy-sources.tar
+          if-no-files-found: error
+          retention-days: 1
+
   test:
     # NOTE: this is the test MATRIX. Its display name is "Test matrix" so the
     # lanes report "Test matrix (ubuntu-latest, 1)" / "Test matrix (macos-latest, 2)"
@@ -251,18 +300,26 @@ jobs:
     # default. The warm uv cache keeps installs fast; 25 min covers a cold
     # cache plus a real test suite on both runners (issue #90).
     timeout-minutes: 25
+    needs: [no-copy-sources]
+    # Runs even when the No-copy sources job failed, so a fetch failure fails only the no-copy tests, with their own
+    # message, and every other test still reports (TRDD-R2GILGKU). !cancelled(), not always(): a cancelled run stops.
+    if: ${{ !cancelled() }}
     # The job only reads the checkout; it writes nothing back (TRDD-O5LUMKPW, review M5).
     permissions:
       contents: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          # The no-copy test reads its prior art at the baseline commit e7b7df2, so the history must be present.
+          fetch-depth: 0
           # zizmor artipacked: don't persist the token in .git/config (issue #151).
           persist-credentials: false
 
       - name: Install uv
-        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
+        uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
         with:
+          # Pinned: with no version input setup-uv floats to the newest uv; pin so a new uv release cannot change CI or release behaviour unreviewed (TRDD-TR37CWQ7).
+          version: "0.13.6"
           enable-cache: true
 
       - name: Set up Python
@@ -270,6 +327,26 @@ jobs:
 
       - name: Install dependencies
         run: uv sync --extra dev
+
+      # The forbidden mods' public commits, fetched once by the no-copy-sources job and handed to every lane as one
+      # archive, so the lanes do not each fetch them (TRDD-R2GILGKU). When that job failed there is no archive: the
+      # download may fail and the unpack only warns, so every other test still runs and reports, and
+      # tests/test_no_copy_unlicensed.py fails with its own message naming the fetch command.
+      - name: Download the no-copy sources
+        continue-on-error: true
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: no-copy-sources
+          path: ${{ runner.temp }}
+
+      - name: Unpack the no-copy sources
+        run: |
+          if [ -f "$RUNNER_TEMP/no-copy-sources.tar" ]; then
+            mkdir -p downloads_dev
+            tar -xf "$RUNNER_TEMP/no-copy-sources.tar" -C downloads_dev
+          else
+            echo "::warning::No no-copy sources archive (the No-copy sources job failed); the no-copy tests will fail and name the fetch command."
+          fi
 
       # The mod's kit tests (hooks/tests) run through tests/test_mod_tests.py, which calls
       # `claude plugin test` (TRDD-O5LUMKPW, review M5). The CLI needs Node 22 or later (the
@@ -284,10 +361,14 @@ jobs:
       # native binary from the platform optionalDependency (@anthropic-ai/claude-code-<platform>)
       # over the bin/claude.exe stub, with no network access. With --ignore-scripts the stub stays
       # and `claude --version` exits 1 with "claude native binary not installed" (measured on macOS).
-      # The pinned version is what keeps runs independent of the day. DISABLE_AUTOUPDATER is read by
+      # The version and the integrity hashes of the CLI and its platform packages live in
+      # .github/claude-cli/package-lock.json, so `npm ci` installs exactly those bytes and runs
+      # independent of the day. DISABLE_AUTOUPDATER is read by
       # the CLI, not by npm, so it is set on the test step below, not here.
       - name: Install the Claude Code CLI
-        run: npm install -g @anthropic-ai/claude-code@2.1.310
+        run: |
+          npm ci --prefix "$GITHUB_WORKSPACE/.github/claude-cli"
+          echo "$GITHUB_WORKSPACE/.github/claude-cli/node_modules/.bin" >> "$GITHUB_PATH"
 
       - name: Run tests (shard ${{ matrix.group }} of 2)
         # DISABLE_AUTOUPDATER stops the CLI from downloading an update while it runs, for any test
@@ -295,6 +376,7 @@ jobs:
         # env and sets the same variable there.
         env:
           DISABLE_AUTOUPDATER: "1"
+          SHARD_GROUP: ${{ matrix.group }}
         run: |
           # Issue #215 — `find`, not `ls tests/test_*.py`: the glob is
           # top-level-only, so a tests/unit/ layout silently skipped the whole
@@ -302,7 +384,7 @@ jobs:
           # makes `ls` a lying probe in its own right.
           if [ -d "tests" ] && [ -n "$(find tests -name 'test_*.py' -type f -print -quit)" ]; then
             set +e
-            uv run pytest tests/ --splits 2 --group ${{ matrix.group }} -v
+            uv run pytest tests/ --splits 2 --group "$SHARD_GROUP" -v
             code=$?
             set -e
             # Exit 5 = pytest "no tests collected": a legitimately-empty shard
@@ -338,10 +420,12 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Require all test-matrix lanes to have passed
+        env:
+          TEST_RESULT: ${{ needs.test.result }}
         run: |
-          if [ "${{ needs.test.result }}" = "success" ]; then
+          if [ "$TEST_RESULT" = "success" ]; then
             echo "All test-matrix lanes passed."
             exit 0
           fi
-          echo "::error::Test matrix did not pass (result: ${{ needs.test.result }})"
+          echo "::error::Test matrix did not pass (result: $TEST_RESULT)"
           exit 1

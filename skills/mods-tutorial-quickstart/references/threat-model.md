@@ -111,7 +111,7 @@ Treat anything the mod receives or reads as possibly crafted by someone else. Th
 | Sandboxing covers the Bash commands Claude runs, but not programs a mod launches | UNVERIFIED. The chapters say only that no organisation control sandboxes a mod. |
 | `$.session.authorize` returns a handle, not the secret, usable only against first-party hosts | UNVERIFIED. |
 | In `plugin.register`, a plugin supplies its own name, root, version and provenance, so a rename could slip past a rule that matches on them | UNVERIFIED. The chapters describe the refusal shape (`mods-doc-mods-and-events`, "Handle a hook that fails") but not what those fields prove. |
-| Checking a path with `$.fs.stat` and `resolve` shows its real location before a write | UNVERIFIED API; see the traps table in the quickstart skill. |
+| Checking a path with `$.fs.stat` and `resolve` shows its real location before a write | UNVERIFIED API; see the [traps table](traps-table.md). |
 
 ## Keeping the model in step
 

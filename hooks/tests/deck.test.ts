@@ -1,0 +1,809 @@
+// Adapted from https://github.com/nvr0x5/claude-deck at 1ecf6deb9199d3b1fa570bf08a57e69772bbb5af, tests/deck.test.ts, MIT.
+// Changed for mods-expert-developer-plugin: the tests run against this plugin, which starts Deck from hooks/index.ts (startDeckMod and registerDeckMod of hooks/deck/mod.ts); the plugin name, command, panes and store keys carry their new names; the pet assertions are inverted or left out with the pet; type checking is off for this file (@ts-nocheck), as upstream's test is untyped; every command run carries the person's origin, and the hidden-folder test reads the deck.folder switch instead of deck.prefs; the plan and task-tool tests answer the kit's permission request with allow, as Claude Code 2.1.318's kit denies an unanswered ask; the fixture paths are the generic /Users/alice and /home/tester that this plugin's absolute-path test allows, and another user's folder, beside the home under the same parent, is /home/tester/Shared/deck under the home /home/tester/alice (TRDD-RD1ISPMN).
+// @ts-nocheck
+import { expect, mock, test } from 'claude-code/testing'
+
+import { envelopeOf } from '../switches/logic'
+
+const BAND = {
+  plugin: 'mods-expert-developer-plugin',
+  component: 'AbovePrompt',
+  requestId: 'above-prompt',
+  viewport: { columns: 120, rows: 40 },
+  props: { hasSurvey: false, isWorking: true, maxRows: 20, bodyColumns: 110, scroll: { offset: 0, bodyRows: 20 }, view: {} },
+} as const
+
+const FOOTER = {
+  plugin: 'mods-expert-developer-plugin',
+  component: 'SessionMode',
+  requestId: 'session-mode',
+  viewport: { columns: 120, rows: 40 },
+  props: { modes: [] },
+} as const
+
+const PICKER = {
+  plugin: 'mods-expert-developer-plugin',
+  component: 'Pane',
+  requestId: 'mods-deck-style',
+  viewport: { columns: 120, rows: 40 },
+  props: { title: 'Deck style', isFocused: true, bodyColumns: 100, placement: 'inline', scroll: { offset: 0, bodyRows: 12 }, view: {} },
+} as const
+
+const inAnHour = () => new Date(Date.now() + 3600_000 + 14 * 60_000).toISOString()
+
+// Everything Claude Code would answer for this mod
+function stubs(on, saved = new Map<string, unknown>(), toolCall: any = () => ({ result: 'ok' }), usageValue: any = null, home = '/Users/alice') {
+  const clock = mock.clock(on)
+  on('store.get', ($, e) => ({ value: saved.get(e.key) }))
+  on('store.set', ($, e) => {
+    saved.set(e.key, e.value)
+    return { value: undefined }
+  })
+  on('command.register', () => ({ value: undefined }))
+  on('audio.play', () => ({ value: undefined }))
+  on('agent.list', () => ({ value: [] }))
+  on('ui.open', () => ({ value: { isPlaced: true } }))
+  on('session.model', () => ({ value: 'claude-opus-5-5' }))
+  on('session.id', () => ({ value: 'session-1' }))
+  on('http.fetch', () => ({ deny: 'no network in tests' }))
+  on('session.usage', () => usageValue ? { value: usageValue } : ({
+    value: {
+      startedAt: 0,
+      context: { tokens: 124_000, window: 1_000_000, percent: 12 },
+      cost: { usd: 0.42 },
+      rateLimits: [
+        { kind: 'five_hour', percentUsed: 31, resetsAt: inAnHour() },
+        { kind: 'seven_day', percentUsed: 64, resetsAt: inAnHour() },
+      ],
+    },
+  }))
+  // the session's project folder starts where the session does; a test moves it to stand for /cd or a worktree move
+  const folder = { root: '/work' }
+  on('session.start', ($, e) => {
+    folder.root = e.cwd
+    return { cwd: e.cwd }
+  })
+  on('env.get', ($, e) => ({ value: e.name === 'HOME' ? home : undefined }))
+  on('session.root', () => ({ value: folder.root }))
+  on('classic.CwdChanged', () => ({}))
+  on('prompt.submit', ($, e) => ({ text: e.text }))
+  on('tool.call', toolCall)
+  on('tool.check', () => ({ decision: 'ask' }))
+  on('turn.complete', () => ({ text: '' }))
+  on('ui.status', () => ({ value: undefined }))
+  on('session.measure', ($, e) => ({ changed: e.changed }))
+  on('ui.log', () => ({ value: undefined }))
+  on('ui.render', () => ({ type: 'Text', props: {}, children: ['engine'] }))
+  return { saved, clock, folder }
+}
+
+async function start($, cwd = '/work') {
+  await $.session.start({ surface: 'terminal', isInteractive: true, cwd })
+}
+
+const TODOS = [
+  { content: 'Map routes', activeForm: 'Mapping routes', status: 'completed' },
+  { content: 'Write tests', activeForm: 'Writing tests', status: 'completed' },
+  { content: 'Fix auth', activeForm: 'Fixing auth', status: 'in_progress' },
+  { content: 'Run suite', activeForm: 'Running suite', status: 'pending' },
+  { content: 'Report', activeForm: 'Reporting', status: 'pending' },
+]
+
+const spawn = (id: string, description: string) => ({
+  tool_use_id: 't-' + id,
+  prompt: 'go',
+  description,
+  subagentType: 'Explore',
+  provider: { plugin: 'engine', tier: 'core' },
+})
+
+// 30 s, not the kit's 5 s default: this test mounts both surfaces and timed out once at 6.1 s under machine load
+// (2026-11-12). A load-latency bound, not a logic change.
+test('expanded HUD draws plan, context, and limits on both surfaces, and no pet', { timeoutMs: 30_000 }, async ($, on) => {
+  const { saved } = stubs(on)
+  saved.set('deck.prefs', { open: true, style: { terminal: 'segments', desktop: 'pixel' } })
+  await start($)
+  await $.prompt.submit({ text: 'Refactor the auth module' })
+  await $.tool.call({ tool: 'TodoWrite', todos: TODOS })
+
+  const term = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect(await term.find({ type: 'Text', text: /^Refactor the auth/ })).toBeDefined()
+  expect(await term.find({ type: 'Text', text: /124k \/ 1M/ })).toBeDefined()
+  expect(await term.find({ type: 'Text', text: /Session · 5h/ })).toBeDefined()
+  expect(await term.find({ type: 'Text', text: /↻ 1:1\d:\d\d/ })).toBeDefined()
+  expect(await term.find({ type: 'Image' })).toBeUndefined()
+  await term.unmount()
+
+  const desk = await $.ui.mount({ ...BAND, surface: 'desktop' })
+  const first = await desk.find({ type: 'Svg' })
+  expect(first === undefined || !/@keyframes mv/.test(first.props.source)).toBe(true)
+  expect(await desk.find({ type: 'Text', text: /Weekly · 7d/ })).toBeDefined()
+  await desk.unmount()
+})
+
+test('every CLI and Desktop style draws a valid bar', async ($, on) => {
+  stubs(on)
+  await start($)
+  await $.tool.call({ tool: 'TodoWrite', todos: TODOS })
+  for (const style of ['segments', 'line', 'solid', 'dots', 'pixel']) {
+    await $.command.run({ command: 'mods-deck', args: 'style ' + style, origin: { kind: 'composer' } })
+    await $.command.run({ command: 'mods-deck', args: 'expand', origin: { kind: 'composer' } })
+    const term = await $.ui.mount({ ...BAND, surface: 'terminal' })
+    expect(await term.find({ type: 'Text', text: /Fixing auth/ })).toBeDefined()
+    await term.unmount()
+    const desk = await $.ui.mount({ ...BAND, surface: 'desktop' })
+    const svgs = []
+    for (let i = 0; i < 1; i++) svgs.push(await desk.find({ key: 'row-bar:todo' }))
+    expect(svgs[0]).toBeDefined()
+    await desk.unmount()
+  }
+})
+
+test('the style picker lists every style and a key press picks one per surface', async ($, on) => {
+  const { saved } = stubs(on)
+  await start($)
+  await $.command.run({ command: 'mods-deck', args: 'style', origin: { kind: 'composer' } })
+  const term = await $.ui.mount({ ...PICKER, surface: 'terminal' })
+  for (const k of ['segments', 'line', 'solid', 'dots', 'pixel']) expect(await term.find({ key: 'style-' + k })).toBeDefined()
+  await term.press({ key: 'style-dots' })
+  await term.unmount()
+  const desk = await $.ui.mount({ ...PICKER, surface: 'desktop' })
+  expect(await desk.find({ type: 'Svg' })).toBeDefined()
+  await desk.press({ key: 'style-line' })
+  expect((saved.get('deck.prefs') as any).style).toEqual({ terminal: 'dots', desktop: 'line' })
+})
+
+test('collapsed line puts the usage limits first', async ($, on) => {
+  stubs(on)
+  await start($)
+  await $.tool.call({ tool: 'TodoWrite', todos: TODOS })
+  const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  const five = await ui.find({ type: 'Text', text: /^5h 31% ↻/ })
+  const task = await ui.find({ type: 'Text', text: /^Fixing auth 3\/5/ })
+  expect(five).toBeDefined()
+  expect(task).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /Session · 5h/ })).toBeUndefined()
+})
+
+// stands in for jev-model-router: the same status and log lines, on a prompt
+const fakeRouter = {
+  name: 'jev-model-router',
+  register(on) {
+    on('prompt.submit', async ($, e, next) => {
+      $.ui.log('[jev-model-router] jev: tier fast (0.87) · effort 0.4 → low (0.71) · risky 0.02 · 249ms')
+      $.ui.status('jev · fast 0.87 → low')
+      return next(e)
+    })
+  },
+}
+
+test("the router's status and log become the route row", { plugins: [fakeRouter] }, async ($, on) => {
+  stubs(on)
+  await start($)
+  await $.command.run({ command: 'mods-deck', args: 'expand', origin: { kind: 'composer' } })
+  await $.prompt.submit({ text: 'rename a variable' })
+  const out = await $.command.run({ command: 'mods-deck', args: 'status', origin: { kind: 'composer' } })
+  expect(out.text).toMatch(/⇄ Model route — opus (=|→) opus · effort low · jev fast 0\.87/)
+  const term = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect(await term.find({ type: 'Text', text: /conf 0\.87/ })).toBeDefined()
+  await term.unmount()
+  const desk = await $.ui.mount({ ...BAND, surface: 'desktop' })
+  expect((await desk.find({ key: 'row-route' }))).toBeDefined()
+})
+
+// effort routed, model only suggested: the row must not claim a cheaper model
+const effortOnlyRouter = {
+  name: 'jev-model-router',
+  register(on) {
+    on('prompt.submit', async ($, e, next) => {
+      $.ui.log('[jev-model-router] jev: tier fast (0.91) · effort 0.2 → low (0.8) · risky 0.01 · 200ms')
+      $.ui.status('jev · fast 0.91 → low')
+      return next(e)
+    })
+  },
+}
+
+test('a suggested model the router did not apply reads as kept, not cheaper', { plugins: [effortOnlyRouter] }, async ($, on) => {
+  stubs(on)
+  await start($)
+  await $.command.run({ command: 'mods-deck', args: 'expand', origin: { kind: 'composer' } })
+  await $.prompt.submit({ text: 'rename a variable' })
+  const out = await $.command.run({ command: 'mods-deck', args: 'status', origin: { kind: 'composer' } })
+  expect(out.text).toMatch(/opus = opus · effort low · jev fast 0\.91, suggested haiku, not applied \(= kept\)/)
+  const term = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect(await term.find({ type: 'Text', text: /jev: haiku · not applied/ })).toBeDefined()
+})
+
+// a router whose backend refuses: the row says so instead of showing the last good route
+const brokeRouter = {
+  name: 'jev-model-router',
+  register(on) {
+    on('prompt.submit', async ($, e, next) => {
+      $.ui.log('[jev-model-router] typesafe responded 402')
+      $.ui.status('jev · no answer')
+      return next(e)
+    })
+  },
+}
+
+test('a router with no answer shows the reason, not a stale route', { plugins: [brokeRouter] }, async ($, on) => {
+  stubs(on)
+  await start($)
+  await $.command.run({ command: 'mods-deck', args: 'expand', origin: { kind: 'composer' } })
+  for (let i = 0; i < 3; i++) await $.prompt.submit({ text: 'hi' })
+  const out = await $.command.run({ command: 'mods-deck', args: 'status', origin: { kind: 'composer' } })
+  expect(out.text).toMatch(/⇄ Model route — no answer \(typesafe 402\), kept opus · check router key or credit/)
+  const term = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect(await term.find({ type: 'Text', text: /! typesafe 402/ })).toBeDefined()
+})
+
+test('VS Code gets the Desktop look', async ($, on) => {
+  stubs(on)
+  await start($)
+  await $.command.run({ command: 'mods-deck', args: 'expand', origin: { kind: 'composer' } })
+  await $.tool.call({ tool: 'TodoWrite', todos: TODOS })
+  const ui = await $.ui.mount({ ...BAND, surface: 'vscode' })
+  const drawn = JSON.stringify(await ui.drawn())
+  expect(drawn).toContain('"type":"Svg"')
+  expect(drawn).toContain('· 4 rows')
+  expect(drawn).not.toContain('"type":"Image"')
+})
+
+test('/mods-deck panel draws the expanded Deck in a pane, for VS Code', async ($, on) => {
+  stubs(on)
+  await start($)
+  await $.command.run({ command: 'mods-deck', args: 'collapse', origin: { kind: 'composer' } })
+  await $.tool.call({ tool: 'TodoWrite', todos: TODOS })
+  const out = await $.command.run({ command: 'mods-deck', args: 'panel', origin: { kind: 'composer' } })
+  expect(out.text).toBe('Deck opened in a panel.')
+  const pane = await $.ui.mount({ ...PICKER, requestId: 'mods-deck-panel', props: { ...PICKER.props, title: 'Deck' }, surface: 'vscode' })
+  const drawn = JSON.stringify(await pane.drawn())
+  expect(drawn).toContain('"type":"Svg"')
+  // expanded even while the band is collapsed, every row at once
+  expect(drawn).toContain('· 4 rows')
+  expect(drawn).toContain('Weekly · 7d')
+})
+
+test('/mods-deck version names the running version', async ($, on) => {
+  stubs(on)
+  await start($)
+  // the upstream version the port is adapted from (VERSION in hooks/deck/register.js)
+  const out = await $.command.run({ command: 'mods-deck', args: 'version', origin: { kind: 'composer' } })
+  expect(out.text).toMatch(/^Deck \d+\.\d+\.\d+$/)
+})
+
+test('the footer HUD button counts bars and toggles the HUD', async ($, on) => {
+  const { saved } = stubs(on)
+  await start($)
+  await $.tool.call({ tool: 'TodoWrite', todos: TODOS })
+  for (const surface of ['terminal', 'desktop'] as const) {
+    const ui = await $.ui.mount({ ...FOOTER, surface })
+    const button = await ui.find({ key: 'deck-footer' })
+    expect(button.props.label).toBe('Deck 1')
+    await ui.unmount()
+  }
+  const ui = await $.ui.mount({ ...FOOTER, surface: 'terminal' })
+  await ui.press({ key: 'deck-footer' })
+  expect((saved.get('deck.prefs') as any).open).toBe(true)
+})
+
+test('/mods-deck pet off is no section: it answers the help, and no pet draws on either surface', async ($, on) => {
+  stubs(on)
+  await start($)
+  const out = await $.command.run({ command: 'mods-deck', args: 'pet off', origin: { kind: 'composer' } })
+  expect(out.text).toMatch(/^\/mods-deck +toggle collapsed/)
+  await $.command.run({ command: 'mods-deck', args: 'expand', origin: { kind: 'composer' } })
+  const desk = await $.ui.mount({ ...BAND, surface: 'desktop' })
+  const first = await desk.find({ type: 'Svg' })
+  expect(first === undefined || !/@keyframes mv/.test(first.props.source)).toBe(true)
+  const term = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect(await term.find({ type: 'Image' })).toBeUndefined()
+})
+
+test('a permission prompt held past the delay turns the bar amber', async ($, on) => {
+  const { clock } = stubs(on)
+  await start($)
+  await $.tool.call({ tool: 'TodoWrite', todos: TODOS })
+  await $.tool.check({ tool: 'Bash', input: { command: 'rm -rf build' } })
+  let out = await $.command.run({ command: 'mods-deck', args: 'status', origin: { kind: 'composer' } })
+  expect(out.text).toMatch(/^● Tasks — Fixing auth 3\/5/m)
+  await clock.advance(800)
+  out = await $.command.run({ command: 'mods-deck', args: 'status', origin: { kind: 'composer' } })
+  expect(out.text).toMatch(/^\? Tasks — Fixing auth 3\/5/m)
+})
+
+test('subagents become strips with their model, then finish', async ($, on) => {
+  stubs(on)
+  on('agent.spawn', ($, e) => ({ model: e.description === 'explore routes' ? 'claude-haiku-4-5' : 'sonnet', agentId: e.description === 'explore routes' ? 'a1' : 'a2' }))
+  await start($)
+  await $.tool.call({ tool: 'TodoWrite', todos: TODOS })
+  await $.agent.spawn(spawn('a1', 'explore routes'))
+  await $.agent.spawn(spawn('a2', 'write fixtures'))
+  await $.tool.call({ tool: 'Grep', pattern: 'auth', agentId: 'a1' })
+  await $.tool.call({ tool: 'TodoWrite', agentId: 'a2', todos: TODOS.slice(0, 4) })
+  let out = await $.command.run({ command: 'mods-deck', args: 'status', origin: { kind: 'composer' } })
+  expect(out.text).toMatch(/Fixing auth 3\/5 · 0\/2 agents/)
+  expect(out.text).toMatch(/↳ explore routes: Grep \[running\] \{haiku\}/)
+  expect(out.text).toMatch(/↳ write fixtures: Fixing auth 3\/4 \[running\] \{sonnet\}/)
+  await $.turn.complete({ turnId: 'x', agentId: 'a1', answer: 'ok', durationMs: 5, isAborted: false, reason: 'answer', usage: null })
+  out = await $.command.run({ command: 'mods-deck', args: 'status', origin: { kind: 'composer' } })
+  expect(out.text).toMatch(/1\/2 agents/)
+  await $.command.run({ command: 'mods-deck', args: 'expand', origin: { kind: 'composer' } })
+  const desk = await $.ui.mount({ ...BAND, surface: 'desktop' })
+  expect(await desk.find({ key: 'row-bar:todo' })).toBeDefined()
+  await desk.unmount()
+  const term = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect(await term.find({ type: 'Text', text: / haiku / })).toBeDefined()
+})
+
+test('agents with no live bar get their own Agents bar', async ($, on) => {
+  stubs(on)
+  on('agent.spawn', () => ({ model: 'claude-test', agentId: 'solo' }))
+  await start($)
+  await $.agent.spawn(spawn('solo', 'scan the repo'))
+  await $.tool.call({ tool: 'Read', file_path: 'a.ts', agentId: 'solo' })
+  const out = await $.command.run({ command: 'mods-deck', args: 'status', origin: { kind: 'composer' } })
+  expect(out.text).toMatch(/^● Agents — Agents 0\/1/m)
+  expect(out.text).toMatch(/↳ scan the repo: Read \[running\]/)
+})
+
+test('an approved plan becomes a bar with stages', async ($, on) => {
+  stubs(on)
+  on('classic.PermissionRequest', () => ({ decision: { behavior: 'allow' } }))
+  await start($)
+  const plan = '# Checkout rework\n\n## Backend\n1. Add cart table\n2. Write API\n\n## Frontend\n- Cart page\n- Pay button\n'
+  await $.tool.call({ tool: 'ExitPlanMode', plan })
+  const out = await $.command.run({ command: 'mods-deck', args: 'status', origin: { kind: 'composer' } })
+  expect(out.text).toMatch(/Checkout rework — Backend 1\/2/)
+})
+
+test('task tools: ids and statuses come from the results, and a new batch starts a fresh bar', async ($, on) => {
+  let next = 1
+  stubs(on, undefined, ($, e) => {
+    if (e.tool === 'TaskCreate') return { result: { task: { id: String(next++), subject: e.subject } } }
+    if (e.tool === 'TaskUpdate') return { result: { success: true, taskId: e.taskId, updatedFields: ['status'] } }
+    return { result: 'ok' }
+  })
+  on('classic.PermissionRequest', () => ({ decision: { behavior: 'allow' } }))
+  await start($)
+  await $.tool.call({ tool: 'TaskCreate', subject: 'Old one', description: '' })
+  await $.tool.call({ tool: 'TaskUpdate', taskId: '1', status: 'completed' })
+  for (const subject of ['Core', 'JSON', 'CLI', 'Tests', 'Run tests', 'README']) {
+    await $.tool.call({ tool: 'TaskCreate', subject, description: '', activeForm: subject + 'ing' })
+  }
+  for (const id of ['2', '3', '4', '5']) await $.tool.call({ tool: 'TaskUpdate', taskId: id, status: 'completed' })
+  await $.tool.call({ tool: 'TaskUpdate', taskId: '6', status: 'in_progress' })
+  const out = await $.command.run({ command: 'mods-deck', args: 'status', origin: { kind: 'composer' } })
+  expect(out.text).toMatch(/— Run testsing 5\/6 \(73%\)/)
+})
+
+test('/mods-deck demo runs a sample plan to the end', async ($, on) => {
+  const { clock } = stubs(on)
+  await start($)
+  await $.command.run({ command: 'mods-deck', args: 'demo', origin: { kind: 'composer' } })
+  let out = await $.command.run({ command: 'mods-deck', args: 'status', origin: { kind: 'composer' } })
+  expect(out.text).toMatch(/Orders module — Analysis 3\/3 · 0\/2 agents/)
+  await clock.advance(1400 * 30)
+  out = await $.command.run({ command: 'mods-deck', args: 'status', origin: { kind: 'composer' } })
+  expect(out.text).toMatch(/Orders module — Done 12\/12/)
+})
+
+test('a turn without a todo list gets an activity bar that follows the tools', async ($, on) => {
+  stubs(on)
+  on('turn.start', ($, e) => ({ turnId: e.turnId }))
+  await start($)
+  await $.prompt.submit({ text: 'Fix the login bug' })
+  await $.turn.start({ text: 'Fix the login bug', turnId: 't1' })
+  await $.tool.call({ tool: 'Read', file_path: '/src/auth.ts' })
+  await $.tool.call({ tool: 'Edit', file_path: '/src/auth.ts', old_string: 'a', new_string: 'b' })
+  let out = await $.command.run({ command: 'mods-deck', args: 'status', origin: { kind: 'composer' } })
+  expect(out.text).toMatch(/● Fix the login bug — Editing auth\.ts 2 tools/)
+  await $.turn.complete({ turnId: 't1', answer: 'ok', durationMs: 5, isAborted: false, reason: 'answer', usage: null })
+  out = await $.command.run({ command: 'mods-deck', args: 'status', origin: { kind: 'composer' } })
+  expect(out.text).toMatch(/✓ Fix the login bug — Done 2 tools/)
+  // a todo list in the next turn replaces it
+  await $.turn.start({ text: 'Next', turnId: 't2' })
+  await $.tool.call({ tool: 'TodoWrite', todos: TODOS })
+  out = await $.command.run({ command: 'mods-deck', args: 'status', origin: { kind: 'composer' } })
+  expect(out.text).not.toMatch(/Planning/)
+  expect(out.text).toMatch(/Fixing auth 3\/5/)
+})
+
+test('a plain chat turn shows while it thinks and goes away once answered', async ($, on) => {
+  stubs(on)
+  on('turn.start', ($, e) => ({ turnId: e.turnId }))
+  await start($)
+  await $.prompt.submit({ text: 'what does this do' })
+  await $.turn.start({ text: 'what does this do', turnId: 't1' })
+  let out = await $.command.run({ command: 'mods-deck', args: 'status', origin: { kind: 'composer' } })
+  expect(out.text).toMatch(/what does this do — Thinking/)
+  await $.turn.complete({ turnId: 't1', answer: 'ok', durationMs: 5, isAborted: false, reason: 'answer', usage: null })
+  out = await $.command.run({ command: 'mods-deck', args: 'status', origin: { kind: 'composer' } })
+  expect(out.text).not.toMatch(/what does this do/)
+})
+
+test('a long prompt as a bar title is cut short on Desktop', async ($, on) => {
+  stubs(on)
+  on('turn.start', ($, e) => ({ turnId: e.turnId }))
+  await start($)
+  await $.command.run({ command: 'mods-deck', args: 'expand', origin: { kind: 'composer' } })
+  const long = 'already updated, here is the screenshot of the whole thing'
+  await $.prompt.submit({ text: long })
+  await $.turn.start({ text: long, turnId: 't1' })
+  const desk = await $.ui.mount({ ...BAND, surface: 'desktop' })
+  expect(await desk.find({ type: 'Text', text: /^already updated, here…$/ })).toBeDefined()
+  expect(await desk.find({ type: 'Text', text: long })).toBeUndefined()
+})
+
+test('agents started without a todo list show as strips under the activity bar, with their model', async ($, on) => {
+  stubs(on)
+  on('turn.start', ($, e) => ({ turnId: e.turnId }))
+  on('agent.spawn', ($, e) => ({ model: e.description === 'Map the orders tables' ? 'claude-haiku-4-5' : 'sonnet', agentId: e.description === 'Map the orders tables' ? 'a1' : 'a2' }))
+  await start($)
+  await $.prompt.submit({ text: 'Migrate the orders module' })
+  await $.turn.start({ text: 'Migrate the orders module', turnId: 't1' })
+  await $.agent.spawn(spawn('a1', 'Map the orders tables'))
+  await $.agent.spawn(spawn('a2', 'Draft the migration'))
+  await $.tool.call({ tool: 'Grep', pattern: 'orders', agentId: 'a1' })
+  const out = await $.command.run({ command: 'mods-deck', args: 'status', origin: { kind: 'composer' } })
+  expect(out.text).toMatch(/Migrate the orders module — .* · 0\/2 agents/)
+  expect(out.text).toMatch(/↳ Map the orders tables: Grep \[running\] \{haiku\}/)
+  expect(out.text).toMatch(/↳ Draft the migration: Starting \[running\] \{sonnet\}/)
+  expect(out.text).not.toMatch(/^● Agents/m)
+})
+
+test('a usage update with one window keeps the other', async ($, on) => {
+  stubs(on)
+  await start($)
+  await $.session.measure({ context: { tokens: 1, window: 10, percent: 10 }, rateLimits: [{ kind: 'seven_day', percentUsed: 50, resetsAt: inAnHour() }], changed: ['rateLimits'] })
+  const out = await $.command.run({ command: 'mods-deck', args: 'status', origin: { kind: 'composer' } })
+  expect(out.text).toMatch(/Session · 5h/)
+  expect(out.text).toMatch(/7d · 50% used/)
+})
+
+test('bar titles use the typed words, not system reminders around them', async ($, on) => {
+  stubs(on)
+  on('turn.start', ($, e) => ({ turnId: e.turnId }))
+  await start($)
+  await $.prompt.submit({ text: '<system-reminder>The user started this session without a folder.</system-reminder>\nUse 2 subagents to list files' })
+  await $.turn.start({ text: 'x', turnId: 't1' })
+  await $.tool.call({ tool: 'Read', file_path: '/a.ts' })
+  const out = await $.command.run({ command: 'mods-deck', args: 'status', origin: { kind: 'composer' } })
+  expect(out.text).toMatch(/● Use 2 subagents to list files — /)
+})
+
+test('/mods-deck collapsed text draws one plain status line with limits first', async ($, on) => {
+  const { saved } = stubs(on)
+  await start($)
+  await $.tool.call({ tool: 'TodoWrite', todos: TODOS })
+  await $.command.run({ command: 'mods-deck', args: 'collapsed text', origin: { kind: 'composer' } })
+  expect((saved.get('deck.prefs') as any).collapsed).toBe('text')
+  for (const surface of ['terminal', 'desktop'] as const) {
+    const ui = await $.ui.mount({ ...BAND, surface })
+    expect(await ui.find({ type: 'Text', text: /^5h 31% ↻/ })).toBeDefined()
+    expect(await ui.find({ type: 'Text', text: /^Fixing auth 3\/5/ })).toBeDefined()
+    await ui.unmount()
+  }
+})
+
+test('expanding unfolds the rows one after another, and the toggle folds them away', async ($, on) => {
+  const { clock } = stubs(on)
+  await start($)
+  await $.tool.call({ tool: 'TodoWrite', todos: TODOS })
+  await $.command.run({ command: 'mods-deck', args: 'expand', origin: { kind: 'composer' } })
+  let ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect(await ui.find({ type: 'Text', text: /Weekly · 7d/ })).toBeUndefined()
+  await ui.unmount()
+  await clock.advance(1000)
+  ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect(await ui.find({ type: 'Text', text: /Weekly · 7d/ })).toBeDefined()
+  await ui.press({ key: 'deck-toggle' })
+  await ui.unmount()
+  await clock.advance(1000)
+  ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect(await ui.find({ type: 'Text', text: /Session · 5h/ })).toBeUndefined()
+  expect(await ui.find({ type: 'Text', text: /^5h 31% ↻/ })).toBeDefined()
+})
+
+// The animation switch is off by default (TRDD-INFES3JE C), so a fade is drawn only once the person or Claude turns it on:
+// the switch is stored on before the start, signed as the registry writes it.
+test('desktop rows fade in while they unfold, with the animation switch on', async ($, on) => {
+  const { clock, saved } = stubs(on)
+  saved.set('switch.deck.animation', await envelopeOf('switch.deck.animation', true, 1))
+  await start($)
+  await $.tool.call({ tool: 'TodoWrite', todos: TODOS })
+  await $.command.run({ command: 'mods-deck', args: 'expand', origin: { kind: 'composer' } })
+  await clock.advance(40)
+  const ui = await $.ui.mount({ ...BAND, surface: 'desktop' })
+  const row = await ui.find({ key: 'row-bar:todo' })
+  expect(JSON.stringify(row)).toMatch(/@keyframes rin/)
+})
+
+// The default: with no stored animation switch the same unfold draws the row where it is, with no fade (a still HUD).
+test('desktop rows do not fade while they unfold with the animation switch off, the default', async ($, on) => {
+  const { clock } = stubs(on)
+  await start($)
+  await $.tool.call({ tool: 'TodoWrite', todos: TODOS })
+  await $.command.run({ command: 'mods-deck', args: 'expand', origin: { kind: 'composer' } })
+  await clock.advance(40)
+  const ui = await $.ui.mount({ ...BAND, surface: 'desktop' })
+  const row = await ui.find({ key: 'row-bar:todo' })
+  expect(row).toBeDefined()
+  expect(JSON.stringify(row)).not.toMatch(/@keyframes rin/)
+})
+
+test('rings: a ring per limit with its reset, and spend when cost is on', async ($, on) => {
+  const { saved } = stubs(on)
+  await start($)
+  await $.command.run({ command: 'mods-deck', args: 'cost on', origin: { kind: 'composer' } })
+  await $.command.run({ command: 'mods-deck', args: 'collapsed rings', origin: { kind: 'composer' } })
+  const term = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect(await term.find({ type: 'Text', text: '31%' })).toBeDefined()
+  expect(await term.find({ type: 'Text', text: /^5h · resets 1h1\dm$/ })).toBeDefined()
+  expect(await term.find({ type: 'Text', text: '$0.42' })).toBeDefined()
+  await term.unmount()
+  const desk = await $.ui.mount({ ...BAND, surface: 'desktop' })
+  const ring = await desk.find({ type: 'Svg' })
+  expect(ring.props.alt).toBe('5h 31% used')
+  expect(ring.props.source).toMatch(/stroke-dasharray/)
+  expect((saved.get('deck.spend') as any).dayUsd).toBe(0.42)
+})
+
+test('spark: limit rows carry their history and a burn rate', async ($, on) => {
+  const { clock } = stubs(on)
+  await start($)
+  await $.command.run({ command: 'mods-deck', args: 'style spark', origin: { kind: 'composer' } })
+  await $.command.run({ command: 'mods-deck', args: 'expand', origin: { kind: 'composer' } })
+  await clock.advance(1000)
+  const term = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect(await term.find({ type: 'Text', text: /5h · 31% used/ })).toBeDefined()
+  await term.unmount()
+  const desk = await $.ui.mount({ ...BAND, surface: 'desktop' })
+  expect(await desk.find({ key: 'row-limit:five_hour' })).toBeDefined()
+})
+
+
+test('/mods-deck demo fills in a sample route and limits in a fresh session, and real readings replace them', async ($, on) => {
+  stubs(on, undefined, undefined, { startedAt: 0, context: { window: 1_000_000 }, rateLimits: [] })
+  await start($)
+  const r = await $.command.run({ command: 'mods-deck', args: 'demo', origin: { kind: 'composer' } })
+  expect(r.text).toMatch(/sample routing and limits/)
+  let out = await $.command.run({ command: 'mods-deck', args: 'status', origin: { kind: 'composer' } })
+  expect(out.text).toMatch(/⇄ Model route — /)
+  expect(out.text).toMatch(/Session · 5h — 5h · 31% used/)
+  expect(out.text).toMatch(/Weekly · 7d — 7d · 64% used/)
+  await $.session.measure({ context: { tokens: 1, window: 10, percent: 10 }, rateLimits: [{ kind: 'seven_day', percentUsed: 50, resetsAt: inAnHour() }], changed: ['rateLimits'] })
+  out = await $.command.run({ command: 'mods-deck', args: 'status', origin: { kind: 'composer' } })
+  expect(out.text).not.toMatch(/Session · 5h/)
+  expect(out.text).toMatch(/7d · 50% used/)
+})
+
+test('a background agent outlives its turn and moves to the Agents bar on the next prompt', async ($, on) => {
+  const { clock } = stubs(on)
+  on('turn.start', ($, e) => ({ turnId: e.turnId }))
+  on('agent.spawn', () => ({ model: 'claude-haiku-4-5', agentId: 'bg' }))
+  await start($)
+  await $.prompt.submit({ text: 'Audit the deps' })
+  await $.turn.start({ text: 'Audit the deps', turnId: 't1' })
+  await $.agent.spawn(spawn('bg', 'audit in background'))
+  await $.turn.complete({ turnId: 't1', answer: 'started it', durationMs: 5, isAborted: false, reason: 'answer', usage: null })
+  await clock.advance(30_000)
+  let out = await $.command.run({ command: 'mods-deck', args: 'status', origin: { kind: 'composer' } })
+  expect(out.text).toMatch(/↳ audit in background: .*\[running\]/)
+  await $.prompt.submit({ text: 'meanwhile, what is X' })
+  await $.turn.start({ text: 'meanwhile, what is X', turnId: 't2' })
+  out = await $.command.run({ command: 'mods-deck', args: 'status', origin: { kind: 'composer' } })
+  expect(out.text).toMatch(/^● Agents — Agents 0\/1/m)
+  expect(out.text).toMatch(/↳ audit in background: .*\[running\]/)
+  await $.turn.complete({ turnId: 'x', agentId: 'bg', answer: 'ok', durationMs: 5, isAborted: false, reason: 'answer', usage: null })
+  out = await $.command.run({ command: 'mods-deck', args: 'status', origin: { kind: 'composer' } })
+  expect(out.text).toMatch(/^✓ Agents — Done 1\/1/m)
+})
+
+test('a narrow terminal drops the clock and cuts rows instead of wrapping them', async ($, on) => {
+  stubs(on)
+  await start($)
+  await $.tool.call({ tool: 'TodoWrite', todos: TODOS })
+  await $.command.run({ command: 'mods-deck', args: 'expand', origin: { kind: 'composer' } })
+  const wide = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect(await wide.find({ type: 'Text', text: /\d\d:\d\d/ })).toBeDefined()
+  await wide.unmount()
+  const narrow = await $.ui.mount({ ...BAND, surface: 'terminal', viewport: { columns: 26, rows: 40 }, props: { ...BAND.props, bodyColumns: 26 } })
+  // the header clock alone (HH:MM:SS, always zero-padded): the limit row's reset countdown stays, and with
+  // \d\d:\d\d or a 2-digit reset hour it would match that too — the stub's reset is under 10h away, so it is 1:13:59
+  expect(await narrow.find({ type: 'Text', text: /\d\d:\d\d:\d\d$/ })).toBeUndefined()
+  const rows = await narrow.findAll({ type: 'Box', props: { height: 1 } })
+  expect(rows.length).toBeGreaterThan(0)
+  for (const row of rows) {
+    const fixed = row.children.reduce((w, c) => w + (c.props?.width ?? 0), 0)
+    expect(fixed).toBeLessThanOrEqual(26)
+  }
+  expect(await narrow.find({ type: 'Text', text: /^Context$/ })).toBeUndefined()
+})
+
+test('the expanded header shows the session folder with home as ~', async ($, on) => {
+  stubs(on)
+  await start($, '/Users/alice/Documents/deck')
+  await $.tool.call({ tool: 'TodoWrite', todos: TODOS })
+  await $.command.run({ command: 'mods-deck', args: 'expand', origin: { kind: 'composer' } })
+  const term = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect(await term.find({ type: 'Text', text: /^~\/Documents\/deck {2}· {2}\d\d:\d\d/ })).toBeDefined()
+  await term.unmount()
+  const desk = await $.ui.mount({ ...BAND, surface: 'desktop' })
+  expect(await desk.find({ type: 'Text', text: /^▤ ~\/Documents\/deck {2}· {2}◷ / })).toBeDefined()
+  await desk.unmount()
+})
+
+test('a Linux home folder also reads as ~', async ($, on) => {
+  stubs(on, undefined, undefined, undefined, '/home/tester')
+  await start($, '/home/tester/src/deck')
+  await $.tool.call({ tool: 'TodoWrite', todos: TODOS })
+  await $.command.run({ command: 'mods-deck', args: 'expand', origin: { kind: 'composer' } })
+  const term = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect(await term.find({ type: 'Text', text: /^~\/src\/deck / })).toBeDefined()
+})
+
+test("another user's folder is not shortened to ~", async ($, on) => {
+  stubs(on, undefined, undefined, undefined, '/home/tester/alice')
+  await start($, '/home/tester/Shared/deck')
+  await $.tool.call({ tool: 'TodoWrite', todos: TODOS })
+  await $.command.run({ command: 'mods-deck', args: 'expand', origin: { kind: 'composer' } })
+  const term = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect(await term.find({ type: 'Text', text: /^\/home\/tester\/Shared\/deck / })).toBeDefined()
+})
+
+test('a narrow Desktop pane cuts the folder to fit the header', async ($, on) => {
+  stubs(on)
+  await start($, '/Users/alice/.claude-worktrees/claude-deck/some-very-long-branch-name/feat-x')
+  await $.tool.call({ tool: 'TodoWrite', todos: TODOS })
+  await $.command.run({ command: 'mods-deck', args: 'expand', origin: { kind: 'composer' } })
+  const desk = await $.ui.mount({ ...BAND, surface: 'desktop', viewport: { columns: 40, rows: 40 }, props: { ...BAND.props, bodyColumns: 40 } })
+  const folder = await desk.find({ type: 'Text', text: /^▤ …\/.*feat-x/ })
+  expect(folder).toBeDefined()
+  expect(folder.children.join('').length).toBeLessThanOrEqual(20)
+})
+
+test('the collapsed line leaves the folder out', async ($, on) => {
+  stubs(on)
+  await start($, '/Users/alice/Documents/deck')
+  await $.tool.call({ tool: 'TodoWrite', todos: TODOS })
+  for (const look of ['chips', 'text', 'rings']) {
+    await $.command.run({ command: 'mods-deck', args: 'collapsed ' + look, origin: { kind: 'composer' } })
+    for (const surface of ['terminal', 'desktop'] as const) {
+      const ui = await $.ui.mount({ ...BAND, surface })
+      expect(await ui.find({ type: 'Text', text: /Documents\/deck/ })).toBeUndefined()
+      await ui.unmount()
+    }
+  }
+})
+
+test('/mods-deck folder off hides the folder and is saved', { timeoutMs: 30_000 }, async ($, on) => {
+  const { saved } = stubs(on)
+  await start($, '/Users/alice/Documents/deck')
+  await $.tool.call({ tool: 'TodoWrite', todos: TODOS })
+  await $.command.run({ command: 'mods-deck', args: 'expand', origin: { kind: 'composer' } })
+  await $.command.run({ command: 'mods-deck', args: 'folder off', origin: { kind: 'composer' } })
+  expect((saved.get('switch.deck.folder') as any).v).toBe(false)
+  const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect(await ui.find({ type: 'Text', text: /Documents\/deck/ })).toBeUndefined()
+})
+
+test('a long folder is cut from the left, and a narrow terminal drops the clock before the folder', async ($, on) => {
+  stubs(on)
+  await start($, '/Users/alice/.claude-worktrees/claude-deck/some-very-long-branch-name/feat-x')
+  await $.tool.call({ tool: 'TodoWrite', todos: TODOS })
+  await $.command.run({ command: 'mods-deck', args: 'expand', origin: { kind: 'composer' } })
+  const cols = 60
+  const ui = await $.ui.mount({ ...BAND, surface: 'terminal', viewport: { columns: cols, rows: 40 }, props: { ...BAND.props, bodyColumns: cols } })
+  const folder = await ui.find({ type: 'Text', text: /^…\/.*feat-x/ })
+  expect(folder).toBeDefined()
+  const text = folder.children.join('')
+  expect(text.length + 20).toBeLessThanOrEqual(cols)
+  await ui.unmount()
+  const narrow = await $.ui.mount({ ...BAND, surface: 'terminal', viewport: { columns: 40, rows: 40 }, props: { ...BAND.props, bodyColumns: 40 } })
+  // The header clock only (HH:MM:SS at the end of the header text, as `header` below reads it). A looser /\d\d:\d\d/ also
+  // matches the countdown of a limits row: in the publish run of 2026-11-12, at a host load of 188, it found the text
+  // "↻ 1:13:59" here, and the test failed on a text that is not the clock.
+  expect(await narrow.find({ type: 'Text', text: /\d\d:\d\d:\d\d$/ })).toBeUndefined()
+  expect(await narrow.find({ type: 'Text', text: /^…\/.*feat-x$/ })).toBeDefined()
+})
+
+const header = (ui) => ui.find({ type: 'Text', text: /\d\d:\d\d:\d\d$/ })
+
+test('a folder change event moves the header to the new folder', async ($, on) => {
+  const { folder } = stubs(on)
+  await start($, '/Users/alice/Documents/deck')
+  await $.tool.call({ tool: 'TodoWrite', todos: TODOS })
+  await $.command.run({ command: 'mods-deck', args: 'expand', origin: { kind: 'composer' } })
+  folder.root = '/Users/alice/Documents/deck/.claude/worktrees/cwd-check'
+  await $.classic.CwdChanged({ old_cwd: '/Users/alice/Documents/deck', new_cwd: folder.root })
+  const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect((await header(ui)).children.join('')).toMatch(/^~\/Documents\/deck\/\.claude\/worktrees\/cwd-check /)
+})
+
+test('a move with no event shows after the next tool call', async ($, on) => {
+  const { folder } = stubs(on)
+  await start($, '/Users/alice/Documents/deck')
+  await $.tool.call({ tool: 'TodoWrite', todos: TODOS })
+  await $.command.run({ command: 'mods-deck', args: 'expand', origin: { kind: 'composer' } })
+  folder.root = '/Users/alice/Documents/deck/.claude/worktrees/cwd-check'
+  await $.tool.call({ tool: 'EnterWorktree', name: 'cwd-check' })
+  for (const surface of ['terminal', 'desktop'] as const) {
+    const ui = await $.ui.mount({ ...BAND, surface })
+    // Desktop has less room in the header, so the path may be cut from the left
+    expect((await header(ui)).children.join('')).toMatch(/(~\/Documents\/deck|…)\/\.claude\/worktrees\/cwd-check /)
+    await ui.unmount()
+  }
+})
+
+test('a shell cd alone leaves the header on the project folder', async ($, on) => {
+  stubs(on)
+  await start($, '/Users/alice/Documents/deck')
+  await $.tool.call({ tool: 'TodoWrite', todos: TODOS })
+  await $.command.run({ command: 'mods-deck', args: 'expand', origin: { kind: 'composer' } })
+  await $.tool.call({ tool: 'Bash', command: 'cd /tmp && ls' })
+  const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect((await header(ui)).children.join('')).toMatch(/^~\/Documents\/deck /)
+})
+
+
+test('the band keeps context and limits ahead of agent strips when capacity is short', async ($, on) => {
+  const { saved } = stubs(on)
+  saved.set('deck.prefs', { open: true, style: { terminal: 'segments', desktop: 'pixel' } })
+  on('agent.spawn', ($, e) => ({ model: 'claude-test', agentId: e.description.split(' ')[2] }))
+  await start($)
+  await $.prompt.submit({ text: 'Refactor the auth module' })
+  await $.tool.call({ tool: 'TodoWrite', todos: TODOS })
+  for (let i = 1; i <= 6; i++) {
+    await $.agent.spawn(spawn('s' + i, 'agent task s' + i))
+    await $.tool.call({ tool: 'Grep', pattern: 'auth', agentId: 's' + i })
+  }
+  const band = { ...BAND, surface: 'terminal', props: { ...BAND.props, maxRows: 5 } }
+  const term = await $.ui.mount(band)
+  expect(await term.find({ type: 'Text', text: /Refactor the auth/ })).toBeDefined()
+  expect(await term.find({ type: 'Text', text: /124k \/ 1M/ })).toBeDefined()
+  expect(await term.find({ type: 'Text', text: /Session · 5h/ })).toBeDefined()
+  expect(await term.find({ type: 'Text', text: /Weekly · 7d/ })).toBeDefined()
+  expect(await term.find({ type: 'Text', text: /claude-test/ })).toBeUndefined()
+  await term.unmount()
+})
+
+test('rows too long for the band are dropped by priority and named in a +N note', async ($, on) => {
+  const { saved } = stubs(on)
+  saved.set('deck.prefs', { open: true, style: { terminal: 'segments', desktop: 'pixel' } })
+  on('agent.spawn', ($, e) => ({ model: 'claude-test', agentId: e.description.split(' ')[2] }))
+  await start($)
+  await $.prompt.submit({ text: 'Refactor the auth module' })
+  await $.tool.call({ tool: 'TodoWrite', todos: TODOS })
+  for (let i = 1; i <= 6; i++) {
+    await $.agent.spawn(spawn('s' + i, 'agent task s' + i))
+    await $.tool.call({ tool: 'Grep', pattern: 'auth', agentId: 's' + i })
+  }
+  const band = { ...BAND, surface: 'terminal', props: { ...BAND.props, maxRows: 4 } }
+  const term = await $.ui.mount(band)
+  expect(await term.find({ type: 'Text', text: /Session · 5h/ })).toBeDefined()
+  expect(await term.find({ type: 'Text', text: /Weekly · 7d/ })).toBeDefined()
+  expect(await term.find({ type: 'Text', text: /Refactor the auth/ })).toBeUndefined()
+  expect(await term.find({ type: 'Text', text: /more row/ })).toBeDefined()
+  expect(await term.find({ type: 'Text', text: /mods-deck panel shows all/ })).toBeDefined()
+  await term.unmount()
+})
+
+test('the pane draws every row and lets the host scroll, even with maxRows 4', async ($, on) => {
+  const { saved } = stubs(on)
+  saved.set('deck.prefs', { open: true, style: { terminal: 'segments', desktop: 'pixel' } })
+  on('agent.spawn', ($, e) => ({ model: 'claude-test', agentId: e.description.split(' ')[2] }))
+  await start($)
+  await $.prompt.submit({ text: 'Refactor the auth module' })
+  await $.tool.call({ tool: 'TodoWrite', todos: TODOS })
+  for (let i = 1; i <= 6; i++) {
+    await $.agent.spawn(spawn('s' + i, 'agent task s' + i))
+    await $.tool.call({ tool: 'Grep', pattern: 'auth', agentId: 's' + i })
+  }
+  const pane = await $.ui.mount({ ...PICKER, requestId: 'mods-deck-panel', props: { ...PICKER.props, maxRows: 4 }, surface: 'terminal' })
+  expect(await pane.find({ type: 'Text', text: /Refactor the auth/ })).toBeDefined()
+  expect(await pane.find({ type: 'Text', text: /124k \/ 1M/ })).toBeDefined()
+  expect(await pane.find({ type: 'Text', text: /Session · 5h/ })).toBeDefined()
+  expect(await pane.find({ type: 'Text', text: /Weekly · 7d/ })).toBeDefined()
+  await pane.unmount()
+})

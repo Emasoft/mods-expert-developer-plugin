@@ -46,3 +46,5 @@ Full chapter: [the chapter](references/chapter.md), with the section-level MODS 
   - [Test a timer](references/chapter.md#test-a-timer)
   - [Test a drawing](references/chapter.md#test-a-drawing)
   - [Related Topics](references/chapter.md#related-topics)
+
+Typed tests: the chapter's test examples use short fires — `$.command.run` without `origin` and `presentation`, `turn.complete` with `usage: null`, and stubbed `command.register` handlers returning `{ value: undefined }` — which run under `claude plugin test` but fail `tsc` against the generated types; see the trap table in the `mods-tutorial-quickstart` skill.

@@ -1,10 +1,10 @@
 ---
 trdd-id: J4HRAQF0
 title: Port mod-manager as a universal plugin manager
-column: dev
+column: human_review
 status: tasked
 created: 2026-10-22T20:10:35+0200
-updated: 2026-10-27T13:17:18+0100
+updated: 2026-11-03T17:25:22+0100
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -15,6 +15,8 @@ mandated-by: none
 approved: true
 approval-judge: main-agent@emasoft-mods-expert-developer
 approval-datetime: 2026-10-22T20:10:35+0200
+implementation-commits: [56764d5, 6c1fe3e, bf34f6d, f19588d]
+eht: [R2QYIN8O]
 ---
 
 # Port mod-manager as a universal plugin manager
@@ -23,11 +25,22 @@ approval-datetime: 2026-10-22T20:10:35+0200
 
 - 2026-10-22T20:10:35+0200 — MANDATE issued by main-agent@emasoft-mods-expert-developer (min-approval-requirement: none). Pre-approved: issuer authority >= required approver. No approval request was sent.
 - 2026-10-22 — authority: the user's verbatim directives quoted under User directive (this session); the MANDATE line above was filled by trddgrep new.
+- 2026-10-27T16:47:36+0100 — column → human_review. increment 1 shipped; increment 2 split to TRDD-R2QYIN8O; owner live checks left
 
 ## STATE
 
 CURRENT STATE 2026-10-27: increment 1 (core) is built in hooks/mod-manager/ with hooks/tests/mod-manager.test.ts; 13 kit tests pass in a staged tree wired as the Integration block says; not yet applied to hooks/index.ts, so the same tests fail in the real tree until it is. NEXT ACTION: the orchestrator applies the Integration block, then increment 2 (the card's Increment 2 list).
 2026-10-27 manifest hooks fix: isMod read only hooks/hooks.json, so a plugin whose modules sit in a file its .claude-plugin/plugin.json declares under hooks was listed as a plain plugin. hookFilesOf in logic.ts now returns the default file plus each declared path, and isMod in cli.ts checks them all. Kit 148 pass, pytest 357 pass, and the mutant that reads only the default file turns the new pane test red.
+CURRENT STATE 2026-10-27 (supersedes the lines above): column human_review. Increment 1 and the manifest-hooks fix are committed (56764d5, 6c1fe3e), wired in hooks/index.ts, and shipped in 0.6.0 and 0.6.1. Verified in code: Windows absolute and .. paths are refused (hooks/mod-manager/logic.ts:116, logged at cli.ts:39); an unreadable manifest is logged at debug level (cli.ts:35), an unreadable declared hooks file at default level (cli.ts:48). Increment 2 (available plugins, update arrows, Update all, presets, collapsible marketplace sections, filter Input, file-read fallback) is its own card, TRDD-R2QYIN8O; the resolve-bin candidates are TRDD-9Q52M2TA. NEXT ACTION: the owner checks Turn off, Enable and Disable live (confirm once, then Keep; the argv runs once and the list refreshes; a dismissed ask runs nothing) on the terminal and Desktop, then the card moves to complete.
+Correction 2026-10-27 (review of ea39045, supersedes the line above where they differ): splitting increment 2 into TRDD-R2QYIN8O was the agent's decision, not the owner's; to keep the full universal-manager goal in force, R2QYIN8O and TRDD-9Q52M2TA are EHTs of this card, so it cannot reach complete before both do. The unreadable manifest stays logged at debug level (cli.ts:35) by the agent's judgement. Windows-path refusal: logic.ts:116 refuses it, but the kit test at hooks/tests/mod-manager.test.ts:388 covers only .. and a leading slash; a Windows-drive and a backslash case are being added.
+Note 2026-10-27 (review of e38fd69): the hookFilesOf test now covers a leading slash, a Windows drive (C:\...) and a backslash root (\\server\...); mutation-checked. Not tested but refused by the same drive alternative: C:/x and C:file.json. Known limitation: the .. check matches anywhere in the string, so a legitimate name such as my..file.json is refused too. A claude plugin test run from the repo root fails 171 tests under the gitignored *_dev folders and skills/; that is the wrong invocation: in a clean clone each of the 8 example mods under skills/*/examples passes its own claude plugin test (68 tests, 0 fail), and hooks/ passes through tests/test_mod_tests.py.
+Correction 2026-10-27: a card may have only one parent (lint GRAPH-TWO-PARENTS), so TRDD-9Q52M2TA (the resolve-bin candidates, now in human_review) is an EHT of TRDD-GF5UDFWI only, whose card introduced hooks/resolve-bin.ts. This card's only EHT is TRDD-R2QYIN8O; before moving this card to complete, also check that TRDD-9Q52M2TA is complete, since mod-manager uses resolve-bin.
+2026-10-27: measured the size of 'claude plugin list --json' (increment 1's listing): 236788 bytes for 515 entries, 5.6% of the 4 MiB (4194304 bytes) $.process.run stdout cap (cap per generated types; not observed live).
+UPDATE 2026-10-31: the owner's error 'entry 525 of the plugin list has an unexpected shape' (an entry at scope synced) is fixed in bf34f6d (all documented scopes: user, project, local, managed, session as name@inline, synced as name@synced, skills-dir; a bad entry is shown on its own line instead of blanking the pane) and f19588d (review fixes: readFromFolder checked first, no Uninstall on skills-dir rows, a failed refresh clears the rejected list, rejected reasons cut to about 80 characters with an 'and N more' line, no buttons for a malformed id). The pane still shows the rejected lines (hooks/mod-manager/pane.ts:57); the cli.ts manifest-path notices go to $.ui.log. Not released: the publish is blocked by the CPV strict gate (see TRDD-5LPSG7AV).
+REVIEW 2026-10-31: of the five f19588d fixes the orchestrator checked two in code (the pane renders the rejected lines, pane.ts:57; the manifest-path notices go to $.ui.log, cli.ts:43); the other three (readFromFolder first, the 80-character cut with 'and N more', no buttons for a malformed id) rest on the worker's report and its tests. pytest on main after f19588d: 579 passed (reports_dev/gates/). The card stays in human_review: both commits fix the owner's reported error and wait on the same live check. $.process is CLI only (index.d.ts:3582), so on Desktop the list and the buttons cannot run as written; the owner's Desktop check should expect that, and TRDD-GSR975M8 plans the Desktop path through the user-scope settings.json.
+OWNER DIRECTIVE 2026-11-03 (verbatim): «either you complete the mod-manager integration in this plugin and you publish and install it, or you fix a fork of the mod-manager and you install it from local marketplace. but i need to use the working mod-manager now.» Then: «once you integrate the mod-manager into this plugin, of course you must uninstall the original mod-manager» and «but you must complete the integration first!». MEASURED 2026-11-03: the installed 0.6.1 throws 'entry 534 of the plugin list has an unexpected shape' on the live list of 535 entries; main's parser reads all 535 with 0 rejected. /mod-manager is owned by the installed 0.6.1; the standalone mod-manager@claude-mod-manager 0.2.2 (netgfx/claude-mod-manager, MIT, Michael Dobekidis) holds /mods. PLAN: phase 1 ships the parser fix as 0.6.2 = v0.6.1 plus main's mod-manager file set (option B of TRDD-5LPSG7AV), built in the fresh clone builds_dev/release-0.6.2 whose main equals origin/main, so the held merge 903e182 and the CPV false positives stay out. Phase 2 ports the standalone's features (update and outdated check, update all, status-line badge, reload, open folder and homepage, details view, add marketplace with install, auto-update) so it can be uninstalled; uninstall happens only after phase 2. Afterwards origin/main is merged back into dev main.
+CURRENT STATE 2026-11-03 (release 0.6.2 in progress): the release is built in a clone of origin/main at the session scratchpad, not under builds_dev, because .cspell.json ignorePaths has **/builds_dev/** and matches the absolute path. It carries 7d2552d (v0.6.1 plus the v0.6.1..f19588d diff over hooks/mod-manager, hooks/tests/mod-manager.test.ts, hooks/resolve-bin.ts, hooks/tests/self-command.test.ts, hooks/index.ts, plugin.json, plus two README paragraphs) and 926401c (five words added to .cspell.json: enabl, modword, nolist, onechar, pressfilter). Both commits are backed up as branch release/0.6.2 in the dev repo. NEXT ACTION after publish: merge origin/main into dev main, keeping dev's side for all of hooks/ (the profile work) and the union of both .cspell.json word lists; then run cspell over dev main's whole tree; then install 0.6.2 and check /mod-manager live; then phase 2 (port the standalone mod-manager's features), and only after that uninstall mod-manager@claude-mod-manager.
+CURRENT STATE 2026-11-03 evening: 0.6.2 published (6b5ab73; GitHub CI, Release and Notify Marketplace green), installed, and a live probe shows the 0.6.1 read error gone. Phase 2, the port of the standalone mod-manager features, ships from the origin/main release line, because dev main carries two publish blockers: the O5LUMKPW hold on merge 903e182, which needs the owner's redacting-save live check, and jscpd G2b at 5.78%. Build it in a fresh CLONE whose local main is origin/main, at a sibling path outside the repo and outside any _dev folder, never in a worktree, because publish.py pushes HEAD by branch name. NEXT ACTION: a worker reads ~/.claude/plugins/cache/claude-mod-manager/mod-manager/0.2.2/hooks/register.js and tables, for each standalone feature, the host APIs and the exact claude plugin argv it uses. That answers R2QYIN8O's open question of whether $.fs.read can read ~/.claude/plugins/marketplaces/**.
 
 ## User directive
 
@@ -68,6 +81,7 @@ CURRENT STATE 2026-10-27: increment 1 (core) is built in hooks/mod-manager/ with
 - [ ] Pane tests pass identically on surface terminal and surface desktop; manual Desktop check by the user recorded (mount tests alone do not tick this).
 - [ ] claude plugin validate . passes.
 - [ ] The CI-parity preflight passes (ruff, mypy, bandit on Python; cspell and jscpd on all files).
+- [ ] Owner, live in the terminal and on Desktop: with claudePath set (TRDD-9Q52M2TA, owned by TRDD-GF5UDFWI) the pane uses that claude; with a wrong one it shows the rejection naming the setting. TRDD-9Q52M2TA is complete.
 
 ## Both environments
 

@@ -1,12 +1,16 @@
+import type { On } from 'claude-code'
 import { expect, test } from 'claude-code/testing'
 
 import { ENABLED_KEY, SLOW_TURN_MS, USAGE } from '../hooks/logic.js'
 
+// The engine's command.run input also carries where the run came from and how the answer is shown (CommandRunInput: origin, presentation).
+const RUN = { origin: { kind: 'composer' }, presentation: { isFullscreen: false, columns: 80 } } as const
+
 // Stubs every call the mod makes and records what it showed. Register before the first call on $.
-function stubs(on: Parameters<Parameters<typeof test>[1]>[1], initial: Record<string, unknown> = {}) {
+function stubs(on: On, initial: Record<string, unknown> = {}) {
   const saved = new Map<string, unknown>(Object.entries(initial))
   const toasts: string[] = []
-  const statuses: string[] = []
+  const statuses: (string | undefined)[] = [] // ui.status text is undefined when the mod clears the line
   let registered = 0
   on('store.get', ($, e) => ({ value: saved.get(e.key) }))
   on('store.set', ($, e) => {
@@ -21,9 +25,9 @@ function stubs(on: Parameters<Parameters<typeof test>[1]>[1], initial: Record<st
     statuses.push(e.text)
     return { value: undefined }
   })
-  on('command.register', () => {
+  on('command.register', ($, e) => {
     registered += 1
-    return { value: undefined }
+    return { value: { command: e.name } }
   })
   on('session.start', () => ({ cwd: '/work' }))
   on('turn.complete', () => ({ text: '' }))
@@ -31,7 +35,7 @@ function stubs(on: Parameters<Parameters<typeof test>[1]>[1], initial: Record<st
 }
 
 const done = (turnId: string, durationMs: number) =>
-  ({ turnId, answer: '', durationMs, isAborted: false, usage: null }) as const
+  ({ turnId, answer: '', durationMs, isAborted: false, reason: 'answer' }) as const
 
 test('session.start registers the command', async ($, on) => {
   const s = stubs(on)
@@ -75,7 +79,7 @@ test('a subagent turn is ignored', async ($, on) => {
 
 test('the bare command toggles off and on, and the hooks obey', async ($, on) => {
   const s = stubs(on)
-  const off = await $.command.run({ command: 'turn-timer', args: '' })
+  const off = await $.command.run({ command: 'turn-timer', args: '', ...RUN })
   expect(off).toEqual({})
   expect(s.saved.get(ENABLED_KEY)).toBe(false)
   expect(s.toasts).toEqual(['turn-timer off'])
@@ -83,7 +87,7 @@ test('the bare command toggles off and on, and the hooks obey', async ($, on) =>
   await $.turn.complete(done('t1', 1000))
   expect(s.statuses.length).toBe(before)
 
-  await $.command.run({ command: 'turn-timer', args: '' })
+  await $.command.run({ command: 'turn-timer', args: '', ...RUN })
   expect(s.saved.get(ENABLED_KEY)).toBe(true)
   expect(s.toasts[1]).toBe('turn-timer on')
   await $.turn.complete(done('t2', 1000))
@@ -92,13 +96,13 @@ test('the bare command toggles off and on, and the hooks obey', async ($, on) =>
 
 test('on and off set the state; an unknown argument answers usage and changes nothing', async ($, on) => {
   const s = stubs(on)
-  await $.command.run({ command: 'turn-timer', args: 'off' })
+  await $.command.run({ command: 'turn-timer', args: 'off', ...RUN })
   expect(s.saved.get(ENABLED_KEY)).toBe(false)
-  await $.command.run({ command: 'turn-timer', args: 'on' })
+  await $.command.run({ command: 'turn-timer', args: 'on', ...RUN })
   expect(s.statuses).toEqual(['off', 'on'])
   expect(s.saved.get(ENABLED_KEY)).toBe(true)
   const toastsBefore = s.toasts.length
-  const answer = await $.command.run({ command: 'turn-timer', args: 'banana' })
+  const answer = await $.command.run({ command: 'turn-timer', args: 'banana', ...RUN })
   expect(answer.text).toBe(USAGE)
   expect(s.saved.get(ENABLED_KEY)).toBe(true)
   expect(s.toasts.length).toBe(toastsBefore)

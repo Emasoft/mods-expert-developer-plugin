@@ -8,6 +8,7 @@ reports_dev/
 *_dev/
 .trashcan/
 .DS_Store
+*.log
 
 # Added by CPV standardize
 .claude/

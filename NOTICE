@@ -1,7 +1,7 @@
 NOTICE
 
 The MIT license in LICENSE applies to every file in this repository authored by Emasoft, that is,
-every file except skills/*/references/chapter.md, the five BeLazy167 examples named below and skills/*/examples/LICENSE (the copies of the BeLazy167 MIT license),
+every file except skills/*/references/chapter.md, the five BeLazy167 examples named below, skills/*/examples/LICENSE (the copies of the BeLazy167 MIT license), the mod excerpts quoted in skills/mods-example-*/references/*.md (each under the license of its mod, credited below) and the upstream license and notice texts in skills/mods-example-*/references/*-LICENSE.txt and *-NOTICE.txt,
 with the one exception noted below. This includes:
   - .claude-plugin/plugin.json
   - agents/mods-expert-developer-agent.md
@@ -12,7 +12,13 @@ with the one exception noted below. This includes:
 
 The probe-runner mod (hooks/probe-runner/ and scripts/probe.py) is adapted for this plugin from plugins/probe-runner of KilimcininKorOglu/claude-code-mods (https://github.com/KilimcininKorOglu/claude-code-mods, commit 887502f), copyright Kerem Gok. It is used under the MIT license of Kerem Gok, reproduced below under "The self-command dev tools".
 
-The mod-manager mod (hooks/mod-manager/) takes its installed-plugins approach from plugins/mod-manager of mishgoldenberg/claude-mods (https://github.com/mishgoldenberg/claude-mods, commit 0954c97), copyright Michael Goldenberg. It is rewritten for this plugin, and it is covered by the MIT license of Michael Goldenberg, reproduced below under "The self-command dev tools".
+The mods-manager mod (hooks/mod-manager/) takes its installed-plugins approach from plugins/mod-manager of mishgoldenberg/claude-mods (https://github.com/mishgoldenberg/claude-mods, commit 0954c97), copyright Michael Goldenberg. It is rewritten for this plugin, and it is covered by the MIT license of Michael Goldenberg, reproduced below under "The self-command dev tools".
+
+The mods-skill-to-mod skill (skills/mods-skill-to-mod/) is adapted for this plugin from skills/skill-to-mod of arm-pz/skill-to-mod (https://github.com/arm-pz/skill-to-mod, commit e7cb2d8), copyright Abdul Rahman P Z. It is used under the MIT license of Abdul Rahman P Z, reproduced below under "The skill-to-mod skill".
+
+The secret masker of the debug logs (hooks/debug-log/redact.ts) adapts patterns from mods/safety/secret-shield of Singh-AP/awesome-claude-mods (https://github.com/Singh-AP/awesome-claude-mods, commit 5bbf314), copyright Amrit Preet Singh. It is rewritten for this plugin, and the adapted patterns are covered by the MIT license of Amrit Preet Singh, reproduced below under "The secret-shield detection patterns".
+
+The Deck mod (hooks/deck/ and assets/deck/) is adapted for this plugin from deck 0.4.12 of nvr0x5/claude-deck (https://github.com/nvr0x5/claude-deck, commit 1ecf6de), copyright nvr0x5, with the parts Deck adapts from plan-progress of zycck/claude-mods (https://github.com/zycck/claude-mods), copyright Kirill Serditov. The pet, Claude's mascot, is left out. It is used under their MIT licenses, reproduced below under "The Deck mod".
 
 Every skills/*/references/chapter.md file is adapted from Anthropic's Claude Code
 documentation (https://code.claude.com/docs), copyright Anthropic (section-level tables of
@@ -29,7 +35,37 @@ and branch-band and notes-pane under skills/mods-tutorial-interface-mods/example
 (https://github.com/BeLazy167/claude-mods-skill, commit 396f0d4), and the three
 skills/mods-tutorial-*/SKILL.md tutorials adapt its creating-mods skill. The copies are verbatim
 except examples/hello-mod/smoke.sh, where Emasoft rewrote three lines as if/then/else and then
-reformatted the file with shfmt (tab indentation, one command per line). They are
+reformatted the file with shfmt (tab indentation, one command per line). The verbatim copies are
+these files:
+  - skills/mods-tutorial-call-intercept-mods/examples/dice-tool/.claude-plugin/plugin.json
+  - skills/mods-tutorial-call-intercept-mods/examples/dice-tool/hooks/hooks.json
+  - skills/mods-tutorial-call-intercept-mods/examples/dice-tool/hooks/register.ts
+  - skills/mods-tutorial-call-intercept-mods/examples/dice-tool/tests/register.test.ts
+  - skills/mods-tutorial-call-intercept-mods/examples/dice-tool/tsconfig.json
+  - skills/mods-tutorial-call-intercept-mods/examples/hello-mod/.claude-plugin/plugin.json
+  - skills/mods-tutorial-call-intercept-mods/examples/hello-mod/hooks/hooks.json
+  - skills/mods-tutorial-call-intercept-mods/examples/hello-mod/hooks/register.ts
+  - skills/mods-tutorial-call-intercept-mods/examples/hello-mod/README.md
+  - skills/mods-tutorial-call-intercept-mods/examples/hello-mod/tests/register.test.ts
+  - skills/mods-tutorial-call-intercept-mods/examples/hello-mod/tsconfig.json
+  - skills/mods-tutorial-call-intercept-mods/examples/redact-output/.claude-plugin/plugin.json
+  - skills/mods-tutorial-call-intercept-mods/examples/redact-output/hooks/hooks.json
+  - skills/mods-tutorial-call-intercept-mods/examples/redact-output/hooks/register.ts
+  - skills/mods-tutorial-call-intercept-mods/examples/redact-output/tests/register.test.ts
+  - skills/mods-tutorial-call-intercept-mods/examples/redact-output/tsconfig.json
+  - skills/mods-tutorial-interface-mods/examples/branch-band/.claude-plugin/plugin.json
+  - skills/mods-tutorial-interface-mods/examples/branch-band/hooks/hooks.json
+  - skills/mods-tutorial-interface-mods/examples/branch-band/hooks/register.tsx
+  - skills/mods-tutorial-interface-mods/examples/branch-band/tests/register.test.ts
+  - skills/mods-tutorial-interface-mods/examples/branch-band/tsconfig.json
+  - skills/mods-tutorial-interface-mods/examples/branch-band/types/index.d.ts
+  - skills/mods-tutorial-interface-mods/examples/notes-pane/.claude-plugin/plugin.json
+  - skills/mods-tutorial-interface-mods/examples/notes-pane/hooks/hooks.json
+  - skills/mods-tutorial-interface-mods/examples/notes-pane/hooks/register.tsx
+  - skills/mods-tutorial-interface-mods/examples/notes-pane/tests/register.test.ts
+  - skills/mods-tutorial-interface-mods/examples/notes-pane/tsconfig.json
+  - skills/mods-tutorial-interface-mods/examples/notes-pane/types/index.d.ts
+They are
 included for reference only, are never loaded as part of this plugin, and are licensed under the
 MIT license of that repository, reproduced here. The other three examples, turn-timer and git-poller
 under skills/mods-tutorial-interface-mods/examples/ and protect-files under
@@ -39,6 +75,48 @@ and each carries its own copy of it. The BeLazy167 MIT license follows:
 MIT License
 
 Copyright (c) 2026 BeLazy167
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+Mod excerpts in the example skills
+
+The example skills in skills/mods-example-*/ (band-and-status-line, pane-and-chart, callable-and-command, state-and-settings, call-intercept, session-and-timers, process-and-network, engine-and-model-calls, cost-and-metrics and account-switching) quote short excerpts, at most 25 lines each and unchanged, of the installed mods below, at the versions named, and of the community repositories below, at the commits named. Each excerpt is headed in its reference file with its mod, version, file, line range and license. They are included for reading and adaptation only and are never loaded as part of this plugin. token-optimizer 5.13.58 (PolyForm Noncommercial 1.0.0) and regia 0.3.3 (no license file in its plugin folder) are described in those skills in this plugin's own words and no passage of their code is included.
+
+- tokensaver 0.3.0, by Gregory Albert (AGregDev, https://github.com/AGregDev/claude-tokensaver), MIT license, Copyright (c) 2026 Gregory Albert.
+- deck 0.4.12, by nvr0x5 (https://github.com/nvr0x5/claude-deck), MIT license, Copyright (c) 2026 nvr0x5.
+- ponytail 5.3.2, by DietrichGebert (https://github.com/DietrichGebert/ponytail), MIT license, Copyright (c) 2026 DietrichGebert.
+- context-harness 0.0.1, by ysys143 (https://github.com/ysys143/context-harness, now https://github.com/ysys143/conjev), MIT license, Copyright (c) 2026 ysys143.
+- token-weather-usage 3.17.15, by Eric Cologni (https://github.com/augiefra/claude-mods), Apache License 2.0. The excerpts are unchanged. The upstream LICENSE and NOTICE texts, fetched from that repository, are kept whole beside the references of each skill that excerpts it, as token-weather-usage-LICENSE.txt and token-weather-usage-NOTICE.txt in skills/mods-example-band-and-status-line/references/, skills/mods-example-pane-and-chart/references/ and skills/mods-example-cost-and-metrics/references/.
+
+Community repositories at pinned commits:
+
+- trongtaiz/account-swap at 8153e6b671bc (https://github.com/trongtaiz/account-swap), MIT license, Copyright (c) 2026 trongtaiz. One excerpt of hooks/register.tsx, unchanged, in skills/mods-example-account-switching.
+
+The MIT license of each of the four installed MIT mods and of the community repository above reads as follows, with its own copyright line:
+
+MIT License
+
+Copyright (c) 2026 Gregory Albert (tokensaver)
+Copyright (c) 2026 nvr0x5 (deck)
+Copyright (c) 2026 DietrichGebert (ponytail)
+Copyright (c) 2026 ysys143 (context-harness)
+Copyright (c) 2026 trongtaiz (account-swap)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -135,6 +213,176 @@ SOFTWARE.
 MIT License
 
 Copyright (c) 2026 Michael Goldenberg
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+The skill-to-mod skill
+
+The mods-skill-to-mod skill (skills/mods-skill-to-mod/) adapts skills/skill-to-mod of arm-pz/skill-to-mod
+(https://github.com/arm-pz/skill-to-mod, commit e7cb2d8), copyright Abdul Rahman P Z: its SKILL.md, its four
+references, its evaluation cases (folded into references/trigger-cases.md) and its five scripts. The adaptation
+locates every file through CLAUDE_PLUGIN_ROOT, points at the chapter skills of this plugin, and makes the
+scaffolded mods follow the PRRD of this plugin. It is used under the MIT license of Abdul Rahman P Z, reproduced below.
+
+MIT License
+
+Copyright (c) 2026 Abdul Rahman P Z
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+The secret-shield detection patterns
+
+The secret masker of the debug logs (hooks/debug-log/redact.ts) adapts the
+secret-shield mod of Singh-AP/awesome-claude-mods (mods/safety/secret-shield at commit 5bbf314,
+https://github.com/Singh-AP/awesome-claude-mods), copyright Amrit Preet Singh: the Stripe webhook
+secret and PyPI token shapes, the [REDACTED:<kind>] label, the placeholder values, the names that
+describe a secret instead of holding one, and the type annotation step. They were rewritten for this
+plugin in its own words; the code that is adapted from it is used under its MIT license, reproduced
+below.
+
+MIT License
+
+Copyright (c) 2026 Amrit Preet Singh
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+The Deck mod
+
+The Deck mod is adapted for this plugin from deck 0.4.12 by nvr0x5 (https://github.com/nvr0x5/claude-deck at commit
+1ecf6deb9199d3b1fa570bf08a57e69772bbb5af), copyright nvr0x5, MIT license: hooks/deck/register.js,
+hooks/deck/styles-desktop.js, hooks/deck/styles-terminal.js and hooks/deck/theme.js from its hooks/ folder, and
+hooks/tests/deck.test.ts from its tests/ folder, each saying in its header what changed (the pet, Claude's mascot, is left
+out); and its five sounds, unchanged copies:
+assets/deck/alert.wav, assets/deck/chime.wav, assets/deck/error.wav, assets/deck/fanfare.wav and assets/deck/tick.wav.
+Parts of hooks/deck/register.js and hooks/deck/styles-desktop.js (the desktop track: pixel fill, stage and step marks,
+gliding pill, agent strips, plan-markdown parsing and short-update ops) are adapted in Deck from plan-progress in
+zycck/claude-mods (https://github.com/zycck/claude-mods), copyright Kirill Serditov, MIT license. Both licenses read as
+follows, each with its own copyright line:
+
+MIT License
+
+Copyright (c) 2026 nvr0x5 (deck)
+Copyright (c) 2026 Kirill Serditov (plan-progress)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+The Tokensaver mod
+
+The Tokensaver mod is adapted for this plugin from tokensaver by Gregory Albert (https://github.com/AGregDev/claude-tokensaver
+at commit 0a4ba5c4c0745521de09a12cbc2a6b7751854a18), copyright Gregory Albert, MIT license: hooks/tokensaver/register.tsx
+from its hooks/register.tsx; hooks/tokensaver/core/caveman.ts, hooks/tokensaver/core/delegate.ts,
+hooks/tokensaver/core/escalate.ts, hooks/tokensaver/core/guardian.ts, hooks/tokensaver/core/log.ts,
+hooks/tokensaver/core/route.ts, hooks/tokensaver/core/savings.ts, hooks/tokensaver/core/score.ts,
+hooks/tokensaver/core/tiers.ts, hooks/tokensaver/core/trim.ts and hooks/tokensaver/core/tune.ts from its src/core/ folder;
+hooks/tokensaver/runtime/assistant.ts, hooks/tokensaver/runtime/commands.ts, hooks/tokensaver/runtime/config.ts and
+hooks/tokensaver/runtime/session.ts from its src/runtime/ folder; hooks/tokensaver/ui/band.ts,
+hooks/tokensaver/ui/format.ts, hooks/tokensaver/ui/theme.ts and hooks/tokensaver/ui/view.ts from its src/ui/ folder, and
+hooks/tokensaver/ui/draw.ts from its src/ui/clawd.ts; each saying in its header what changed (Clawd, Claude's mascot, is
+left out). The caveman voice in hooks/tokensaver/core/caveman.ts is adapted in tokensaver from Caveman by Julius Brussee
+(https://github.com/juliusbrussee/caveman), Apache License, Version 2.0: its license text ships in
+hooks/tokensaver/caveman-LICENSE.txt, its earlier MIT notice in hooks/tokensaver/caveman-LICENSE-MIT.txt and its NOTICE
+in hooks/tokensaver/caveman-NOTICE.txt, which tokensaver keeps in its third_party/caveman/ folder as NOTICE, LICENSE and
+LICENSE-MIT and which reads as follows (section 4(d) of the Apache License):
+Caveman
+Copyright 2026 Julius Brussee
+https://github.com/juliusbrussee/caveman
+
+tokensaver's caveman voice (src/core/caveman.ts) is adapted from Caveman's
+`caveman` and `ultracave` skills (skills/caveman/SKILL.md and
+skills/ultracave/SKILL.md, Caveman 4.0.1, commit 2e068f7), used under the
+Apache License, Version 2.0 (LICENSE in this folder).
+
+Changes made for tokensaver: the two skills are condensed into system-prompt
+sections; their persistence and switch instructions name tokensaver's
+`/tokensaver caveman` command instead of Caveman's slash commands and hooks;
+the statusline, mode-tracking and stats hooks are not included. The sub-agent
+report note and the terse compaction summary are tokensaver's own.
+
+Before Caveman 3.0.0 the skill was licensed under the MIT License, and
+contributions made to it then remain available under it. Its copyright and
+permission notice is kept in LICENSE-MIT in this folder.
+
+"Caveman" is a trademark of Julius Brussee. tokensaver is not affiliated with
+or endorsed by the Caveman project; the name is used only to say where the
+voice's rules come from.
+
+Its tests come from the same repository (https://github.com/AGregDev/claude-tokensaver at commit
+0a4ba5c4c0745521de09a12cbc2a6b7751854a18, its tests/ folder): hooks/tests/tokensaver/helpers.ts,
+hooks/tests/tokensaver/core/assistant.test.ts, hooks/tests/tokensaver/core/caveman.test.ts,
+hooks/tests/tokensaver/core/delegate.test.ts, hooks/tests/tokensaver/core/route.test.ts,
+hooks/tests/tokensaver/core/trim.test.ts, hooks/tests/tokensaver/integration/agent-types.test.ts,
+hooks/tests/tokensaver/integration/flow.test.ts, hooks/tests/tokensaver/integration/hints.test.ts,
+hooks/tests/tokensaver/ui/band.test.ts and hooks/tests/tokensaver/ui/ui.test.ts, each saying in its header what changed.
+
+The tokensaver license reads as follows:
+
+MIT License
+
+Copyright (c) 2026 Gregory Albert
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

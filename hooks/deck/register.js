@@ -1,0 +1,2472 @@
+// Adapted from https://github.com/nvr0x5/claude-deck at 1ecf6deb9199d3b1fa570bf08a57e69772bbb5af, hooks/register.js, MIT.
+// Changed for mods-expert-developer-plugin: the pet (Claude's mascot) is left out with its state, the store keys are prefixed deck., the panes and the command are renamed mods-deck (the help lines re-spaced to keep their column), the sounds sit in assets/deck/, the VERSION comment names the upstream version, and register(on) is split into startDeck($, e) and registerDeck(on) (TRDD-RD1ISPMN).
+// Changed again for the integration (TRDD-RD1ISPMN, D1b-1): every hook reads Deck's master switch first (./switches.ts, through the registry) and passes its event on while it is off; the prefs fields a switch stands for are read through the registry at each call, and deck.prefs keeps only the rest, each field checked before use; startDeck is split into loadDeck, the start (startDeckIn) and the clock, which ./gate.ts holds and ./mod.ts starts at each session start, and the master off stops the clock, the fold, the demo and a start or timer still running; the prompt.submit hook is the exported observer hooks/index.ts calls; the router-line hooks match only router lines and fail open; /mods-deck gains on, off and the switch checks, and the city and the weather section's on are accepted only from the person; the coordinates go out at 2 decimals.
+// deck: a collapsible HUD in the band above the prompt.
+// Bars: todo lists, task tools, approved plans, and subagents as strips.
+// Meters: context and usage limits with reset countdowns. A model-route row shows what a
+// router (jev-model-router) decided. Header: folder, clock and weather.
+//
+// Desktop drawing techniques adapt plan-progress (zycck/claude-mods, MIT, Kirill Serditov).
+
+import { STYLE, TIER, TRACK, DIM, MUTED, TEXT, trunc, textWidth, esc, runs, textCells } from './theme.js'
+import { TERMINAL_STYLES, TERMINAL_STYLE_NAMES, terminalBar, terminalMini } from './styles-terminal.js'
+import { DESKTOP_STYLES, DESKTOP_STYLE_NAMES, desktopTrack, stripsSvg, stripsHeight } from './styles-desktop.js'
+import { logEvent } from '../debug-log/register'
+import { oneLine } from '../mod-manager/logic'
+import { byOf } from '../switches/logic'
+import { isOn, noticeChanged, setSwitch, setSwitches } from '../switches/register'
+import { adoptCarried, anyStarted, carryEnded, clearNotice, countError, deckStartFailed, dropStart, forgetJudged, hasCarried, hasClock, holdClock, holdStart, isClock, isStarted, judgeSession, markStarted, noticeOf, startOf, stopAll, stopCount } from './gate'
+import { ANIMATION, BAND, DEMO, FOOTER, MASTER, MOD, PANEL, PREF_SWITCHES, QUIET, SOUND, SPEND, STYLE_PICKER, WEATHER, AUTO, applySwitches, keptPrefs, sectionSwitch } from './switches'
+
+const SECTIONS = ['plans', 'agents', 'context', 'limits', 'route', 'clock', 'weather', 'folder']
+
+const DEFAULT_PREFS = {
+  show: { plans: true, agents: true, context: true, limits: true, route: true, clock: true, weather: false, folder: true },
+  style: { terminal: 'solid', desktop: 'pixel' },
+  open: false,
+  auto: true,
+  sound: true,
+  quiet: true,
+  size: 'compact', // 'compact' (tight rows) or 'roomy' (the 0.4 spacing)
+  collapsed: 'chips', // 'chips' (mini bars), 'text' (one plain status line) or 'rings' (limit rings and cost)
+  cost: false, // track spend today and this month (pay-per-use API keys)
+  animate: false, // the switch deck.animation stands for (TRDD-INFES3JE C): off is a still HUD, drawn once
+  city: null, // { name, lat, lon }
+}
+
+const STATE_STYLE = { running: 'run', needs_input: 'ask', error: 'hot', done: 'done' }
+const AGENT_STYLE = { running: 'run', waiting: 'ask', error: 'hot', done: 'done' }
+const MAX_BARS = 4
+const BAR_LINGER_MS = 120_000
+const AGENTS_LINGER_MS = 30_000
+const FOLD_MS = 5000
+const MAX_STRIPS = 4
+const ASK_DELAY_MS = 600
+const TRACK_H = 22
+const VERSION = '0.4.12' // the upstream Deck version this port is adapted from (TRDD-RD1ISPMN)
+const RIGHT_W = 92
+const HEADER_CH = 20 // the terminal header's toggle and row count, with their gaps
+const TITLE_MAX_CH = 22 // a long prompt as a bar title would squeeze every track
+const TITLE_MAX_PX = 160
+const EFFORTS = ['low', 'medium', 'high', 'xhigh', 'max']
+const TIER_MODEL = { fast: 'haiku', balanced: 'sonnet', deep: 'opus' }
+const MODEL_RANK = { haiku: 0, sonnet: 1, opus: 2 }
+
+const clone = (v) => JSON.parse(JSON.stringify(v))
+let prefs = clone(DEFAULT_PREFS)
+let frame = 0
+let lastPrompt = ''
+let weather = null
+let cwd = ''
+let home = ''
+let usage = { context: null, rateLimits: [] }
+let sawTerminal = false
+let demoTimer = null
+let lastSecond = 0
+let cityRejected = false // the saved city failed its checks (A3): the header says how to set one
+
+// id -> { id, title, source, stages:[{name, steps:[{title, active, status}]}], explicit, startedAt, doneAt, agentsDoneAt, dismissed }
+const bars = new Map()
+// agentId -> { id, title, state, tool, model, startedAt, endedAt, depth, home, todo }
+const agents = new Map()
+// task tools: id -> { subject, active, status }
+const tasks = new Map()
+const inFlight = new Map()
+const waiting = new Set()
+let askedUser = false
+const lastSeen = new Map()
+const lastHead = new Map()
+const lastStrip = new Map()
+
+// model routing, as a router reports it, and what the turn actually ran with
+let route = null // { tier, conf, model, effort, unchanged, effortScore, risky, ms, at }
+const routeHist = []
+let routeFail = null // why the router's last classification failed: "typesafe 402", "timeout 800ms", "failed"
+let routeFails = 0 // failures in a row
+let sessionModel = ''
+let seen = { model: '', effort: '' }
+
+// a turn with no todo list still gets a bar: what Claude is doing right now
+let activity = null // { title, start, tools, action, done, doneAt }
+const ACTIVITY_LINGER_MS = 20_000
+
+function actionOf(e) {
+  const base = (p) => String(p ?? '').split('/').pop()
+  switch (e.tool) {
+    case 'Read':
+      return 'Reading ' + base(e.file_path)
+    case 'Grep':
+    case 'Glob':
+      return 'Searching'
+    case 'Edit':
+    case 'MultiEdit':
+    case 'Write':
+    case 'NotebookEdit':
+      return 'Editing ' + base(e.file_path ?? e.notebook_path)
+    case 'Bash':
+      return 'Running ' + trunc(String(e.command ?? '').trim().split(/\s+/).slice(0, 2).join(' '), 22)
+    case 'WebFetch':
+    case 'WebSearch':
+      return 'Browsing'
+    case 'Agent':
+    case 'Task':
+      return 'Delegating'
+    case 'TodoWrite':
+      return 'Planning'
+    default:
+      return String(e.tool).replace(/^mcp__[^_]+__/, '')
+  }
+}
+
+function activityRow(now) {
+  if (!activity || !prefs.show.plans) return null
+  // a background agent outlives the turn that started it: keep its row until it finishes
+  const busyAgents = [...agents.values()].some((a) => a.home === 'activity' && (a.state === 'running' || a.state === 'waiting'))
+  if (activity.done && now - activity.doneAt > ACTIVITY_LINGER_MS && !busyAgents) return null
+  // a plain chat turn: worth a row while it thinks, not once it has answered
+  if (activity.done && activity.tools === 0 && ![...agents.values()].some((a) => a.home === 'activity')) return null
+  const planned = [...bars.values()].some((b) => b.id !== 'agents' && !b.dismissed && b.startedAt >= activity.start - 1000)
+  if (planned) return null
+  const asking = !activity.done && (waiting.has('main') || [...agents.values()].some((a) => a.home === 'activity' && a.state === 'waiting'))
+  const style = activity.done ? 'done' : asking ? 'ask' : 'run'
+  const pct = activity.done ? 100 : 95 * (1 - Math.exp(-activity.tools / 18))
+  const time = elapsed((activity.done ? activity.doneAt : now) - activity.start)
+  const name = activity.done ? 'Done' : asking ? 'Needs you' : trunc(activity.action, 28)
+  const mine = [...agents.values()].filter((a) => a.home === 'activity')
+  const agentNote = mine.length ? ' · ' + mine.filter((a) => a.state === 'done').length + '/' + mine.length + ' agents' : ''
+  return {
+    id: 'activity',
+    kind: 'activity',
+    style,
+    state: activity.done ? 'done' : asking ? 'needs_input' : 'running',
+    title: activity.title,
+    pct,
+    marks: [],
+    steps: 0,
+    finished: 0,
+    name,
+    count: activity.tools + (activity.tools === 1 ? ' tool' : ' tools') + agentNote,
+    strips: visibleStrips({ id: 'activity', agentsDoneAt: activity.agentsDoneAt }, now),
+    right: time,
+    short: name + ' · ' + activity.tools,
+    stage: 0,
+    animating: !activity.done,
+  }
+}
+
+// usage history, for sparklines and burn rates: key -> [{ t, p }]
+let hist = {}
+const HIST_KEEP_MS = 26 * 3600_000
+
+function sampleUsage(now) {
+  const add = (key, p) => {
+    if (p == null) return false
+    const list = (hist[key] = hist[key] ?? [])
+    const last = list[list.length - 1]
+    if (last && last.p === p && now - last.t < 300_000) return false
+    if (last && now - last.t < 20_000) last.p = p
+    else list.push({ t: now, p })
+    while (list.length && now - list[0].t > HIST_KEEP_MS) list.shift()
+    if (list.length > 400) list.splice(0, list.length - 400)
+    return true
+  }
+  let changed = add('context', usage.context?.percent)
+  for (const rl of usage.rateLimits ?? []) changed = add(rl.kind, rl.percentUsed) || changed
+  return changed
+}
+
+// the values over a window, for a sparkline; the newest point is now
+function series(key, windowMs, now) {
+  const list = (hist[key] ?? []).filter((x) => now - x.t <= windowMs)
+  return list.map((x) => x.p)
+}
+
+// how fast a window moves: percent per hour (or per day for the weekly window)
+function burnRate(key, now) {
+  const daily = key.startsWith('seven_day')
+  const list = (hist[key] ?? []).filter((x) => now - x.t <= (daily ? 24 : 1) * 3600_000)
+  if (list.length < 2) return ''
+  const a = list[0]
+  const b = list[list.length - 1]
+  const span = b.t - a.t
+  if (span < 5 * 60_000 || b.p < a.p) return ''
+  const per = ((b.p - a.p) / span) * (daily ? 86_400_000 : 3_600_000)
+  if (per < 0.05) return ''
+  return '+' + (per < 10 ? per.toFixed(1) : Math.round(per)) + (daily ? '%/day' : '%/h')
+}
+
+// spend: this session's running total, added into today and this month across sessions
+let sessionId = ''
+let costSeen = null
+let spend = { day: '', dayUsd: 0, month: '', monthUsd: 0 }
+const today = () => {
+  const d = new Date()
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')
+}
+const fmtUsd = (v) => '$' + (v < 100 ? v.toFixed(2) : Math.round(v))
+
+// open and close unfold row by row instead of jumping
+let fold = null // { dir: 'open' | 'close', start, timer }
+const FOLD_STEP = 35
+const FOLD_FADE = 220
+
+const isOpening = () => (fold ? fold.dir === 'open' : prefs.open)
+
+// how far the fold has run: wall time, or the timer's own ticks if those ran further
+const foldAge = (now) => (fold ? Math.max(now - fold.start, fold.ticks * 33) : 0)
+
+function foldCount(n, now) {
+  if (!fold) return n
+  const k = Math.floor(foldAge(now) / FOLD_STEP)
+  return fold.dir === 'open' ? Math.min(n, k + 1) : Math.max(0, n - k)
+}
+
+// a row that just unfolded fades and rises in; its age keeps a redraw from restarting it
+function withFadeIn(source, ageMs) {
+  // the animation switch reaches here too (TRDD-INFES3JE C): with it off a row appears where it is, with no fade, and a
+  // fold that still runs draws every row at once (foldCount returns the whole count), so there is nothing to fade in.
+  if (ageMs >= FOLD_FADE || !prefs.animate) return source
+  const head = source.indexOf('>') + 1
+  const tail = source.lastIndexOf('</svg>')
+  return (
+    source.slice(0, head) +
+    `<style>@keyframes rin{from{opacity:0;transform:translateY(5px)}}.rin{animation:rin ${FOLD_FADE}ms cubic-bezier(.22,1,.36,1) both;animation-delay:-${Math.max(0, Math.round(ageMs))}ms}@media (prefers-reduced-motion:reduce){.rin{animation:none}}</style><g class="rin">` +
+    source.slice(head, tail) +
+    '</g>' +
+    source.slice(tail)
+  )
+}
+
+// /mods-deck demo fills in a sample route and limits when the real ones haven't arrived yet;
+// the first real reading replaces them
+let demoRoute = false
+let demoUsage = false
+
+// ---------- small helpers ----------
+
+function slug(s) {
+  return String(s ?? '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-|-$/g, '').slice(0, 40) || 'plan'
+}
+
+// the words the person typed: tagged blocks (system reminders, pasted content, attachments) removed
+function cleanPrompt(text) {
+  return String(text)
+    .replace(/<([a-z][\w-]*)[^>]*>[\s\S]*?<\/\1>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+function fmtK(n) {
+  if (n == null) return '?'
+  if (n >= 1_000_000) return +(n / 1_000_000).toFixed(1) + 'M'
+  return n >= 1000 ? Math.round(n / 1000) + 'k' : String(n)
+}
+
+function countdown(iso) {
+  if (!iso) return ''
+  let s = Math.max(0, Math.floor((Date.parse(iso) - Date.now()) / 1000))
+  const d = Math.floor(s / 86400)
+  const h = Math.floor((s % 86400) / 3600)
+  const m = Math.floor((s % 3600) / 60)
+  s = s % 60
+  if (d > 0) return d + 'd ' + h + 'h ' + String(m).padStart(2, '0') + 'm'
+  return h + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0')
+}
+
+// "1h7m", "3d 5h", "42m": for the rings, where seconds would only flicker
+function humanReset(iso) {
+  const s = Math.max(0, Math.floor((Date.parse(iso) - Date.now()) / 1000))
+  const d = Math.floor(s / 86400)
+  const h = Math.floor((s % 86400) / 3600)
+  const m = Math.floor((s % 3600) / 60)
+  return d > 0 ? d + 'd ' + h + 'h' : h > 0 ? h + 'h' + m + 'm' : m + 'm'
+}
+
+function shortCountdown(iso) {
+  const c = countdown(iso)
+  return c.includes('d ') ? c.split(' ').slice(0, 2).join(' ') : c
+}
+
+function elapsed(ms) {
+  const s = Math.max(0, Math.round(ms / 1000))
+  return s < 60 ? s + 's' : Math.floor(s / 60) + 'm ' + (s % 60) + 's'
+}
+
+// the session's folder with the home folder as ~, cut from the left to fit max characters
+function folderText(max) {
+  const path = home && (cwd === home || cwd.startsWith(home + '/')) ? '~' + cwd.slice(home.length) : cwd
+  if (path.length <= max) return path
+  const tail = path.slice(path.length - max + 2)
+  return tail.includes('/') ? '…/' + tail.slice(tail.indexOf('/') + 1) : '…' + path.slice(path.length - max + 1)
+}
+
+// the session's project folder moves with /cd, the Desktop app or a worktree move, not a shell cd
+async function refreshFolder($) {
+  try {
+    const root = await $.session.root()
+    if (root && root !== cwd) {
+      cwd = root
+      $.ui.invalidate('ui.render')
+    }
+  } catch {}
+}
+
+function clockText() {
+  const d = new Date()
+  return [d.getHours(), d.getMinutes(), d.getSeconds()].map((n) => String(n).padStart(2, '0')).join(':')
+}
+
+const WMO = [
+  [0, '☀', 'clear'], [3, '⛅', 'cloudy'], [48, '🌫', 'fog'], [57, '☂', 'drizzle'],
+  [67, '☂', 'rain'], [77, '❄', 'snow'], [82, '☂', 'showers'], [86, '❄', 'snow'], [99, '⛈', 'storm'],
+]
+function weatherText(desktop) {
+  // a saved city that failed its checks (A3) fetches nothing; the header says how to set one
+  if (!weather) return prefs.city ? '… ' + prefs.city.name : cityRejected ? 'set a city: /mods-deck city <name>' : ''
+  const [, icon, word] = WMO.find(([max]) => weather.code <= max) ?? WMO[WMO.length - 1]
+  const t = Math.round(weather.temp) + '°'
+  return desktop ? icon + ' ' + t + ' ' + weather.name : t + ' ' + word + ' · ' + weather.name
+}
+
+function limitName(kind) {
+  if (kind === 'five_hour') return ['Session · 5h', '5h']
+  if (kind === 'seven_day') return ['Weekly · 7d', '7d']
+  if (kind === 'seven_day_opus') return ['Weekly · Opus', '7d-opus']
+  if (kind === 'spend_limit') return ['Spend limit', '$']
+  return [kind, kind]
+}
+
+function shortModel(id) {
+  const s = String(id ?? '').toLowerCase()
+  if (s.includes('haiku')) return 'haiku'
+  if (s.includes('sonnet')) return 'sonnet'
+  if (s.includes('opus')) return 'opus'
+  if (s.includes('fable')) return 'fable'
+  return trunc(id, 14)
+}
+
+function tierColor(model, desktop = true) {
+  const t = TIER[shortModel(model)]
+  return t ? (desktop ? t.desk : t.term) : MUTED
+}
+
+// ---------- plans ----------
+
+const isFinished = (s) => s === 'done' || s === 'skipped'
+const todoStatus = (s) => (s === 'completed' ? 'done' : s === 'in_progress' ? 'active' : 'pending')
+const allSteps = (bar) => bar.stages.flatMap((s) => s.steps)
+
+function where(bar) {
+  const flat = bar.stages.flatMap((s, i) => s.steps.map((step, j) => ({ i, j, step })))
+  const at = flat.findIndex((x) => !isFinished(x.step.status))
+  const pos = at < 0 ? flat.length : at
+  const cur = flat[Math.min(pos, flat.length - 1)]
+  const stage = cur?.i ?? 0
+  return {
+    pos,
+    total: flat.length,
+    finished: flat.filter((x) => isFinished(x.step.status)).length,
+    active: flat.find((x) => x.step.status === 'active')?.step ?? null,
+    stage,
+    step: pos >= flat.length ? (bar.stages[stage]?.steps.length ?? 0) : (cur?.j ?? 0) + 1,
+    stageSize: bar.stages[stage]?.steps.length ?? 0,
+  }
+}
+
+function newBar(id, title, source, stages) {
+  return { id, title, source, stages, explicit: null, startedAt: Date.now(), doneAt: null, agentsDoneAt: null, dismissed: false }
+}
+
+function agentsOf(bar) {
+  return [...agents.values()].filter((a) => a.home === bar.id)
+}
+
+function barState(bar) {
+  if (bar.explicit === 'error') return 'error'
+  if (bar.id === 'agents') {
+    const list = agentsOf(bar)
+    if (list.some((a) => a.state === 'waiting')) return 'needs_input'
+    if (list.length && list.every((a) => a.state === 'done' || a.state === 'error')) return list.some((a) => a.state === 'error') ? 'error' : 'done'
+    return 'running'
+  }
+  const steps = allSteps(bar)
+  if (steps.length && steps.every((s) => isFinished(s.status))) return 'done'
+  if (bar.explicit === 'needs_input') return 'needs_input'
+  if (agentsOf(bar).some((a) => a.state === 'waiting')) return 'needs_input'
+  return 'running'
+}
+
+function liveBar() {
+  return [...bars.values()].reverse().find((b) => b.id !== 'agents' && !b.dismissed && barState(b) !== 'done')
+}
+
+function placeBar(bar) {
+  bars.delete(bar.id)
+  bars.set(bar.id, bar)
+  while (bars.size > MAX_BARS) {
+    const done = [...bars.values()].find((b) => barState(b) === 'done')
+    bars.delete((done ?? bars.values().next().value).id)
+  }
+}
+
+function syncAgentsBar() {
+  const bar = bars.get('agents')
+  if (!bar) return
+  const rank = (a) => (a.state === 'done' ? 0 : a.state === 'error' ? 1 : 2)
+  const list = agentsOf(bar).sort((a, b) => rank(a) - rank(b))
+  bar.stages = [{ name: 'Agents', steps: list.map((a) => ({ title: a.title, status: a.state === 'done' ? 'done' : a.state === 'error' ? 'error' : 'active' })) }]
+}
+
+// a new turn replaces the activity row; its background agents still running move to the Agents bar
+// (https://github.com/nvr0x5/claude-deck/issues/3)
+function adoptRunningAgents() {
+  const running = [...agents.values()].filter((a) => a.home === 'activity' && (a.state === 'running' || a.state === 'waiting'))
+  if (!running.length) return
+  if (!bars.has('agents') || barState(bars.get('agents')) === 'done') {
+    for (const a of [...agents.values()]) if (a.home === 'agents') agents.delete(a.id)
+    placeBar(newBar('agents', 'Agents', 'agents', []))
+  }
+  const bar = bars.get('agents')
+  bar.agentsDoneAt = null
+  bar.dismissed = false
+  for (const a of running) a.home = 'agents'
+  syncAgentsBar()
+}
+
+// moves the demo bar one step
+function stepOn(stages) {
+  const next = stages.map((s) => ({ ...s, steps: s.steps.map((st) => ({ ...st })) }))
+  const steps = next.flatMap((s) => s.steps)
+  let at = steps.findIndex((st) => st.status === 'active')
+  if (at < 0) at = steps.findIndex((st) => !isFinished(st.status))
+  if (steps[at]) steps[at].status = 'done'
+  const following = steps.slice(at + 1).find((st) => st.status === 'pending')
+  if (following) following.status = 'active'
+  return next
+}
+
+// an approved plan's markdown: headings become stages, top-level list items steps
+function parsePlan(markdown) {
+  const clean = (s) => s.replace(/\[([^\]]+)\]\([^)]*\)/g, '$1').replace(/[*_`]/g, '').replace(/^(\d+[.)]|[-*+]|\[[ xX]\])\s+/, '').trim()
+  let title = ''
+  const headed = []
+  const items = []
+  for (const line of String(markdown).split(/\r?\n/)) {
+    const h = line.match(/^(#{1,4})\s+(.*)$/)
+    if (h) {
+      const text = clean(h[2] ?? '')
+      if (h[1] === '#' && !title) title = text
+      else headed.push({ name: trunc(text, 60), steps: [] })
+      continue
+    }
+    const li = line.match(/^(\s*)(\d+[.)]|[-*+])\s+(.*)$/)
+    if (!li) continue
+    const depth = Math.floor(li[1].replace(/\t/g, '  ').length / 2)
+    const text = trunc(clean(li[3] ?? ''), 80)
+    if (!text) continue
+    items.push({ depth, text })
+    const stage = headed[headed.length - 1]
+    if (stage && depth === 0) stage.steps.push({ title: text, status: 'pending' })
+  }
+  let stages = headed.filter((s) => s.steps.length > 0)
+  if (!stages.length && items.length) stages = [{ name: 'Plan', steps: items.filter((i) => i.depth === 0).map((i) => ({ title: i.text, status: 'pending' })) }]
+  stages = stages.filter((s) => s.steps.length > 0)
+  if (!stages.length) return null
+  stages[0].steps[0].status = 'active'
+  return { title: trunc(title, 60) || 'Plan', stages }
+}
+
+function upsertTodos(key, todos) {
+  const steps = todos.map((t) => ({ title: trunc(t.content, 80), active: trunc(t.activeForm, 80), status: todoStatus(t.status) }))
+  if (key !== 'main') {
+    const a = agents.get(key)
+    if (a) {
+      const cur = steps.find((s) => s.status === 'active')
+      a.todo = { done: steps.filter((s) => s.status === 'done').length, total: steps.length, active: cur ? cur.active || cur.title : '' }
+    }
+    return
+  }
+  const prev = bars.get('todo')
+  const fresh = !prev || barState(prev) === 'done' || prev.dismissed
+  const bar = fresh ? newBar('todo', lastPrompt || 'Tasks', 'todo', []) : prev
+  bar.stages = [{ name: 'Tasks', steps }]
+  bar.explicit = null
+  placeBar(bar)
+}
+
+function applyTaskResult(input, result) {
+  if (input.tool === 'TaskCreate') {
+    const id = result?.task?.id
+    if (id == null) return
+    const list = [...tasks.values()].filter((t) => t.status !== 'deleted')
+    if (list.length && list.every((t) => t.status === 'completed')) tasks.clear()
+    tasks.set(String(id), { subject: trunc(input.subject ?? result.task.subject, 80), active: trunc(input.activeForm, 80), status: 'pending' })
+  } else if (input.tool === 'TaskUpdate') {
+    if (result && result.success === false) return
+    const t = tasks.get(String(input.taskId))
+    if (!t) return
+    if (input.status) t.status = input.status
+    if (input.subject) t.subject = trunc(input.subject, 80)
+    if (input.activeForm) t.active = trunc(input.activeForm, 80)
+  } else if (Array.isArray(result?.tasks)) {
+    const ids = new Set()
+    for (const r of result.tasks) {
+      const id = String(r.id)
+      ids.add(id)
+      const t = tasks.get(id)
+      if (t) t.status = r.status
+    }
+    for (const id of [...tasks.keys()]) if (!ids.has(id)) tasks.delete(id)
+  }
+  syncTasksBar()
+}
+
+function syncTasksBar() {
+  const list = [...tasks.values()].filter((t) => t.status !== 'deleted')
+  if (!list.length) return
+  const steps = list.map((t) => ({ title: t.subject, active: t.active || t.subject, status: todoStatus(t.status) }))
+  const prev = bars.get('tasks')
+  const bar = prev && !prev.dismissed && barState(prev) !== 'done' ? prev : newBar('tasks', lastPrompt || 'Tasks', 'tasks', [])
+  bar.stages = [{ name: 'Tasks', steps }]
+  placeBar(bar)
+}
+
+// ---------- routing: read what a router says ----------
+
+// "jev · fast 0.87 → haiku/low", "jev · fast 0.41 · unchanged", "jev · no answer"
+function dropDemoRoute() {
+  if (!demoRoute) return
+  demoRoute = false
+  route = null
+  routeHist.length = 0
+}
+
+function readRouteStatus(text) {
+  if (/^jev · no answer/.test(String(text))) {
+    dropDemoRoute()
+    const prev = route && !route.noAnswer ? route : route?.last
+    route = { noAnswer: true, reason: routeFail || 'no answer', fails: routeFails, last: prev ?? null, at: Date.now() }
+    routeHist.push('none')
+    if (routeHist.length > 8) routeHist.shift()
+    return true
+  }
+  const m = String(text).match(/^jev · (\w+) ([\d.]+|n\/d)(?: → (\S+)| · unchanged)?/)
+  if (!m) return false
+  dropDemoRoute()
+  const r = { tier: m[1], conf: m[2] === 'n/d' ? null : Number(m[2]), model: '', effort: '', unchanged: !m[3], at: Date.now() }
+  for (const part of String(m[3] ?? '').split('/').filter(Boolean)) {
+    if (EFFORTS.includes(part)) r.effort = part
+    else r.model = shortModel(part)
+  }
+  const prev = route
+  route = { ...(prev && Date.now() - prev.at < 5000 ? prev : {}), ...r }
+  // filled when the router changed the model, outlined when Jev only suggested it
+  routeHist.push(r.model ? r.model : '~' + (TIER_MODEL[r.tier] ?? r.tier))
+  if (routeHist.length > 8) routeHist.shift()
+  return true
+}
+
+// "[jev-model-router] jev: tier fast (0.87) · effort 0.4 → low (0.71) · risky 0.02 · 249ms"
+function readRouteLog(text) {
+  const t = String(text)
+  const fail =
+    t.match(/\] (\w+) responded (\d+)/)?.slice(1).join(' ') ??
+    (t.match(/classification passed (\d+)ms/)?.[1] ? 'timeout ' + t.match(/classification passed (\d+)ms/)[1] + 'ms' : null) ??
+    (/classification failed|built-in classifier failed/.test(t) ? 'request failed' : null)
+  if (fail) {
+    routeFail = fail
+    routeFails++
+    return true
+  }
+  const m = String(text).match(/jev: tier (\w+) \(([\d.]+|n\/d)\)(?: · effort ([\d.]+) → (\w+) \([^)]*\))?(?: · risky ([\d.]+|n\/d))?(?: · (\d+)ms)?/)
+  if (!m) return false
+  dropDemoRoute()
+  routeFail = null
+  routeFails = 0
+  route = {
+    ...(route && !route.noAnswer ? route : {}),
+    tier: m[1],
+    conf: m[2] === 'n/d' ? null : Number(m[2]),
+    effortScore: m[3] ? Number(m[3]) : null,
+    risky: m[5] && m[5] !== 'n/d' ? Number(m[5]) : null,
+    ms: m[6] ? Number(m[6]) : null,
+    at: Date.now(),
+  }
+  return true
+}
+
+function routeRow() {
+  if (!prefs.show.route || !route) return null
+  const from = shortModel(sessionModel || seen.model) || 'session'
+  if (route.noAnswer) {
+    return {
+      id: 'route',
+      kind: 'route',
+      style: 'warn',
+      title: 'Model route',
+      noAnswer: true,
+      reason: route.reason,
+      hint: route.fails >= 3 ? 'check router key or credit' : '',
+      from,
+      want: from,
+      to: from,
+      effort: seen.effort || '',
+      dir: '=',
+      right: '! no answer',
+      short: '⇄ ' + from + ' · no answer',
+      pct: 0,
+      marks: [],
+    }
+  }
+  if (!route.tier) return null
+  const want = TIER_MODEL[route.tier] ?? route.tier
+  const to = route.model || from
+  const effort = route.effort || seen.effort || ''
+  const toRank = MODEL_RANK[to]
+  const fromRank = MODEL_RANK[from]
+  // only a model the router actually switched to counts as cheaper or deeper
+  const dir = !route.model ? '=' : toRank != null && fromRank != null ? (toRank < fromRank ? '↓' : toRank > fromRank ? '↑' : '=') : '='
+  const unapplied = want !== to
+  return {
+    id: 'route',
+    kind: 'route',
+    style: 'run',
+    title: 'Model route',
+    from,
+    want,
+    to,
+    effort,
+    conf: route.conf ?? null,
+    risky: route.risky ?? null,
+    ms: route.ms ?? null,
+    tier: route.tier,
+    unapplied,
+    dir,
+    right: dir === '↓' ? '↓ cheaper' : dir === '↑' ? '↑ deeper' : '= kept',
+    short: '⇄ ' + to + (effort ? '·' + effort : ''),
+    pct: 0,
+    marks: [],
+  }
+}
+
+// ---------- rows ----------
+
+function visibleStrips(bar, now) {
+  if (!prefs.show.agents) return null
+  const list = agentsOf(bar)
+  if (!list.length) return null
+  const hasError = list.some((a) => a.state === 'error')
+  if (bar.agentsDoneAt && now - bar.agentsDoneAt > FOLD_MS && !hasError) return null
+  if (list.length <= MAX_STRIPS) return { shown: list, hidden: [] }
+  const keep = new Set(list.filter((a) => a.state !== 'done').slice(0, MAX_STRIPS - 1).map((a) => a.id))
+  for (const a of [...list].reverse()) {
+    if (keep.size >= MAX_STRIPS - 1) break
+    keep.add(a.id)
+  }
+  return { shown: list.filter((a) => keep.has(a.id)), hidden: list.filter((a) => !keep.has(a.id)) }
+}
+
+function stripTool(a) {
+  if (a.state === 'waiting') return 'Needs approval'
+  if (a.todo && a.todo.total && a.state === 'running') return trunc(a.todo.active || 'Tasks', 24) + ' ' + Math.min(a.todo.total, a.todo.done + 1) + '/' + a.todo.total
+  return a.tool
+}
+
+function barRow(bar, now) {
+  const state = barState(bar)
+  const w = where(bar)
+  const done = state === 'done'
+  const single = bar.stages.length === 1
+  const list = agentsOf(bar)
+  const agentNote = list.length && bar.id !== 'agents' ? ' · ' + list.filter((a) => a.state === 'done').length + '/' + list.length + ' agents' : ''
+  let name
+  let count
+  if (bar.id === 'agents') {
+    name = done ? 'Done' : 'Agents'
+    count = w.finished + '/' + w.total
+  } else if (done) {
+    name = 'Done'
+    count = w.total + '/' + w.total
+  } else if (single) {
+    name = w.active ? w.active.active || w.active.title : bar.stages[0].name
+    count = Math.min(w.total, w.pos + 1) + '/' + w.total
+  } else {
+    name = bar.stages[w.stage]?.name ?? ''
+    count = w.step + '/' + w.stageSize
+  }
+  const marks = []
+  let k = 0
+  for (const s of bar.stages) {
+    s.steps.forEach((_, j) => {
+      if (k > 0) marks.push({ f: k / w.total, stage: !single && j === 0 })
+      k++
+    })
+  }
+  const pct = done ? 100 : ((w.finished + (w.active ? 0.4 : 0)) / Math.max(1, w.total)) * 100
+  return {
+    id: 'bar:' + bar.id,
+    kind: 'bar',
+    bar,
+    style: STATE_STYLE[state],
+    state,
+    title: bar.title || 'Plan',
+    pct,
+    marks,
+    steps: w.total,
+    finished: w.finished,
+    name: trunc(name, 30),
+    count: count + agentNote,
+    right: Math.round(pct) + '%',
+    short: done ? '✓ ' + trunc(bar.title, 14) : trunc(name, 16) + ' ' + count,
+    stage: w.finished,
+    animating: !done,
+    strips: visibleStrips(bar, now),
+  }
+}
+
+function collectRows(now) {
+  const rows = []
+  const rr = routeRow()
+  if (rr) rows.push(rr)
+  for (const bar of bars.values()) {
+    if (bar.dismissed) continue
+    if (bar.id === 'agents' ? !prefs.show.agents : !prefs.show.plans) continue
+    if (bar.id === 'agents' && !agentsOf(bar).length) continue
+    if (!allSteps(bar).length) continue
+    const linger = bar.id === 'agents' ? AGENTS_LINGER_MS : BAR_LINGER_MS
+    if (barState(bar) === 'done' && bar.doneAt && now - bar.doneAt > linger) continue
+    rows.push(barRow(bar, now))
+  }
+  const act = activityRow(now)
+  if (act) rows.push(act)
+  const ctx = usage.context
+  if (prefs.show.context && ctx && ctx.percent != null) {
+    const p = ctx.percent
+    rows.push({
+      id: 'context',
+      kind: 'meter',
+      style: p >= 80 ? 'hot' : p >= 60 ? 'warn' : 'run',
+      title: 'Context',
+      pct: p,
+      marks: [{ f: 0.5 }, { f: 0.8 }],
+      name: fmtK(ctx.tokens) + ' / ' + fmtK(ctx.window),
+      count: '',
+      right: Math.round(p) + '%',
+      short: 'ctx ' + Math.round(p) + '%',
+      section: 'context',
+      hist: series('context', 3600_000, now),
+      rate: burnRate('context', now),
+    })
+  }
+  if (prefs.show.limits) {
+    for (const rl of usage.rateLimits ?? []) {
+      const [title, tag] = limitName(rl.kind)
+      const p = rl.percentUsed
+      rows.push({
+        id: 'limit:' + rl.kind,
+        kind: 'meter',
+        limit: true,
+        style: p >= 80 ? 'hot' : p >= 50 ? 'warn' : 'ok',
+        title,
+        pct: Math.min(100, p),
+        marks: [{ f: 0.25 }, { f: 0.5 }, { f: 0.75 }],
+        name: tag + ' · ' + Math.round(p) + '% used',
+        count: '',
+        right: rl.resetsAt ? '↻ ' + countdown(rl.resetsAt) : '',
+        short: tag + ' ' + Math.round(p) + '%' + (rl.resetsAt ? ' ↻' + humanReset(rl.resetsAt) : ''),
+        section: 'limits',
+        kindKey: rl.kind,
+        resets: rl.resetsAt ? humanReset(rl.resetsAt) : '',
+        hist: series(rl.kind, rl.kind.startsWith('seven_day') ? 24 * 3600_000 : 3600_000, now),
+        rate: burnRate(rl.kind, now),
+      })
+    }
+  }
+  return rows
+}
+
+// collapsed: what needs you first, then limits, context, bars, the route
+function collapsedOrder(rows) {
+  const rank = (r) => (r.state === 'needs_input' ? 0 : r.limit ? 1 : r.id === 'context' ? 2 : r.kind === 'bar' ? 3 : 4)
+  return [...rows].sort((a, b) => rank(a) - rank(b))
+}
+
+// ---------- drawing pieces ----------
+
+function routeCellsTerminal(row) {
+  const cells = []
+  const push = (s, color, bg, bold) => cells.push(...textCells(s, color, bg, bold))
+  if (row.noAnswer) {
+    push('kept ', DIM)
+    push(' ' + row.to + ' ', '#1e1e1e', tierColor(row.to, false), true)
+    push('  ! ' + row.reason, STYLE.warn.fill)
+    if (row.hint) push(' · ' + row.hint, DIM)
+    push('  ', MUTED)
+    for (const t of routeHist) push(...histCell(t))
+    return { cells, dirColor: STYLE.warn.fill }
+  }
+  const dirColor = row.dir === '↓' ? STYLE.ok.fill : row.dir === '↑' ? STYLE.warn.fill : MUTED
+  push(row.from + ' ', DIM)
+  push(row.dir === '=' ? '= ' : '→ ', dirColor)
+  push(' ' + row.to + ' ', '#1e1e1e', tierColor(row.to, false), true)
+  if (row.unapplied) push(' jev: ' + row.want + ' · not applied', DIM)
+  if (row.effort) {
+    const lvl = Math.max(1, EFFORTS.indexOf(row.effort) + 1)
+    push('  effort ', MUTED)
+    push('▁▃▅▇█'.slice(0, Math.min(5, lvl)), STYLE.run.fill)
+    push('·'.repeat(Math.max(0, 4 - lvl)) + ' ' + row.effort, DIM)
+  }
+  if (row.conf != null) push('  conf ' + row.conf.toFixed(2), row.conf >= 0.6 ? STYLE.ok.fill : STYLE.warn.fill)
+  if (row.risky != null && row.risky > 0.7) push('  ⚠ risky', STYLE.hot.fill)
+  if (row.ms != null) push('  ' + row.ms + 'ms', DIM)
+  push('  ', MUTED)
+  for (const t of routeHist) push(...histCell(t))
+  return { cells, dirColor }
+}
+
+// one route-history slot: a failure, a suggestion the router did not apply, or an applied model
+function histSquare(t, hx) {
+  if (t === 'none') return `<rect x="${hx + 0.5}" y="8" width="6" height="6" rx="2" fill="none" stroke="${STYLE.warn.desk}"/>`
+  if (t.startsWith('~')) return `<rect x="${hx + 0.75}" y="8.25" width="5.5" height="5.5" rx="1.75" fill="none" stroke="${tierColor(t.slice(1))}" stroke-width="1.5"/>`
+  return `<rect x="${hx}" y="7.5" width="7" height="7" rx="2" fill="${tierColor(t)}" fill-opacity=".85"/>`
+}
+
+function histCell(t) {
+  if (t === 'none') return ['□', STYLE.warn.fill]
+  if (t.startsWith('~')) return ['□', tierColor(t.slice(1), false)]
+  return ['■', tierColor(t, false)]
+}
+
+function routeSvg(row, W) {
+  const F = "'Anthropic Sans',ui-sans-serif,system-ui,sans-serif"
+  let x = 0
+  if (row.noAnswer) {
+    let o = `<text x="0" y="15" style="font:400 12px ${F};fill:#77756f">kept</text>`
+    x = 34
+    const w = textWidth(row.to, 6.4) + 14
+    o += `<rect x="${x}" y="3" width="${w}" height="16" rx="4" fill="${tierColor(row.to)}"/><text x="${x + 7}" y="15" style="font:500 11.5px ${F};fill:#fff">${esc(row.to)}</text>`
+    x += w + 12
+    o += `<text x="${x}" y="15" style="font:500 12px ${F};fill:${STYLE.warn.desk}">! ${esc(row.reason)}</text>`
+    x += textWidth('! ' + row.reason, 6.6) + 10
+    if (row.hint) {
+      o += `<text x="${x}" y="15" style="font:400 11.5px ${F};fill:#9a9893">· ${esc(row.hint)}</text>`
+      x += textWidth('· ' + row.hint, 6.4) + 10
+    }
+    const histW = routeHist.length * 10
+    if (x + 12 + histW <= W) {
+      let hx = Math.max(x + 12, W - histW)
+      for (const t of routeHist) {
+        o += histSquare(t, hx)
+        hx += 10
+      }
+    }
+    return o
+  }
+  let out = `<text x="0" y="15" style="font:400 12px ${F};fill:#77756f">${esc(row.from)}</text>`
+  x += textWidth(row.from, 6.4) + 6
+  const dirColor = row.dir === '↓' ? STYLE.ok.desk : row.dir === '↑' ? STYLE.warn.desk : '#9a9893'
+  out += `<text x="${x}" y="15" style="font:500 12px ${F};fill:${dirColor}">${row.dir === '=' ? '=' : '→'}</text>`
+  x += 14
+  for (const t of ['haiku', 'sonnet', 'opus']) {
+    const on = t === row.to
+    const want = t === row.want && !on
+    const w = textWidth(t, 6.4) + 14
+    out += `<rect x="${x}" y="3" width="${w}" height="16" rx="4" fill="${on ? tierColor(t) : '#808080'}" fill-opacity="${on ? 1 : 0.16}"${want ? ` stroke="${tierColor(t)}" stroke-dasharray="2 2"` : ''}/>`
+    out += `<text x="${x + 7}" y="15" style="font:${on ? 500 : 400} 11.5px ${F};fill:${on ? '#fff' : '#9a9893'}">${t}</text>`
+    x += w + 4
+  }
+  x += 8
+  if (row.effort) {
+    const lvl = Math.max(1, EFFORTS.indexOf(row.effort) + 1)
+    for (let i = 1; i <= 4; i++) out += `<rect x="${x + (i - 1) * 7}" y="${17 - (3 + i * 3)}" width="5" height="${3 + i * 3}" rx="1.5" fill="${i <= lvl ? STYLE.run.desk : '#808080'}" fill-opacity="${i <= lvl ? 1 : 0.25}"/>`
+    x += 32
+    out += `<text x="${x}" y="15" style="font:400 12px ${F};fill:#c9c7c1">${esc(row.effort)}</text>`
+    x += textWidth(row.effort, 6.4) + 14
+  }
+  if (row.conf != null) {
+    const c = row.conf >= 0.6 ? STYLE.ok.desk : STYLE.warn.desk
+    out += `<text x="${x}" y="15" style="font:400 11.5px ${F};fill:#77756f">conf</text>`
+    x += 30
+    out += `<rect x="${x}" y="8" width="44" height="6" rx="3" fill="#808080" fill-opacity=".25"/><rect x="${x}" y="8" width="${(44 * row.conf).toFixed(1)}" height="6" rx="3" fill="${c}"/>`
+    x += 50
+    out += `<text x="${x}" y="15" style="font:400 11.5px ${F};fill:#9a9893">${row.conf.toFixed(2)}</text>`
+    x += 40
+  }
+  if (row.risky != null && row.risky > 0.7) {
+    out += `<text x="${x}" y="15" style="font:500 11.5px ${F};fill:${STYLE.hot.desk}">⚠ risky</text>`
+    x += 56
+  }
+  if (row.unapplied) {
+    out += `<text x="${x}" y="15" style="font:400 11.5px ${F};fill:#77756f">not applied</text>`
+    x += 72
+  }
+  const histW = routeHist.length * 10
+  if (x + 12 + histW > W) return out
+  let hx = Math.max(x + 12, W - histW)
+  for (const t of routeHist) {
+    out += histSquare(t, hx)
+    hx += 10
+  }
+  return out
+}
+
+// a small progress ring with an icon in the middle
+function ringSvg(pct, color, icon) {
+  const r = 8.5
+  const C = 2 * Math.PI * r
+  const glyph =
+    icon === 'usd'
+      ? `<text x="11" y="15" text-anchor="middle" style="font:600 10px ui-sans-serif,system-ui,sans-serif;fill:${color}">$</text>`
+      : icon === 'week'
+        ? `<rect x="7.2" y="7.6" width="7.6" height="7" rx="1.2" fill="none" stroke="${color}" stroke-width="1.3"/><rect x="7.2" y="7.6" width="7.6" height="2" fill="${color}"/>`
+        : `<path d="M11 7.2V11l2.4 1.6" fill="none" stroke="${color}" stroke-width="1.4" stroke-linecap="round"/>`
+  return (
+    `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 22 22">` +
+    `<circle cx="11" cy="11" r="${r}" fill="none" stroke="#808080" stroke-opacity=".3" stroke-width="2.2"/>` +
+    `<circle cx="11" cy="11" r="${r}" fill="none" stroke="${color}" stroke-width="2.2" stroke-linecap="round" stroke-dasharray="${((C * Math.min(100, pct)) / 100).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 11 11)"/>` +
+    glyph +
+    '</svg>'
+  )
+}
+
+function rowSvg(row, W, nowMs) {
+  const stripsH = row.strips ? 5 + stripsHeight(row.strips) : 0
+  // compact rows sit with no gap between them; a little air above and below keeps the pills apart
+  const pad = prefs.size === 'roomy' ? 0 : 3
+  const H = TRACK_H + stripsH + pad * 2
+  const total = W + RIGHT_W
+  const track = row.kind === 'route' ? routeSvg(row, W) : desktopTrack(prefs.style.desktop, row, W, nowMs, lastHead)
+  const rightColor = row.kind === 'route' ? (row.noAnswer ? STYLE.warn.desk : row.dir === '↓' ? STYLE.ok.desk : row.dir === '↑' ? STYLE.warn.desk : '#9a9893') : '#9a9893'
+  return {
+    height: H,
+    width: total,
+    source:
+      `<svg xmlns="http://www.w3.org/2000/svg" width="${total}" height="${H}" viewBox="0 ${-pad} ${total} ${H}">` +
+      track +
+      `<text x="${total - 4}" y="${TRACK_H / 2 + 4.2}" text-anchor="end" style="font:400 12px 'Anthropic Sans',ui-sans-serif,system-ui,sans-serif;fill:${rightColor};font-variant-numeric:tabular-nums">${esc(row.right)}</text>` +
+      (row.strips ? `<g transform="translate(0 ${TRACK_H + 5})">${stripsSvg(row.strips, W, nowMs, stripTool, (m) => tierColor(m), lastStrip)}</g>` : '') +
+      '</svg>',
+  }
+}
+
+function sampleRow() {
+  return {
+    id: 'sample',
+    kind: 'bar',
+    style: 'run',
+    state: 'running',
+    title: 'Refactor auth',
+    pct: 52,
+    marks: [0.2, 0.4, 0.6, 0.8].map((f, i) => ({ f, stage: i === 1 })),
+    steps: 5,
+    finished: 2,
+    name: 'Fixing auth',
+    count: '3/5',
+    right: '52%',
+    animating: true,
+  }
+}
+
+// ---------- side effects that need $ ----------
+
+function play($, name) {
+  if (!prefs.sound) return
+  $.audio.play({ asset: 'assets/deck/' + name + '.wav' }, { gain: 0.6 }).catch(() => {})
+}
+
+function setOpen($, want) {
+  if (want === isOpening()) return
+  if (fold && fold.timer) fold.timer.cancel()
+  const now = Date.now()
+  if (want) prefs.open = true
+  fold = { dir: want ? 'open' : 'close', start: now, ticks: 0, timer: null }
+  $.store.set('deck.prefs', keptPrefs({ ...prefs, open: want })).catch(() => {})
+  const mine = fold
+  let framing = false
+  fold.timer = $.clock.every(33, () => {
+    // a frame still reading makes the next one skip, as the clock's tick does
+    if (fold !== mine || framing) return
+    framing = true
+    foldFrame($, mine)
+      .catch((error) => {
+        // a frame that cannot read the switches ends the fold where it was going: a store that keeps refusing would
+        // otherwise keep the 33 ms timer and a failure every frame (review of 896a888)
+        timerFailed($, 'fold frame', error)
+        endFold($, mine)
+      })
+      .finally(() => {
+        framing = false
+      })
+  })
+  $.ui.invalidate('ui.render')
+}
+
+// One frame of upstream's fold. Its row count reads the switches again first (the no-copy ruling: a section turned off
+// in another session or the pane during the fold counts at once); a fold replaced or stopped while it read does nothing.
+async function foldFrame($, mine) {
+  if (fold !== mine) return
+  await readPrefs($)
+  if (fold !== mine) return
+  fold.ticks++
+  const n = collectRows(Date.now()).length
+  const span = (n + 1) * FOLD_STEP + (fold.dir === 'open' ? FOLD_FADE : 0)
+  if (foldAge(Date.now()) >= span) endFold($, mine)
+  else $.ui.invalidate('ui.render')
+}
+
+// upstream's end of a fold: the timer stops, a close leaves the band closed, and the band draws once more
+function endFold($, mine) {
+  if (fold !== mine) return
+  fold.timer.cancel()
+  if (fold.dir === 'close') prefs.open = false
+  fold = null
+  $.ui.invalidate('ui.render')
+}
+
+// deck.prefs keeps only what no switch stands for (keptPrefs): the registry is the switches' one source
+async function savePrefs($) {
+  await $.store.set('deck.prefs', keptPrefs(prefs))
+}
+
+// a response may report only some windows; keep the others, drop ones already reset
+function mergeLimits(old, fresh) {
+  const byKind = new Map((old ?? []).map((r) => [r.kind, r]))
+  for (const r of fresh ?? []) byKind.set(r.kind, r)
+  const now = Date.now()
+  return [...byKind.values()].filter((r) => !r.resetsAt || Date.parse(r.resetsAt) > now).sort((a, b) => (a.kind < b.kind ? -1 : 1))
+}
+
+function dropDemoUsage() {
+  if (!demoUsage) return
+  demoUsage = false
+  usage = { context: null, rateLimits: [] }
+}
+
+async function refreshUsage($) {
+  try {
+    const u = await $.session.usage()
+    if (demoUsage && ((u.rateLimits ?? []).length || u.context?.percent != null)) dropDemoUsage()
+    usage = { context: u.context ?? usage.context, rateLimits: mergeLimits(usage.rateLimits, u.rateLimits) }
+    if (u.cost) await addSpend($, u.cost.usd)
+    await noteUsage($)
+  } catch {}
+}
+
+async function noteUsage($) {
+  if (sampleUsage(Date.now())) await $.store.set('deck.hist', hist)
+}
+
+// add what this session spent since the last reading into today and this month
+async function addSpend($, usd) {
+  if (!prefs.cost || typeof usd !== 'number') return
+  if (costSeen == null) {
+    const seen = (await $.store.get('deck.costSeen')) ?? {}
+    costSeen = typeof seen[sessionId] === 'number' ? seen[sessionId] : 0
+  }
+  const delta = usd >= costSeen ? usd - costSeen : usd
+  costSeen = usd
+  const saved = (await $.store.get('deck.spend')) ?? {}
+  const day = today()
+  const month = day.slice(0, 7)
+  spend = {
+    day,
+    dayUsd: (saved.day === day ? saved.dayUsd : 0) + delta,
+    month,
+    monthUsd: (saved.month === month ? saved.monthUsd : 0) + delta,
+  }
+  if (delta > 0) {
+    await $.store.set('deck.spend', spend)
+    const seen = (await $.store.get('deck.costSeen')) ?? {}
+    seen[sessionId] = usd
+    const ids = Object.keys(seen)
+    if (ids.length > 30) for (const id of ids.slice(0, ids.length - 30)) delete seen[id]
+    await $.store.set('deck.costSeen', seen)
+  }
+}
+
+async function loadSpend($) {
+  const saved = (await $.store.get('deck.spend')) ?? {}
+  const day = today()
+  spend = { day, dayUsd: saved.day === day ? saved.dayUsd : 0, month: day.slice(0, 7), monthUsd: saved.month === day.slice(0, 7) ? saved.monthUsd : 0 }
+}
+
+
+
+async function refreshWeather($) {
+  if (!prefs.city || !prefs.show.weather) return
+  try {
+    const { lat, lon, name } = prefs.city
+    // sent at 2 decimals, about 1 km, the city level the geocoder returns (A3)
+    const r = await $.http.fetch('https://api.open-meteo.com/v1/forecast?latitude=' + lat.toFixed(2) + '&longitude=' + lon.toFixed(2) + '&current=temperature_2m,weather_code')
+    if (!r.ok) return
+    const cur = JSON.parse(r.text).current
+    weather = { temp: cur.temperature_2m, code: cur.weather_code, name }
+  } catch {}
+}
+
+async function syncAgents($) {
+  if (![...agents.values()].some((a) => a.state === 'running' || a.state === 'waiting')) return
+  try {
+    for (const info of await $.agent.list()) {
+      const a = agents.get(info.id)
+      if (!a || a.state === 'done' || a.state === 'error') continue
+      if (info.status === 'completed') finishAgent(a.id, 'done', 'Done')
+      else if (info.status === 'failed' || info.status === 'killed') finishAgent(a.id, 'error', info.status === 'killed' ? 'Stopped' : 'Failed')
+    }
+  } catch {}
+}
+
+async function readSessionModel($) {
+  try {
+    sessionModel = await $.session.model()
+  } catch {}
+}
+
+function finishAgent(id, state, tool) {
+  const a = agents.get(id)
+  if (!a || a.state === 'done' || a.state === 'error') return
+  a.state = state
+  a.tool = tool
+  a.endedAt = Date.now()
+  waiting.delete(id)
+  syncAgentsBar()
+  const bar = a.home === 'activity' ? activity && { id: 'activity', set agentsDoneAt(v) { activity.agentsDoneAt = v } } : bars.get(a.home)
+  if (bar && agentsOf(bar).every((x) => x.state === 'done' || x.state === 'error')) bar.agentsDoneAt = Date.now()
+}
+
+// compare rows with the last tick: sounds, done timestamps, auto-expand
+function react($, rows, now) {
+  for (const bar of bars.values()) {
+    const s = barState(bar)
+    if (s === 'done' && !bar.doneAt) bar.doneAt = now
+    if (s !== 'done') bar.doneAt = null
+  }
+  const live = rows.filter((r) => r.kind === 'bar' && r.animating).length
+  let anyAsk = false
+  for (const row of rows) {
+    if (row.kind !== 'bar') continue
+    const prev = lastSeen.get(row.id)
+    if (row.state === 'needs_input') anyAsk = true
+    if (prev) {
+      if (row.state === 'needs_input' && prev.state !== 'needs_input') play($, 'alert')
+      else if (row.state === 'error' && prev.state !== 'error') play($, 'error')
+      else if (row.state === 'done' && prev.state !== 'done') {
+        play($, live === 0 ? 'fanfare' : 'chime')
+      } else if (row.stage > prev.stage && row.state !== 'done') play($, 'tick')
+    }
+    lastSeen.set(row.id, { state: row.state, stage: row.stage })
+  }
+  if (anyAsk && !isOpening() && prefs.auto) setOpen($, true)
+}
+
+function statusText() {
+  const lines = []
+  for (const r of collectRows(Date.now())) {
+    if (r.kind === 'route' && r.noAnswer) {
+      lines.push('⇄ Model route — no answer (' + r.reason + '), kept ' + r.to + (r.hint ? ' · ' + r.hint : ''))
+      continue
+    }
+    if (r.kind === 'route') {
+      lines.push('⇄ Model route — ' + r.from + ' ' + (r.dir === '=' ? '=' : '→') + ' ' + r.to + (r.effort ? ' · effort ' + r.effort : '') + ' · jev ' + r.tier + (r.conf != null ? ' ' + r.conf.toFixed(2) : '') + (r.unapplied ? ', suggested ' + r.want + ', not applied' : '') + ' (' + r.right + ')')
+      continue
+    }
+    lines.push(STYLE[r.style].glyph + ' ' + r.title + ' — ' + r.name + (r.count ? ' ' + r.count : '') + (r.right ? ' (' + r.right + ')' : ''))
+    for (const a of r.strips?.shown ?? []) lines.push('   ↳ ' + a.title + ': ' + stripTool(a) + ' [' + a.state + ']' + (a.model ? ' {' + a.model + '}' : ''))
+  }
+  const on = SECTIONS.filter((s) => prefs.show[s]).join(', ') || 'nothing'
+  return (
+    (lines.length ? lines.join('\n') : 'No rows yet.') +
+    '\nShowing: ' + on + ' · ' + (prefs.open ? 'expanded' : 'collapsed') +
+    ' · style ' + prefs.style.terminal + ' (CLI) / ' + prefs.style.desktop + ' (Desktop)' +
+    ' · auto-expand ' + (prefs.auto ? 'on' : 'off') + ' · sound ' + (prefs.sound ? 'on' : 'off') +
+    (prefs.city ? ' · city ' + prefs.city.name : '') +
+    ' · Deck ' + VERSION
+  )
+}
+
+const HELP = [
+  '/mods-deck                 toggle collapsed / expanded (also: 0 in an empty prompt, or Deck in the footer)',
+  '/mods-deck expand | collapse',
+  '/mods-deck style           pick a bar style, with live previews',
+  '/mods-deck style <name>    CLI: ' + TERMINAL_STYLES.join(', ') + ' · Desktop: ' + DESKTOP_STYLES.join(', '),
+  '/mods-deck <section> on|off     sections: ' + SECTIONS.join(', ') + ', all',
+  '/mods-deck city <name>     set the weather city (turns weather on)',
+  "/mods-deck quiet on|off    hide the router's own status and log lines while the HUD shows the route",
+  '/mods-deck panel [off]     open Deck in a panel (terminal and Desktop; the VS Code extension draws none yet)',
+  '/mods-deck version         show which Deck version is running',
+  '/mods-deck size compact|roomy   compact (default) packs the rows tighter on Desktop',
+  '/mods-deck collapsed chips|text|rings  collapsed look: chips with mini bars, one plain line, or limit rings',
+  '/mods-deck cost on|off    track spend today and this month (pay-per-use API keys)',
+  '/mods-deck auto on|off     expand when something needs you',
+  '/mods-deck sound on|off',
+  '/mods-deck demo            play a sample plan with agents',
+  '/mods-deck clear           remove all bars',
+  '/mods-deck status          print what the HUD shows',
+].join('\n')
+
+function demoStages() {
+  const st = (title, status = 'pending') => ({ title, status })
+  return [
+    { name: 'Analysis', steps: [st('Read modules', 'done'), st('Find dependencies', 'done'), st('List changes', 'active')] },
+    { name: 'DB migration', steps: [st('Table schema'), st('Create migration'), st('Move data'), st('Indexes')] },
+    { name: 'API', steps: [st('Endpoints'), st('Validation'), st('Access rules')] },
+    { name: 'Verify', steps: [st('Tests'), st('Build')] },
+  ]
+}
+
+// ---------- hooks ----------
+
+// the band above the prompt, and the same view in a pane (/mods-deck panel)
+async function deckView($, e, next) {
+  // the same view draws in the band above the prompt and, opened by /mods-deck panel, in a pane:
+  // VS Code's panel draws panes but not the band
+  const inPane = e.component === 'Pane'
+  if (inPane && e.requestId !== 'mods-deck-panel') return next(e)
+  if (!inPane && e.props.hasSurvey) return next(e)
+  // a draw is passive (deckLive): it neither judges the session nor takes a half
+  if (!(await deckLive($, true)) || !(await isOn($, inPane ? PANEL : BAND))) return next(e)
+  await readPrefs($)
+  const open = inPane || prefs.open
+  const { Box, Text, Button, Svg } = $.ui.resolve(e)
+  const desktop = e.surface !== 'terminal' // desktop, VS Code and mobile all draw Svg
+  if (e.surface === 'terminal') sawTerminal = true
+  // TEXT/MUTED/DIM/TRACK are tuned for a dark background and vanish on a light desktop theme;
+  // there, plain text takes the theme's foreground and grey text uses dimColor instead
+  const tone = (c) => (!desktop ? { color: c } : c === TEXT || c === '#c9c7c1' ? {} : c === MUTED || c === DIM || c === TRACK ? { dimColor: true } : { color: c })
+  const nowMs = Date.now()
+  // the real width, even a narrow side-by-side pane: a floor wider than the band wraps every row
+  // (https://github.com/nvr0x5/claude-deck/issues/4)
+  const cols = Math.max(desktop ? 40 : 20, e.props.bodyColumns ?? e.viewport?.columns ?? 100)
+  const rows = collectRows(nowMs)
+  const extras = []
+  if (prefs.show.clock) extras.push((desktop ? '◷ ' : '') + clockText())
+  const wt = prefs.show.weather ? weatherText(desktop) : ''
+  if (wt) extras.push(wt)
+  // a narrow terminal drops the weather, then the clock, before the header line would wrap
+  if (!desktop) while (extras.length && HEADER_CH + extras.join('  ·  ').length > cols) extras.pop()
+  if (!rows.length && !extras.length) return next(e)
+  // a mod after deck in the hook chain also wants to draw AbovePrompt; stack its band under ours
+  // instead of swallowing it (https://github.com/nvr0x5/claude-deck/issues/2)
+  const below = await next(e)
+  const stack = (tree) => (below ? Box({ flexDirection: 'column', children: [tree, below] }) : tree)
+
+  const toggle = Button({
+    key: 'deck-toggle',
+    label: isOpening() ? 'deck ▾' : 'deck ▸',
+    plain: true,
+    hotkey: '0',
+    dimColor: true,
+    onPress: async () => {
+      // a press on a band drawn before the master or this surface's switch went off does nothing (G13.1); the switches
+      // are read again first, as setOpen counts the rows they show (the no-copy ruling)
+      if (!(await deckLive($)) || !(await isOn($, inPane ? PANEL : BAND))) return
+      await readPrefs($)
+      setOpen($, !isOpening())
+    },
+  })
+  const extrasText = Box({ flexShrink: 0, children: [Text({ ...tone(MUTED), children: [extras.join('  ·  ')] })] })
+  const spacer = Box({ flexGrow: 1, children: [] })
+
+  // ----- collapsed, rings: a ring per limit, its reset, and spend -----
+  if ((!open || !rows.length) && prefs.collapsed === 'rings') {
+    const items = []
+    const ask = rows.find((r) => r.state === 'needs_input')
+    if (ask) items.push(Text({ color: STYLE.ask.fill, children: ['? ' + trunc(ask.title, 24) + ' needs you'] }))
+    for (const row of rows.filter((r) => r.limit)) {
+      const st = STYLE[row.style]
+      const tag = row.kindKey === 'five_hour' ? '5h' : row.kindKey === 'seven_day' ? '7d' : row.title
+      const ring = desktop
+        ? Svg({ alt: tag + ' ' + Math.round(row.pct) + '% used', width: 22, height: 22, source: ringSvg(row.pct, st.desk, row.kindKey === 'seven_day' ? 'week' : 'clock') })
+        : Text({ color: st.fill, children: ['○◔◑◕●'[Math.min(4, Math.round(row.pct / 25))]] })
+      items.push(
+        Box({
+          flexDirection: 'row',
+          flexShrink: 0,
+          columnGap: 1,
+          alignItems: 'center',
+          children: [ring, Text({ ...tone(TEXT), bold: true, wrap: 'truncate', children: [Math.round(row.pct) + '%'] }), Text({ ...tone(MUTED), wrap: 'truncate', children: [tag + (row.resets ? ' · resets ' + row.resets : '')] })],
+        }),
+      )
+    }
+    if (prefs.cost) {
+      items.push(
+        Box({
+          flexDirection: 'row',
+          flexShrink: 0,
+          columnGap: 1,
+          alignItems: 'center',
+          children: [
+            desktop ? Svg({ alt: 'spend', width: 22, height: 22, source: ringSvg(100, STYLE.done.desk, 'usd') }) : Text({ color: STYLE.done.fill, children: ['$'] }),
+            Text({ color: STYLE.done.fill, bold: true, wrap: 'truncate', children: [fmtUsd(spend.dayUsd)] }),
+            Text({ ...tone(MUTED), wrap: 'truncate', children: ['today · ' + fmtUsd(spend.monthUsd) + ' this month'] }),
+          ],
+        }),
+      )
+    }
+    const busy = rows.find((r) => (r.kind === 'bar' || r.kind === 'activity') && r.animating && r.state !== 'needs_input')
+    if (busy) items.push(Box({ flexShrink: 1, children: [Text({ ...tone(MUTED), wrap: 'truncate', children: [STYLE[busy.style].glyph + ' ' + trunc(busy.short, 22)] })] }))
+    const line = Box({
+      flexDirection: 'row',
+      columnGap: 2,
+      alignItems: 'center',
+      children: [
+        ...(rows.length ? [toggle] : []),
+        Box({ flexDirection: 'row', flexShrink: 1, overflow: 'hidden', columnGap: desktop ? 4 : 3, alignItems: 'center', children: items }),
+        spacer,
+        extrasText,
+      ],
+    })
+    return stack(Box({ flexDirection: 'column', children: [line] }))
+  }
+
+  // ----- collapsed, text: one plain status line, clock and weather at its end -----
+  if ((!open || !rows.length) && prefs.collapsed === 'text') {
+    const parts = []
+    for (const row of collapsedOrder(rows)) {
+      const st = STYLE[row.style]
+      if (parts.length) parts.push(Text({ children: ['  '] }))
+      if (row.kind === 'route') {
+        parts.push(Text({ color: desktop ? STYLE.run.desk : STYLE.run.fill, children: ['⇄ '] }))
+        parts.push(Text({ ...tone(MUTED), children: [row.to + (row.effort ? ' · ' + row.effort : '')] }))
+        continue
+      }
+      parts.push(Text({ color: desktop ? st.desk : st.fill, children: [st.glyph + ' '] }))
+      parts.push(Text({ ...tone(row.state === 'needs_input' ? st.fill : MUTED), children: [row.short] }))
+    }
+    if (extras.length) parts.push(Text({ ...tone(MUTED), children: [(parts.length ? '  ' : '') + [...extras].reverse().join('  ')] }))
+    const line = Box({
+      flexDirection: 'row',
+      columnGap: 1,
+      children: [...(rows.length ? [toggle] : []), Box({ flexDirection: 'row', flexShrink: 1, children: [Text({ wrap: 'truncate', children: parts })] })],
+    })
+    return stack(Box({ flexDirection: 'column', children: [line] }))
+  }
+
+  // ----- collapsed, chips: one line of chips, limits first -----
+  if (!open || !rows.length) {
+    const chips = []
+    // the terminal counts columns; the desktop counts pixels (about 8 per column, ~7.5 per character)
+    let budget = desktop ? cols * 8 - 140 - extras.join('  ·  ').length * 7.5 : cols - 10 - extras.join('  ·  ').length
+    let hidden = 0
+    for (const row of collapsedOrder(rows)) {
+      const st = STYLE[row.style]
+      const w = desktop ? row.short.length * 8.5 + 76 : row.short.length + 10
+      if (w > budget) {
+        hidden++
+        continue
+      }
+      budget -= w
+      if (chips.length) chips.push(Text({ ...tone(TRACK), children: [' │ '] }))
+      if (row.kind === 'route') {
+        chips.push(Text({ color: desktop ? STYLE.run.desk : STYLE.run.fill, children: [row.short + ' '] }))
+        continue
+      }
+      chips.push(Text({ color: desktop ? st.desk : st.fill, children: [st.glyph + ' '] }))
+      const chipText = { ...tone(row.state === 'needs_input' ? st.fill : row.limit ? TEXT : '#c9c7c1'), children: [row.short + ' '] }
+      if (row.limit) chipText.bold = true
+      chips.push(Text(chipText))
+      chips.push(
+        desktop
+          ? Svg({
+              alt: row.title + ' ' + Math.round(row.pct) + '%',
+              width: 36,
+              height: 8,
+              source: `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="8"><rect width="36" height="8" rx="4" fill="#808080" fill-opacity=".2"/><rect width="${Math.max((36 * row.pct) / 100, row.pct > 0 ? 4 : 0)}" height="8" rx="4" fill="${st.desk}"/></svg>`,
+            })
+          : Box({ flexDirection: 'row', children: runs(Text, terminalMini(prefs.style.terminal, row, 5)) }),
+      )
+    }
+    if (hidden) chips.push(Text({ ...tone(DIM), children: ['  +' + hidden] }))
+    const line = Box({
+      flexDirection: 'row',
+      columnGap: 1,
+      alignItems: 'center',
+      children: [...(rows.length ? [toggle] : []), Box({ flexDirection: 'row', alignItems: 'center', children: chips }), spacer, extrasText],
+    })
+    return stack(Box({ flexDirection: 'column', children: [line] }))
+  }
+
+  // ----- expanded -----
+  const close = (row) =>
+    Button({
+      key: 'x-' + row.id,
+      label: '✕',
+      plain: true,
+      dimColor: true,
+      onPress: async () => {
+        // a press on a band drawn before the master went off does nothing (G13.1)
+        if (!(await deckLive($))) return
+        if (row.kind === 'activity') {
+          for (const ag of [...agents.values()]) if (ag.home === 'activity') agents.delete(ag.id)
+          activity = null
+        }
+        else if (row.kind === 'bar') {
+          const bar = row.bar
+          for (const ag of agentsOf(bar)) agents.delete(ag.id)
+          if (bar.id === 'todo' || bar.id === 'tasks') bar.dismissed = true
+          else bars.delete(bar.id)
+          if (bar.id === 'tasks') tasks.clear()
+          if (bar.id === 'demo' && demoTimer) demoTimer.cancel()
+        } else {
+          // a hidden section is its switch turned off by the person's own press (the registry, not deck.prefs)
+          await setSwitch($, sectionSwitch(row.kind === 'route' ? 'route' : row.section), false, 'person')
+        }
+        $.ui.invalidate('ui.render')
+      },
+    })
+  // expanded only: the folder leads the header; a narrow header drops the weather and clock before it
+  let wide = extras
+  if (prefs.show.folder && cwd) {
+    // Desktop measures in pixels, about 8 per column and 7.5 per header character
+    const fits = desktop ? Math.min(48, Math.floor((cols * 8 - 170) / 7.5)) : cols - HEADER_CH
+    const room = () => fits - (wide.length ? wide.join('  ·  ').length + 5 : 0) - (desktop ? 2 : 0)
+    while (wide.length && room() < 16) wide = wide.slice(0, -1)
+    wide = [(desktop ? '▤ ' : '') + folderText(room()), ...wide]
+  }
+  const wideText = Box({ flexShrink: 0, children: [Text({ ...tone(MUTED), children: [wide.join('  ·  ')] })] })
+  const header = Box({
+    flexDirection: 'row',
+    columnGap: 1,
+    alignItems: 'center',
+    // fix for light Desktop themes (https://github.com/nvr0x5/claude-deck/pull/1)
+    children: [toggle, Text({ ...tone(DIM), children: ['· ' + rows.length + (rows.length === 1 ? ' row' : ' rows')] }), spacer, wideText],
+  })
+
+  if (desktop) {
+    const total = Math.max(320, cols * 8)
+    const titleW = Math.min(TITLE_MAX_PX, Math.round(total * 0.28), Math.max(...rows.map((r) => Math.round(textWidth(trunc(r.title, TITLE_MAX_CH), 6.4)))))
+    const trackW = Math.max(120, Math.min(1400, total - titleW - RIGHT_W - 70))
+    const shown = rows.slice(0, (inPane ? rows.length : foldCount(rows.length, nowMs)))
+    const lines = shown.map((row, i) => {
+      const st = STYLE[row.style]
+      const svg = rowSvg(row, trackW, nowMs)
+      if (!inPane && fold && fold.dir === 'open') svg.source = withFadeIn(svg.source, foldAge(nowMs) - i * FOLD_STEP)
+      const alt =
+        row.kind === 'route'
+          ? 'Model route: ' + row.from + ' to ' + row.to + (row.effort ? ', effort ' + row.effort : '')
+          : row.title + ': ' + row.name + (row.count ? ' ' + row.count : '') + ', ' + row.right + (row.strips ? '; agents: ' + row.strips.shown.map((ag) => ag.title + ' ' + ag.state).join(', ') : '')
+      return Box({
+        key: 'row-' + row.id,
+        flexDirection: 'row',
+        alignItems: row.strips ? 'flex-start' : 'center',
+        gap: 1,
+        children: [
+          Text({ color: st.desk, children: [row.kind === 'route' ? '⇄' : st.glyph] }),
+          Text({ wrap: 'truncate', children: [trunc(row.title, TITLE_MAX_CH)] }),
+          Box({ flexGrow: 1, children: [] }),
+          Svg({ source: svg.source, alt, width: svg.width, height: svg.height }),
+          close(row),
+        ],
+      })
+    })
+    return stack(Box({ flexDirection: 'column', gap: prefs.size === 'roomy' ? 1 : 0, children: [header, ...lines] }))
+  }
+
+  // terminal
+  // (TRDD-RD1ISPMN, data-first band) the host sizes the band and this budget keeps its
+  // accounting, but the allocation changes: primary rows come before agent strips, so
+  // context and limits cannot be crowded out by agents; when rows must be dropped,
+  // needs_input, limits and context rank ahead of bars and the route (the collapsed
+  // order's ranks), and the band names what it dropped in a +N line. The pane
+  // (/mods-deck panel) draws every row and lets the host scroll instead of truncating.
+  const maxRows = Math.max(2, (e.props.maxRows ?? 14) - 1)
+  const shownRows = inPane ? rows : rows.slice(0, foldCount(rows.length, nowMs))
+  // glyph, label, bar, right column and ✕ fit in cols: narrow panes shrink the label and bar
+  const labelW = Math.min(24, Math.max(cols < 60 ? 6 : 12, Math.floor(cols * 0.2)))
+  const rightW = cols < 50 ? 10 : 12
+  const barW = Math.max(4, cols - labelW - rightW - 8)
+  const lines = []
+  // the pane draws everything and the host scrolls; the band reserves one line for the +N
+  // note when rows must be dropped, and agent strips take only the capacity rows leave
+  const rowBudget = inPane ? Number.POSITIVE_INFINITY : (shownRows.length > maxRows ? maxRows - 1 : maxRows)
+  const agentBudget = inPane ? Number.POSITIVE_INFINITY : Math.max(0, maxRows - shownRows.length)
+  const rank = (r) => (r.state === 'needs_input' ? 0 : r.limit ? 1 : r.id === 'context' ? 2 : 3)
+  let keptRows = shownRows
+  let droppedRows = 0
+  if (!inPane && shownRows.length > rowBudget) {
+    const keep = [...shownRows.keys()].sort((a, b) => rank(shownRows[a]) - rank(shownRows[b]) || a - b).slice(0, rowBudget)
+    keptRows = keep.map((i) => shownRows[i])
+    droppedRows = shownRows.length - rowBudget
+  }
+  let agentUsed = 0
+  let agentsUnshown = 0
+  for (const row of keptRows) {
+    const st = STYLE[row.style]
+    if (row.kind === 'route') {
+      const { cells, dirColor } = routeCellsTerminal(row)
+      lines.push(
+        Box({
+          flexDirection: 'row',
+          columnGap: 1,
+          height: 1,
+          overflow: 'hidden',
+          children: [
+            Text({ color: STYLE.run.fill, children: ['⇄'] }),
+            Box({ width: labelW, flexShrink: 0, children: [Text({ color: TEXT, children: [row.title] })] }),
+            Box({ flexGrow: 1, flexDirection: 'row', children: runs(Text, cells.slice(0, barW)) }),
+            Box({ width: rightW, flexShrink: 0, justifyContent: 'flex-end', children: [Text({ color: dirColor, wrap: 'truncate', children: [row.right] })] }),
+            close(row),
+          ],
+        }),
+      )
+      continue
+    }
+    lines.push(
+      Box({
+        flexDirection: 'row',
+        columnGap: 1,
+        height: 1,
+        overflow: 'hidden',
+        children: [
+          Text({ color: st.fill, children: [st.glyph] }),
+          Box({ width: labelW, flexShrink: 0, children: [Text({ color: TEXT, wrap: 'truncate', children: [trunc(row.title, labelW)] })] }),
+          Box({ flexGrow: 1, flexDirection: 'row', overflow: 'hidden', children: runs(Text, terminalBar(prefs.style.terminal, row, barW, frame)) }),
+          Box({ width: rightW, flexShrink: 0, justifyContent: 'flex-end', children: [Text({ color: MUTED, wrap: 'truncate', children: [row.right] })] }),
+          close(row),
+        ],
+      }),
+    )
+    let emitted = 0
+    for (const ag of row.strips ? row.strips.shown : []) {
+      if (agentUsed >= agentBudget) break
+      const ast = STYLE[AGENT_STYLE[ag.state]]
+      lines.push(
+        Box({
+          flexDirection: 'row',
+          columnGap: 1,
+          height: 1,
+          overflow: 'hidden',
+          children: [
+            Text({ children: [ag.depth ? '    ' : '  '] }),
+            Text({ color: ast.fill, children: [ag.state === 'running' && frame % 6 < 3 ? '○' : '●'] }),
+            Box({ width: labelW - 1, flexShrink: 0, children: [Text({ color: '#c9c7c1', wrap: 'truncate', children: [trunc((ag.depth ? '↳ ' : '') + ag.title, labelW - 1)] })] }),
+            Text({ color: ast.fill, wrap: 'truncate', children: [stripTool(ag)] }),
+            ...(ag.model ? [Text({ color: '#1e1e1e', backgroundColor: tierColor(ag.model, false), children: [' ' + ag.model + ' '] })] : []),
+            Box({ flexGrow: 1, children: [] }),
+            Text({ color: DIM, children: [elapsed((ag.endedAt ?? nowMs) - ag.startedAt)] }),
+          ],
+        }),
+      )
+      agentUsed++
+      emitted++
+    }
+    agentsUnshown += (row.strips?.shown.length ?? 0) - emitted + (row.strips?.hidden.length ?? 0)
+  }
+  // (review 2026-11-06) the notes render only when a line is free — on the band. At exact
+  // capacity the agents note is deliberately starved: naming it would evict a data row,
+  // which the data-first contract forbids. On the overflow path the rows note takes the
+  // spare line instead and the agents note is suppressed by that priority, not capacity;
+  // the rows note's panel pointer is the complete disclosure (dropped rows' strips never
+  // enter agentsUnshown). In the pane the note always renders, with no line accounting.
+  if (droppedRows && lines.length < maxRows) lines.push(Text({ color: DIM, children: ['    +' + droppedRows + ' more row' + (droppedRows === 1 ? '' : 's') + ' — /mods-deck panel shows all'] }))
+  if (agentsUnshown && (inPane || lines.length < maxRows)) lines.push(Text({ color: DIM, children: ['    +' + agentsUnshown + ' more agent' + (agentsUnshown === 1 ? '' : 's')] }))
+  return stack(Box({ flexDirection: 'column', children: [header, ...lines] }))
+}
+
+// ---------- the integration (TRDD-RD1ISPMN): the observer of sent messages, the checks on saved settings, the city ----------
+
+/**
+ * Deck's observer of a sent message: the body of upstream's prompt.submit hook. hooks/index.ts's one prompt.submit hook
+ * calls it after the drafts observer (ruling 8 as amended: the engine refuses two plain hooks on one event in one
+ * module), catches what it throws with deckPromptFailed, and passes the prompt on once itself.
+ */
+export async function observeDeckPrompt($, e) {
+  if (!(await deckLive($))) return
+  // refreshed before the router (or anything else) can switch this turn's model at turn.step,
+  // so the route row's "from" is what you picked, not what jev routed to
+  await readSessionModel($)
+  if (e.text && !e.text.startsWith('/')) {
+    lastPrompt = trunc(cleanPrompt(e.text), 40) || lastPrompt
+    askedUser = false
+    for (const bar of bars.values()) if (bar.explicit === 'needs_input') bar.explicit = null
+  }
+}
+
+export function deckPromptFailed($, error) {
+  countError()
+  logEvent($, MOD, 'deck: a sent message could not be read: ' + failureText(error), { to: 'debug' })
+}
+
+
+// Shared dispatchers own next: each observer is isolated so Tokensaver and Deck can share an event without
+// duplicate plain registrations or one observer failure suppressing the other (TRDD-RD1ISPMN).
+export function deckObserverFailed($, event, error) {
+  countError()
+  logEvent($, MOD, "deck: the " + event + " observer failed: " + failureText(error), { to: "debug" })
+}
+
+export async function observeDeckTurnStep($, e) {
+  if (!(await deckLive($, byAgent(e)))) return
+  if (!e.agentId && e.index === 0) seen = { model: e.model, effort: typeof e.effort === "string" ? e.effort : "" }
+}
+
+export async function observeDeckMeasure($, e) {
+  if (!(await deckLive($, true))) return
+  prefs.cost = await isOn($, SPEND)
+  dropDemoUsage()
+  usage = { context: e.context ?? usage.context, rateLimits: mergeLimits(usage.rateLimits, e.rateLimits) }
+  if (e.cost) await addSpend($, e.cost.usd)
+  await noteUsage($)
+  $.ui.invalidate("ui.render")
+}
+
+export async function observeDeckSpawned($, e, started) {
+  if (!(await deckLive($, byAgent(e)))) return
+  if (!started || !started.agentId) return
+  const id = started.agentId
+  const parent = e.parentAgentId ? agents.get(e.parentAgentId) : null
+  let home = parent?.home ?? liveBar()?.id
+  if (!home && activity && !activity.done) {
+    home = "activity"
+    if (activity.agentsDoneAt) {
+      for (const a of [...agents.values()]) if (a.home === "activity" && a.state === "done") agents.delete(a.id)
+      activity.agentsDoneAt = null
+    }
+  }
+  if (!home) {
+    if (!bars.has("agents") || barState(bars.get("agents")) === "done") {
+      for (const a of [...agents.values()]) if (a.home === "agents") agents.delete(a.id)
+      placeBar(newBar("agents", "Agents", "agents", []))
+    }
+    home = "agents"
+  }
+  const bar = bars.get(home)
+  if (bar && bar.agentsDoneAt) {
+    for (const a of [...agents.values()]) if (a.home === home && a.state === "done") agents.delete(a.id)
+    bar.agentsDoneAt = null
+  }
+  agents.set(id, {
+    id,
+    title: trunc(e.description || e.subagentType, 60),
+    state: "running",
+    tool: "Starting",
+    model: started.model ? shortModel(started.model) : "",
+    startedAt: Date.now(),
+    endedAt: null,
+    depth: parent ? 1 : 0,
+    home,
+    todo: null,
+  })
+  syncAgentsBar()
+  $.ui.invalidate("ui.render")
+}
+
+export async function observeDeckTurnComplete($, e) {
+  if (!(await deckLive($, byAgent(e)))) return
+  if (e.agentId && agents.has(e.agentId)) {
+    const failed = e.reason !== "answer"
+    finishAgent(e.agentId, failed ? "error" : "done", e.reason === "aborted" ? "Stopped" : failed ? "Failed" : "Done")
+    $.ui.invalidate("ui.render")
+  }
+  if (!e.agentId) {
+    if (activity && !activity.done) {
+      activity.done = true
+      activity.doneAt = Date.now()
+    }
+  }
+}
+
+// R5: a router-line hook that threw changes nothing; the error is counted and logged.
+function routerLineFailed($, which, error) {
+  countError()
+  logEvent($, MOD, 'deck: a router ' + which + ' line passed on unchanged after a failure: ' + failureText(error), { to: 'debug' })
+}
+
+// || not ??: an empty message falls back to the failure's kind, as the engine's hook errors carry one
+const failureText = (error) => String(error?.message || error?.kind || error)
+
+const OFF_TEXT = 'Deck is off. Turn it on with /mods-deck on or in the switches pane.'
+const OFF_STATUS = 'Deck is off in every session. Turn it on with /mods-deck on or in the switches pane (/mods-switches).'
+const NOT_STARTED_TEXT = 'Deck was turned on in another session; it starts here at the next session start, or now with /mods-deck on.'
+const START_FAILED_TEXT = 'Deck is on, but it could not start in this session; the plugin log says why.'
+const CITY_PERSON_ONLY = 'Only the person sets the weather city: type /mods-deck city <name> yourself.'
+const WEATHER_PERSON_ONLY = 'Only the person turns the weather section on: type /mods-deck weather on yourself.'
+const ALL_BUT_WEATHER = 'Every section but the weather is on; only the person turns the weather on: /mods-deck weather on.'
+const switchOffText = (what, id) => what + ' is off: turn on ' + id + ' in the switches pane (/mods-switches).'
+
+const SIZES = ['compact', 'roomy']
+const COLLAPSED_LOOKS = ['chips', 'text', 'rings']
+const MAX_CITY_QUERY = 100
+const MAX_CITY_NAME = 80
+
+/**
+ * What deck.prefs keeps, checked field by field before use (A3): deck.prefs is unsigned, so a value another program
+ * wrote must not reach a lookup or the network. An invalid value takes the default and is set aside in the debug log and
+ * Deck's error count; a field no switch-free setting uses is dropped. With the settings kept, whether a saved city was
+ * rejected: loadDeck sets the header's flag with the settings it puts in place.
+ */
+function keptOf($, saved) {
+  if (saved === undefined || saved === null) return { kept: {}, cityRejected: false }
+  if (typeof saved !== 'object') {
+    rejected($, 'the saved settings are not an object')
+    return { kept: {}, cityRejected: false }
+  }
+  const style = saved.style && typeof saved.style === 'object' ? saved.style : {}
+  const kept = {
+    style: {
+      terminal: pick($, 'the CLI style', style.terminal, TERMINAL_STYLES, DEFAULT_PREFS.style.terminal),
+      desktop: pick($, 'the Desktop style', style.desktop, DESKTOP_STYLES, DEFAULT_PREFS.style.desktop),
+    },
+    size: pick($, 'the size', saved.size, SIZES, DEFAULT_PREFS.size),
+    collapsed: pick($, 'the collapsed look', saved.collapsed, COLLAPSED_LOOKS, DEFAULT_PREFS.collapsed),
+    open: DEFAULT_PREFS.open,
+    city: null,
+  }
+  if (typeof saved.open === 'boolean') kept.open = saved.open
+  else if (saved.open !== undefined) rejected($, 'the open state is not true or false')
+  if (saved.city !== undefined && saved.city !== null) {
+    kept.city = cityOf(saved.city)
+    if (kept.city === null) rejected($, 'the city has no usable name or coordinates')
+  }
+  return { kept, cityRejected: kept.city === null && saved.city !== undefined && saved.city !== null }
+}
+
+// an allowed value as it is; another one set aside for the default. includes() compares by value, so a name such as
+// "constructor" never reaches a lookup by key
+function pick($, what, value, allowed, fallback) {
+  if (value === undefined) return fallback
+  if (allowed.includes(value)) return value
+  rejected($, what + ' is not one of ' + allowed.join(', '))
+  return fallback
+}
+
+// a city is a name to show and the coordinates sent: each a finite number in range, the name one printable line
+function cityOf(c) {
+  if (!c || typeof c !== 'object') return null
+  const { name, lat, lon } = c
+  if (typeof name !== 'string' || typeof lat !== 'number' || typeof lon !== 'number') return null
+  if (!Number.isFinite(lat) || lat < -90 || lat > 90 || !Number.isFinite(lon) || lon < -180 || lon > 180) return null
+  const shown = oneLine(name, MAX_CITY_NAME)
+  return shown ? { name: shown, lat, lon } : null
+}
+
+function rejected($, what) {
+  countError()
+  logEvent($, MOD, 'deck: a saved setting was set aside: ' + what, { to: 'debug' })
+}
+
+/**
+ * /mods-deck city <name>, typed by the person (R8 final): the name goes to Open-Meteo's geocoder, the first hit is
+ * checked as a saved city is (A3), the weather switch goes on as the person's own write, and the forecast is fetched,
+ * as upstream does.
+ */
+async function setCity($, q) {
+  if (q.trim() === '' || q.length > MAX_CITY_QUERY) return 'A city name has 1 to ' + MAX_CITY_QUERY + ' characters.'
+  // the switch first: a refusal sends nothing to the geocoder (review of 8cacd31, m7). A lookup that finds no usable
+  // place puts the switch back as it was, so a failed lookup never turns the weather on, which would send an older
+  // saved city's coordinates (review of 896a888)
+  const was = await isOn($, WEATHER)
+  const outcome = await setSwitch($, WEATHER, true, 'person')
+  if ('refuse' in outcome) return outcome.refuse
+  const found = await findCity($, q)
+  if ('reply' in found) {
+    if (!was) await setSwitch($, WEATHER, false, 'person')
+    return found.reply
+  }
+  prefs.city = found.city
+  prefs.show.weather = true
+  cityRejected = false
+  weather = null
+  try {
+    await refreshWeather($)
+  } catch (err) {
+    return 'Weather lookup failed: ' + String(err?.message ?? err)
+  }
+  return 'Weather city set to ' + found.city.name + found.country + '.'
+}
+
+// The geocoder's answer for a typed name: the checked city with its country, or the reply that says why there is none.
+async function findCity($, q) {
+  try {
+    const r = await $.http.fetch('https://geocoding-api.open-meteo.com/v1/search?count=1&name=' + encodeURIComponent(q))
+    const hit = r.ok ? JSON.parse(r.text).results?.[0] : null
+    if (!hit) return { reply: 'No city found for "' + q + '".' }
+    const city = cityOf({ name: hit.name, lat: hit.latitude, lon: hit.longitude })
+    if (!city) {
+      countError()
+      logEvent($, MOD, 'deck: the geocoder answered a place with no usable name or coordinates', { to: 'debug' })
+      return { reply: 'The place found for "' + q + '" has no usable name or coordinates.' }
+    }
+    return { city, country: typeof hit.country === 'string' ? ', ' + oneLine(hit.country, MAX_CITY_NAME) : '' }
+  } catch (err) {
+    return { reply: 'Weather lookup failed: ' + String(err?.message ?? err) }
+  }
+}
+
+// The body of upstream's session.start hook, split for the integration (TRDD-RD1ISPMN, R1, R3, R7): loadDeck loads the
+// settings, history and spend; the clock moves to wakeClock and its tick; /mods-deck is registered by ./mod.ts at every
+// start, master on or off. This plugin has one session.start hook, in hooks/index.ts, which calls ./mod.ts's
+// startDeckMod; registerDeck below registers the rest of upstream's hooks.
+// at: the stop count when the start began. A master off made while Deck loads ends the load at its next step: it changes
+// none of the module's state after that and sends nothing, the forecast request included (G13.1; review of 896a888). The
+// settings are built and their switches read before they replace the running ones, so an entry already running never
+// sees the defaults' switch fields in between (the no-copy ruling; a session start reloads a running Deck).
+async function loadDeck($, e, at) {
+  const live = () => stopCount() === at
+  let homeRead = home
+  try {
+    homeRead = ((await $.env.get('HOME')) ?? '').replace(/\/$/, '')
+  } catch {}
+  const saved = await $.store.get('deck.prefs')
+  if (!live()) return
+  // deck.prefs keeps only what no switch stands for, each field checked before use (A3)
+  const checked = keptOf($, saved)
+  const loaded = { ...clone(DEFAULT_PREFS), ...checked.kept }
+  await readPrefs($, loaded)
+  if (!live()) return
+  cwd = e.cwd ?? ''
+  home = homeRead
+  prefs = loaded
+  // a city rejected by an earlier load is judged again by this one
+  cityRejected = checked.cityRejected
+  await refreshUsage($)
+  if (!live()) return
+  await readSessionModel($)
+  if (!live()) return
+  const savedHist = await $.store.get('deck.hist')
+  if (!live()) return
+  if (savedHist && typeof savedHist === 'object') hist = savedHist
+  try {
+    const id = await $.session.id()
+    if (!live()) return
+    sessionId = id
+  } catch {}
+  await loadSpend($)
+  if (!live()) return
+  refreshWeather($).catch(() => {})
+}
+
+/**
+ * Deck's start in one session (R1, R7): loads it, marks the session started and wakes the module's one clock. Called
+ * with the master read on. A start still running here is joined, so the follower and /mods-deck on never load Deck twice.
+ * The follower and /mods-deck on skip a session Deck already started in; a session start (reload) loads it again, as
+ * upstream's session.start hook did at every start. A /clear or a resume fires no session start (index.d.ts:4529-4530):
+ * the new session id takes the ended one's start through ./gate.ts's carry instead (R3; ruling Q3, L).
+ */
+export async function startDeckIn($, session, e, reload = false) {
+  if (isStarted(session) && !reload) return
+  const running = startOf(session)
+  if (running) return running
+  const start = loadAndMark($, session, e)
+  holdStart(session, start)
+  try {
+    await start
+  } finally {
+    dropStart(session, start)
+  }
+}
+
+// A master off made while Deck loaded wins (R1, G13.1): the load stops at its next step (loadDeck), and the start marks
+// nothing and sets no clock.
+async function loadAndMark($, session, e) {
+  const at = stopCount()
+  await loadDeck($, e, at)
+  if (stopCount() !== at) return
+  markStarted(session)
+  wakeClock($)
+}
+
+/**
+ * Starts Deck in this session after an on written here (/mods-deck on, or the follower of the pane's on): true when it
+ * runs. A failed start sets Deck's notice (deckStartFailed); a successful one clears an earlier start-failed notice.
+ */
+export async function startDeckHere($) {
+  const session = await $.session.id()
+  // A new session id takes a waiting half first (R3, ruling Q3): a started half makes the start below return at once,
+  // with no second load, and the half goes to no other session (review of D1b-2 commit 1).
+  adoptCarried(session)
+  try {
+    await startDeckIn($, session, { cwd: await $.session.cwd() })
+  } catch (error) {
+    await deckStartFailed($, error)
+    return false
+  }
+  if (clearNotice(session)) noticeChanged($)
+  return true
+}
+
+// upstream's clock, every 150 ms and never cancelled while Deck runs: D1b-1 keeps it faithful (R1); D1b-2 replaces it with
+// one woken by work (R2). One per module, since Deck's state is (R1); a start finds it running and keeps it. A tick still
+// running when the next one is due makes that one skip, so ticks never overlap (review of 8cacd31, M5): each reads the
+// switches before upstream's work, and on a slow store two would run syncAgents or refreshUsage at once.
+function wakeClock($) {
+  if (hasClock()) return
+  let running = false
+  let failing = false
+  const timer = $.clock.every(150, () => {
+    // A stopped timer never fires again (types, Timer); should a replaced one run anyway, it does nothing.
+    if (!isClock(timer) || running) return
+    running = true
+    tick($)
+      .then(() => {
+        failing = false
+      })
+      .catch((error) => {
+        timerFailed($, 'clock tick', error, failing)
+        failing = true
+      })
+      .finally(() => {
+        running = false
+      })
+  })
+  holdClock(timer)
+}
+
+async function tick($) {
+  // A stop made while this tick awaits wins: no later step of the tick runs, the forecast request included (G13.1;
+  // review of 896a888). The count is taken before the master read, so a stop made during that read wins as well.
+  const at = stopCount()
+  const live = () => stopCount() === at
+  // each tick reads the master (B4): an off made in any session stops the clock, the fold and the demo here. Unlike
+  // deckLive, the tick passes no event on, so it may redraw the switches pane when the stop dropped a notice.
+  if (!(await isOn($, MASTER))) {
+    if (stopDeck()) noticeChanged($)
+    return
+  }
+  await readPrefs($)
+  if (!live()) return
+  frame++
+  const now = Date.now()
+  const rows = collectRows(now)
+  react($, rows, now)
+  const secondTick = now - lastSecond >= 1000
+  if (secondTick) lastSecond = now
+  const terminalAnim = sawTerminal && frame % 2 === 0 && rows.some((r) => r.animating)
+  const ticking = secondTick && (prefs.show.clock || rows.some((r) => r.kind === 'meter' || r.strips))
+  if (terminalAnim || ticking) $.ui.invalidate('ui.render')
+  if (frame % 14 === 0) await syncAgents($)
+  if (!live()) return
+  if (frame % 400 === 0) await refreshUsage($)
+  else if (frame % 100 === 0) await noteUsage($)
+  if (!live()) return
+  if (frame % 8000 === 0) await refreshWeather($)
+}
+
+// A clock tick or a fold frame that threw: counted for D1d, and the first of a run of failures set aside in the debug
+// log (again: the one before failed too). A store that keeps refusing would otherwise write a line every 150 ms; the
+// count keeps every one (review of 896a888).
+function timerFailed($, which, error, again = false) {
+  countError()
+  if (!again) logEvent($, MOD, 'deck: the ' + which + ' failed: ' + failureText(error), { to: 'debug' })
+}
+
+/**
+ * Master off (G13.1, R1): the fold and the demo stop here, and the clock, every session's start and start-failed notice
+ * in ./gate.ts. Makes no $ call, so a hook that reads the master off passes its event on with no other call. True when
+ * a notice was dropped, so a caller in a session can redraw the switches pane.
+ */
+export function stopDeck() {
+  if (fold) {
+    fold.timer?.cancel()
+    if (fold.dir === 'close') prefs.open = false
+    fold = null
+  }
+  stopDemo()
+  return stopAll()
+}
+
+// The demo is a sample: off removes it with its timer, its agents and the sample route and limits, so an on later shows
+// no frozen sample (review of 8cacd31, m4)
+function stopDemo() {
+  if (demoTimer) demoTimer.cancel()
+  demoTimer = null
+  bars.delete('demo')
+  for (const ag of [...agents.values()]) if (ag.home === 'demo') agents.delete(ag.id)
+  dropDemoRoute()
+  dropDemoUsage()
+}
+
+// The gate every Deck hook passes first (R1, B4): the master, read through the registry at each call. Off stops
+// everything (stopDeck) and the event passes on with no other $ call; on, Deck acts only in a session it started in
+// (R7: an on made in another session takes effect here at the next start, or through /mods-deck on or the pane). A
+// Deck call, a hook the main agent's or the person's work raises, judges the session (./gate.ts judgeSession): a new
+// session id takes the half a /clear or a resume left (R3, ruling Q3). A passive call, a draw, an event Claude Code
+// raises on its own (session.measure, a router line) or one a subagent raises (byAgent), only reads whether Deck runs
+// there: it can come for the new id before the session.end of the clear, and a judgement then would leave that id
+// unable ever to take the half (second and third reviews of D1b-2 commit 1).
+// While Deck runs in no session and no half waits, no session id is asked for; while a half waits, every Deck call asks
+// for it. A notice dropped here is redrawn by the pane's next draw: a redraw would be a $ call on the off path.
+async function deckLive($, passive = false) {
+  if (!(await isOn($, MASTER))) {
+    stopDeck()
+    return false
+  }
+  if (!anyStarted() && (passive || !hasCarried())) return false
+  const session = await $.session.id()
+  return passive ? isStarted(session) : judgeSession(session)
+}
+
+// An event a subagent or a teammate raises is passive at the gate (deckLive): its agentId (tool.call, tool.check, the
+// turn events), a classic hook's agent_id, or a spawn made inside a subagent (parentAgentId). Background agents outlive
+// a /clear, so their events can come for the new id before the session.end of the clear, or under an id of their own,
+// and would then strand or take the half (third review of D1b-2 commit 1). In a session Deck runs in, passive acts as
+// before.
+const byAgent = (e) => Boolean(e.agentId || e.agent_id || e.parentAgentId)
+
+// The switches upstream's prefs fields stand for, read through the registry at this call and written where upstream's
+// code reads them (the no-copy ruling). Every entry that reaches a reader of these fields reads them first: a hook, a
+// draw, a press, the command, a tick and a fold frame. D1b-2 removes the fold timer. loadDeck passes the settings it
+// builds, so they replace the running ones with their switches already read.
+async function readPrefs($, target = prefs) {
+  applySwitches(target, await Promise.all(PREF_SWITCHES.map(({ id }) => isOn($, id))))
+}
+
+// /mods-deck on and off: the master through the registry's one writer. Off stops Deck at once; on starts it in this
+// session (R7), as the follower does once hooks/switch-followers.ts calls it (M4c), joining a start already running.
+async function setMaster($, on, by) {
+  const outcome = await setSwitch($, MASTER, on, by)
+  if ('refuse' in outcome) return outcome.refuse
+  if (!on) {
+    if (stopDeck()) noticeChanged($)
+    return OFF_TEXT
+  }
+  return (await startDeckHere($)) ? 'Deck is on.' : START_FAILED_TEXT
+}
+
+// A switch write from the command, through the registry's one writer with the command's origin: null once written
+// (upstream answers nothing for most of them), else the registry's refusal. The fields are read again after it, so
+// the rest of this call sees the value just written.
+async function writeSwitches($, ids, on, by) {
+  const outcome = await setSwitches($, ids, on, by)
+  if ('refuse' in outcome) return outcome.refuse
+  await readPrefs($)
+  return null
+}
+
+// The ends after which the process goes on under a new session id with no session.start (index.d.ts, SessionEndInput):
+// a /clear, and a resume that another session takes the place of. /branch is not measured (TRDD-RD1ISPMN, R3).
+const CARRIED_ENDS = new Set(['clear', 'resume'])
+
+export function registerDeck(on) {
+  on('session.end', async ($, e, next) => {
+    // What needs no $ call runs first, from the event: every hook here shares session.end's 1.5 s bound (index.d.ts,
+    // SessionEndInput), and the ended session is e.sessionId whatever $.session.id() answers by then. The half is
+    // recorded (R3, ruling Q3), and a /clear of a session Deck ran in empties its bars, agents and tasks as upstream's
+    // did, before any await, so a hook of the new id cannot add a bar that this clear then removes. The gate is not
+    // asked: a session that ends takes no half (review of D1b-2 commit 1).
+    const ran = isStarted(e.sessionId)
+    if (CARRIED_ENDS.has(e.reason)) carryEnded(e.sessionId)
+    forgetJudged(e.sessionId)
+    if (ran && e.reason === 'clear') {
+      bars.clear()
+      agents.clear()
+      tasks.clear()
+    }
+    // The master is read as at every hook: an off stops Deck and drops the half just recorded (stopAll). The clear above
+    // ran before it: memory only, no $ call and no draw, so an off Deck still runs nothing a person or Claude can see
+    // (G13.1). A failing read leaves next uncalled, as upstream's deckLive here did: the engine then skips this hook.
+    if (!(await isOn($, MASTER))) stopDeck()
+    return next(e)
+  })
+
+  on('command.run', { command: 'mods-deck' }, async ($, e) => {
+    const [a, b, ...rest] = String(e.args ?? '').trim().split(/\s+/).filter(Boolean)
+    // The person types it from the terminal, Remote Control or an SDK host; any other origin, or none, ran it for the
+    // model (byOf). Every switch write goes through the registry's one writer with that origin.
+    const by = byOf(e.origin?.kind ?? '')
+    if (a === 'on' || a === 'off') return { text: await setMaster($, a === 'on', by) }
+    // R3: registered whatever the master; with it off, the command answers the off text and runs nothing else.
+    if (!(await isOn($, MASTER))) {
+      if (stopDeck()) noticeChanged($)
+      return { text: a === 'status' ? OFF_STATUS : OFF_TEXT }
+    }
+    // R7: an on made in another session starts Deck here at the next start, or through /mods-deck on; a start that
+    // failed here says so instead (review of 8cacd31, m2). A new session id first takes the half a /clear or a resume
+    // left (R3, ruling Q3), as deckLive does.
+    const session = await $.session.id()
+    if (!judgeSession(session)) return { text: noticeOf(session) === undefined ? NOT_STARTED_TEXT : START_FAILED_TEXT }
+    await readPrefs($)
+    let reply = null
+
+    if (!a || a === 'expand' || a === 'collapse') {
+      const want = a === 'expand' ? true : a === 'collapse' ? false : !isOpening()
+      setOpen($, want)
+      return { text: want ? 'Deck expanded.' : 'Deck collapsed.' }
+    }
+    else if (a === 'panel' && (!b || b === 'on')) {
+      if (!(await isOn($, PANEL))) return { text: switchOffText('The Deck panel', PANEL) }
+      await $.ui.open({ id: 'mods-deck-panel', title: 'Deck' })
+      return { text: 'Deck opened in a panel.' }
+    } else if (a === 'panel' && b === 'off') {
+      await $.ui.close({ id: 'mods-deck-panel' })
+      return { text: 'Deck panel closed.' }
+    }
+    else if (a === 'version') reply = 'Deck ' + VERSION
+    else if (a === 'help') reply = HELP
+    else if (a === 'status') reply = statusText()
+    else if (a === 'style' && !b) {
+      if (!(await isOn($, STYLE_PICKER))) return { text: switchOffText('The Deck style picker', STYLE_PICKER) }
+      await $.ui.open({ id: 'mods-deck-style', title: 'Deck style', focus: true, closeOnEscape: true })
+      return {}
+    } else if (a === 'style') {
+      const ok = []
+      if (TERMINAL_STYLES.includes(b)) {
+        prefs.style.terminal = b
+        ok.push('CLI')
+      }
+      if (DESKTOP_STYLES.includes(b)) {
+        prefs.style.desktop = b
+        ok.push('Desktop')
+      }
+      reply = ok.length ? 'Style ' + b + ' for ' + ok.join(' and ') + '.' : 'No style "' + b + '". CLI: ' + TERMINAL_STYLES.join(', ') + ' · Desktop: ' + DESKTOP_STYLES.join(', ')
+    } else if (a === 'clear') {
+      if (demoTimer) demoTimer.cancel()
+      bars.clear()
+      agents.clear()
+      tasks.clear()
+      reply = 'Bars removed.'
+    } else if (a === 'demo') {
+      if (!(await isOn($, DEMO))) return { text: switchOffText('The Deck demo', DEMO) }
+      if (demoTimer) demoTimer.cancel()
+      for (const ag of [...agents.values()]) if (ag.home === 'demo') agents.delete(ag.id)
+      placeBar(newBar('demo', 'Orders module', 'demo', demoStages()))
+      const now = Date.now()
+      if (!route) {
+        route = { tier: 'fast', conf: 0.89, model: '', effort: 'medium', unchanged: true, risky: 0.02, ms: 249, at: now }
+        routeHist.splice(0, routeHist.length, 'haiku', 'opus', 'sonnet', 'haiku', 'haiku', 'opus')
+        demoRoute = true
+      }
+      if (!(usage.rateLimits ?? []).length) {
+        usage = {
+          context: usage.context ?? { tokens: 124_000, window: 1_000_000, percent: 12 },
+          rateLimits: [
+            { kind: 'five_hour', percentUsed: 31, resetsAt: new Date(now + (2 * 60 + 14) * 60_000).toISOString() },
+            { kind: 'seven_day', percentUsed: 64, resetsAt: new Date(now + (3 * 24 + 5) * 3_600_000).toISOString() },
+          ],
+        }
+        demoUsage = true
+      }
+      agents.set('demo-a1', { id: 'demo-a1', title: 'Map the orders tables', state: 'running', tool: 'Grep', model: 'haiku', startedAt: now, endedAt: null, depth: 0, home: 'demo', todo: null })
+      agents.set('demo-a2', { id: 'demo-a2', title: 'Draft the migration', state: 'running', tool: 'Read', model: 'sonnet', startedAt: now, endedAt: null, depth: 0, home: 'demo', todo: null })
+      prefs.open = true
+      let n = 0
+      demoTimer = $.clock.every(1400, () => {
+        n++
+        const d = bars.get('demo')
+        if (!d) return demoTimer.cancel()
+        const a2 = agents.get('demo-a2')
+        if (n === 2 && agents.get('demo-a1')) agents.get('demo-a1').tool = 'Read'
+        if (n === 3) finishAgent('demo-a1', 'done', 'Done')
+        if (n === 5 && a2) {
+          a2.state = 'waiting'
+          d.explicit = 'needs_input'
+        }
+        if (n === 8 && a2) {
+          a2.state = 'running'
+          a2.tool = 'Write'
+          d.explicit = null
+        }
+        if (n === 10) finishAgent('demo-a2', 'done', 'Done')
+        if (d.explicit !== 'needs_input') d.stages = stepOn(d.stages)
+        if (allSteps(d).every((s) => isFinished(s.status))) {
+          demoTimer.cancel()
+        }
+        $.ui.invalidate('ui.render')
+      })
+      reply = 'Sample plan running above the prompt' + (demoRoute || demoUsage ? ', with sample ' + [demoRoute && 'routing', demoUsage && 'limits'].filter(Boolean).join(' and ') + ' until real ones arrive.' : '.')
+    } else if (a === 'auto' && (b === 'on' || b === 'off')) reply = await writeSwitches($, [AUTO], b === 'on', by)
+    else if (a === 'quiet' && (b === 'on' || b === 'off')) reply = await writeSwitches($, [QUIET], b === 'on', by)
+    else if (a === 'size' && (b === 'compact' || b === 'roomy')) {
+      prefs.size = b
+      reply = b === 'compact' ? 'Deck is compact: tighter rows.' : 'Deck is roomy: the original spacing.'
+    } else if (a === 'collapsed' && (b === 'chips' || b === 'text' || b === 'rings')) {
+      prefs.collapsed = b
+      prefs.open = false
+      reply = { chips: 'Collapsed Deck now shows chips with mini bars.', text: 'Collapsed Deck is now one plain status line.', rings: 'Collapsed Deck now shows limit rings' + (prefs.cost ? ' and spend.' : '. Add spend with /mods-deck cost on.') }[b]
+    } else if (a === 'cost' && (b === 'on' || b === 'off')) {
+      reply = await writeSwitches($, [SPEND], b === 'on', by)
+      if (reply === null) {
+        if (prefs.cost) await refreshUsage($)
+        reply = prefs.cost ? 'Tracking spend today and this month. It only means something on a pay-per-use API key.' : 'Spend tracking off.'
+      }
+    }
+    else if (a === 'sound' && (b === 'on' || b === 'off')) {
+      reply = await writeSwitches($, [SOUND], b === 'on', by)
+      if (reply === null && prefs.sound) play($, 'chime')
+    } else if (a === 'all' && (b === 'on' || b === 'off')) {
+      // deck.weather is person-only for on (the orchestrator's ruling for M4c): from any other origin an on leaves it as
+      // it is and says so; an off is written, as the agent may always turn a function off
+      const outward = b === 'on' && by !== 'person'
+      reply = await writeSwitches($, SECTIONS.filter((s) => !(outward && s === 'weather')).map(sectionSwitch), b === 'on', by)
+      if (reply === null && outward) reply = ALL_BUT_WEATHER
+    } else if (SECTIONS.includes(a) && (b === 'on' || b === 'off')) {
+      if (a === 'weather' && b === 'on' && by !== 'person') reply = WEATHER_PERSON_ONLY
+      else reply = await writeSwitches($, [sectionSwitch(a)], b === 'on', by)
+    }
+    // R8 final: only the person sets the city. An agent-set city would give Claude a channel that sends any
+    // 100-character text to a third party with no permission prompt; from 'plugin' (the self-command run tool), an
+    // unknown origin or none, nothing is sent or stored.
+    else if (a === 'city' && b) reply = by === 'person' ? await setCity($, [b, ...rest].join(' ')) : CITY_PERSON_ONLY
+    else reply = HELP
+
+    await savePrefs($)
+    $.ui.invalidate('ui.render')
+    return reply ? { text: reply } : {}
+  })
+
+  on('turn.start', async ($, e, next) => {
+    if (!(await deckLive($, byAgent(e)))) return next(e)
+    if (!String(e.text ?? '').startsWith('/')) {
+      adoptRunningAgents()
+      for (const a of [...agents.values()]) if (a.home === 'activity') agents.delete(a.id)
+      activity = { title: lastPrompt || 'Working', start: Date.now(), tools: 0, action: 'Thinking', done: false, doneAt: 0, agentsDoneAt: null }
+    }
+    return next(e)
+  })
+
+
+  // a router's one-line status: the HUD shows it as a row instead. Both router-line hooks match only a router's own
+  // lines (R5: the patterns readRouteStatus and readRouteLog test), so no other line costs a switch read. They fail
+  // open: quiet-router is an exception to amendment C (routers fail closed): on a throw it changes nothing, because the
+  // only harm a hider can do is lose output.
+  on('ui.status', { text: /^jev · / }, async ($, e, next) => {
+    if (!(await deckLive($, true))) return next(e)
+    prefs.quiet = await isOn($, QUIET)
+    prefs.show.route = await isOn($, sectionSwitch('route'))
+    if (typeof e.text === 'string' && readRouteStatus(e.text)) {
+      $.ui.invalidate('ui.render')
+      if (prefs.quiet && prefs.show.route) return { value: undefined }
+    }
+    return next(e)
+  }).catch(async ($, e, next) => {
+    routerLineFailed($, 'status', next.error)
+    return next(e)
+  })
+
+  on('ui.log', { text: /^\[jev-model-router\]/ }, async ($, e, next) => {
+    if (!(await deckLive($, true))) return next(e)
+    prefs.quiet = await isOn($, QUIET)
+    prefs.show.route = await isOn($, sectionSwitch('route'))
+    const text = String(e.text ?? '')
+    if (text.startsWith('[jev-model-router]')) {
+      if (readRouteLog(text)) $.ui.invalidate('ui.render')
+      if (prefs.quiet && prefs.show.route) return next({ ...e, to: 'debug' })
+    }
+    return next(e)
+  }).catch(async ($, e, next) => {
+    routerLineFailed($, 'log', next.error)
+    return next(e)
+  })
+
+
+  on('classic.Stop', async ($, e, next) => {
+    if (!(await deckLive($, byAgent(e)))) return next(e)
+    const result = await next(e)
+    if (/\?\s*$/.test(e.last_assistant_message ?? '')) {
+      const bar = liveBar()
+      if (bar) {
+        bar.explicit = 'needs_input'
+        askedUser = true
+        $.ui.invalidate('ui.render')
+      }
+    }
+    return result
+  })
+
+
+
+  on('classic.CwdChanged', async ($, e, next) => {
+    if (!(await deckLive($, byAgent(e)))) return next(e)
+    const result = await next(e)
+    await refreshFolder($)
+    return result
+  })
+
+  on('classic.SubagentStop', async ($, e, next) => {
+    if (!(await deckLive($, byAgent(e)))) return next(e)
+    if (agents.has(e.agent_id)) {
+      finishAgent(e.agent_id, 'done', 'Done')
+      $.ui.invalidate('ui.render')
+    }
+    return next(e)
+  })
+
+  on('classic.TaskCreated', async ($, e, next) => {
+    if (!(await deckLive($, byAgent(e)))) return next(e)
+    if (!tasks.has(String(e.task_id))) tasks.set(String(e.task_id), { subject: trunc(e.task_subject, 80), status: 'pending' })
+    syncTasksBar()
+    $.ui.invalidate('ui.render')
+    return next(e)
+  })
+
+  on('classic.TaskCompleted', async ($, e, next) => {
+    if (!(await deckLive($, byAgent(e)))) return next(e)
+    const t = tasks.get(String(e.task_id))
+    if (t) t.status = 'completed'
+    syncTasksBar()
+    $.ui.invalidate('ui.render')
+    return next(e)
+  })
+
+  on('tool.check', async ($, e, next) => {
+    if (!(await deckLive($, byAgent(e)))) return next(e)
+    const verdict = await next(e)
+    const useId = e.tool_use_id
+    if (verdict && verdict.decision === 'ask') {
+      const key = e.agentId ?? (useId ? inFlight.get(useId) : null) ?? 'main'
+      // a stop between the ask and the delay wins (G13.1: an off function runs nothing, its timer included)
+      const at = stopCount()
+      $.clock.after(ASK_DELAY_MS, () => {
+        if (stopCount() !== at) return
+        if (useId && !inFlight.has(useId)) return
+        waiting.add(key)
+        const a = agents.get(key)
+        if (a && a.state === 'running') a.state = 'waiting'
+        if (key === 'main') {
+          const bar = liveBar()
+          if (bar) bar.explicit = 'needs_input'
+        }
+        $.ui.invalidate('ui.render')
+      })
+    }
+    return verdict
+  })
+
+  on('tool.call', async ($, e, next) => {
+    if (!(await deckLive($, byAgent(e)))) return next(e)
+    const key = e.agentId ?? 'main'
+    const a = e.agentId ? agents.get(e.agentId) : null
+    if (a) {
+      if (a.state === 'waiting') a.state = 'running'
+      a.tool = String(e.tool).replace(/^mcp__[^_]+__/, '')
+    }
+    if (!e.agentId && activity && !activity.done) {
+      activity.tools++
+      activity.action = actionOf(e)
+    }
+    if (e.tool === 'TodoWrite' && Array.isArray(e.todos)) upsertTodos(key, e.todos)
+    if (e.tool === 'AskUserQuestion') {
+      waiting.add(key)
+      const bar = key === 'main' ? liveBar() : null
+      if (bar) bar.explicit = 'needs_input'
+      if (a) a.state = 'waiting'
+    }
+    $.ui.invalidate('ui.render')
+
+    if (e.tool_use_id) inFlight.set(e.tool_use_id, key)
+    let ran
+    try {
+      ran = await next(e)
+    } finally {
+      if (e.tool_use_id) inFlight.delete(e.tool_use_id)
+      if (waiting.delete(key)) {
+        if (a && a.state === 'waiting') a.state = 'running'
+        if (key === 'main' && !askedUser) for (const bar of bars.values()) if (bar.explicit === 'needs_input') bar.explicit = null
+        $.ui.invalidate('ui.render')
+      }
+    }
+
+    const ok = ran && ran.deny === undefined && ran.isError !== true
+    if (ok && !e.agentId && (e.tool === 'TaskCreate' || e.tool === 'TaskUpdate' || e.tool === 'TaskList')) {
+      applyTaskResult(e, ran.result)
+      $.ui.invalidate('ui.render')
+    }
+    // a worktree move or /cd may have moved the project folder, with or without CwdChanged
+    if (!e.agentId) await refreshFolder($)
+    if (e.tool === 'ExitPlanMode' && ok) {
+      const text = typeof e.plan === 'string' ? e.plan : ran.result?.plan
+      const parsed = typeof text === 'string' ? parsePlan(text) : null
+      if (parsed) {
+        placeBar(newBar('plan-' + slug(parsed.title), parsed.title, 'plan', parsed.stages))
+        $.ui.invalidate('ui.render')
+      }
+    }
+    return ran
+  })
+
+  // a HUD button in the footer, there while Deck runs here and its footer switch is on
+  on('ui.render', { component: 'SessionMode' }, async ($, e, next) => {
+    if (!(await deckLive($, true)) || !(await isOn($, FOOTER))) return next(e)
+    await readPrefs($)
+    const { Box, Button } = $.ui.resolve(e)
+    const below = await next(e)
+    const n = collectRows(Date.now()).filter((r) => r.kind === 'bar').length
+    return Box({
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 1,
+      children: [
+        Button({
+          key: 'deck-footer',
+          label: n ? 'Deck ' + n : 'Deck',
+          dimColor: !isOpening(),
+          onPress: async () => {
+            // a press on a button drawn before the master or the footer went off does nothing (G13.1); the switches are
+            // read again first, as setOpen counts the rows they show (the no-copy ruling)
+            if (!(await deckLive($)) || !(await isOn($, FOOTER))) return
+            await readPrefs($)
+            setOpen($, !isOpening())
+          },
+        }),
+        below,
+      ],
+    })
+  })
+
+  // the style picker: every style, drawn with a real bar, one key each
+  on('ui.render', { component: 'Pane' }, async ($, e, next) => {
+    if (e.requestId !== 'mods-deck-style') return next(e)
+    if (!(await deckLive($, true)) || !(await isOn($, STYLE_PICKER))) return next(e)
+    await readPrefs($)
+    const { Box, Text, Button, Svg } = $.ui.resolve(e)
+    const desktop = e.surface !== 'terminal' // desktop, VS Code and mobile all draw Svg
+    const nowMs = Date.now()
+    const list = desktop ? DESKTOP_STYLES : TERMINAL_STYLES
+    const names = desktop ? DESKTOP_STYLE_NAMES : TERMINAL_STYLE_NAMES
+    const current = desktop ? prefs.style.desktop : prefs.style.terminal
+    const row = collectRows(nowMs).find((r) => r.kind === 'bar') ?? sampleRow()
+    const cols = Math.max(40, e.props.bodyColumns ?? 80)
+    const pw = Math.max(200, Math.min(420, cols * 8 - 160))
+    const lines = list.map((name, i) => {
+      const preview = desktop
+        ? Svg({
+            alt: names[name] + ' style',
+            width: pw,
+            height: TRACK_H,
+            
+            source: `<svg xmlns="http://www.w3.org/2000/svg" width="${pw}" height="${TRACK_H}">${desktopTrack(name, { ...row, id: 'pick-' + name }, pw, nowMs, new Map())}</svg>`,
+          })
+        : Box({ flexDirection: 'row', children: runs(Text, terminalBar(name, { ...row, id: 'pick-' + name }, Math.max(24, Math.min(48, cols - 26)), frame)) })
+      return Box({
+        key: 'style-row-' + name,
+        flexDirection: 'row',
+        columnGap: 2,
+        alignItems: 'center',
+        children: [
+          Box({
+            width: 14,
+            flexShrink: 0,
+            children: [
+              Button({
+                key: 'style-' + name,
+                label: names[name],
+                plain: true,
+                hotkey: String(i + 1),
+                onPress: async (ev) => {
+                  // a press on a picker drawn before the master or the picker went off does nothing (G13.1)
+                  if (!(await deckLive($)) || !(await isOn($, STYLE_PICKER))) return
+                  const surface = ev?.surface ?? e.surface
+                  if (surface !== 'terminal') prefs.style.desktop = name
+                  else prefs.style.terminal = name
+                  $.ui.invalidate('ui.render')
+                  await $.store.set('deck.prefs', keptPrefs(prefs))
+                },
+              }),
+            ],
+          }),
+          preview,
+          Text({ color: name === current ? STYLE.ok.fill : DIM, children: [name === current ? '← now' : ' '] }),
+        ],
+      })
+    })
+    return Box({
+      flexDirection: 'column',
+      gap: desktop ? 1 : 0,
+      children: [...lines, Text({ color: DIM, children: ['Press ' + list.map((_, i) => i + 1).join('/') + ' to choose · Esc to close'] })],
+    })
+  })
+
+  on('ui.render', { component: 'AbovePrompt' }, deckView)
+  on('ui.render', { component: 'Pane' }, deckView)
+}

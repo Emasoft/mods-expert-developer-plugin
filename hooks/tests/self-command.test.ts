@@ -1,10 +1,10 @@
-// Tests of the dev tools run and list_commands, the /self-command pane, the /mods-dev-tools gate and
+// Tests of the dev tools run and list_commands, the /self-command pane, their switches and /mods-dev-tools, and
 // the resolve-bin helper. Every wiring test starts the session on both surfaces, and every pane test
 // mounts the pane on surface terminal and desktop at a narrow and a wide width, with the same assertions.
 import type { CommandInfo } from 'claude-code'
 import { describe, expect, mock, test, type MockClock, type Mounted } from 'claude-code/testing'
 
-import { DEV_TOOLS_KEY, parseDevToolsSwitch } from '../dev-tools'
+import { DEV_FUNCTIONS, DEV_TOOLS_OFF, PANE as PANE_SWITCH, RUN as RUN_SWITCH, parseDevToolsSwitch } from '../dev-tools'
 import { candidatesFor, firstFile, newestVersion } from '../resolve-bin'
 import {
   HISTORY_KEY,
@@ -18,6 +18,9 @@ import {
   recordRun,
   requestOf,
 } from '../self-command/logic'
+import { REVIEW_TOAST } from '../switches/logic'
+import { keyFor, signed, signedOn } from './switch-world'
+import { seedMasters } from './masters'
 
 const PLUGIN = 'mods-expert-developer-plugin'
 const RUN = `mcp__${PLUGIN}__run`
@@ -58,6 +61,8 @@ type World = {
   session: string
   /** A command name whose run the engine refuses. */
   failing: string | undefined
+  /** What /reload-plugins answers. */
+  output: string
   /** When true, $.command.list rejects. */
   listFails: boolean
   /** The text of every $.prompt.fill. */
@@ -87,12 +92,17 @@ type World = {
 }
 
 function world(on: any, store: Record<string, unknown> = {}): World {
-  const w: World = { clock: mock.clock(on, { now: 1_000 }), store: new Map(Object.entries(store)), ran: [], attempted: [], registered: [], commands: [], logs: [], toasts: [], session: 'sess-1', failing: undefined, listFails: false, fills: [], fillRefusal: undefined, opened: [], writes: [], files: new Set(), kinds: new Map(), dirs: new Map(), listed: [], existsAsked: [], argv: [], listCalls: 0, list: COMMANDS, root: ROOT, home: HOME }
+  const w: World = { clock: mock.clock(on, { now: 1_000 }), store: new Map(Object.entries(store)), ran: [], attempted: [], registered: [], commands: [], logs: [], toasts: [], session: 'sess-1', failing: undefined, output: 'Reloaded 12 plugins', listFails: false, fills: [], fillRefusal: undefined, opened: [], writes: [], files: new Set(), kinds: new Map(), dirs: new Map(), listed: [], existsAsked: [], argv: [], listCalls: 0, list: COMMANDS, root: ROOT, home: HOME }
   on('session.start', ($: any, e: any) => ({ cwd: e.cwd }))
   on('session.id', () => ({ value: w.session }))
+  seedMasters(on, { read: (key) => (w.store.has(key) ? { value: w.store.get(key) } : undefined) })
   on('store.get', ($: any, e: any) => ({ value: w.store.get(e.key) }))
   on('store.set', ($: any, e: any) => {
     w.store.set(e.key, e.value)
+    return { value: undefined }
+  })
+  on('store.delete', ($: any, e: any) => {
+    w.store.delete(e.key)
     return { value: undefined }
   })
   on('tool.register', ($: any, e: any) => {
@@ -117,7 +127,7 @@ function world(on: any, store: Record<string, unknown> = {}): World {
     if (e.command === w.failing) throw new Error(`${e.command} failed`)
     w.ran.push(`${e.command} ${e.args}`.trim())
     if (e.command === 'lint') return { text: 'x'.repeat(OUTPUT_PREVIEW * 2) }
-    return e.command === 'reload-plugins' ? { text: 'Reloaded 12 plugins' } : {}
+    return e.command === 'reload-plugins' ? { text: w.output } : {}
   })
   on('ui.log', ($: any, e: any) => {
     w.logs.push(e.text)
@@ -151,6 +161,8 @@ function world(on: any, store: Record<string, unknown> = {}): World {
     w.listed.push(e.path)
     return { value: (w.dirs.get(e.path) ?? []).map((entry) => ({ ...entry, size: 1, mtimeMs: 1, isLink: false })) }
   })
+  // What a file holds is its last write: the debug log reads its file before it adds a line.
+  on('fs.read', ($: any, e: any) => ({ value: w.writes.filter((x) => x.path === e.path).at(-1)?.text }))
   on('fs.write', ($: any, e: any) => {
     w.writes.push({ path: e.path, text: e.text })
     w.files.add(e.path)
@@ -283,44 +295,117 @@ describe('parseDevToolsSwitch', () => {
   })
 })
 
-describe('the dev-tools gate', () => {
-  test('off by default: no tool registers and both tools refuse, on both surfaces', async ($, on) => {
+describe('the dev-tools switches', () => {
+  test('off by default: no dev tool or pane command registers and every one refuses, on both surfaces', async ($, on) => {
     const w = world(on)
     for (const surface of SURFACES) {
       await start($, surface)
-      expect(w.registered).toEqual([])
+      // The switches tool registers at every start (TRDD-5IK59SQ2); no dev tool does while its switch is off.
+      expect(w.registered.filter((t) => t.name !== 'switches')).toEqual([])
       expect(w.commands).toContain('mods-dev-tools')
+      expect(w.commands).not.toContain('self-command')
+      expect(w.commands).not.toContain('probe-runner')
       const run = await $.tool.call({ tool: RUN, command: 'reload-plugins' } as any)
-      expect(run.deny).toBe('The mods dev tools are off. /mods-dev-tools on turns them on from the next session.')
+      expect(run.deny).toBe(DEV_TOOLS_OFF)
       const list = await $.tool.call({ tool: LIST } as any)
-      expect(list.deny).toBe('The mods dev tools are off. /mods-dev-tools on turns them on from the next session.')
+      expect(list.deny).toBe(DEV_TOOLS_OFF)
+      await w.clock.settle()
+      expect(w.ran).toEqual([])
+      expect(w.listCalls).toBe(0)
+    }
+  })
+
+  test('the four dev tools and the two debug logs are listed off by default, each by itself', async ($, on) => {
+    world(on)
+    await start($, 'terminal')
+    const listed = String((await $.tool.call({ tool: `mcp__${PLUGIN}__switches` } as any)).result)
+    for (const id of [...DEV_FUNCTIONS, 'self-command.debug-log', 'probe-runner.debug-log']) {
+      expect(listed.split('\n').some((line) => line.startsWith(`  ${id}  off  `))).toBe(true)
+    }
+  })
+
+  test('/mods-dev-tools sets all four, signed; on registers them at the next start, off refuses at once', async ($, on) => {
+    const w = world(on)
+    for (const surface of SURFACES) {
+      w.registered = []
+      w.commands = []
+      await start($, surface)
+      expect((await devTools($, 'on')).text).toBe('The mods dev tools are on. Their tools register when the next session starts.')
+      for (const id of DEV_FUNCTIONS) expect(await signedValue(w, id)).toBe(true)
+      expect(w.registered).toEqual([{ name: 'switches', isDeferred: true }])
+      await start($, surface)
+      expect(w.registered).toEqual([{ name: 'switches', isDeferred: true }, { name: 'switches', isDeferred: true }, { name: 'run', isDeferred: false }, { name: 'list_commands', isDeferred: false }, { name: 'probe', isDeferred: false }])
+      expect(w.commands).toContain('self-command')
+      expect(w.commands).toContain('probe-runner')
+      expect((await $.tool.call({ tool: RUN, command: 'compact' } as any)).result).toBeDefined()
+      expect((await devTools($)).text).toMatch(/^The mods dev tools are off\. Every call to them is refused from now on/)
+      for (const id of DEV_FUNCTIONS) expect(await signedValue(w, id)).toBe(false)
+      expect((await $.tool.call({ tool: RUN, command: 'compact' } as any)).deny).toBe(DEV_TOOLS_OFF)
+      expect((await devTools($, 'maybe')).text).toBe('Usage: /mods-dev-tools [on|off]')
+    }
+  })
+
+  test('each function has its own switch: run turned off refuses only run, and leaves the tool list next start', async ($, on) => {
+    const w = world(on)
+    for (const surface of SURFACES) {
+      for (const [key, value] of Object.entries(await signedOn(DEV_FUNCTIONS))) w.store.set(key, value)
+      await start($, surface)
+      w.store.set(keyFor('self-command.run'), await signed('self-command.run', false, 6_000))
+      expect((await $.tool.call({ tool: RUN, command: 'compact' } as any)).deny).toBe(DEV_TOOLS_OFF)
+      expect((await $.tool.call({ tool: LIST } as any)).result).toBeDefined()
+      const opened = w.opened.length
+      expect(await selfCommand($)).toEqual({})
+      expect(w.opened.length).toBe(opened + 1)
+      w.registered = []
+      await start($, surface)
+      expect(w.registered.map((t) => t.name)).toEqual(['switches', 'list_commands', 'probe'])
       await w.clock.settle()
       expect(w.ran).toEqual([])
     }
   })
 
-  test('/mods-dev-tools saves the flag; on registers the tools at the next start, off refuses at once', async ($, on) => {
+  test('an older release kept the tools on: they stay off until the person keeps it in /mods-switches', async ($, on) => {
     const w = world(on)
     for (const surface of SURFACES) {
+      w.store.clear()
+      w.store.set('dev-tools', true)
       w.registered = []
+      w.toasts = []
       await start($, surface)
-      expect((await devTools($, 'on')).text).toBe('The mods dev tools are on. Their tools register when the next session starts.')
-      expect(w.store.get(DEV_TOOLS_KEY)).toBe(true)
-      expect(w.registered).toEqual([])
+      expect(w.registered.filter((t) => t.name !== 'switches')).toEqual([])
+      expect(w.toasts).toContain(REVIEW_TOAST)
+      expect((await $.tool.call({ tool: RUN, command: 'compact' } as any)).deny).toBe(DEV_TOOLS_OFF)
+      // The older key stays until the person decides: nothing signed it on.
+      expect(w.store.get('dev-tools')).toBe(true)
+      for (const id of DEV_FUNCTIONS) expect(w.store.has(keyFor(id))).toBe(false)
+    }
+  })
+
+  test('an older release kept the tools off: off is signed for each, and the older key is dropped', async ($, on) => {
+    const w = world(on)
+    for (const surface of SURFACES) {
+      w.store.clear()
+      w.store.set('dev-tools', false)
+      w.toasts = []
       await start($, surface)
-      expect(w.registered).toEqual([{ name: 'run', isDeferred: false }, { name: 'list_commands', isDeferred: false }, { name: 'probe', isDeferred: false }])
-      expect((await $.tool.call({ tool: RUN, command: 'compact' } as any)).result).toBeDefined()
-      expect((await devTools($)).text).toMatch(/^The mods dev tools are off\. Every call to them is refused from now on/)
-      expect(w.store.get(DEV_TOOLS_KEY)).toBe(false)
-      expect((await $.tool.call({ tool: RUN, command: 'compact' } as any)).deny).toMatch(/^The mods dev tools are off\./)
-      expect((await devTools($, 'maybe')).text).toBe('Usage: /mods-dev-tools [on|off]')
+      for (const id of DEV_FUNCTIONS) expect(await signedValue(w, id)).toBe(false)
+      expect(w.store.has('dev-tools')).toBe(false)
+      expect(w.toasts).not.toContain(REVIEW_TOAST)
     }
   })
 })
 
+/** The value stored for a switch, after checking it carries this plugin's signature; undefined when none is stored. */
+async function signedValue(w: World, id: string): Promise<boolean | undefined> {
+  const stored = w.store.get(keyFor(id)) as { v: boolean; at: number } | undefined
+  if (stored === undefined) return undefined
+  expect(stored).toEqual(await signed(id, stored.v, stored.at))
+  return stored.v
+}
+
 describe('the run tool', () => {
   test('queues the command, runs it after the turn, reports through the send command, logs and records it', async ($, on) => {
-    const w = world(on, { [DEV_TOOLS_KEY]: true })
+    const w = world(on, await signedOn(DEV_FUNCTIONS))
     for (const surface of SURFACES) {
       w.ran = []
       w.session = `sess-${surface}`
@@ -338,7 +423,7 @@ describe('the run tool', () => {
   })
 
   test('a blocked or unknown command is refused and nothing runs', async ($, on) => {
-    const w = world(on, { [DEV_TOOLS_KEY]: true })
+    const w = world(on, await signedOn(DEV_FUNCTIONS))
     for (const surface of SURFACES) {
       await start($, surface)
       expect((await $.tool.call({ tool: RUN, command: 'clear' } as any)).deny).toBe('/clear clears, ends or swaps the session, so the run tool refuses it')
@@ -354,7 +439,7 @@ describe('the run tool', () => {
   })
 
   test('a command that fails is reported as not run and recorded as failed', async ($, on) => {
-    const w = world(on, { [DEV_TOOLS_KEY]: true })
+    const w = world(on, await signedOn(DEV_FUNCTIONS))
     w.failing = 'ship'
     await start($, 'desktop')
     await $.tool.call({ tool: RUN, command: 'ship', args: 'now' } as any)
@@ -366,7 +451,7 @@ describe('the run tool', () => {
   })
 
   test('a send the engine refuses reaches the person as a toast and the log, with no other path', async ($, on) => {
-    const w = world(on, { [DEV_TOOLS_KEY]: true })
+    const w = world(on, await signedOn(DEV_FUNCTIONS))
     w.failing = SEND
     await start($, 'terminal')
     await $.tool.call({ tool: RUN, command: 'compact' } as any)
@@ -378,8 +463,73 @@ describe('the run tool', () => {
     expect((w.store.get(HISTORY_KEY) as any)['sess-1'].entries.length).toBe(1)
   })
 
+  test('with its debug log on, a refused send is written to the self-command log; the line of the run, built from the command and its output, is masked in the Claude Code log and never written', async ($, on) => {
+    const w = world(on, await signedOn([...DEV_FUNCTIONS, 'self-command.debug-log']))
+    w.failing = SEND
+    // Joined at run time, as in debug-log.test.ts, so no scanner reads a token in this file.
+    const token = ['ghp', '_', 'a1B2c3D4e5F6g7H8i9J0k1L2m3N4o5P6q7R8'].join('')
+    w.output = `Reloaded with ${token} from /Users/alice/x`
+    await start($, 'terminal')
+    await $.tool.call({ tool: RUN, command: 'reload-plugins' } as any)
+    const log = `${HOME}/.claude/plugins/data/${PLUGIN}-inline/debug/self-command.log`
+    const written = (): string => w.writes.filter((x) => x.path === log).at(-1)?.text ?? ''
+    for (let look = 0; look < 2000 && !written().includes('could not be sent'); look++) await w.clock.settle()
+    expect(written()).toContain(' self-command self-command: the outcome of /reload-plugins could not be sent to the model: ')
+    expect(written()).not.toContain('Reloaded with')
+    expect(w.logs).toContain('self-command: /reload-plugins ran: Reloaded with [REDACTED:github-token] from /Users/<user>/x')
+    expect(w.logs.join('\n')).not.toContain(token)
+  })
+
+  test('the run line is masked before it is made printable: a home folder holding a control character is still found and shown as ~ (review of d623b53)', async ($, on) => {
+    const w = world(on, await signedOn(DEV_FUNCTIONS))
+    w.home = '/srv/a\u0007b'
+    w.output = `Reloaded from ${w.home}/x \u001b[2K`
+    await start($, 'terminal')
+    await $.tool.call({ tool: RUN, command: 'reload-plugins' } as any)
+    for (let look = 0; look < 2000 && !w.logs.some((line) => line.startsWith('self-command: /reload-plugins ran: ')); look++) await w.clock.settle()
+    expect(w.logs).toContain('self-command: /reload-plugins ran: Reloaded from ~/x ?[2K')
+  })
+
+  test('a pane drawn before its switch went off acts on nothing: a press fills no prompt and the form saves no file', async ($, on) => {
+    const w = world(on, await signedOn(DEV_FUNCTIONS))
+    const turn = async (value: boolean, at: number): Promise<void> => {
+      w.store.set(keyFor(PANE_SWITCH), await signed(PANE_SWITCH, value, at))
+    }
+    await start($, 'terminal')
+    expect(await selfCommand($)).toEqual({})
+    const list = await mountPane($, 'terminal', 80)
+    await turn(false, 6_000)
+    await list.press({ key: 'sc-cmd-reload-plugins' })
+    expect(w.fills).toEqual([])
+    await list.unmount()
+    await turn(true, 7_000)
+    expect(await selfCommand($)).toEqual({})
+    const form = await mountPane($, 'terminal', 80)
+    await form.press({ key: 'sc-view-new' })
+    await form.input({ key: 'sc-name', text: 'deploy-app' })
+    await form.input({ key: 'sc-body', text: 'do it' })
+    await turn(false, 8_000)
+    await form.press({ key: 'sc-save' })
+    expect(w.writes).toEqual([])
+    expect(w.toasts.filter((t) => t === DEV_TOOLS_OFF).length).toBe(2)
+  })
+
+  test('Claude can turn a dev tool on through the switches tool: the person sees a toast, and the tool joins at the next start', async ($, on) => {
+    const w = world(on)
+    await start($, 'terminal')
+    const answer = await $.tool.call({ tool: `mcp__${PLUGIN}__switches`, switch: RUN_SWITCH, on: true } as any)
+    expect(String(answer.result)).toBe(`${RUN_SWITCH} is now on. Its tool joins the tool list when the next session starts.`)
+    expect(w.toasts).toContain('The agent turned on self-command: run tool: Claude queues a slash command.')
+    expect(w.registered.map((t) => t.name)).toEqual(['switches'])
+    await start($, 'terminal')
+    expect(w.registered.map((t) => t.name)).toEqual(['switches', 'switches', 'run'])
+    // /mods-dev-tools run for the model, by a plugin: the change is the agent's, and toasted as such.
+    await $.command.run({ command: 'mods-dev-tools', args: 'off', origin: { kind: 'plugin', name: PLUGIN }, presentation: { isFullscreen: false, columns: 80 } })
+    expect(w.toasts).toContain('The agent turned off self-command: run tool: Claude queues a slash command.')
+  })
+
   test(`a long output is kept in the history cut to ${OUTPUT_PREVIEW} characters`, async ($, on) => {
-    const w = world(on, { [DEV_TOOLS_KEY]: true })
+    const w = world(on, await signedOn(DEV_FUNCTIONS))
     await start($, 'terminal')
     await $.tool.call({ tool: RUN, command: 'lint' } as any)
     await w.clock.settle()
@@ -389,7 +539,7 @@ describe('the run tool', () => {
 
 describe('a gating hook that fails', () => {
   test('refuses the call with the reason when the command list cannot be read, on both surfaces', async ($, on) => {
-    const w = world(on, { [DEV_TOOLS_KEY]: true })
+    const w = world(on, await signedOn(DEV_FUNCTIONS))
     w.listFails = true
     for (const surface of SURFACES) {
       await start($, surface)
@@ -403,7 +553,7 @@ describe('a gating hook that fails', () => {
 
 describe('the list_commands tool', () => {
   test('answers names by default and details for a query, on both surfaces', async ($, on) => {
-    const w = world(on, { [DEV_TOOLS_KEY]: true })
+    const w = world(on, await signedOn(DEV_FUNCTIONS))
     for (const surface of SURFACES) {
       await start($, surface)
       expect((await $.tool.call({ tool: LIST } as any)).result).toBe(listText(COMMANDS))
@@ -468,9 +618,9 @@ describe('the /self-command pane', () => {
       w.session = `off-${surface}-${columns}`
       await start($, surface)
       expect(w.commands).not.toContain('self-command')
-      expect((await selfCommand($)).text).toBe('The mods dev tools are off. /mods-dev-tools on turns them on from the next session.')
+      expect((await selfCommand($)).text).toBe(DEV_TOOLS_OFF)
       const ui = await mountPane($, surface, columns)
-      expect(await ui.find({ type: 'Text', text: 'The mods dev tools are off. /mods-dev-tools on turns them on from the next session.' })).toBeDefined()
+      expect(await ui.find({ type: 'Text', text: DEV_TOOLS_OFF })).toBeDefined()
       expect(await ui.find({ type: 'Button' })).toBeUndefined()
       await ui.unmount()
     }
@@ -478,7 +628,7 @@ describe('the /self-command pane', () => {
   })
 
   test('on: the command opens the focused pane; the list groups by source, dims refused ones, and a press fills the prompt', async ($, on) => {
-    const w = world(on, { [DEV_TOOLS_KEY]: true })
+    const w = world(on, await signedOn(DEV_FUNCTIONS))
     for (const { surface, columns } of PLACES) {
       w.session = `list-${surface}-${columns}`
       w.fills = []
@@ -522,7 +672,7 @@ describe('the /self-command pane', () => {
   })
 
   test('a prompt box that does not take the command says so in a toast', async ($, on) => {
-    const w = world(on, { [DEV_TOOLS_KEY]: true })
+    const w = world(on, await signedOn(DEV_FUNCTIONS))
     // The engine keeps a hook's refusal cause out of the result (it fills that field only for the
     // refusals it answers itself), so the toast here names no cause.
     w.fillRefusal = 'dialog'
@@ -538,7 +688,7 @@ describe('the /self-command pane', () => {
   })
 
   test('history: a queued run shows under Queued, then under the runs once it ran', async ($, on) => {
-    const w = world(on, { [DEV_TOOLS_KEY]: true })
+    const w = world(on, await signedOn(DEV_FUNCTIONS))
     for (const { surface, columns } of PLACES) {
       w.session = `hist-${surface}-${columns}`
       await start($, surface)
@@ -558,8 +708,42 @@ describe('the /self-command pane', () => {
     }
   })
 
+  // Item 3 sweep, G3: the pane lines and the toasts of self-command show outside text masked and on one line (maskedLine).
+  test('the history shows a run with its args and output masked and on one line, and the save toast names a file in the home as ~', async ($, on) => {
+    const w = world(on, await signedOn(DEV_FUNCTIONS))
+    w.output = `Reloaded from ${HOME}/x \u001b[2K`
+    await start($, 'terminal')
+    const ui = await mountPane($, 'terminal', 200)
+    await ui.press({ key: 'sc-view-history' })
+    await $.tool.call({ tool: RUN, command: 'reload-plugins', args: `at ${HOME}/y\nnext` } as any)
+    await ui.redraw()
+    expect(await ui.find({ type: 'Text', text: '/reload-plugins at ~/y next' })).toBeDefined()
+    await w.clock.settle()
+    await ui.redraw()
+    expect(await ui.find({ type: 'Text', text: '✓ /reload-plugins at ~/y next · Reloaded from ~/x ?[2K' })).toBeDefined()
+    await ui.press({ key: 'sc-view-new' })
+    await ui.select({ key: 'sc-scope', value: 'user' })
+    await ui.input({ key: 'sc-name', text: 'notes' })
+    await ui.input({ key: 'sc-body', text: 'Summarize my notes.' })
+    await ui.press({ key: 'sc-save' })
+    expect(w.toasts).toEqual(['Saved /notes as ~/.claude/commands/notes.md. It shows in the / menu once Claude Code reads the folder again.'])
+    await ui.unmount()
+  })
+
+  // Item 3 sweep, G3: a command's plugin, name and description come from the command list, so each is drawn printable.
+  test('a command list entry with a control character in its plugin, name or description is drawn with a ? for it', async ($, on) => {
+    const w = world(on, await signedOn(DEV_FUNCTIONS))
+    w.list = [{ name: 'odd\u0007cmd', description: 'Odd \u001b[2K text', source: 'plugin' as const, plugin: 'odd\u202etools' }]
+    await start($, 'terminal')
+    const ui = await mountPane($, 'terminal', 200)
+    expect(await ui.find({ type: 'Text', text: 'plugin odd?tools' })).toBeDefined()
+    expect((await ui.find({ key: 'sc-cmd-odd\u0007cmd' }))?.props.label).toBe('/odd?cmd')
+    expect(await ui.find({ type: 'Text', text: 'Odd ?[2K text' })).toBeDefined()
+    await ui.unmount()
+  })
+
   test('new command: name rule, clash, empty prompt and existing file refuse; a valid form writes by scope', async ($, on) => {
-    const w = world(on, { [DEV_TOOLS_KEY]: true })
+    const w = world(on, await signedOn(DEV_FUNCTIONS))
     for (const { surface, columns } of PLACES) {
       w.session = `new-${surface}-${columns}`
       w.writes = []
@@ -597,7 +781,7 @@ describe('the /self-command pane', () => {
     }
   })
   test('the list is read when the pane opens and kept until the next open', async ($, on) => {
-    const w = world(on, { [DEV_TOOLS_KEY]: true })
+    const w = world(on, await signedOn(DEV_FUNCTIONS))
     for (const { surface, columns } of PLACES) {
       w.session = `cache-${surface}-${columns}`
       w.list = COMMANDS
@@ -616,7 +800,7 @@ describe('the /self-command pane', () => {
   })
 
   test('a command saved from the form shows in the list at once, without a reopen', async ($, on) => {
-    const w = world(on, { [DEV_TOOLS_KEY]: true })
+    const w = world(on, await signedOn(DEV_FUNCTIONS))
     for (const { surface, columns } of PLACES) {
       w.session = `saved-${surface}-${columns}`
       w.writes = []
@@ -639,7 +823,7 @@ describe('the /self-command pane', () => {
   test('a command list that fails on open stops the command, naming the cause, and opens nothing', async ($, on) => {
     // The message, as the engine reports the skipped hook: the kit offers no way to read that report.
     expect(listFailure(new Error('the command list is unavailable'))).toBe('could not read the command list: the command list is unavailable')
-    const w = world(on, { [DEV_TOOLS_KEY]: true })
+    const w = world(on, await signedOn(DEV_FUNCTIONS))
     for (const { surface } of PLACES) {
       w.session = `list-fails-${surface}`
       w.attempted = []
@@ -655,7 +839,7 @@ describe('the /self-command pane', () => {
   })
 
   test('a long command name is cut to fit its bracketed button at a narrow width and whole at a wide one', async ($, on) => {
-    const w = world(on, { [DEV_TOOLS_KEY]: true })
+    const w = world(on, await signedOn(DEV_FUNCTIONS))
     const long = `release-${'notes-'.repeat(9)}draft`
     w.list = [...COMMANDS, cmd(long, 'user')]
     for (const { surface, columns } of PLACES) {
@@ -676,7 +860,7 @@ describe('the /self-command pane', () => {
   })
 
   test('a HOME or session root that is empty or not absolute refuses the save and writes nothing', async ($, on) => {
-    const w = world(on, { [DEV_TOOLS_KEY]: true })
+    const w = world(on, await signedOn(DEV_FUNCTIONS))
     const cases: Array<[scope: 'project' | 'user', root: string, home: string | undefined, toast: string]> = [
       ['user', ROOT, undefined, 'Not saved: the home folder (HOME) is not known.'],
       ['user', ROOT, '', 'Not saved: the home folder (HOME) is not known.'],
@@ -759,7 +943,7 @@ describe('resolve-bin', () => {
   })
 
   test('the probe tool, with ~/.local/bin/claude missing, resolves claude to the newest file in the versions folder, and lists only a folder that exists', async ($, on) => {
-    const w = world(on, { [DEV_TOOLS_KEY]: true })
+    const w = world(on, await signedOn(DEV_FUNCTIONS))
     // The world's HOME, not this block's placeholder: resolve-bin reads it through $.env.get.
     const home = w.home!
     const dir = `${home}/.local/share/claude/versions`
@@ -796,7 +980,7 @@ describe('resolve-bin', () => {
   const CUSTOM = { options: { claudePath: '/custom/claude' } }
 
   test('a configured claude path is the only candidate: it is used, and no folder is listed', CUSTOM, async ($, on) => {
-    const w = world(on, { [DEV_TOOLS_KEY]: true })
+    const w = world(on, await signedOn(DEV_FUNCTIONS))
     const dir = `${w.home}/.local/share/claude/versions`
     const probe = () => $.tool.call({ tool: `mcp__${PLUGIN}__probe`, plugins: ['demo'], steps: ['/demo on'] } as any)
     for (const file of [`${ROOT}/plugins/demo/.claude-plugin/plugin.json`, ...OTHERS, '/custom/claude', dir, `${dir}/2.1.10`]) w.files.add(file)
@@ -810,7 +994,7 @@ describe('resolve-bin', () => {
   })
 
   test('a configured claude path that is absent is rejected naming the setting, and no other candidate is used', CUSTOM, async ($, on) => {
-    const w = world(on, { [DEV_TOOLS_KEY]: true })
+    const w = world(on, await signedOn(DEV_FUNCTIONS))
     const probe = () => $.tool.call({ tool: `mcp__${PLUGIN}__probe`, plugins: ['demo'], steps: ['/demo on'] } as any)
     // ~/.local/bin/claude exists, yet must not be used.
     for (const file of [`${ROOT}/plugins/demo/.claude-plugin/plugin.json`, ...OTHERS, `${w.home}/.local/bin/claude`]) w.files.add(file)
@@ -825,7 +1009,7 @@ describe('resolve-bin', () => {
   })
 
   test('a configured claude path that is not absolute is rejected at once, naming the setting, without looking up that path', { options: { claudePath: '~/bin/claude' } }, async ($, on) => {
-    const w = world(on, { [DEV_TOOLS_KEY]: true })
+    const w = world(on, await signedOn(DEV_FUNCTIONS))
     const probe = () => $.tool.call({ tool: `mcp__${PLUGIN}__probe`, plugins: ['demo'], steps: ['/demo on'] } as any)
     for (const file of [`${ROOT}/plugins/demo/.claude-plugin/plugin.json`, ...OTHERS]) w.files.add(file)
     await start($, 'terminal')
@@ -840,7 +1024,7 @@ describe('resolve-bin', () => {
   })
 
   test('a configured claude path of only spaces counts as not configured', { options: { claudePath: '   ' } }, async ($, on) => {
-    const w = world(on, { [DEV_TOOLS_KEY]: true })
+    const w = world(on, await signedOn(DEV_FUNCTIONS))
     const probe = () => $.tool.call({ tool: `mcp__${PLUGIN}__probe`, plugins: ['demo'], steps: ['/demo on'] } as any)
     for (const file of [`${ROOT}/plugins/demo/.claude-plugin/plugin.json`, ...OTHERS, `${w.home}/.local/bin/claude`]) w.files.add(file)
     await start($, 'terminal')
@@ -850,7 +1034,7 @@ describe('resolve-bin', () => {
     expect(claudeArgs(w)).toEqual([`--claude=${w.home}/.local/bin/claude`])
   })
   test('a candidate that exists but is a folder is skipped', async ($, on) => {
-    const w = world(on, { [DEV_TOOLS_KEY]: true })
+    const w = world(on, await signedOn(DEV_FUNCTIONS))
     const probe = () => $.tool.call({ tool: `mcp__${PLUGIN}__probe`, plugins: ['demo'], steps: ['/demo on'] } as any)
     const folder = `${w.home}/.local/bin/claude`
     for (const file of [`${ROOT}/plugins/demo/.claude-plugin/plugin.json`, ...OTHERS, folder, '/usr/local/bin/claude']) w.files.add(file)

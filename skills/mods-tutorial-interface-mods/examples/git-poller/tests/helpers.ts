@@ -12,9 +12,9 @@ export function stubs(on: any, opts: { stdout?: string } = {}) {
   // slowNext: the next store.get reads the value at once but answers only after the clock advances.
   const store = { fails: false, slowNext: false }
   on('session.start', () => ({ cwd: '/work' }))
-  on('command.register', ($: unknown, e: unknown) => {
+  on('command.register', ($: unknown, e: { name: string }) => {
     registered.push(e)
-    return { value: undefined }
+    return { value: { command: e.name } }
   })
   // A { deny } answer makes the call reject in the mod (mods-doc-mods-testing chapter.md:189).
   on('store.get', async ($: unknown, e: { key: string }) => {
@@ -47,7 +47,11 @@ export function stubs(on: any, opts: { stdout?: string } = {}) {
   return { clock, saved, toasts, registered, calls, git, store }
 }
 
-export const DONE = { turnId: 't1', answer: 'ok', durationMs: 1, isAborted: false, usage: null } as const
+// TurnCompleteInput: usage is a TurnUsage or left out (null is refused), and reason is required.
+export const DONE = { turnId: 't1', answer: 'ok', durationMs: 1, isAborted: false, reason: 'answer' } as const
+
+// The engine's command.run input also carries where the run came from and how the answer is shown (CommandRunInput: origin, presentation).
+export const RUN = { origin: { kind: 'composer' }, presentation: { isFullscreen: false, columns: 80 } } as const
 
 export const START = { surface: 'terminal', isInteractive: true, cwd: '/work' } as const
 

@@ -4,7 +4,7 @@ title: Two of TRDD-UD8EC4FK's own statements disagree about whether the test can
 column: todo
 status: tasked
 created: 2026-10-21T03:08:48+0200
-updated: 2026-10-21T20:14:39+0200
+updated: 2026-10-31T12:43:32+0100
 current-owner: user
 created-by: user
 task-type: bugfix
@@ -43,3 +43,7 @@ OPEN GAP (2026-10-21): the docstring and comments of _cpv_verdict in scripts/pub
 OVERCLAIM IN THE COMMIT MESSAGE (2026-10-21): b286335 says a real CPV run prints exactly one SUMMARY line. What was actually read: remote_validation.main() calls validate_plugin.main() once in-process, and validate_plugin.print_results prints one SUMMARY line. Not read: print_compact_summary and save_report_and_print_summary (cpv_validation_common.py:7625 and 7718). The narrower statement is the one supported. If the one-line claim is later proven, the multi-summary floor only guards against text CPV did not produce.
 MOVED (2026-10-21): the floor gap now has its own card, TRDD-1Y56FYZW.
 FROZEN-CARD CITATION (2026-10-21): commit b286335's subject cites TRDD-UD8EC4FK, which is archived and frozen, so that card's implementation-commits field cannot record it; this card is where b286335 is tracked. Also narrowing: the release gate does not pass -o/--report to CPV, so save_report_and_print_summary is not on the gate's path.
+
+## STATE
+
+recommendation: leave archived TRDD-UD8EC4FK box 4 superseded by reference, no un-archive; awaiting owner confirmation (owner question list 2026-10-31)

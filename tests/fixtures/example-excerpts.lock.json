@@ -1,0 +1,251 @@
+{
+  "skills/mods-example-account-switching/references/code-login-swap-credential-files.md|trongtaiz__account-swap 8153e6b671bce9786b6a4efe189febdf08426667 hooks/register.tsx:131-150": {
+    "sha256": "bbfe44304003045fc2125c94d00622c833960bd7d9413191d179318a52f22b6f",
+    "source_sha256": "bbfe44304003045fc2125c94d00622c833960bd7d9413191d179318a52f22b6f",
+    "upstream_commit": "8153e6b671bce9786b6a4efe189febdf08426667"
+  },
+  "skills/mods-example-band-and-status-line/references/band.md|deck 0.4.12 hooks/register.js:1219-1231": {
+    "sha256": "161717ee43b2daf7de696d5a480a2cc2548867fb9e273e8efb754844687da2d3",
+    "source_sha256": "161717ee43b2daf7de696d5a480a2cc2548867fb9e273e8efb754844687da2d3"
+  },
+  "skills/mods-example-band-and-status-line/references/band.md|token-weather-usage 3.17.15 hooks/token-weather-usage.mjs:718-727": {
+    "sha256": "7cf5782e1a20ae7fab36aa29a3d2183ed167ae910357dbf2e47c1e53350c41a1",
+    "source_sha256": "7cf5782e1a20ae7fab36aa29a3d2183ed167ae910357dbf2e47c1e53350c41a1"
+  },
+  "skills/mods-example-band-and-status-line/references/band.md|tokensaver 0.3.0 hooks/register.tsx:973-996": {
+    "sha256": "c3d4f370dca51a7163aa4e39d8aabf4947a2adb107c6cba699ece2ba8c29ea1e",
+    "source_sha256": "c3d4f370dca51a7163aa4e39d8aabf4947a2adb107c6cba699ece2ba8c29ea1e"
+  },
+  "skills/mods-example-band-and-status-line/references/status-line.md|ponytail 5.3.2 hooks/ponytail-statusline.sh:1-18": {
+    "sha256": "b62aecaafad33d7590be9fdffbddd9b5a21b83bcf297e2f1b4a3709b3c7aab2e",
+    "source_sha256": "b62aecaafad33d7590be9fdffbddd9b5a21b83bcf297e2f1b4a3709b3c7aab2e"
+  },
+  "skills/mods-example-band-and-status-line/references/status-line.md|tokensaver 0.3.0 hooks/register.tsx:227-248": {
+    "sha256": "df1d955e1c87b57b40cc5c3c4dc61429b30db2ad81fddfeb57fbe092e2f55bf6",
+    "source_sha256": "df1d955e1c87b57b40cc5c3c4dc61429b30db2ad81fddfeb57fbe092e2f55bf6"
+  },
+  "skills/mods-example-band-and-status-line/references/status-line.md|tokensaver 0.3.0 hooks/register.tsx:306-312": {
+    "sha256": "209ff023cde2d6d706ac4d9a1d7d5673158f57e13816f9c9dfa4b809c79838ff",
+    "source_sha256": "209ff023cde2d6d706ac4d9a1d7d5673158f57e13816f9c9dfa4b809c79838ff"
+  },
+  "skills/mods-example-call-intercept/references/call-intercept.md|context-harness 0.0.1 hooks/register.ts:525-547": {
+    "sha256": "49f9f5c2233b48e50a1127b796f1ef5ec9b7c6ff444264d8fdd6454a65bd8479",
+    "source_sha256": "49f9f5c2233b48e50a1127b796f1ef5ec9b7c6ff444264d8fdd6454a65bd8479"
+  },
+  "skills/mods-example-call-intercept/references/call-intercept.md|deck 0.4.12 hooks/register.js:1932-1950": {
+    "sha256": "9ac5c3c40963691de0338aebc12775e927d2d1cddb72602d1a317bd276b2cba2",
+    "source_sha256": "9ac5c3c40963691de0338aebc12775e927d2d1cddb72602d1a317bd276b2cba2"
+  },
+  "skills/mods-example-call-intercept/references/call-intercept.md|tokensaver 0.3.0 hooks/register.tsx:722-746": {
+    "sha256": "fd0fb80e04498333a15471fc0d3499c7d8237343ed210ee1e8c6f2c9f0ed9a18",
+    "source_sha256": "fd0fb80e04498333a15471fc0d3499c7d8237343ed210ee1e8c6f2c9f0ed9a18"
+  },
+  "skills/mods-example-call-intercept/references/instruction-injection.md|context-harness 0.0.1 hooks/register.ts:125-133": {
+    "sha256": "438a4acdaffbabbcf7bd995da9dafeddcbfbf53c2214c8819e7d7c44d0691c04",
+    "source_sha256": "438a4acdaffbabbcf7bd995da9dafeddcbfbf53c2214c8819e7d7c44d0691c04"
+  },
+  "skills/mods-example-call-intercept/references/instruction-injection.md|ponytail 5.3.2 hooks/ponytail-subagent.js:24-30": {
+    "sha256": "acd61c2f04d6e95326b02ee9e4a0d57b596a6739cba0b8aa08f17583035e8ed3",
+    "source_sha256": "acd61c2f04d6e95326b02ee9e4a0d57b596a6739cba0b8aa08f17583035e8ed3"
+  },
+  "skills/mods-example-call-intercept/references/instruction-injection.md|tokensaver 0.3.0 hooks/register.tsx:747-757": {
+    "sha256": "abe093ad072109fbb9ca7d2068dd3bd4ba1c53db0b31f3919c113cc977b14bd2",
+    "source_sha256": "abe093ad072109fbb9ca7d2068dd3bd4ba1c53db0b31f3919c113cc977b14bd2"
+  },
+  "skills/mods-example-callable-and-command/references/slash-command.md|context-harness 0.0.1 hooks/register.ts:403-409": {
+    "sha256": "10eb4b32c50055d16c95b18d6e908563fcf2b155ae5951a6889b7523148947a6",
+    "source_sha256": "10eb4b32c50055d16c95b18d6e908563fcf2b155ae5951a6889b7523148947a6"
+  },
+  "skills/mods-example-callable-and-command/references/slash-command.md|deck 0.4.12 hooks/register.js:1602-1616": {
+    "sha256": "4a1963ef3c5b655427ba18c075c85585c8cb545226b30d4e470d653103167f46",
+    "source_sha256": "4a1963ef3c5b655427ba18c075c85585c8cb545226b30d4e470d653103167f46"
+  },
+  "skills/mods-example-callable-and-command/references/slash-command.md|tokensaver 0.3.0 hooks/register.tsx:699-720": {
+    "sha256": "2b834698d11a3b60da645288850f3052250964599adaa6f1490d6c9ccef9d1e8",
+    "source_sha256": "2b834698d11a3b60da645288850f3052250964599adaa6f1490d6c9ccef9d1e8"
+  },
+  "skills/mods-example-callable-and-command/references/tool-registration.md|context-harness 0.0.1 hooks/register.ts:553-559": {
+    "sha256": "c99a04de0f008995c55d294649fc3d874c95dcc6bf84d9a7974406bbc7047b32",
+    "source_sha256": "c99a04de0f008995c55d294649fc3d874c95dcc6bf84d9a7974406bbc7047b32"
+  },
+  "skills/mods-example-callable-and-command/references/tool-registration.md|context-harness 0.0.1 hooks/register.ts:608-621": {
+    "sha256": "e9a3399e1084afeba457cb822365a135f74b14a856b8842abf80929e07dc5d15",
+    "source_sha256": "e9a3399e1084afeba457cb822365a135f74b14a856b8842abf80929e07dc5d15"
+  },
+  "skills/mods-example-callable-and-command/references/tool-registration.md|context-harness 0.0.1 hooks/register.ts:624-638": {
+    "sha256": "7ed5b4e442f8e2d420c71a3e3d723fb7dfd34a3079649bd3b039b382719c4e86",
+    "source_sha256": "7ed5b4e442f8e2d420c71a3e3d723fb7dfd34a3079649bd3b039b382719c4e86"
+  },
+  "skills/mods-example-cost-and-metrics/references/cost-or-limits-math.md|ponytail 5.3.2 hooks/band/register.tsx:298-318": {
+    "sha256": "2997044564c31eeff52d14e61733f39da68680dd06ba54d9323e556e005db245",
+    "source_sha256": "2997044564c31eeff52d14e61733f39da68680dd06ba54d9323e556e005db245"
+  },
+  "skills/mods-example-cost-and-metrics/references/cost-or-limits-math.md|token-weather-usage 3.17.15 hooks/token-weather-usage.mjs:858-870": {
+    "sha256": "1e8f94ec12a7cb03732ffb0458ad9472f8a90bfae6965323ebec999c933cb74b",
+    "source_sha256": "1e8f94ec12a7cb03732ffb0458ad9472f8a90bfae6965323ebec999c933cb74b"
+  },
+  "skills/mods-example-cost-and-metrics/references/cost-or-limits-math.md|tokensaver 0.3.0 src/core/savings.ts:10-34": {
+    "sha256": "4b5257dbb0b3e5c62ddb0e6529f241523323d320d82d0cd685dad528c1084a5d",
+    "source_sha256": "4b5257dbb0b3e5c62ddb0e6529f241523323d320d82d0cd685dad528c1084a5d"
+  },
+  "skills/mods-example-cost-and-metrics/references/judgment-report.md|context-harness 0.0.1 hooks/report.ts:33-38": {
+    "sha256": "0cbe25a39e4eca4a46b00db41e0c6b5c58e1c07106582d505ab174307eb40e72",
+    "source_sha256": "0cbe25a39e4eca4a46b00db41e0c6b5c58e1c07106582d505ab174307eb40e72"
+  },
+  "skills/mods-example-cost-and-metrics/references/judgment-report.md|context-harness 0.0.1 hooks/report.ts:40-64": {
+    "sha256": "df760ee94efe02c22960cf5fdee840cc4c0c0f8c73527bacf8d2b4c561888abe",
+    "source_sha256": "df760ee94efe02c22960cf5fdee840cc4c0c0f8c73527bacf8d2b4c561888abe"
+  },
+  "skills/mods-example-cost-and-metrics/references/judgment-report.md|context-harness 0.0.1 hooks/report.ts:68-88": {
+    "sha256": "b22accc306c2ab078ea588aea078d64eb59cd0770d2c5e0320a7f4d2312fae48",
+    "source_sha256": "b22accc306c2ab078ea588aea078d64eb59cd0770d2c5e0320a7f4d2312fae48"
+  },
+  "skills/mods-example-engine-and-model-calls/references/engine-command.md|context-harness 0.0.1 hooks/register.ts:365-378": {
+    "sha256": "424adf93dac661f1a7372d5211f7f1f841ad1bd320862b4f329e73696f390a0d",
+    "source_sha256": "424adf93dac661f1a7372d5211f7f1f841ad1bd320862b4f329e73696f390a0d"
+  },
+  "skills/mods-example-engine-and-model-calls/references/engine-command.md|tokensaver 0.3.0 hooks/register.tsx:382-405": {
+    "sha256": "77d3a33b60911b17fef0515e1a9c3bb783c54d16ad8eafa5e237e221b470b01b",
+    "source_sha256": "77d3a33b60911b17fef0515e1a9c3bb783c54d16ad8eafa5e237e221b470b01b"
+  },
+  "skills/mods-example-engine-and-model-calls/references/engine-command.md|tokensaver 0.3.0 hooks/register.tsx:517-534": {
+    "sha256": "23c649e0b89105ad7a9fcc290cde505d6ed040111cdf7e723edf6fa54b9d5abd",
+    "source_sha256": "23c649e0b89105ad7a9fcc290cde505d6ed040111cdf7e723edf6fa54b9d5abd"
+  },
+  "skills/mods-example-pane-and-chart/references/pane.md|deck 0.4.12 hooks/register.js:1984-2008": {
+    "sha256": "9b3dfb573e0c39d034862df6e4f2dad36e7ca3418adb92ade5defee290c2a9af",
+    "source_sha256": "9b3dfb573e0c39d034862df6e4f2dad36e7ca3418adb92ade5defee290c2a9af"
+  },
+  "skills/mods-example-pane-and-chart/references/pane.md|ponytail 5.3.2 hooks/band/register.tsx:176-182": {
+    "sha256": "00998f4561eeff0651a971250298967ade9ac2ee1a74eb03e2cf940b7b3038ec",
+    "source_sha256": "00998f4561eeff0651a971250298967ade9ac2ee1a74eb03e2cf940b7b3038ec"
+  },
+  "skills/mods-example-pane-and-chart/references/pane.md|tokensaver 0.3.0 hooks/register.tsx:252-265": {
+    "sha256": "cc78766f39e39582811b52b9c531cca33153bb200df3ef3bd561d4ea98aa0b55",
+    "source_sha256": "cc78766f39e39582811b52b9c531cca33153bb200df3ef3bd561d4ea98aa0b55"
+  },
+  "skills/mods-example-pane-and-chart/references/raster-or-chart.md|ponytail 5.3.2 hooks/band/metrics.ts:118-141": {
+    "sha256": "a4a4b0dec84741c2ca1ee9e9c4446af15a6cd2436fe5a87e4053c05631c97f2e",
+    "source_sha256": "a4a4b0dec84741c2ca1ee9e9c4446af15a6cd2436fe5a87e4053c05631c97f2e"
+  },
+  "skills/mods-example-pane-and-chart/references/raster-or-chart.md|token-weather-usage 3.17.15 hooks/token-weather-usage.mjs:1675-1687": {
+    "sha256": "c05fcea4d4e3289dd3741c7ab93a5db2168f4a85c95f7fc03c9c1930810e79ce",
+    "source_sha256": "c05fcea4d4e3289dd3741c7ab93a5db2168f4a85c95f7fc03c9c1930810e79ce"
+  },
+  "skills/mods-example-pane-and-chart/references/raster-or-chart.md|tokensaver 0.3.0 src/ui/clawd.ts:357-380": {
+    "sha256": "9b9e268e2c3a5b136d7adf770d12b477f28c763ece1a799aed32c2e66fd7295c",
+    "source_sha256": "9b9e268e2c3a5b136d7adf770d12b477f28c763ece1a799aed32c2e66fd7295c"
+  },
+  "skills/mods-example-process-and-network/references/network-call.md|context-harness 0.0.1 hooks/jev-call.ts:57-81": {
+    "sha256": "886fd29b6a6b1218b09c9fc27731bf7e38dc43799343d8c2a0e7065bc22a51b4",
+    "source_sha256": "886fd29b6a6b1218b09c9fc27731bf7e38dc43799343d8c2a0e7065bc22a51b4"
+  },
+  "skills/mods-example-process-and-network/references/network-call.md|deck 0.4.12 hooks/register.js:1078-1087": {
+    "sha256": "7255e5695dd0a9e1b95b34e8699850001c14e1b19506fa1e4348cec18e770dcd",
+    "source_sha256": "7255e5695dd0a9e1b95b34e8699850001c14e1b19506fa1e4348cec18e770dcd"
+  },
+  "skills/mods-example-process-and-network/references/network-call.md|ponytail 5.3.2 hooks/band/metrics.ts:304-317": {
+    "sha256": "09e772a3fd4f89d7ccd71ec00565d4b3bd5a8ac2e737617c49fb0cce326f2f35",
+    "source_sha256": "09e772a3fd4f89d7ccd71ec00565d4b3bd5a8ac2e737617c49fb0cce326f2f35"
+  },
+  "skills/mods-example-process-and-network/references/process-run.md|ponytail 5.3.2 hooks/band/register.tsx:114-128": {
+    "sha256": "6e1b33390e0a30666992e28bc19f2299b51da338556d4b26c4902246762d123b",
+    "source_sha256": "6e1b33390e0a30666992e28bc19f2299b51da338556d4b26c4902246762d123b"
+  },
+  "skills/mods-example-process-and-network/references/process-run.md|ponytail 5.3.2 hooks/ponytail-map.js:37-57": {
+    "sha256": "1773aebaf8169a598abbd6a4440db1a71ae3a9e8571d13b5d073454de53fbd59",
+    "source_sha256": "1773aebaf8169a598abbd6a4440db1a71ae3a9e8571d13b5d073454de53fbd59"
+  },
+  "skills/mods-example-process-and-network/references/scrubbing-before-send.md|context-harness 0.0.1 hooks/register.ts:161-166": {
+    "sha256": "ebd3e7da6067dd20e499e04e7c50265d04a2e94343de1a0f115c655607c85c7f",
+    "source_sha256": "ebd3e7da6067dd20e499e04e7c50265d04a2e94343de1a0f115c655607c85c7f"
+  },
+  "skills/mods-example-process-and-network/references/scrubbing-before-send.md|context-harness 0.0.1 hooks/scrub.ts:29-37": {
+    "sha256": "0eac554bcb62c8f58ae4c676ad469700393e4592fef6bae4746cff93f9fba3bc",
+    "source_sha256": "0eac554bcb62c8f58ae4c676ad469700393e4592fef6bae4746cff93f9fba3bc"
+  },
+  "skills/mods-example-process-and-network/references/scrubbing-before-send.md|context-harness 0.0.1 hooks/scrub.ts:4-20": {
+    "sha256": "0d469c8e22a44868aa788e05d816ccf302a4de8113a1f314c9e168d4c0af1cfd",
+    "source_sha256": "0d469c8e22a44868aa788e05d816ccf302a4de8113a1f314c9e168d4c0af1cfd"
+  },
+  "skills/mods-example-session-and-timers/references/audio-cue.md|deck 0.4.12 hooks/register.js:1132-1138": {
+    "sha256": "26f994b9b197509f955c978011c1a45a9ad23655e220a87674de3933bc6d1b17",
+    "source_sha256": "26f994b9b197509f955c978011c1a45a9ad23655e220a87674de3933bc6d1b17"
+  },
+  "skills/mods-example-session-and-timers/references/audio-cue.md|deck 0.4.12 hooks/register.js:983-986": {
+    "sha256": "07358aa2e5b43fe93664ab83a1ab93494497deeeb4a44430f139d19e985b11a9",
+    "source_sha256": "07358aa2e5b43fe93664ab83a1ab93494497deeeb4a44430f139d19e985b11a9"
+  },
+  "skills/mods-example-session-and-timers/references/clock-or-timer.md|deck 0.4.12 hooks/register.js:1565-1580": {
+    "sha256": "86deaba4bc57a05472d343bd71b16e8e222bdf6ad287cc80bee0aacfe112234b",
+    "source_sha256": "86deaba4bc57a05472d343bd71b16e8e222bdf6ad287cc80bee0aacfe112234b"
+  },
+  "skills/mods-example-session-and-timers/references/clock-or-timer.md|tokensaver 0.3.0 hooks/register.tsx:316-330": {
+    "sha256": "d4ebcccb383152fbdedeef17d6f2ba58a2909263699265890dfc734b358f8d8d",
+    "source_sha256": "d4ebcccb383152fbdedeef17d6f2ba58a2909263699265890dfc734b358f8d8d"
+  },
+  "skills/mods-example-session-and-timers/references/clock-or-timer.md|tokensaver 0.3.0 hooks/register.tsx:432-456": {
+    "sha256": "5608699b0bbe4b2d9a61ba5427b5a3964b97df426cc4ed0f05abcd8637ec5a1e",
+    "source_sha256": "5608699b0bbe4b2d9a61ba5427b5a3964b97df426cc4ed0f05abcd8637ec5a1e"
+  },
+  "skills/mods-example-session-and-timers/references/session-start-wiring.md|deck 0.4.12 hooks/register.js:1540-1563": {
+    "sha256": "749a4ea816d96652d5eafb8ffff1e1072970623afb853b5c00055fb36a43b9f5",
+    "source_sha256": "749a4ea816d96652d5eafb8ffff1e1072970623afb853b5c00055fb36a43b9f5"
+  },
+  "skills/mods-example-session-and-timers/references/session-start-wiring.md|ponytail 5.3.2 hooks/claude-codex-hooks.json:3-15": {
+    "sha256": "9aaffc0d7ada8ff0f8e0846c53387595bd801613f57a8a366b0aac48b816af13",
+    "source_sha256": "9aaffc0d7ada8ff0f8e0846c53387595bd801613f57a8a366b0aac48b816af13"
+  },
+  "skills/mods-example-session-and-timers/references/session-start-wiring.md|tokensaver 0.3.0 hooks/register.tsx:635-654": {
+    "sha256": "a203c85403323746cdaf84bc9ebe9b418e616cd2c2166bc17090f111b9ab9326",
+    "source_sha256": "a203c85403323746cdaf84bc9ebe9b418e616cd2c2166bc17090f111b9ab9326"
+  },
+  "skills/mods-example-session-and-timers/references/toast-or-log.md|context-harness 0.0.1 hooks/register.ts:211-226": {
+    "sha256": "906d2fb9603492a167834b84dad4f2dff16295b456895dcbca5197028e9074d9",
+    "source_sha256": "906d2fb9603492a167834b84dad4f2dff16295b456895dcbca5197028e9074d9"
+  },
+  "skills/mods-example-session-and-timers/references/toast-or-log.md|context-harness 0.0.1 hooks/storage.ts:108-115": {
+    "sha256": "002c2623a95ba1575757b207764ac8c996cd7842066142bfb9462c5d1f305add",
+    "source_sha256": "002c2623a95ba1575757b207764ac8c996cd7842066142bfb9462c5d1f305add"
+  },
+  "skills/mods-example-session-and-timers/references/toast-or-log.md|tokensaver 0.3.0 hooks/register.tsx:272-277": {
+    "sha256": "64030f101197de20d623d2a1cc1970c2a3d4790c615c1117d1622c1f4045ebef",
+    "source_sha256": "64030f101197de20d623d2a1cc1970c2a3d4790c615c1117d1622c1f4045ebef"
+  },
+  "skills/mods-example-state-and-settings/references/file-read-or-write.md|ponytail 5.3.2 hooks/band/register.tsx:142-149": {
+    "sha256": "33b12f25c58941ea3931b955575484793977f71f06447ed1e53e86b9538569b3",
+    "source_sha256": "33b12f25c58941ea3931b955575484793977f71f06447ed1e53e86b9538569b3"
+  },
+  "skills/mods-example-state-and-settings/references/file-read-or-write.md|ponytail 5.3.2 hooks/ponytail-runtime.js:60-66": {
+    "sha256": "53e1194150c83af25142982002d96d482bf36499a4f53f0d37774969e9a8e4a3",
+    "source_sha256": "53e1194150c83af25142982002d96d482bf36499a4f53f0d37774969e9a8e4a3"
+  },
+  "skills/mods-example-state-and-settings/references/file-read-or-write.md|tokensaver 0.3.0 hooks/register.tsx:295-297": {
+    "sha256": "c1a9b9031db57017522a618b7fec34dad5d1784e90235c01219d51e530788523",
+    "source_sha256": "c1a9b9031db57017522a618b7fec34dad5d1784e90235c01219d51e530788523"
+  },
+  "skills/mods-example-state-and-settings/references/settings-or-switch.md|ponytail 5.3.2 hooks/ponytail-config.js:141-156": {
+    "sha256": "ff76cdb3b3441c7eb8e5f8e5b3c07049a6712556402b6e25d240107feb9686c5",
+    "source_sha256": "ff76cdb3b3441c7eb8e5f8e5b3c07049a6712556402b6e25d240107feb9686c5"
+  },
+  "skills/mods-example-state-and-settings/references/settings-or-switch.md|tokensaver 0.3.0 .claude-plugin/plugin.json:22-35": {
+    "sha256": "55189d2c98e8d3d6cff3b7141e0a060bbbec1d3f4f840ae2ba205d0e264c7335",
+    "source_sha256": "55189d2c98e8d3d6cff3b7141e0a060bbbec1d3f4f840ae2ba205d0e264c7335"
+  },
+  "skills/mods-example-state-and-settings/references/settings-or-switch.md|tokensaver 0.3.0 src/runtime/config.ts:27-37": {
+    "sha256": "91653ffc468ce1ae0755fe69fb1f29c592aa16911857c08c091017d9dbd0db28",
+    "source_sha256": "91653ffc468ce1ae0755fe69fb1f29c592aa16911857c08c091017d9dbd0db28"
+  },
+  "skills/mods-example-state-and-settings/references/store-or-state.md|deck 0.4.12 hooks/register.js:1010-1012": {
+    "sha256": "65df7688288e56f10ebb261787c59faee02db9da56d03aff7e21ee15876846bf",
+    "source_sha256": "65df7688288e56f10ebb261787c59faee02db9da56d03aff7e21ee15876846bf"
+  },
+  "skills/mods-example-state-and-settings/references/store-or-state.md|ponytail 5.3.2 hooks/band/register.tsx:77-79": {
+    "sha256": "26b32d44298ef7d75cc2a20c6f24a9bc224fea52d80f88172091cd7c7809af70",
+    "source_sha256": "26b32d44298ef7d75cc2a20c6f24a9bc224fea52d80f88172091cd7c7809af70"
+  },
+  "skills/mods-example-state-and-settings/references/store-or-state.md|tokensaver 0.3.0 hooks/register.tsx:278-285": {
+    "sha256": "e95d42feab66bb6d2595c6d728874bdc58f3f61c6ad08357f7ea93b553d800cf",
+    "source_sha256": "e95d42feab66bb6d2595c6d728874bdc58f3f61c6ad08357f7ea93b553d800cf"
+  }
+}

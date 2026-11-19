@@ -9,7 +9,7 @@ allowed-tools: Read
 
 ## Overview
 
-This menu lists every skill an agent of `mods-expert-developer-plugin` can load at runtime: the four optional, recommended user-scope tool skills the agents use but the plugin does not ship, the 61 chapter skills the plugin ships (60 adapted Claude Code documentation chapters and one community how-to), two tools that read the drafts of the requirements-drafts mod, two skills that install and uninstall mod plugins, and three reference-only tutorials with example mods. It names each skill once, says what it covers, and shows how to load it. It holds no chapter content itself.
+This menu lists every skill an agent of `mods-expert-developer-plugin` can load at runtime: the four optional, recommended user-scope tool skills the agents use but the plugin does not ship, the 61 chapter skills the plugin ships (60 adapted Claude Code documentation chapters and one community how-to), two skills that install and uninstall mod plugins, one skill that turns an existing skill into a mod, three reference-only tutorials with example mods, and twelve reference-only example skills that excerpt installed mods or community repositories at pinned commits, or describe their sources in this plugin's own words. It also names the one skill an agent cannot load, the launcher the user types to start the mods expert agent. It names each skill once, says what it covers, and shows how to load it, or, for the launcher, how the user starts it. It holds no chapter content itself.
 
 ## Prerequisites
 
@@ -56,69 +56,39 @@ Input: a step must read lines 1 to 80 of the hooks module before editing it.
   - [Settings and Configuration](references/skills-catalog.md#settings-and-configuration)
   - [Sessions and Runtime](references/skills-catalog.md#sessions-and-runtime)
   - [Troubleshooting](references/skills-catalog.md#troubleshooting)
-  - [Requirements drafts](references/skills-catalog.md#requirements-drafts)
   - [Mod install and uninstall](references/skills-catalog.md#mod-install-and-uninstall)
+  - [Skill to mod](references/skills-catalog.md#skill-to-mod)
+  - [Agent launcher](references/skills-catalog.md#agent-launcher)
   - [Tutorials (reference only)](references/skills-catalog.md#tutorials-reference-only)
+  - [Example skills (reference only)](references/skills-catalog.md#example-skills-reference-only)
+- [the example skills menu](references/example-skills-menu.md): the twelve example skills with their discovery text; read it when building a component like an installed mod.
+  - [Example skills (reference only)](references/example-skills-menu.md#example-skills-reference-only)
 
 ## Standalone Skills
 
 These four user-scope tool skills are optional, recommended. Load each on demand when it is installed; when one is not, use the native tool for the job (Read, Edit and Write, Grep and Glob, plain reading).
 
+The use, the non-use, the inputs, the outputs and the dependencies of each tool are in [references/standalone-skills.md](references/standalone-skills.md).
+  - [tldr-code](references/standalone-skills.md#tldr-code)
+  - [fastedit](references/standalone-skills.md#fastedit)
+  - [jgrep](references/standalone-skills.md#jgrep)
+  - [quicksilver](references/standalone-skills.md#quicksilver)
+
 ### tldr-code
-
-**Use when:** a scoped read of a file or a line range, or locating code by symbol: definitions, callers, impact, structure.
-
-**Do not use when:** the job is a write (use fastedit), or locating code by what it does rather than by a name (use jgrep).
 
 **Load with:** `Skill({skill: "tldr-code", args: "..."})`
 
-**Inputs:** a file path with a line range, or a symbol name and a directory.
-
-**Outputs:** only the requested lines or symbol facts, read into context; nothing is written.
-
-**Dependencies:** the user-scope `tldr-code` skill and the `tldr` CLI; not shipped by this plugin.
-
 ### fastedit
-
-**Use when:** any file change: creating a file, editing, inserting, renaming or deleting a symbol or a block.
-
-**Do not use when:** the job is only reading (use tldr-code).
 
 **Load with:** `Skill({skill: "fastedit", args: "..."})`
 
-**Inputs:** the target file and a snippet, or the content of a new file on stdin.
-
-**Outputs:** the validated write, with a backup; check it with `fastedit diff`.
-
-**Dependencies:** the user-scope `fastedit` skill and the `fastedit` CLI; not shipped by this plugin.
-
 ### jgrep
-
-**Use when:** locating code by what it does when the identifier is unknown.
-
-**Do not use when:** the exact identifier or string is already known (plain grep is enough).
 
 **Load with:** `Skill({skill: "jgrep", args: "..."})`
 
-**Inputs:** a natural-language description of the behaviour and the directory to search.
-
-**Outputs:** ranked file and line locations, to read next with tldr-code.
-
-**Dependencies:** the user-scope `jgrep` skill and the `jgrep` CLI; not shipped by this plugin.
-
 ### quicksilver
 
-**Use when:** a verdict over bulk input that would be expensive to read: which of many files, lines or items matter.
-
-**Do not use when:** the input is small enough to read, the job is generation, editing, counting or multi-step reasoning, or the input may hold secrets (it is sent to an outside model).
-
 **Load with:** `Skill({skill: "quicksilver", args: "..."})`
-
-**Inputs:** the files, lines or items to triage and the question to decide.
-
-**Outputs:** a per-item verdict, which is a lead to verify with tldr-code, never evidence.
-
-**Dependencies:** the user-scope `quicksilver` skill, Node, and its qs.mjs script in that skill's scripts folder, plus a configured provider; not shipped by this plugin.
 
 ## Plugin Skills
 
@@ -220,30 +190,41 @@ Every skill below loads as `mods-expert-developer-plugin:<skill>`. Its full entr
 | mods-expert-developer-plugin:mods-doc-troubleshooting-cc-setup | Troubleshoot installation and login |
 | mods-expert-developer-plugin:mods-doc-cc-debug-mode | Debug your configuration |
 
-### Requirements drafts
-
-Tools of the requirements-drafts mod: they read the drafts the mod saves. Both are user- and model-invocable.
-
-| Skill | Covers |
-|---|---|
-| mods-expert-developer-plugin:mods-requirements-drafts-list | List the saved requirements drafts, newest first, for a project or all projects |
-| mods-expert-developer-plugin:mods-requirements-drafts-search | Find saved requirements drafts by keywords that must all match |
-
 ### Mod install and uninstall
 
 Tool skills of this plugin that install and uninstall mod plugins with the claude CLI, then reload the plugins. Both are user-invocable, and both act only on the names the user gives and the choices the user confirms.
 
 | Skill | Covers |
 |---|---|
-| mods-expert-developer-plugin:mods-install-mod | Install a mod plugin from its marketplace, by exact names or GitHub repos, then reload the plugins |
+| mods-expert-developer-plugin:mods-install-mod | Install a mod plugin by its names, a --marketplace source or the GitHub repos, then reload the plugins |
 | mods-expert-developer-plugin:mods-uninstall-mod | Uninstall a mod plugin named approximately, after the user picks it, then reload the plugins |
+
+### Skill to mod
+
+A tool skill of this plugin that the mods expert agent loads: it decides whether an existing skill should become a mod and, when it should, scaffolds the mod and verifies it. It is model-invocable, not user-invocable.
+
+| Skill | Covers |
+|---|---|
+| mods-expert-developer-plugin:mods-skill-to-mod | Decide whether a skill should become a mod; scaffold a mod plugin that bundles it, with a switch for every function and an opt-in debug log; verify it |
+
+### Agent launcher
+
+A skill only the user starts, by typing it with a prompt: it starts the mods expert agent in the background and relays its questions and report. It sets `disable-model-invocation: true`, so no agent can load it.
+
+| Skill | Covers |
+|---|---|
+| mods-expert-developer-plugin:mods-expert-developer-agent | Start the mods expert agent with the user's prompt, relay its questions and the answers, show its report |
 
 ### Tutorials (reference only)
 
-Worked examples for reading and copying, not chapters: the chapter skills above are authoritative and win on any disagreement, except that for API names and type shapes (event, method and argument names and their TypeScript types) the type files your running build generates win, while for behaviour the types cannot express (ordering, timing, what `next` does) the chapters still win (events and methods change across releases), and the example code a tutorial carries is never loaded as part of the plugin. The scripts the quickstart carries are tools to run, not examples to read; the example code stays reference only.
+Worked examples for reading and copying, not chapters: the chapter skills above win on any disagreement, except API names and type shapes, where the type files your running build generates win. Example code is never loaded as part of the plugin. Details, and what the quickstart scripts are, are in [the catalog](references/skills-catalog.md#tutorials-reference-only).
 
 | Skill | Covers |
 |---|---|
 | mods-expert-developer-plugin:mods-tutorial-quickstart | Checklist for a first mod; traps the chapters do not settle; example index; house conventions; engine traps by symptom; a threat-model template; a review checklist; check-mod, new-mod and keep-mod scripts |
 | mods-expert-developer-plugin:mods-tutorial-call-intercept-mods | Example mods that block, rewrite and answer tool calls, add a tool, or guard file paths fail-closed |
 | mods-expert-developer-plugin:mods-tutorial-interface-mods | Example mods that draw a band above the prompt, a pane, a status line, and a band kept current by a git poller |
+
+### Example skills (reference only)
+
+Twelve guides, each with short excerpts of installed third-party mods or of community repositories at pinned commits or, where it shows none, with its sources described in this plugin's own words, for reading and adapting, not chapters. When the task is building a component like an installed mod (band, status line, pane, chart, tool, slash command, state, settings, call intercept, instruction injection, session start, timer, toast, process run, network call, scrubbing, compaction, model call, cost math, saved-account registry, login swap, keychain item store, token refresh, refresh lock, security guard), read [the example skills menu](references/example-skills-menu.md) and pick the skill there.

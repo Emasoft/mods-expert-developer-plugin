@@ -1,15 +1,16 @@
-// Tests of the probe-runner mod (TRDD-03IIDGPP, increment 1): the probe tool and its command, the dev-tools gate on
+// Tests of the probe-runner mod (TRDD-03IIDGPP, increment 1): the probe tool and its command, its switch on
 // both, the plugin directories, the binaries from resolve-bin and the report path through the send command. hooks/index.ts
 // hooks/index.ts wires the mod, and the tests drive it through $.session.start, because the kit refuses an engine call from a hook that the hooks module does not reach.
 import { describe, expect, mock, test, type MockClock } from 'claude-code/testing'
 
-import { DEV_TOOLS_KEY, DEV_TOOLS_OFF } from '../dev-tools'
+import { DEV_TOOLS_OFF, PROBE } from '../dev-tools'
 import { TOOL_NAME, USAGE, parseArgs, pluginDir, probeOf, scriptArgv, type ProbeBins } from '../probe-runner/logic'
 import { SEND_COMMAND } from '../self-command/logic'
+import { keyFor, signed, signedOn } from './switch-world'
+import { seedMasters } from './masters'
 
 const PLUGIN = 'mods-expert-developer-plugin'
 const TOOL = `mcp__${PLUGIN}__${TOOL_NAME}`
-const ON = { [DEV_TOOLS_KEY]: true }
 // Placeholder home and absolute program paths, not a machine's: tests/test_no_absolute_paths.py counts none of them.
 const HOME = '/home/<user>'
 const ROOT = '/work'
@@ -40,6 +41,8 @@ type World = {
   processResult: { exitCode: number; stdout: string; stderr: string }
   /** When true, the send command refuses the report. */
   sendFails: boolean
+  /** What the mods wrote, by path: here only the debug log. */
+  written: Map<string, string>
   sent: string[]
   prompts: string[]
   logs: string[]
@@ -63,6 +66,7 @@ function world(on: any, store: Record<string, unknown> = {}, programs: string[] 
     argv: [],
     processResult: { exitCode: 0, stdout: '# probe report', stderr: '' },
     sendFails: false,
+    written: new Map(),
     sent: [],
     prompts: [],
     logs: [],
@@ -75,6 +79,13 @@ function world(on: any, store: Record<string, unknown> = {}, programs: string[] 
   on('env.get', ($: any, e: any) => ({ value: e.name === 'HOME' ? w.home : undefined }))
   on('fs.exists', ($: any, e: any) => ({ value: w.files.has(e.path) }))
   on('fs.stat', () => ({ value: { kind: 'file' } }))
+  on('fs.read', ($: any, e: any) => ({ value: w.written.get(e.path) }))
+  on('fs.write', ($: any, e: any) => {
+    w.written.set(e.path, e.text)
+    w.files.add(e.path)
+    return { value: undefined }
+  })
+  seedMasters(on, { read: (key) => (w.store.has(key) ? { value: w.store.get(key) } : undefined) })
   on('store.get', ($: any, e: any) => ({ value: w.store.get(e.key) }))
   on('store.set', ($: any, e: any) => {
     w.store.set(e.key, e.value)
@@ -154,7 +165,7 @@ describe('probe-runner arguments and paths', () => {
   })
 })
 
-describe('the probe-runner gate', () => {
+describe('the probe switch', () => {
   test('off by default: nothing registers, and the tool and the command refuse at once', async ($, on) => {
     const w = world(on)
     await start($)
@@ -168,16 +179,16 @@ describe('the probe-runner gate', () => {
   })
 
   test('on: the tool registers not deferred, and the command registers', async ($, on) => {
-    const w = world(on, ON)
+    const w = world(on, await signedOn([PROBE]))
     await start($)
     expect(w.tools.filter((t) => t.name === TOOL_NAME)).toEqual([{ name: TOOL_NAME, isDeferred: false }])
     expect(w.commands).toContain('probe-runner')
   })
 
-  test('turning the gate off refuses a call made after the tools registered', async ($, on) => {
-    const w = world(on, ON)
+  test('turning its switch off refuses a call made after the tool registered', async ($, on) => {
+    const w = world(on, await signedOn([PROBE]))
     await start($)
-    w.store.set(DEV_TOOLS_KEY, false)
+    w.store.set(keyFor(PROBE), await signed(PROBE, false, 6_000))
     expect((await $.tool.call({ tool: TOOL, plugins: ['demo'], steps: ['x'] } as any)).deny).toBe(DEV_TOOLS_OFF)
     expect((await $.command.run(run('demo x'))).text).toBe(DEV_TOOLS_OFF)
     await w.clock.settle()
@@ -187,7 +198,7 @@ describe('the probe-runner gate', () => {
 
 describe('the probe tool', () => {
   test('answers at once, then runs the probe after the turn with python3, claude, tmux and git and sends its report', async ($, on) => {
-    const w = world(on, ON)
+    const w = world(on, await signedOn([PROBE]))
     await start($)
     const r = await $.tool.call({ tool: TOOL, plugins: ['demo'], steps: ['/demo on'] } as any)
     expect(r.result).toBe('started: 1 step(s) with demo on sonnet; the report arrives as the next message when the probe ends')
@@ -200,7 +211,7 @@ describe('the probe tool', () => {
   })
 
   test('a plugin with no manifest is answered before anything runs', async ($, on) => {
-    const w = world(on, ON)
+    const w = world(on, await signedOn([PROBE]))
     await start($)
     expect((await $.tool.call({ tool: TOOL, plugins: ['nope'], steps: ['x'] } as any)).deny).toBe(`no plugin at ${ROOT}/plugins/nope: it has no .claude-plugin/plugin.json`)
     await w.clock.settle()
@@ -208,7 +219,7 @@ describe('the probe tool', () => {
   })
 
   test('the repository itself answers a bare name or "." when it is a plugin', async ($, on) => {
-    const w = world(on, ON)
+    const w = world(on, await signedOn([PROBE]))
     w.files.add(`${ROOT}/.claude-plugin/plugin.json`)
     await start($)
     await $.tool.call({ tool: TOOL, plugins: ['.'], steps: ['/x'] } as any)
@@ -217,7 +228,7 @@ describe('the probe tool', () => {
   })
 
   test('a missing tmux answers the call as started, then the report names every place it looked, and nothing runs', async ($, on) => {
-    const w = world(on, ON, PROGRAMS.filter((p) => p !== TMUX))
+    const w = world(on, await signedOn([PROBE]), PROGRAMS.filter((p) => p !== TMUX))
     await start($)
     const r = await $.tool.call({ tool: TOOL, plugins: ['demo'], steps: ['x'] } as any)
     expect(r.result).toMatch(/^started: /)
@@ -229,7 +240,7 @@ describe('the probe tool', () => {
   })
 
   test('a probe whose script exits non-zero sends the exit code and its error text as the report', async ($, on) => {
-    const w = world(on, ON)
+    const w = world(on, await signedOn([PROBE]))
     w.processResult = { exitCode: 2, stdout: '', stderr: 'boom' }
     await start($)
     expect((await $.tool.call({ tool: TOOL, plugins: ['demo'], steps: ['x'] } as any)).result).toMatch(/^started: /)
@@ -238,7 +249,7 @@ describe('the probe tool', () => {
   })
 
   test('a HOME, session root or working folder that is blank or relative refuses the call and runs nothing', async ($, on) => {
-    const w = world(on, ON)
+    const w = world(on, await signedOn([PROBE]))
     await start($)
     const cases: Array<[home: string | undefined, root: string, cwd: string, deny: string]> = [
       [undefined, ROOT, CWD, 'Not run: the home folder (HOME) is not known.'],
@@ -260,7 +271,7 @@ describe('the probe tool', () => {
   })
 
   test('input that is not a probe is denied with what is missing', async ($, on) => {
-    world(on, ON)
+    world(on, await signedOn([PROBE]))
     await start($)
     expect((await $.tool.call({ tool: TOOL, steps: ['x'] } as any)).deny).toBe('plugins is required: at least one plugin name or path')
   })
@@ -268,7 +279,7 @@ describe('the probe tool', () => {
 
 describe('the probe-runner command', () => {
   test('answers at once, then runs the probe after the turn and sends its report through the send command', async ($, on) => {
-    const w = world(on, ON)
+    const w = world(on, await signedOn([PROBE]))
     await start($)
     const r = await $.command.run(run('demo /demo on'))
     expect(r.text).toBe('started: 1 step(s) with demo on sonnet; the report arrives as the next message when the probe ends')
@@ -279,12 +290,12 @@ describe('the probe-runner command', () => {
   })
 
   test('a report the send command refuses is logged and toasted, and nothing is submitted as a prompt', async ($, on) => {
-    const w = world(on, ON)
+    const w = world(on, await signedOn([PROBE]))
     w.sendFails = true
     await start($)
     await $.command.run(run('demo /demo on'))
     await w.clock.settle()
-const logged = w.logs.filter((l) => l.startsWith('probe-runner:'))
+    const logged = w.logs.filter((l) => l.startsWith('probe-runner:'))
     expect(logged.length).toBe(1)
     expect(logged[0]).toMatch(/^probe-runner: the report could not be sent to the model: /)
     expect(w.toasts.filter((t) => t.startsWith('The probe report')).length).toBe(1)
@@ -292,8 +303,18 @@ const logged = w.logs.filter((l) => l.startsWith('probe-runner:'))
     expect(w.prompts).toEqual([])
   })
 
+  test('with its debug log on, the line of a refused report is also written to the probe-runner log', async ($, on) => {
+    const w = world(on, await signedOn([PROBE, 'probe-runner.debug-log']))
+    w.sendFails = true
+    await start($)
+    await $.command.run(run('demo /demo on'))
+    const log = `${HOME}/.claude/plugins/data/${PLUGIN}-inline/debug/probe-runner.log`
+    for (let look = 0; look < 2000 && !w.written.has(log); look++) await w.clock.settle()
+    expect(w.written.get(log)).toMatch(/ probe-runner probe-runner: the report could not be sent to the model: /)
+  })
+
   test('a usage error answers the usage line and runs nothing', async ($, on) => {
-    const w = world(on, ON)
+    const w = world(on, await signedOn([PROBE]))
     await start($)
     expect((await $.command.run(run('demo'))).text).toBe(USAGE)
     await w.clock.settle()
@@ -301,7 +322,7 @@ const logged = w.logs.filter((l) => l.startsWith('probe-runner:'))
   })
 
   test('a plugin with no manifest answers the refusal at once and runs nothing', async ($, on) => {
-    const w = world(on, ON)
+    const w = world(on, await signedOn([PROBE]))
     await start($)
     expect((await $.command.run(run('nope /x'))).text).toBe(`no plugin at ${ROOT}/plugins/nope: it has no .claude-plugin/plugin.json`)
     await w.clock.settle()

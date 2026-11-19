@@ -14,7 +14,7 @@ Tutorial and reference example only. The mods-doc-* chapter skills of this plugi
 
 A mod is a Claude Code plugin whose behaviour is a TypeScript or JavaScript hooks module: one file exports `register(on)`, and each hook has the shape `($, e, next)`. This tutorial is a checklist for making one. Each step names the chapter skill that owns the facts, so the chapter stays the single source.
 
-It is adapted from the `creating-mods` skill of BeLazy167/claude-mods-skill (MIT, see NOTICE at the plugin root). The source's install steps, community links and claims the chapters contradict were dropped. Claims the chapters do not confirm are marked UNVERIFIED in the traps table below.
+It is adapted from the `creating-mods` skill of BeLazy167/claude-mods-skill (MIT, see NOTICE at the plugin root). The source's install steps, community links and claims the chapters contradict were dropped. Claims the chapters do not confirm are marked UNVERIFIED in the [traps table](references/traps-table.md).
 
 The example mods live in two sibling tutorials: `mods-tutorial-call-intercept-mods` (tool-call hooks, a tool the model calls) and `mods-tutorial-interface-mods` (a band above the prompt, a pane).
 
@@ -34,25 +34,13 @@ The example mods live in two sibling tutorials: `mods-tutorial-call-intercept-mo
 4. Write the hook. One plain hook per event per module, a refusal before `next`, and a `.catch` on every hook that can refuse. Use a matcher where the event has one, and keep each `$` call only if you can say what breaks without it (the [plan-time rules](references/house-conventions.md#plan-time-rules)). Facts: `mods-doc-mods-and-events`, "How a hook handles an event" and "Mod ordering and failed hooks".
 5. Run `claude plugin validate <mod>` and read what it lists. Facts: `mods-doc-mods-development`, "Change and test a mod".
 6. Write `tests/*.test.ts` and run `claude plugin test` in the mod folder. Facts: `mods-doc-mods-testing`, "Write a mod test".
-7. Type-check with `npx -p typescript@5 tsc -p <mod> --noEmit` once the types are written. This command comes from the source, not the chapters. The script `${CLAUDE_SKILL_DIR}/scripts/check-mod.sh <mod-dir>` (this skill's own folder; Claude Code fills in the path when the skill is loaded) runs it plus steps 5 and 6 in one go and prints `== PASS` or `== FAIL: <step>`.
+7. Type-check with `npx -p typescript@5 tsc -p <mod> --noEmit` once the types are written. The chapter shows only `tsc -p ./first-mod` (`mods-doc-mods-development`, "Change and test a mod"); the `npx -p typescript@5` form and `--noEmit` come from the source. The script `${CLAUDE_SKILL_DIR}/scripts/check-mod.sh <mod-dir>` (this skill's own folder; Claude Code fills in the path when the skill is loaded) runs it plus steps 5 and 6 in one go and prints `== PASS` or `== FAIL: <step>`.
 8. Run it live with `claude --plugin-dir <mod>`; saving a file reloads it. An agent drives this live check with the Anthropic `computer-use` skill: see the house conventions, [Live check](references/house-conventions.md#live-check). Facts: `mods-doc-mods-troubleshooting`, "Find out why a mod does nothing" and "Read the debug log".
 9. Ship it from a repository you keep, and bump `version` on every release. Facts: `mods-doc-mods-development`, "Share your mod", and `mods-doc-publish-a-plugin`.
 
 ### Traps the chapters do not settle
 
-| Trap from the source | Status |
-|---|---|
-| Run a slash command with `$.command.run({ command: 'compact' })`, not `$.prompt.submit` | UNVERIFIED. Chapters: only `run`, and `$.session.compact` for compaction. 2.1.309 type docs: `$.session.compact` is the `/compact` call, refused mid-turn; `$.command.run` lists `compact` as an example, refused in a hook the turn waits on. |
-| A rewritten result returned as `{ ...r, text }` is ignored, because `text` and `ref` are set by core; answer `{ result: newResult }` | UNVERIFIED. `redact-output` follows this shape. |
-| A path guard is bypassed by `..`, symlinks or other spellings; allow-list on `(await $.fs.stat(path, { resolve: true })).realPath` | UNVERIFIED API. Normalising a path first is sound either way. |
-| `mobile` has no `Input` and `vscode` no `Client` | UNVERIFIED. The reference confirms only that `Raster` and `Image` draw in the terminal. |
-| `h` is a global in a `.tsx` hooks module | UNVERIFIED. |
-| A `Client` module path must be a string literal | UNVERIFIED. |
-| `tsc` rejects a mount target unless `props` are the site's full props; copy the `PANE` constant of `notes-pane` | UNVERIFIED. |
-| `claude plugin test` reports `the rollout switch served off` for users on an LLM gateway | UNVERIFIED. |
-| A `*` hook also fires while the mods API is being built at `engine.create`, when `$` has no members yet | UNVERIFIED. The reference lists `engine.create` (`mods-doc-mods-reference`, section "Other mods"), not `*` hooks there. |
-| Testing a mod that relies on a second mod requires the second plugin to be installed and loaded first | UNVERIFIED. The events chapter says only that dependency order follows the manifest `dependencies` (`mods-doc-mods-and-events`, section "The order mods run in"). |
-| Loading the built-in `plugin-authoring` skill starts the dev-mods watch | UNVERIFIED. The development chapter says only that the first saved file prompts for hot reloading (`mods-doc-mods-development`, section "Ask Claude for a mod"). Expect the hot-reload prompt on your first save. |
+Claims from the source that the chapters do not confirm, one row each; open the [traps table](references/traps-table.md) before you use one of these calls: `$.command.run` for `compact` against `$.session.compact`, a rewritten result as `{ ...r, text }` versus `{ result }`, path guards with `$.fs.stat` and `resolve`, `Input` on mobile and `Client` on vscode, `h` in a `.tsx` hooks module, a literal `Client` module path, a `tsc` mount target and `props`, the gateway message from `claude plugin test`, `*` hooks at `engine.create`, testing a mod that needs a second mod, and the `plugin-authoring` skill starting the watch. The VERIFIED row covers test inputs that run under `claude plugin test` but fail `tsc`: the short fires of `$.command.run` and `turn.complete`, and a stubbed `$.command.register` handler.
 
 ### Example index
 
@@ -112,6 +100,9 @@ Input: "show the test status above the prompt". Output: copy `branch-band` from 
   - [Footprint against a plan](references/house-conventions.md#footprint-against-a-plan)
   - [UNVERIFIED — test on a real build before relying on it](references/house-conventions.md#unverified--test-on-a-real-build-before-relying-on-it)
   - [A premise this plugin rejects](references/house-conventions.md#a-premise-this-plugin-rejects)
+- [traps-table](references/traps-table.md): the traps the chapters do not settle, one row each, UNVERIFIED unless a type file settled it, including the VERIFIED row on test inputs that pass at runtime but fail `tsc`.
+  - [How to read this table](references/traps-table.md#how-to-read-this-table)
+  - [The traps](references/traps-table.md#the-traps)
 - [engine-traps](references/engine-traps.md): engine behaviour indexed by symptom, each row tagged CHAPTER, UPSTREAM or UNVERIFIED with the run that settles it, plus open issues and stale claims.
   - [How to read this file](references/engine-traps.md#how-to-read-this-file)
   - [The mod does not load](references/engine-traps.md#the-mod-does-not-load)

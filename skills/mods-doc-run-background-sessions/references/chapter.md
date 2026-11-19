@@ -63,9 +63,9 @@ The line in `.env.local` (or `.env`) is exactly `CLAUDE_CODE_OAUTH_TOKEN=<token>
 
 Warning: the following code could be malicious. Audit it for safety before executing it!
 ```python
+"""Start one background Claude session with the token read from .env.local or .env."""
 import os
 import subprocess
-import sys
 
 KEY = "CLAUDE_CODE_OAUTH_TOKEN"
 ENV_FILES = (".env.local", ".env")
@@ -81,20 +81,20 @@ def read_token() -> str:
     for env_file in ENV_FILES:
         if not os.path.exists(env_file):
             continue
-        with open(env_file, encoding="utf-8-sig") as handle:
-            for line in handle:
-                line = line.strip()
-                if not line or line.startswith("#"):
+        with open(env_file, encoding="utf-8-sig") as stream:
+            for raw in stream:
+                entry = raw.strip()
+                if not entry or entry.startswith("#"):
                     continue
-                if line.startswith("export "):
-                    line = line[len("export "):].lstrip()
-                if "=" not in line:
+                if entry.startswith("export "):
+                    entry = entry[len("export "):].lstrip()
+                if "=" not in entry:
                     continue
-                name, value = line.split("=", 1)
+                name, value = entry.split("=", 1)
                 value = unquote(value.strip())
                 if name.strip() == KEY and value:
                     return value
-    sys.exit(f"{KEY} not found in .env.local or .env")
+    raise SystemExit(f"{KEY} not found in .env.local or .env")
 
 
 def start_background_session(name: str, prompt: str) -> None:

@@ -1,0 +1,45 @@
+---
+trdd-id: ZTQIWQDV
+title: Absorb the integrated mods into the skills without naming their origin
+column: design
+status: tasked
+created: 2026-11-01T01:07:42+0100
+updated: 2026-11-01T07:31:22+0100
+current-owner: main-agent@emasoft-mods-expert-developer
+created-by: main-agent@emasoft-mods-expert-developer
+task-type: refactor
+min-approval-requirement: none
+assignee: main-agent@emasoft-mods-expert-developer
+mandate: true
+mandated-by: none
+approved: true
+approval-judge: main-agent@emasoft-mods-expert-developer
+approval-datetime: 2026-11-01T01:07:42+0100
+implementation-commits: [1c1bc93, 04700f5]
+---
+
+# Absorb the integrated mods into the skills without naming their origin
+
+## ⏵ STATE — READ THIS FIRST ON RESUME (authoritative; supersedes the body) — 2026-11-01
+
+Column design. Ordering (orchestrator decision, not an owner directive): the strip starts only after TRDD-R2GILGKU's N3, N4, N6 and N8 have merged onto main, so the shared catalog, menu and README have one writer at a time. This is not an npt: entry, because TRDD-R2GILGKU stays open on owner-only boxes long after those four merge.
+Owner questions (a) and (b) under the 2026-11-01 owner-directive section are still open.
+NEXT ACTION: propose the excerpt-lock redesign (provenance keyed outside the shipped headings, both consumers green before any heading is stripped).
+
+Owner directive (verbatim, 2026-11-01): "also the mods we integrated inn the plugin are to be fully integrated and absorbed, removing all references to the original mod. why you consider them forbidden? its not that we won't say in the readme of the plugin that we were inspired by those mods and list them. write the aknowledgments in the readme for all plugins we incorporated."
+
+Scope: the shipped skill text (SKILL.md and references) stops naming the mod each excerpt or idea came from; the credit is in the Acknowledgments section of README.md (written separately, before this card's work) and the licence notices stay in NOTICE. Constraints found while planning: (1) MIT: its copyright and permission notice must ship with every copy of a substantial portion, verbatim or adapted; only a true rewrite in this plugin's own words escapes it, so NOTICE keeps the notice for every MIT excerpt that is not rewritten. (2) Apache-2.0 (token-weather-usage), section 4: recipients get a copy of the licence (a); a modified file carries a notice that it was changed, which need not name the origin, while a verbatim excerpt is not modified (b); attribution notices that sat inside the quoted source range are kept (c); the upstream NOTICE text is carried only if the work ships a NOTICE file (d). Rewriting its excerpts in this plugin's own words avoids all of these. MIT reading in (1) is the conservative one: a short excerpt may not be a substantial portion. (3) The excerpt headings are what scripts/excerpt_lock.py and tests/test_example_excerpts.py use to prove each excerpt is verbatim from a licensed source at a pinned version, and the licensed-excerpt prior-art class of the no-copy test (TRDD-R2GILGKU) depends on them; removing the headings needs a lock kept outside the shipped text (for example keyed by file and content hash) so both proofs survive. (4) Sources with no licence or a non-commercial licence stay excluded from copying, because credit does not grant a licence; the no-copy test detects literal runs (8 words, 3 lines), not close paraphrase, so absorbing their ideas means writing new code. Effects to handle, carded as derived tasks when this card leaves design: the README.md example-skills paragraph (it says each excerpt names its mod, version, file, line range and licence), the account-switching entry that names the original mods, and the License section; the out-of-text excerpt lock and its tests; the prior-art class rewired to that lock. Open owner questions: (a) once the per-excerpt origin is gone, an agent copying a quoted MIT excerpt into a user's mod no longer sees that the MIT notice must go with it: keep a short licence marker per excerpt with no mod name, or rewrite every excerpt as this plugin's own code; (b) whether this plugin's own reference modules, meant to be copied into users' mods, are offered under MIT-0 so copying them carries no notice duty.
+
+## Approval log
+
+- 2026-11-01T01:07:42+0100 — MANDATE issued by main-agent@emasoft-mods-expert-developer (min-approval-requirement: none). Pre-approved: issuer authority >= required approver. No approval request was sent.
+
+## Owner directive 2026-11-01, integrated mods and snippets
+
+2026-11-01, verbatim: "if the mods have been integrated into the plugin, there is no need of a fork. its the plugin repo the source container. if instead you vendored them inside the plugin, you made an error. they should have been integrated in the plugin. so no need for forks either. instead if you added them only as a dependency of the plugin, then there is no need for a fork, but unless there was no change to the mod plugin code, they should be integrated. and don't confuse this with the breakdown of the components in modules that are to be added to the skills palette to be used by the developer. those are code snippets that must be stripped of every reference to the original repo and author."
+Checked 2026-11-01: the integrated mods (hooks/mod-manager, hooks/probe-runner, hooks/requirements-drafts, hooks/self-command, scripts/probe.py) are plugin code: plugin.json has no dependencies and they have no vendored folder; a grep for the sources NOTICE credits for them (KilimcininKorOglu, mishgoldenberg and their repositories, BeLazy167) finds none in their code. Not yet checked: requirements-drafts, hooks/dev-tools.ts and hooks/resolve-bin.ts against every source in the README Acknowledgments. Scope of this card per the directive: every skill snippet and every prose line that names its origin. Known so far, not a full inventory: 22 files carry line-ranged excerpt headings; heading lines per mod across all skill files are tokensaver 36, context-harness 32, ponytail 30, deck 23, token-weather-usage 12, with prose headings for token-optimizer 21 and regia 9 in 20 files; mods named only in body prose, SKILL.md descriptions, agents/openai.yaml, links or reference-module comments are not counted yet. The two tutorial example folders are full plugin copies and count as snippets: BeLazy167 LICENSE files and plugin.json author fields (redact-output, dice-tool and notes-pane matched; hello-mod and branch-band to check; the turn-timer and protect-files LICENSE files belong to this plugin and stay). An author field is removed, never set to Emasoft. The licence texts stay in NOTICE at the plugin root; before any LICENSE file is removed, NOTICE must be checked to carry the full BeLazy167 copyright and permission text. Open owner question (a) is narrowed: no snippet names a repo or author; proposed, not yet ruled: one neutral line per tutorial skill saying some examples are third-party MIT code and that a copy must carry the notice from NOTICE. Question (b), MIT-0, can only cover code this plugin wrote, so it depends on whether the copied examples and excerpts are rewritten.
+
+## Findings
+
+2026-11-01, context-harness freshness (reports_dev/excerpt-freshness/20261101_013810+0100-context-harness-vs-conjev.md): of the 16 line-ranged context-harness excerpts, 4 are unchanged in upstream conjev 0.0.3, 10 changed and 2 removed; several prose claims are out of date (four tools, a /jev-consent command, one endpoint, no compact log). The excerpts come from the installed 0.0.1 copy (a local commit b4a1e20 of 2026-10-23), part of which never appeared in the public history. When these snippets are absorbed, carry three upstream bug-fix ideas in this plugin's own words (upstream code after 2026-10-28 is Apache-2.0, so ideas, not text): cut scrubbed text only after scrubbing and never inside a redaction mark; a dry-run report reads the same message view as the action it predicts; an automatic action armed on a timer yields when the person typed since. Prose that described the named mod becomes a description of the technique, checked for correctness rather than against upstream.
+Effects added after review (derived tasks, carded when this card leaves design): the README Tutorials paragraph and every README entry that describes a skill by its source mods; SKILL.md descriptions and bodies of the example and tutorial skills, agents/openai.yaml, skills-catalog.md and the skills-menu entries (the menu body is near its character budget); the README files inside the copied example folders and the tutorial reference text; reference-module comments naming the mod they were modelled on; tests that rely on origin headings (test_example_excerpts, the heading parser in excerpt_lock, structure tests). Order: the excerpt lock outside the shipped text exists and passes before any heading is stripped. After the strip, a test fails when a shipped skill file names or links any source in the README Acknowledgments, LICENCES, FORBIDDEN or CLONE_PINS. The provenance tables in scripts/ (excerpt_lock.py, CLONE_PINS) are not snippets and stay.

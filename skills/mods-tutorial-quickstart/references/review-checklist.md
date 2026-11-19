@@ -77,7 +77,7 @@ This group is this plugin's advice, built on the event facts in the [threat mode
 | No value from an event, a file, a tool result, a message or a reply from the network is interpolated into a process argument, a file path, a URL or a prompt. Prefer literal values and fixed allowlists. | High |
 | Text sent with `asUser: true` is never built from untrusted input (see "Start a turn from a background job" in `mods-doc-mods-api`). | High |
 | A hook on `session.receive` does not trust a message because of who it claims to come from (`mods-doc-mods-api`, "Send and receive messages between sessions"). | Medium |
-| A path guard compares a resolved real path, not the spelling it was given. UNVERIFIED API; see the traps table in the quickstart skill. | Medium |
+| A path guard compares a resolved real path, not the spelling it was given. UNVERIFIED API; see the [traps table](traps-table.md). | Medium |
 
 ## Risk: names and shapes from the wrong release
 

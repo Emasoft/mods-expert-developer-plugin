@@ -1,7 +1,7 @@
 import { expect, test } from 'claude-code/testing'
 
 import { MIN_GAP_MS, POLL_INTERVAL_MS, USAGE } from '../hooks/logic.js'
-import { DONE, START, startSession, stubs } from './helpers.js'
+import { DONE, RUN, START, startSession, stubs } from './helpers.js'
 
 // The AbovePrompt props, the same set ui.test.tsx documents line by line.
 const BAND = {
@@ -137,9 +137,9 @@ test('/git-poller off removes a mounted band and on brings it back', async ($, o
   await startSession($, s)
   const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
   expect(await ui.find({ type: 'Text', text: 'main' })).toBeDefined()
-  await $.command.run({ command: 'git-poller', args: 'off' })
+  await $.command.run({ command: 'git-poller', args: 'off', ...RUN })
   expect(await ui.find({ type: 'Text', text: 'main' })).toBeUndefined()
-  await $.command.run({ command: 'git-poller', args: 'on' })
+  await $.command.run({ command: 'git-poller', args: 'on', ...RUN })
   await s.clock.settle()
   expect(await ui.find({ type: 'Text', text: 'main' })).toBeDefined()
   await ui.unmount()
@@ -155,7 +155,7 @@ test('a poll that read the store before /git-poller off does not switch the band
   // The tick really read the store before the switch: the stub cleared its hold.
   expect(s.store.slowNext).toBe(false)
   // The user switches off while that read is in flight; the held-back read still answers true.
-  await $.command.run({ command: 'git-poller', args: 'off' })
+  await $.command.run({ command: 'git-poller', args: 'off', ...RUN })
   expect(await ui.find({ type: 'Text', text: 'main' })).toBeUndefined()
   for (let i = 0; i < 3; i++) await s.clock.advance(1000)
   await s.clock.settle()
@@ -172,7 +172,7 @@ test('a startup read that /git-poller off overtook does not switch the band back
   expect(s.store.slowNext).toBe(false)
   const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
   // The user switches off while the kick's read is in flight; the held-back read still answers true.
-  await $.command.run({ command: 'git-poller', args: 'off' })
+  await $.command.run({ command: 'git-poller', args: 'off', ...RUN })
   for (let i = 0; i < 3; i++) await s.clock.advance(1000)
   await s.clock.settle()
   expect(await ui.find({ type: 'Text', text: 'main' })).toBeUndefined()
@@ -216,7 +216,7 @@ test('a git call that rejects keeps the last good snapshot', async ($, on) => {
 test('/git-poller off silences every hook and the timer, on brings it back', async ($, on) => {
   const s = stubs(on)
   await startSession($, s)
-  await $.command.run({ command: 'git-poller', args: 'off' })
+  await $.command.run({ command: 'git-poller', args: 'off', ...RUN })
   expect(s.saved.get('git-poller.enabled')).toBe(false)
   expect(s.toasts).toEqual(['git-poller off'])
   const before = s.calls.length
@@ -228,7 +228,7 @@ test('/git-poller off silences every hook and the timer, on brings it back', asy
   const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
   expect(await ui.find({ type: 'Text', text: 'main' })).toBeUndefined()
   await ui.unmount()
-  await $.command.run({ command: 'git-poller', args: 'on' })
+  await $.command.run({ command: 'git-poller', args: 'on', ...RUN })
   await s.clock.settle()
   expect(s.toasts).toEqual(['git-poller off', 'git-poller on'])
   expect(s.calls.length).toBe(before + 1)
@@ -237,11 +237,11 @@ test('/git-poller off silences every hook and the timer, on brings it back', asy
 test('a bare /git-poller toggles and a bad argument answers usage', async ($, on) => {
   const s = stubs(on)
   await startSession($, s)
-  await $.command.run({ command: 'git-poller', args: '' })
+  await $.command.run({ command: 'git-poller', args: '', ...RUN })
   expect(s.saved.get('git-poller.enabled')).toBe(false)
-  await $.command.run({ command: 'git-poller', args: '' })
+  await $.command.run({ command: 'git-poller', args: '', ...RUN })
   expect(s.saved.get('git-poller.enabled')).toBe(true)
-  const answer = await $.command.run({ command: 'git-poller', args: 'maybe' })
+  const answer = await $.command.run({ command: 'git-poller', args: 'maybe', ...RUN })
   expect(answer.text).toBe(USAGE)
   expect(s.saved.get('git-poller.enabled')).toBe(true)
 })

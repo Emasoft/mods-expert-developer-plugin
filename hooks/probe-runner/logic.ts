@@ -1,7 +1,7 @@
 // probe-runner (TRDD-03IIDGPP, increment 1): the dev tool `probe` and its command. Every decision is a
 // function here: the arguments, the plugin directories, the script's argument vector and the texts the
 // tool and the command answer. ./register.ts only wires them to the engine (house pattern: logic pure,
-// register thin). Both sit behind the dev-tools gate (../dev-tools.ts).
+// register thin). Both sit behind the probe switch (../dev-tools.ts).
 
 export const TOOL_NAME = 'probe'
 export const DEFAULT_MODEL = 'sonnet'

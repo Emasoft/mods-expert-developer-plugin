@@ -1,0 +1,132 @@
+// Adapted from https://github.com/AGregDev/claude-tokensaver at 0a4ba5c4c0745521de09a12cbc2a6b7751854a18, src/ui/view.ts, MIT.
+// Changed for mods-expert-developer-plugin: imports carry no .ts extension, as this plugin's tsconfig has no allowImportingTsExtensions; nothing else (TRDD-71KVH9PA).
+import { summarizeLog } from '../core/log'
+import type { TaskType } from '../core/score'
+import type { Tier } from '../core/tiers'
+import { activeCount, hasFreshFlash } from '../runtime/session'
+import type { AgentNode, AgentStatus, FlashTone, Session, Spend } from '../runtime/session'
+import type { Theme } from './theme'
+
+export type ViewAgent = {
+  key: string
+  label: string
+  tier: Tier | undefined
+  taskType: TaskType
+  status: AgentStatus
+  tokens: number
+  escalatedFrom: Tier | undefined
+  /** One entry per ancestor level: true where a guide line still runs down beside this row. */
+  guides: readonly boolean[]
+  isLast: boolean
+}
+
+/** Everything the status line and the dashboard draw, as plain data. */
+export type View = {
+  mode: 'on' | 'off' | 'dry-run'
+  hasNoColor: boolean
+  hasReducedMotion: boolean
+  hasStatusLine: boolean
+  context: { tokens: number; window: number }
+  spend: Spend
+  total: number
+  saved: number
+  shownSaved: number
+  keptOut: number
+  history: readonly number[]
+  agents: readonly ViewAgent[]
+  activeCount: number
+  learning: { count: number; cleanRate: number; escalations: number }
+  notes: readonly string[]
+  frame: number
+  /** The strip above the prompt: the sub-agents running now and the newest event, while fresh. */
+  band: {
+    agents: readonly ViewAgent[]
+    flash: { text: string; tone: FlashTone } | undefined
+  }
+  /** Every sub-agent whose model tokensaver chose, for marking its row in the transcript. */
+  routed: readonly ViewAgent[]
+}
+
+const MAX_DEPTH = 4
+
+/** Orders agents as a tree walk: each agent, then the agents it spawned. */
+const walk = (
+  nodes: readonly AgentNode[],
+  parentAgentId: string | undefined,
+  guides: readonly boolean[],
+): readonly ViewAgent[] => {
+  const known = new Set(nodes.flatMap(node => (node.agentId === undefined ? [] : [node.agentId])))
+  const children = nodes.filter(node =>
+    parentAgentId === undefined
+      ? node.parentAgentId === undefined || !known.has(node.parentAgentId)
+      : node.parentAgentId === parentAgentId,
+  )
+
+  return children.flatMap((node, index) => [
+    {
+      key: node.key,
+      label: node.label,
+      tier: node.tier,
+      taskType: node.taskType,
+      status: node.status,
+      tokens: node.tokens,
+      escalatedFrom: node.escalatedFrom,
+      guides,
+      isLast: index === children.length - 1,
+    },
+    ...(node.agentId === undefined || guides.length >= MAX_DEPTH
+      ? []
+      : walk(nodes, node.agentId, [...guides, index < children.length - 1])),
+  ])
+}
+
+const modeOf = (session: Session): View['mode'] => {
+  if (!session.config.isEnabled) {
+    return 'off'
+  }
+
+  return session.config.isDryRun ? 'dry-run' : 'on'
+}
+
+export const toView = (session: Session): View => {
+  const summary = summarizeLog(session.outcomes)
+  const agents = walk(session.agents, undefined, [])
+
+  return {
+    mode: modeOf(session),
+    hasNoColor: session.hasNoColor,
+    hasReducedMotion: session.config.hasReducedMotion,
+    hasStatusLine: session.config.hasStatusLine,
+    context: session.context,
+    spend: session.spend,
+    total: session.spend.haiku + session.spend.sonnet + session.spend.opus + session.spend.other,
+    saved: session.saved,
+    shownSaved: session.shownSaved,
+    keptOut: session.keptOut,
+    history: session.savedHistory,
+    agents,
+    activeCount: activeCount(session),
+    learning: {
+      count: summary.count,
+      cleanRate: summary.cleanRate,
+      escalations: summary.escalations,
+    },
+    notes: session.notes,
+    frame: session.frame,
+    band: {
+      agents: agents.filter(agent => agent.status === 'running' || agent.status === 'retrying'),
+      flash:
+        session.flash !== undefined && hasFreshFlash(session)
+          ? { text: session.flash.text, tone: session.flash.tone }
+          : undefined,
+    },
+    routed: agents.filter(agent =>
+      session.agents.some(node => node.key === agent.key && node.isRouted && !node.isDryRun),
+    ),
+  }
+}
+
+export const themeOf = (view: View): Theme => ({
+  hasColor: !view.hasNoColor,
+  hasMotion: !view.hasReducedMotion,
+})

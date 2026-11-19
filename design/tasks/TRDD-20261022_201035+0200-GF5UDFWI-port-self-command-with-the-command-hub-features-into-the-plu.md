@@ -1,10 +1,10 @@
 ---
 trdd-id: GF5UDFWI
 title: Port self-command with the command-hub features into the plugin
-column: dev
+column: human_review
 status: tasked
 created: 2026-10-22T20:10:35+0200
-updated: 2026-10-27T12:17:54+0100
+updated: 2026-10-27T16:48:58+0100
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -15,6 +15,8 @@ mandated-by: none
 approved: true
 approval-judge: main-agent@emasoft-mods-expert-developer
 approval-datetime: 2026-10-22T20:10:35+0200
+implementation-commits: [b5151d6, 9e3ad44, ae4ad68, 8b1b8bf, e5bbaac]
+eht: [9Q52M2TA]
 ---
 
 # Port self-command with the command-hub features into the plugin
@@ -24,6 +26,7 @@ approval-datetime: 2026-10-22T20:10:35+0200
 - 2026-10-22T20:10:35+0200 — MANDATE issued by main-agent@emasoft-mods-expert-developer (min-approval-requirement: none). Pre-approved: issuer authority >= required approver. No approval request was sent.
 - 2026-10-22 — authority: the user's verbatim directives quoted under User directive (this session); the MANDATE line above was filled by trddgrep new.
 - 2026-10-27T11:19:38+0100 — column → dev. increment A1 implemented by mods-forge-agent; orchestrator brief of 2026-10-27
+- 2026-10-27T16:47:35+0100 — column → human_review. code shipped in 0.6.0/0.6.1; owner live checks left
 
 ## STATE
 
@@ -31,6 +34,8 @@ CURRENT STATE 2026-10-22: planned, not started; NEXT ACTION: strict CPV gate mea
 CURRENT STATE 2026-10-27 (supersedes the 2026-10-22 line above): column dev; increment A1 implemented and verified (claude plugin test 88 pass on the staged mod, check-mod.sh == PASS, pytest 339 pass, claude plugin validate passes), not committed. NEXT ACTION: the orchestrator reviews and commits A1, then dispatches A2 (the /self-command pane). Details under ## Increment A1.
 CURRENT STATE 2026-10-27 A2 (supersedes the A1 line above): column dev; increment A2 implemented and verified (staged claude plugin test 96 pass, check-mod.sh == PASS on the staged mod, pytest 339 pass, claude plugin validate passes, cspell 0 on changed files, 17 mutations all red), not committed. NEXT ACTION: the orchestrator reviews and commits A2; the owner's live Desktop check of the pane is open. Details under ## Increment A2.
 CURRENT STATE 2026-10-27 A2 follow-up (supersedes the A2 line above): column dev; A2 committed as ae4ad68; the follow-up is implemented and verified (staged claude plugin test 102 pass, check-mod.sh == PASS, 9 new mutations all red), not committed. Rulings recorded: a plugin command with an unset plugin field counts as this plugin's own and is refused; a name listed by both this plugin and another source is refused; fix 2's benefit (a foreign send stays runnable) holds only if the live $.command.list fills plugin, which is unverified. NEXT ACTION: the orchestrator reviews and commits the follow-up; the owner runs the live checks under ## Owner live checks.
+CURRENT STATE 2026-10-27 (supersedes the lines above): column human_review. A1, A2, the follow-up and the second fixes are committed (b5151d6, 9e3ad44, ae4ad68, 8b1b8bf, e5bbaac) and shipped in 0.6.0 and 0.6.1, whose publish ran the strict CPV gate. The unticked boxes below are superseded by this line. Split out: the cliPath option, the versions folder and Windows candidates for hooks/resolve-bin.ts are TRDD-9Q52M2TA. Typecheck: tsc against the generated types was not run (needs the /plugin-types login); the kit tests and check-mod.sh passed. NEXT ACTION: the owner runs the live checks under Owner live checks (does $.command.list fill plugin; Input round-trip on Desktop; c/h/n/s hotkeys while an Input has focus; pane redraw cost; the Desktop pane), then the card moves to complete.
+Correction 2026-10-27 (review of ea39045, supersedes the line above where they differ): the strict CPV gate is VERIFIED only as a publish step (scripts/publish.py step 5 runs cpv-remote-validate --strict, and 0.6.0 and 0.6.1 were tagged); no saved strict report covers these commits, and the kit tests were not re-run in this session. TRDD-9Q52M2TA (resolve-bin candidates from this card's design) is an EHT, so this card cannot reach complete before it does. The acceptance boxes stay unticked until each has its own evidence.
 
 ## User directive
 

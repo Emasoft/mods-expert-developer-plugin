@@ -43,7 +43,10 @@ _PATTERN = re.compile(
 # Generic fixture paths that match a shape but name no machine, each with its reason.
 _ALLOWED = frozenset(
     {
-        "/home/tester",  # the stubbed HOME of the mod tests (hooks/tests/requirements-drafts.test.ts), not a machine path
+        "/home/tester",  # the stubbed HOME of the mod tests (hooks/tests/switch-world.ts), not a machine path
+        "/Users/alice",  # the other user whose home the debug-log masking tests mask (hooks/tests/debug-log.test.ts), not a machine path
+        "/Users/ann",  # the store path the mod-manager masking test throws (hooks/tests/mod-manager.test.ts:6051), not a machine path
+        "/Users/a",  # the home folder with a run of spaces the mod-manager masking test uses (hooks/tests/mod-manager.test.ts:6069), not a machine path
     }
 )
 

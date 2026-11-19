@@ -189,7 +189,7 @@ def cprint(msg: str) -> None:
 # template — a fixed bound is exactly the defect being fixed here, and replacing
 # 300 with a bigger constant would only move the cliff.
 _TEST_SUITE_TIMEOUT_ENV = "PLUGIN_TEST_SUITE_TIMEOUT"
-_DEFAULT_TEST_SUITE_TIMEOUT = 1800.0
+_DEFAULT_TEST_SUITE_TIMEOUT = 5400.0  # 3 x 1200 s kit-test attempts (TRDD-RD1ISPMN); was 3600.0
 
 # Wall-clock bound for the RELEASE PUSH (issue #224). The push is not a bare
 # network transfer: the branch-aware pre-push hook runs the whole gate — remote
@@ -1680,6 +1680,32 @@ def _cpv_verdict(exit_code: int, stdout: str, stderr: str) -> tuple[str, int, st
     return "findings", 1, severity
 
 
+# Local addition to this CPV copy (TRDD-R2GILGKU): the no-copy test (tests/test_no_copy_unlicensed.py) reads the
+# forbidden mods at public commits that scripts/fetch_no_copy_sources.py fetches into downloads_dev/no-copy-sources/,
+# and it fails, never skips, when one is missing. G4 and stage_tests fetch first, so the gate tests the plugin, not
+# whether someone remembered the fetch; G4b and stage_fork_parity run after them. The fetch is idempotent: once the
+# commits are there it only checks them.
+_NO_COPY_FETCH = "scripts/fetch_no_copy_sources.py"
+# A backstop, not run()'s 300s default: the script stops itself at its 8-minute run deadline and prints what it did not
+# fetch, so this only catches a hung interpreter, and it stays well above that deadline so the script's own report is
+# never cut off. A cold fetch of all pins took about 8s on a fast link.
+_NO_COPY_FETCH_TIMEOUT = 1800
+
+
+def _fetch_no_copy_sources(root: Path) -> int:
+    """Fetch the no-copy test's pinned public sources. 0 = ok, 1 = BLOCK."""
+    cprint(f"  Fetching the no-copy test's pinned sources ({_NO_COPY_FETCH})...")
+    try:
+        code = subprocess.run(["uv", "run", _NO_COPY_FETCH], cwd=str(root), timeout=_NO_COPY_FETCH_TIMEOUT).returncode
+    except subprocess.TimeoutExpired:
+        cprint(f"  {RED}BLOCKED: fetching the no-copy sources timed out after {_NO_COPY_FETCH_TIMEOUT}s.{NC}")
+        return 1
+    if code != 0:
+        cprint(f"  {RED}BLOCKED: fetching the no-copy sources failed (exit {code}); see the lines above.{NC}")
+        return 1
+    return 0
+
+
 def run_gate(root: Path) -> int:
     """Quality gate. Blocks on any quality issue; returns 0 if clean.
 
@@ -2070,6 +2096,9 @@ def run_gate(root: Path) -> int:
         cprint(f"  {RED}BLOCKED: tests/ directory missing or empty.{NC}")
         cprint(f"  {RED}Every CPV plugin MUST ship tests.{NC}")
         return 1
+    # Local addition to the CPV canonical copy (TRDD-R2GILGKU): fetch the no-copy test's public sources first.
+    if _fetch_no_copy_sources(root) != 0:
+        return 1
     suite_timeout = _test_suite_timeout()
     try:
         te = subprocess.run(
@@ -2352,6 +2381,9 @@ def stage_tests(root: Path) -> None:
     if not test_dir.is_dir():
         cprint(f"  {RED}BLOCKED: tests/ directory missing.{NC}")
         cprint(f"  {RED}Every CPV plugin MUST ship a tests/ directory.{NC}")
+        sys.exit(1)
+    # Local addition to the CPV canonical copy (TRDD-R2GILGKU): fetch the no-copy test's public sources first.
+    if _fetch_no_copy_sources(root) != 0:
         sys.exit(1)
     baseline_browser_pids = _snapshot_browser_pids()
     # pytest is a child of this process, so it and everything it spawns inherit

@@ -27,6 +27,8 @@ dev = [
     # constant that drives the matrix — do not drop one without the other.
     "pytest-split>=0.9",
     "ruff>=0.14.14",
+    # mypy cannot type the yaml import without these stubs.
+    "types-pyyaml>=6.0.12",
 ]
 
 [tool.ruff]

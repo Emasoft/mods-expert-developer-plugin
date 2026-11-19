@@ -1,10 +1,10 @@
 ---
 trdd-id: BDY6ZNDZ
 title: Add mods tutorial skills from BeLazy167 claude-mods-skill
-column: todo
+column: blocked
 status: tasked
 created: 2026-10-22T20:24:37+0200
-updated: 2026-10-22T21:59:08+0200
+updated: 2026-10-27T22:10:15+0100
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -15,7 +15,13 @@ mandated-by: none
 approved: true
 approval-judge: main-agent@emasoft-mods-expert-developer
 approval-datetime: 2026-10-22T20:24:37+0200
-implementation-commits: [ed3dc13, 48589fd, 114609b]
+implementation-commits: [ed3dc13, 48589fd, 114609b, c1341f9]
+blocked-by: [04ZJ9E90]
+pre-block-column: todo
+unblock-when: [trdd:04ZJ9E90]
+blocker-probe: t=$(trddgrep --design-dir design show 04ZJ9E90 --porcelain | cut -f3); case $t in complete|completed|published|live) echo CLOSED;; *) echo OPEN;; esac
+blocker-probe-canary: match:^(OPEN|CLOSED)$
+blocker-holds-if: match:^OPEN$
 ---
 
 # Add mods tutorial skills from BeLazy167 claude-mods-skill
@@ -46,13 +52,13 @@ MEASURED 2026-10-22 (reports/measure/20261022_202816+0200-nested-example-manifes
 - [x] Measurement report on nested manifests saved under reports/measure/.
 - [x] Each tutorial skill in the final (post-merge) list exists, its name contains "tutorial", and its SKILL.md opens with the reference-only notice.
 - [x] Example code only under skills/<tutorial>/examples/, inert per the measurement.
-- [ ] Overlap stripped; each removed topic links its chapter skill.
+- [x] Overlap stripped; each removed topic links its chapter skill.
 - [x] NOTICE carries the MIT text for BeLazy167/claude-mods-skill.
 - [x] Menu and README list the tutorials as reference-only.
-- [ ] uv run pytest, claude plugin validate ., the CI-parity linters (examples excluded only from the cosmetic linters named in Design) and cpv-remote-validate plugin . --strict at v5.22.3 pass with no waiver.
-- [ ] claude plugin test . at the plugin root does not collect the example tests (measured).
+- [ ] uv run pytest, claude plugin validate ., the CI-parity linters (examples excluded only from the cosmetic linters named in Design) and cpv-remote-validate plugin . --strict at v5.22.3 pass with no waiver. 2026-10-27: pytest 487 passed, claude plugin validate passes; CPV v5.22.3 strict exit 2 with only the 7 findings tracked on TRDD-04ZJ9E90 (report reports/cpv/20261027_220405+0100-cpv-strict-quickstart-trim.txt); open until 04ZJ9E90 clears
+- [ ] claude plugin test . at the plugin root does not collect the example tests (measured). 2026-10-27 MEASURED FALSE: the root run collects every *.test.ts under the dir (CLI 2.1.312 --help and the chapters document no exclude): 465 tests, 171 fail (129 from gitignored samples_dev/downloads_dev, 42 from the example mods, which pass when staged alone as tests/test_mod_tests.py does). No release path runs it at the root. Owner decision pending: keep this criterion or replace it with the staged-run criterion CI uses.
 - [x] tests/test_plugin_structure.py's skill-folder count is updated deliberately to the final number.
-- [ ] CPV strict re-run on the final tree with all five examples in place (not inferred), saved under reports/cpv/.
+- [ ] CPV strict re-run on the final tree with all eight examples in place (not inferred), saved under reports/cpv/. 2026-10-27: pytest 487 passed, claude plugin validate passes; CPV v5.22.3 strict exit 2 with only the 7 findings tracked on TRDD-04ZJ9E90 (report reports/cpv/20261027_220405+0100-cpv-strict-quickstart-trim.txt); open until 04ZJ9E90 clears
 
 ## Approval log
 

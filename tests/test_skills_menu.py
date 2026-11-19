@@ -218,14 +218,38 @@ CATALOG_SKILLS = {"mods-the-skills-menu"}
 # two drift. A tutorial is reference-only (TRDD-BDY6ZNDZ): it is listed by the menu in its own group, but it is not a
 # chapter, so it is not routed by the expert agent and is not a row of the README Components table.
 TUTORIAL_SKILLS = {"mods-tutorial-quickstart", "mods-tutorial-call-intercept-mods", "mods-tutorial-interface-mods"}
-# Identical copy of DRAFTS_SKILLS in tests/test_plugin_structure.py: the requirements-drafts mod tools (TRDD-O5LUMKPW), listed by the
-# menu in the group Requirements drafts but not chapters, so not routed by the expert agent and not README Components rows.
-DRAFTS_SKILLS = {"mods-requirements-drafts-list", "mods-requirements-drafts-search"}
 # Identical copy of PLUGIN_TOOL_SKILLS in tests/test_plugin_structure.py: the mod install and uninstall skills (TRDD-1F4ZYWE1), user-invocable tools listed
 # by the menu in the group Mod install and uninstall, not chapters, so not routed by the expert agent and not README Components rows. Named apart
 # from TOOL_SKILLS, which lists the four user-scope tools this plugin does not ship.
-PLUGIN_TOOL_SKILLS = {"mods-install-mod", "mods-uninstall-mod"}
-DOC_SKILLS = [d.name for d in SKILL_DIRS if d.name not in CATALOG_SKILLS | TUTORIAL_SKILLS | DRAFTS_SKILLS | PLUGIN_TOOL_SKILLS]
+# The set also holds the agent launcher (TRDD-MPJTMO51), listed by the menu in the group Agent launcher.
+PLUGIN_TOOL_SKILLS = {"mods-install-mod", "mods-uninstall-mod", "mods-expert-developer-agent"}
+# The skills of PLUGIN_TOOL_SKILLS that only the user starts: they set disable-model-invocation, so no agent can load them. Their catalog
+# entry carries an "Invoke with" line instead of a Load with line, and no Skill() call may name them. Not shared with test_plugin_structure.py.
+LAUNCHER_SKILLS = {"mods-expert-developer-agent"}
+# Identical copy of MOD_BUILDER_SKILLS in tests/test_plugin_structure.py: the skill-to-mod skill (TRDD-YNWBA70L), a tool skill the mods expert
+# agent loads, listed by the menu in the group Skill to mod, not a chapter, so not routed by the chapter index and not a README Components row.
+MOD_BUILDER_SKILLS = {"mods-skill-to-mod"}
+# Identical copy of EXAMPLE_SKILLS in tests/test_plugin_structure.py (TRDD-04ZJ9E90): reference-only example skills that excerpt installed third-party mods. They are listed by the menu in
+# the group Example skills (reference only) but are not chapters, so not routed by the expert agent and not README Components rows.
+EXAMPLE_SKILLS = {
+    "mods-example-band-and-status-line",
+    "mods-example-pane-and-chart",
+    "mods-example-callable-and-command",
+    "mods-example-state-and-settings",
+    "mods-example-call-intercept",
+    "mods-example-session-and-timers",
+    "mods-example-process-and-network",
+    "mods-example-engine-and-model-calls",
+    "mods-example-cost-and-metrics",
+    "mods-example-account-switching",
+    "mods-example-credentials-and-tokens",
+    "mods-example-security-guards",
+}
+DOC_SKILLS = [
+    d.name
+    for d in SKILL_DIRS
+    if d.name not in CATALOG_SKILLS | TUTORIAL_SKILLS | PLUGIN_TOOL_SKILLS | MOD_BUILDER_SKILLS | EXAMPLE_SKILLS
+]
 
 
 def test_preload_window_is_exactly_the_pinned_roster() -> None:
@@ -647,6 +671,7 @@ def test_readme_skill_relative_paths_are_qualified() -> None:
 FORGE_AGENT = ROOT / "agents/mods-forge-agent.md"
 MENU = SKILLS / "mods-the-skills-menu"
 MENU_CATALOG = MENU / "references/skills-catalog.md"
+MENU_EXAMPLES = MENU / "references/example-skills-menu.md"
 
 # CPV's mandatory dynamic-loading paragraph, verbatim (the-skills-menu spec, "Agent body instruction rule").
 DYNAMIC_LOADING_PARAGRAPH = (
@@ -687,7 +712,8 @@ def _menu_table_skills(text: str) -> list[str]:
 
 def _expected_menu_names() -> list[str]:
     """Every name the menu tables and the catalog list: the chapters plus the reference-only tutorials."""
-    return sorted(f"{_namespace()}:{name}" for name in [*DOC_SKILLS, *TUTORIAL_SKILLS, *DRAFTS_SKILLS, *PLUGIN_TOOL_SKILLS])
+    names = [*DOC_SKILLS, *TUTORIAL_SKILLS, *PLUGIN_TOOL_SKILLS, *MOD_BUILDER_SKILLS, *EXAMPLE_SKILLS]
+    return sorted(f"{_namespace()}:{name}" for name in names)
 
 
 def test_tutorial_skills_copies_agree() -> None:
@@ -697,6 +723,15 @@ def test_tutorial_skills_copies_agree() -> None:
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     assert module.TUTORIAL_SKILLS == TUTORIAL_SKILLS
+
+
+def test_example_skills_copies_agree() -> None:
+    """EXAMPLE_SKILLS here equals the copy in test_plugin_structure.py, so the two files exclude the same skills."""
+    spec = importlib.util.spec_from_file_location("_structure", ROOT / "tests" / "test_plugin_structure.py")
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    assert module.EXAMPLE_SKILLS == EXAMPLE_SKILLS
 
 
 def test_catalog_skills_copies_agree() -> None:
@@ -717,10 +752,20 @@ def test_plugin_tool_skills_copies_agree() -> None:
     assert module.PLUGIN_TOOL_SKILLS == PLUGIN_TOOL_SKILLS
 
 
+def test_mod_builder_skills_copies_agree() -> None:
+    """MOD_BUILDER_SKILLS here equals the copy in test_plugin_structure.py, so the two files exclude the same skills."""
+    spec = importlib.util.spec_from_file_location("_structure", ROOT / "tests" / "test_plugin_structure.py")
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    assert module.MOD_BUILDER_SKILLS == MOD_BUILDER_SKILLS
+
+
 def test_plugin_tool_skills_reload_through_the_run_tool() -> None:
     """Each mod install and uninstall skill allows the run tool, asks it for reload-plugins --force, and carries the exact FAILED line."""
-    failed_line = "FAILED: reload not run (<reason>; turn the developer tools on with /mods-dev-tools on, then start a new session)"
-    for name in sorted(PLUGIN_TOOL_SKILLS):
+    failed_line = "FAILED: reload not run (<reason>; turn on self-command.run in /mods-switches, then start a new session)"
+    # The launcher reloads nothing: it only starts the expert agent, so it is not held to the reload contract.
+    for name in sorted(PLUGIN_TOOL_SKILLS - LAUNCHER_SKILLS):
         fields, body = _split(SKILLS / name / "SKILL.md")
         tools = [tool.strip() for tool in fields["allowed-tools"].split(",")]
         assert "mcp__mods-expert-developer-plugin__run" in tools, f"{name} does not allow the run tool"
@@ -952,8 +997,11 @@ def test_tool_skills_are_optional_but_recommended_with_a_native_fallback() -> No
 
 
 def test_menu_skill_md_names_every_chapter_exactly_once() -> None:
-    """The SKILL.md summary tables list each chapter skill and each tutorial once, by its namespaced name."""
-    rows = _menu_table_skills((MENU / "SKILL.md").read_text(encoding="utf-8"))
+    """The SKILL.md tables plus the example-skills reference table list each skill once, by its namespaced name."""
+    rows = [
+        *_menu_table_skills((MENU / "SKILL.md").read_text(encoding="utf-8")),
+        *_menu_table_skills("\n## Plugin Skills\n" + MENU_EXAMPLES.read_text(encoding="utf-8")),
+    ]
     assert len(rows) == len(set(rows)), "a chapter appears twice in the menu tables"
     assert sorted(rows) == _expected_menu_names()
 
@@ -970,7 +1018,12 @@ def test_every_menu_skill_call_uses_the_manifest_namespace() -> None:
     namespace = _namespace()
     # The Instructions step shows the generic form with a `<skill>` placeholder; it must carry the namespace too.
     allowed = (
-        {f"{namespace}:{name}" for name in [*DOC_SKILLS, *TUTORIAL_SKILLS, *DRAFTS_SKILLS, *PLUGIN_TOOL_SKILLS]}
+        # The launchers are left out of the allowed set: a Skill() call naming one would fail, since no agent can load it.
+        {
+            f"{namespace}:{name}"
+            for name in [*DOC_SKILLS, *TUTORIAL_SKILLS, *PLUGIN_TOOL_SKILLS, *MOD_BUILDER_SKILLS, *EXAMPLE_SKILLS]
+            if name not in LAUNCHER_SKILLS
+        }
         | set(TOOL_SKILLS)
         | {f"{namespace}:<skill>"}
     )
@@ -978,7 +1031,11 @@ def test_every_menu_skill_call_uses_the_manifest_namespace() -> None:
     catalog_text = MENU_CATALOG.read_text(encoding="utf-8")
     bad = sorted({target for text in (skill_text, catalog_text) for target in SKILL_CALL.findall(text)} - allowed)
     assert not bad, f"Skill() calls with an unknown or wrongly namespaced target: {bad}"
-    assert sorted(LOAD_WITH.findall(catalog_text)) == _expected_menu_names(), "a catalog entry lacks its Load with line"
+    launchers = {f"{namespace}:{name}" for name in LAUNCHER_SKILLS}
+    loadable = [name for name in _expected_menu_names() if name not in launchers]
+    assert sorted(LOAD_WITH.findall(catalog_text)) == loadable, "a catalog entry lacks its Load with line"
+    for name in sorted(LAUNCHER_SKILLS):
+        assert f"**Invoke with:** the user types `/{name} <prompt>`" in catalog_text, f"the catalog entry of {name} lacks its Invoke with line"
     assert sorted(LOAD_WITH.findall(skill_text)) == sorted(TOOL_SKILLS), "the standalone entries lack Load with lines"
 
 
@@ -999,17 +1056,31 @@ def test_menu_does_not_list_itself() -> None:
 
 
 def test_menu_resources_link_the_catalog_and_it_exists() -> None:
-    """Resources links references/skills-catalog.md, and that file ships."""
+    """Resources links references/skills-catalog.md and references/example-skills-menu.md, and both ship."""
     text = (MENU / "SKILL.md").read_text(encoding="utf-8")
     resources = text.split("\n## Resources\n", 1)[1].split("\n## ", 1)[0]
     assert "](references/skills-catalog.md)" in resources
+    assert "](references/example-skills-menu.md)" in resources
     assert MENU_CATALOG.is_file()
+    assert MENU_EXAMPLES.is_file()
 
 
 def test_menu_skill_body_is_under_500_lines() -> None:
     """CPV rejects a SKILL.md over 500 lines (MAJOR); the full entries belong in the catalog reference."""
     _, body = _split(MENU / "SKILL.md")
     assert len(body.splitlines()) < 500
+
+
+def test_menu_skill_body_fits_cpv_token_budget() -> None:
+    """CPV raises MAJOR above 5000 estimated tokens; the body (after the frontmatter) stays within 16300 characters.
+
+    CPV estimates tokens as o200k_base BPE count times 1.3, rounded up, and reported 18033 characters of this
+    body as about 5328 tokens (about 3.4 characters per estimated token). 16300 characters is about 4800 tokens
+    by that ratio, a margin of about 200 tokens under the 5000 limit. A character budget avoids a tokenizer
+    dependency; raise it only after re-measuring with CPV.
+    """
+    _, body = _split(MENU / "SKILL.md")
+    assert len(body) <= 16300, f"menu body is {len(body)} characters, over the 16300 budget"
 
 
 def test_menu_groups_the_tutorials_as_reference_only() -> None:
@@ -1024,3 +1095,22 @@ def test_menu_groups_the_tutorials_as_reference_only() -> None:
     assert "\n## Tutorials (reference only)\n" in catalog, "the catalog has no Tutorials (reference only) section"
     section = catalog.split("\n## Tutorials (reference only)\n", 1)[1].split("\n## ", 1)[0]
     assert sorted(re.findall(r"^### (.+)$", section, re.M)) == expected, "the catalog Tutorials section is wrong"
+
+
+def test_menu_groups_the_example_skills_as_reference_only() -> None:
+    """The example skills, and only them, are rows of the example-skills reference; SKILL.md carries a router line, no rows."""
+    expected = sorted(f"{_namespace()}:{name}" for name in EXAMPLE_SKILLS)
+    skill_text = (MENU / "SKILL.md").read_text(encoding="utf-8")
+    assert "\n### Example skills (reference only)\n" in skill_text, "SKILL.md has no Example skills (reference only) group"
+    group = skill_text.split("\n### Example skills (reference only)\n", 1)[1].split("\n#", 1)[0]
+    assert "](references/example-skills-menu.md)" in group, "the SKILL.md Example skills group has no router link"
+    assert not [line for line in group.splitlines() if TABLE_ROW.match(line)], "the SKILL.md Example skills group still lists rows"
+    examples = MENU_EXAMPLES.read_text(encoding="utf-8")
+    assert "\n## Example skills (reference only)\n" in examples, "the example skills menu has no Example skills (reference only) section"
+    section = examples.split("\n## Example skills (reference only)\n", 1)[1]
+    rows = [m.group(1) for line in section.splitlines() if (m := TABLE_ROW.match(line)) and m.group(1) != "Skill"]
+    assert sorted(rows) == expected, "the example skills menu does not list exactly the example skills"
+    catalog = MENU_CATALOG.read_text(encoding="utf-8")
+    assert "\n## Example skills (reference only)\n" in catalog, "the catalog has no Example skills (reference only) section"
+    section = catalog.split("\n## Example skills (reference only)\n", 1)[1].split("\n## ", 1)[0]
+    assert sorted(re.findall(r"^### (.+)$", section, re.M)) == expected, "the catalog Example skills section is wrong"

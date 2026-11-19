@@ -1,10 +1,10 @@
 ---
 trdd-id: 1F4ZYWE1
 title: Add the mods-install-mod and mods-uninstall-mod skills
-column: dev
+column: human_review
 status: tasked
 created: 2026-10-27T12:20:27+0100
-updated: 2026-10-27T12:20:27+0100
+updated: 2026-10-27T16:48:59+0100
 current-owner: main-agent@emasoft-mods-expert-developer
 created-by: main-agent@emasoft-mods-expert-developer
 task-type: feature
@@ -15,6 +15,7 @@ mandated-by: none
 approved: true
 approval-judge: main-agent@emasoft-mods-expert-developer
 approval-datetime: 2026-10-27T12:20:27+0100
+implementation-commits: [8839da0, 7fc8b60]
 ---
 
 # Add the mods-install-mod and mods-uninstall-mod skills
@@ -56,3 +57,9 @@ approval-datetime: 2026-10-27T12:20:27+0100
 ## Approval log
 
 - 2026-10-27T12:20:27+0100 — MANDATE issued by main-agent@emasoft-mods-expert-developer (min-approval-requirement: none). Pre-approved: issuer authority >= required approver. No approval request was sent.
+- 2026-10-27T16:47:37+0100 — column → human_review. code shipped in 0.6.0/0.6.1; owner live checks left
+
+## STATE
+
+CURRENT STATE 2026-10-27: column human_review. skills/mods-install-mod and skills/mods-uninstall-mod, their tests and the agent routing are committed (8839da0, 7fc8b60) and shipped in 0.6.0 and 0.6.1. The run tool they rely on is gated by TRDD-GF5UDFWI. NEXT ACTION: the owner runs the live checks: terminal install with reload, terminal uninstall with keep-data, the same on Desktop, and /mods-dev-tools off showing the FAILED line; then the card moves to complete.
+Known gap: this STATE section sits at the end of the card, because trddgrep append --create adds it there; the rule wants it right after the title.

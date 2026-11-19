@@ -1,5 +1,8 @@
 import { expect, test } from 'claude-code/testing'
 
+// The engine's command.run input also carries where the run came from and how the answer is shown (CommandRunInput: origin, presentation).
+const RUN = { origin: { kind: 'composer' }, presentation: { isFullscreen: false, columns: 80 } } as const
+
 // Stub $.store with a Map, as mods-doc-mods-testing does in "Test a drawing". A stub is named after the API call without `$.` (mods-doc-mods-testing chapter.md:70 and :112), so store.delete answers $.store.delete; the chapter's examples show only get and set.
 function stubStore(on: any, saved: Map<string, unknown>, writes: string[] = [], deletes: string[] = []) {
   on('store.get', (_: unknown, e: any) => ({ value: saved.get(e.key) }))
@@ -80,11 +83,11 @@ test('/protect-files toggles, sets, stores and toasts; bad args answer usage', a
     return { value: undefined }
   })
 
-  await $.command.run({ command: 'protect-files', args: '' })
+  await $.command.run({ command: 'protect-files', args: '', ...RUN })
   expect(saved.get('protect-files.enabled')).toBe(false)
-  await $.command.run({ command: 'protect-files', args: 'on' })
+  await $.command.run({ command: 'protect-files', args: 'on', ...RUN })
   expect(saved.get('protect-files.enabled')).toBe(true)
-  const bad = await $.command.run({ command: 'protect-files', args: 'x' })
+  const bad = await $.command.run({ command: 'protect-files', args: 'x', ...RUN })
   expect(bad.text).toBe('usage: /protect-files [on|off]')
   expect(toasts).toEqual(['protect-files off', 'protect-files on'])
 })
@@ -93,11 +96,11 @@ test('/protect-files-paths manages the stored list', async ($, on) => {
   const saved = new Map<string, unknown>()
   stubStore(on, saved)
 
-  await $.command.run({ command: 'protect-files-paths', args: 'add ./a/b/' })
+  await $.command.run({ command: 'protect-files-paths', args: 'add ./a/b/', ...RUN })
   expect(saved.get('protect-files.paths')).toEqual(['a/b'])
-  const list = await $.command.run({ command: 'protect-files-paths', args: 'list' })
+  const list = await $.command.run({ command: 'protect-files-paths', args: 'list', ...RUN })
   expect(list.text).toBe('a/b')
-  await $.command.run({ command: 'protect-files-paths', args: 'remove a/b' })
+  await $.command.run({ command: 'protect-files-paths', args: 'remove a/b', ...RUN })
   expect(saved.get('protect-files.paths')).toEqual([])
 })
 
@@ -106,7 +109,7 @@ test('/protect-files-paths list writes nothing to the store', async ($, on) => {
   const writes: string[] = []
   stubStore(on, saved, writes)
 
-  const r = await $.command.run({ command: 'protect-files-paths', args: 'list' })
+  const r = await $.command.run({ command: 'protect-files-paths', args: 'list', ...RUN })
   expect(r.text).toBe('b\na')
   expect(writes).toEqual([])
 })
@@ -117,7 +120,7 @@ test('a stored relative entry starting with .. is a damaged list: reported, left
   stubStore(on, saved, writes)
   const tool = stubTool(on)
 
-  const r = await $.command.run({ command: 'protect-files-paths', args: 'add /p/.env' })
+  const r = await $.command.run({ command: 'protect-files-paths', args: 'add /p/.env', ...RUN })
   expect(r.text).toContain('damaged')
   expect(r.text).toContain('/protect-files-paths reset')
   expect(writes).toEqual([])
@@ -131,7 +134,7 @@ test('/protect-files-paths add ../x is refused and leaves the store unset', asyn
   const saved = new Map<string, unknown>()
   stubStore(on, saved)
 
-  const r = await $.command.run({ command: 'protect-files-paths', args: 'add ../x' })
+  const r = await $.command.run({ command: 'protect-files-paths', args: 'add ../x', ...RUN })
   expect(r.text).toContain('cannot be protected')
   expect(saved.has('protect-files.paths')).toBe(false)
 })
@@ -150,7 +153,7 @@ test('a damaged stored list is reported by the paths command and not overwritten
   const saved = new Map<string, unknown>([['protect-files.paths', 'oops']])
   stubStore(on, saved)
 
-  const r = await $.command.run({ command: 'protect-files-paths', args: 'add /p/.env' })
+  const r = await $.command.run({ command: 'protect-files-paths', args: 'add /p/.env', ...RUN })
   expect(r.text).toContain('damaged')
   expect(r.text).toContain('/protect-files-paths reset')
   expect(saved.get('protect-files.paths')).toBe('oops')
@@ -165,7 +168,7 @@ test('/protect-files-paths reset deletes a damaged list and the next Write is al
 
   const before = await $.tool.call({ tool: 'Write', file_path: '/p/ok.txt', content: 'x' })
   expect(before.deny).toContain('damaged')
-  const r = await $.command.run({ command: 'protect-files-paths', args: 'reset' })
+  const r = await $.command.run({ command: 'protect-files-paths', args: 'reset', ...RUN })
   expect(r.text).toBe('protect-files: the protected list was cleared')
   expect(deletes).toEqual(['protect-files.paths'])
   expect(writes).toEqual([])
@@ -183,7 +186,7 @@ test('reset on a valid list deletes it and the next Write to a formerly protecte
 
   const before = await $.tool.call({ tool: 'Write', file_path: '/p/.env', content: 'x' })
   expect(before.deny).toBeDefined()
-  const r = await $.command.run({ command: 'protect-files-paths', args: 'reset' })
+  const r = await $.command.run({ command: 'protect-files-paths', args: 'reset', ...RUN })
   expect(r.text).toBe('protect-files: the protected list was cleared')
   expect(deletes).toEqual(['protect-files.paths'])
   const after = await $.tool.call({ tool: 'Write', file_path: '/p/.env', content: 'x' })
@@ -196,7 +199,7 @@ test('session.start registers both commands', async ($, on) => {
   on('session.start', () => ({ cwd: '/work' }))
   on('command.register', (_: unknown, e: any) => {
     names.push(e.name)
-    return { value: undefined }
+    return { value: { command: e.name } }
   })
 
   await $.session.start({ surface: 'terminal', isInteractive: true, cwd: '/work' })
