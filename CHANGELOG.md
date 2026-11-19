@@ -2,7 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.1] — 2026-11-19
+
+### Bug Fixes
+
+- **tests:** No-copy test reads its baseline chapters by blob hash (TRDD-ELJXAKU6) (ca7e383)
+
+### Documentation
+
+- **trdd:** Mint the 1.0.0 red-CI card and the removed-commit citations card (TRDD-ELJXAKU6, TRDD-1QNAUEAS) (e53e0de)
 ## [1.0.0] — 2026-11-19
+
+### Miscellaneous Tasks
+
+- Bump version to 1.0.0 (0da5761)
 
 ### Refactor
 
