@@ -290,7 +290,7 @@ wheels = [
 
 [[package]]
 name = "mods-expert-developer-plugin"
-version = "0.6.2"
+version = "1.0.0"
 source = { editable = "." }
 
 [package.optional-dependencies]

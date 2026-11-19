@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0] — 2026-11-19
+
+### Refactor
+
+- 1.0.0 — remove the requirements-drafts mod, now in the 3-pillars-tasks-management plugin (1a3a67f)
 ## [0.6.2] — 2026-11-03
 
 ### Bug Fixes
@@ -11,6 +16,7 @@ All notable changes to this project will be documented in this file.
 ### Miscellaneous Tasks
 
 - **cspell:** Know the five words of the mod-manager pane tests (TRDD-J4HRAQF0) (926401c)
+- Bump version to 0.6.2 (6b5ab73)
 ## [0.6.1] — 2026-10-27
 
 ### Miscellaneous Tasks
