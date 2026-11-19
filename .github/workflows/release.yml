@@ -186,7 +186,8 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          # The no-copy test reads its prior art at the baseline commit e7b7df2, so the history must be present.
+          # The no-copy test reads its prior-art chapters by blob hash; once a chapter changes, the pinned blob is only in
+          # the history, so the history must be present (TRDD-ELJXAKU6).
           fetch-depth: 0
           persist-credentials: false
 

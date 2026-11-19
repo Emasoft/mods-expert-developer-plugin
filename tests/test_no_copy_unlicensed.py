@@ -50,11 +50,12 @@ Exemptions, and there are no others and no name list:
   characters, so pieces of a regex character class ("a za z0 9") are not a copy. Line runs are unchanged.
 - A 3-line run with no word character at all (stacked closing brackets) holds no expression and is not reported.
 - Prior art: a run that also occurs in Anthropic's documentation is not the source's expression (the repos copied their
-  API example text from it). Prior art is read at the baseline commit e7b7df2 (the last commit before the corpus was
-  cloned), never from the live files: the Anthropic chapters named by NOTICE (every mods-doc chapter but the one
-  original text) plus .claude-plugin/types/**/*.d.ts. The live chapters are scanned like every other shipped file, so
-  they can hit only through text added after e7b7df2. The types are generated and gitignored; where they are absent
-  (CI) the scan runs without them, which can only report more, and a failure then says so.
+  API example text from it). Prior art is the text at the baseline commit e7b7df2 (the last commit before the corpus
+  was cloned), read by blob hash from tests/fixtures/no-copy-baseline-chapters.txt, never from the live files: the
+  Anthropic chapters named by NOTICE (every mods-doc chapter but the one original text) plus
+  .claude-plugin/types/**/*.d.ts. The live chapters are scanned like every other shipped file, so they can hit only
+  through text added after e7b7df2. The types are generated and gitignored; where they are absent (CI) the scan runs
+  without them, which can only report more, and a failure then says so.
 - Licensed excerpts: a hit whose shipped-side lines all lie inside one excerpt block ("### <mod> <version>,
   <file>:a-b, <licence>") is not reported when the mod is in excerpt_lock.LICENCES and not in FORBIDDEN, and the
   block's lines hash to its entry in the committed excerpt lock (no cache is read). Reference-module blocks and prose
@@ -111,8 +112,10 @@ MIN_LONG_TOKENS = 4
 LONG_TOKEN = 3
 MAX_REPORTED = 20
 BINARY_EXTENSIONS = excerpt_lock.BINARY_EXTENSIONS  # one list for the clones and the no-copy sources
-# Baseline commit: the last commit before the 18-repo corpus was cloned; prior art is read at this commit only.
+# Baseline commit: the last commit before the 18-repo corpus was cloned; prior art is its chapter text only.
 BASELINE = "e7b7df2"
+# The chapters at BASELINE, pinned by blob hash, because the 1.0.0 squash removed BASELINE from public history.
+BASELINE_CHAPTERS = ROOT / "tests" / "fixtures" / "no-copy-baseline-chapters.txt"
 # Provenance source: NOTICE states that EVERY skills/*/references/chapter.md is adapted from Anthropic's Claude Code
 # documentation (https://code.claude.com/docs), copyright Anthropic, with ONE exception, the original Emasoft text below.
 # So the prior art is every skills/mods-doc-*/references/chapter.md present at BASELINE except that one.
@@ -975,11 +978,20 @@ def _third_party_problems(root: Path, table: dict[str, Any], notice: str) -> lis
     return out
 
 
-def _baseline_chapters() -> list[str]:
-    """Return the paths of the Anthropic-adapted chapters present at BASELINE (every mods-doc chapter but ORIGINAL_CHAPTER)."""
-    names = _git(ROOT, "ls-tree", "-r", "--name-only", BASELINE).decode("utf-8").splitlines()
-    chapters = [n for n in names if re.fullmatch(r"skills/mods-doc-[^/]+/references/chapter\.md", n) and n != ORIGINAL_CHAPTER]
-    assert chapters, f"no mods-doc chapters found at {BASELINE}"
+def _baseline_chapters() -> list[tuple[str, str]]:
+    """Return (blob hash, path) of each Anthropic-adapted chapter present at BASELINE, as BASELINE_CHAPTERS lists them."""
+    # Why a pinned list and not `git ls-tree BASELINE`: the 1.0.0 squash removed e7b7df2 from public history, so a clone
+    # (CI) cannot read that commit (TRDD-ELJXAKU6). Its chapter blobs are still in public history, so the list pins the
+    # same prior art by hash. Reading the live chapters instead would let an edited chapter excuse its own copied text.
+    chapters: list[tuple[str, str]] = []
+    for line in BASELINE_CHAPTERS.read_text(encoding="utf-8").splitlines():
+        if line.startswith("#"):
+            continue
+        blob, path = line.split("\t")
+        assert re.fullmatch(r"[0-9a-f]{40}", blob), f"{BASELINE_CHAPTERS.name}: not a blob hash: {line!r}"
+        assert re.fullmatch(r"skills/mods-doc-[^/]+/references/chapter\.md", path) and path != ORIGINAL_CHAPTER, path
+        chapters.append((blob, path))
+    assert chapters, f"no mods-doc chapters listed in {BASELINE_CHAPTERS}"
     return chapters
 
 
@@ -999,8 +1011,13 @@ TYPES_ABSENT = (
 def _prior_art() -> dict[str, str]:
     """Return Anthropic's documentation as it was at BASELINE (NOTICE-listed chapters), the canonical MIT licence wording, and the generated .claude-plugin/types declarations, when present."""
     texts: dict[str, str] = {}
-    for rel in _baseline_chapters():
-        texts[f"{BASELINE}:{rel}"] = _git(ROOT, "show", f"{BASELINE}:{rel}").decode("utf-8")
+    for blob, rel in _baseline_chapters():
+        held = subprocess.run(
+            ["git", *_named(ROOT), "cat-file", "-e", f"{blob}^{{blob}}"], capture_output=True, check=False, env=_git_env()
+        ).returncode == 0
+        if not held:
+            pytest.fail(f"{rel} at {BASELINE} (blob {blob}) is not in this clone; the no-copy test needs the full history")
+        texts[f"{BASELINE}:{rel}"] = _git(ROOT, "cat-file", "blob", blob).decode("utf-8")
     texts["(the MIT licence wording)"] = MIT_LICENCE_WORDING
     if not _types_dir().is_dir():
         return texts

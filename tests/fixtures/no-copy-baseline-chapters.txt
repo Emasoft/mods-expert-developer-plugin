@@ -1,0 +1,65 @@
+# Prior art of tests/test_no_copy_unlicensed.py: the Anthropic-adapted mods-doc chapters as they were at the
+# baseline commit e7b7df2 (every skills/mods-doc-*/references/chapter.md except ORIGINAL_CHAPTER), one per line as
+# <blob hash><TAB><path>. Generated once from `git ls-tree -r e7b7df2` (TRDD-ELJXAKU6).
+# Why a list and not the commit: the 1.0.0 squash removed e7b7df2 from public history, so a clone cannot read it.
+# Every blob listed here is still in public history. Never regenerate it from a later commit: that widens the prior art.
+5daef105a9ec8c409de4953046cb8d717ff74002	skills/mods-doc-add-components-to-a-plugin/references/chapter.md
+720ce02ce8c1c097044bdc8f03a6f76234ed78be	skills/mods-doc-automate-actions-with-hooks/references/chapter.md
+66661e1c2cbb95990d5e0733808ad6c2ba587b8c	skills/mods-doc-cc-debug-mode/references/chapter.md
+c784c8903b8ec7a466fccd46e4c6d2e7744fb177	skills/mods-doc-cc-github-actions/references/chapter.md
+77aae3276c176634cf98a5e42dd4400fa158cb85	skills/mods-doc-cc-native-memory-and-rules/references/chapter.md
+82ca651cb78883bf94393b798aa40195d51ad47d	skills/mods-doc-cc-permissions-modes/references/chapter.md
+fa11c420ac9224293ee198d08663050efd5fc2af	skills/mods-doc-cc-projects-directory-structure/references/chapter.md
+e44543af7817812d81c447b819b9803f6dd5ef9a	skills/mods-doc-cc-security-plugin/references/chapter.md
+45f75cb98f1218935b9450ee1466769f61c9c481	skills/mods-doc-cc-settings-reference/references/chapter.md
+fbd3f59d26e382099b1eb376cb70fb888879475e	skills/mods-doc-channels-reference/references/chapter.md
+ab9b0060e5c33827581177dd4ca25368076f1159	skills/mods-doc-code-intelligence-components-in-plugins/references/chapter.md
+0ab52255cdefd5c68ac7c97c7bed1fe1750f1188	skills/mods-doc-create-a-marketplace/references/chapter.md
+b4584fea044a206b32dc7959a5562670a4308684	skills/mods-doc-cross-session-messaging-reference/references/chapter.md
+934c745c714b07ceafdad1149b114c96b26b914a	skills/mods-doc-deep-links-reference/references/chapter.md
+0c0ad7e10b9e7255801ace9afc7b106b737d4da9	skills/mods-doc-dynamic-workflows-reference/references/chapter.md
+a4a7db791a7061a96f685840cec89f4210283308	skills/mods-doc-headless-mode-reference/references/chapter.md
+c34749888469b46d7d7d0fa182dd51873c09764e	skills/mods-doc-hooks-reference/references/chapter.md
+8c854f955c24f67b1254721991e2032267fe692a	skills/mods-doc-how-to-host-a-marketplace/references/chapter.md
+bce3e2bb64fa75adcfef8a7c380b95807fecbaa9	skills/mods-doc-install-and-manage-plugins/references/chapter.md
+8ab42f8eb106ea3e2d2c3d0c5bfd3395f3404413	skills/mods-doc-large-monorepo-plugin-development/references/chapter.md
+1b305933727e3b00ace40a3ba17adbf61555864b	skills/mods-doc-loop-and-chron-reference/references/chapter.md
+48dbe8b00cc60b3f0b7e0e00ac05c95b19c7c12b	skills/mods-doc-manage-costs-of-a-plugin/references/chapter.md
+fe21c65c571a706821d36b20c052781e6996936d	skills/mods-doc-manage-mods-for-organizations/references/chapter.md
+c71dfd489f86e45ad8a36ffab7477d5b9ba01eb5	skills/mods-doc-manage-plugins-from-cli/references/chapter.md
+cae6e124a8f90f8b0b16b9efee50f39f7f0bb26b	skills/mods-doc-manage-plugins-in-organizations/references/chapter.md
+516e931eb4b8fbe0e5a56f8b6d1886a0e3e6d5b3	skills/mods-doc-marketplace-manifest-reference/references/chapter.md
+8a0134fdcf42c56e6c2d43930efe0120f29b8bc1	skills/mods-doc-mcp-servers-reference/references/chapter.md
+3509d2dfa150e8dc3d06371697671f05871874f8	skills/mods-doc-models-configuration/references/chapter.md
+c76e894da347f54249f448a7d25f1b42dc7a30b5	skills/mods-doc-mods-and-events/references/chapter.md
+d404fa46ee02d01bdd79f13014b5388a180e1998	skills/mods-doc-mods-api/references/chapter.md
+6ed11f42f1062b56aefe454f40abc0978561ccbf	skills/mods-doc-mods-basic-examples/references/chapter.md
+dcb82ebd6f9779a422a7dba34c27b94a40013d54	skills/mods-doc-mods-development/references/chapter.md
+fe15aabfffec95f087736fbf5ba4840265a09b0a	skills/mods-doc-mods-interfaces/references/chapter.md
+f9d57552a508030b57a7ab3a1d039f69a9947f8b	skills/mods-doc-mods-overview/references/chapter.md
+a8e63108df092eb940752bf1e6203184e79c450c	skills/mods-doc-mods-reference/references/chapter.md
+7122f654987f53e175d6a6b74957948ebbec978f	skills/mods-doc-mods-testing/references/chapter.md
+d651326d81266ea03e7078c2a9a80c63c8f5b3b4	skills/mods-doc-mods-troubleshooting/references/chapter.md
+db04cfd91f4b2fd3a21387f31c7e180136907fb0	skills/mods-doc-native-toolset-reference/references/chapter.md
+10bc7be154d6cd8acdd6856bac0b4119994f5a73	skills/mods-doc-official-marketplaces/references/chapter.md
+2e9531a6f4e92e5843e9a17b4ae99e72b68ec7f3	skills/mods-doc-output-style-reference/references/chapter.md
+398048a2da04e68f5cae3495765cd0992f0d682f	skills/mods-doc-platforms-overview/references/chapter.md
+a2f7501de523c2e768ecb55ec7e0446a40a3414a	skills/mods-doc-plugin-commands-reference/references/chapter.md
+cd794522de0978793a2f0457788e5751f74d2a61	skills/mods-doc-plugin-manifest-reference/references/chapter.md
+e60de45b4c38ece40ac5ac0873e565d12cebf172	skills/mods-doc-plugin-recomendations/references/chapter.md
+18047b796cf2f3e5f728416b53d614704b3dbfb0	skills/mods-doc-plugins-creation/references/chapter.md
+645a3812eb6ccaf1487a5e9ca2935e795888b5cc	skills/mods-doc-plugins-depending-on-other-plugins/references/chapter.md
+375c4d438cf56733863bf40c2bb9db9680b7bfa1	skills/mods-doc-plugins-security-and-trust/references/chapter.md
+ac0009069d8e728e7477d037308ae6dbc7ee9cac	skills/mods-doc-prompt-caching-reference/references/chapter.md
+c4e767a3260852933d07faf33e6671be3e98aa8c	skills/mods-doc-publish-a-plugin/references/chapter.md
+a971e63235e9a52e67a01f39cf24f29812ec1404	skills/mods-doc-recomended-plugins-to-create-plugins/references/chapter.md
+9864879f713552c09d4fd673b4a885135bb3056b	skills/mods-doc-sessions-reference/references/chapter.md
+7acc59f113ce7c288aeeb9a11b9e9790ee7e1793	skills/mods-doc-settings-precedence-and-scopes/references/chapter.md
+76a889d0db51366dc3731ddeca753c8b60016b63	skills/mods-doc-skills-reference/references/chapter.md
+9a421bf9f5619687409c5cc38b17e88b5229da87	skills/mods-doc-status-line-customization/references/chapter.md
+dfe7dd3cb7d12d18fbcbc92c9d84b9a2a1824c71	skills/mods-doc-subagents-reference/references/chapter.md
+e7050a2cde9a559f9a50396c5e0f05f8b1641804	skills/mods-doc-test-plugins-with-evals/references/chapter.md
+292e8de594f5ceeed90b7a66e9cc800f47c3e9b9	skills/mods-doc-tracing-the-origin-of-a-plugin/references/chapter.md
+07223f8c09688c0fa244c6fdad71d89abbc4cdbc	skills/mods-doc-troubleshooting-cc-setup/references/chapter.md
+719f5dc4e8ced6e2163a00b1fecd4c31401bd72c	skills/mods-doc-troubleshooting-plugins/references/chapter.md
+721b53459d0beff0bebc54e31f4243e8fbc4d60b	skills/mods-doc-worktrees-reference/references/chapter.md
